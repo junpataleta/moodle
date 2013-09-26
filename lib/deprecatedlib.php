@@ -3611,3 +3611,17 @@ function message_get_contact($contactid) {
 
     return \core_message\api::get_contact($USER->id, $contactid);
 }
+
+/**
+ * Returns host part from url.
+ *
+ * @param string $url to get host from
+ * @return string host
+ * @deprecated since Moodle 3.1
+ * @see moodle_url::get_host()
+ */
+function get_host_from_url($url) {
+    debugging('get_host_from_url is deprecated, please use moodle_url::get_host instead', DEBUG_DEVELOPER);
+    $murl = new moodle_url($url);
+    return $murl->get_host();
+}

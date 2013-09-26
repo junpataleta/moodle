@@ -132,9 +132,9 @@ function lti_get_launch_data($instance) {
 
     // Default the organizationid if not specified.
     if (empty($typeconfig['organizationid'])) {
-        $urlparts = parse_url($CFG->wwwroot);
+        $murl = new moodle_url($CFG->wwwroot);
 
-        $typeconfig['organizationid'] = $urlparts['host'];
+        $typeconfig['organizationid'] = $murl->get_host();
     }
 
     if (isset($tool->toolproxyid)) {
@@ -1616,34 +1616,20 @@ function lti_get_tool_by_url_match($url, $courseid = null, $state = LTI_TOOL_STA
 }
 
 function lti_get_url_thumbprint($url) {
-    // Parse URL requires a schema otherwise everything goes into 'path'.  Fixed 5.4.7 or later.
-    if (preg_match('/https?:\/\//', $url) !== 1) {
-        $url = 'http://'.$url;
-    }
-    $urlparts = parse_url(strtolower($url));
-    if (!isset($urlparts['path'])) {
-        $urlparts['path'] = '';
-    }
+    $murl = new moodle_url(strtolower($url));
+    $path = $murl->get_path();
+    $host = $murl->get_host();
+    $query = $murl->get_query_string();
 
-    if (!isset($urlparts['query'])) {
-        $urlparts['query'] = '';
+    if (substr($host, 0, 4) === 'www.') {
+        $host = substr($host, 4);
     }
 
-    if (!isset($urlparts['host'])) {
-        $urlparts['host'] = '';
+    $url = $host . '/' . $path;
+    if ($query) {
+        $url .= '?' . $query;
     }
-
-    if (substr($urlparts['host'], 0, 4) === 'www.') {
-        $urlparts['host'] = substr($urlparts['host'], 4);
-    }
-
-    $urllower = $urlparts['host'] . '/' . $urlparts['path'];
-
-    if ($urlparts['query'] != '') {
-        $urllower .= '?' . $urlparts['query'];
-    }
-
-    return $urllower;
+    return $url;
 }
 
 function lti_get_best_tool_by_url($url, $tools, $courseid = null) {
