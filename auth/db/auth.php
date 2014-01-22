@@ -88,7 +88,7 @@ class auth_plugin_db extends auth_plugin_base {
                                      WHERE {$this->config->fielduser} = '".$this->ext_addslashes($extusername)."'");
             if (!$rs) {
                 $authdb->Close();
-                debugging(get_string('auth_dbcantconnect','auth_db'));
+                debugging(get_string('auth_dbcantconnect', 'auth_db'), DEBUG_NORMAL);
                 return false;
             }
 
@@ -116,7 +116,7 @@ class auth_plugin_db extends auth_plugin_base {
                                      WHERE {$this->config->fielduser} = '".$this->ext_addslashes($extusername)."'");
             if (!$rs) {
                 $authdb->Close();
-                debugging(get_string('auth_dbcantconnect','auth_db'));
+                debugging(get_string('auth_dbcantconnect', 'auth_db'), DEBUG_NORMAL);
                 return false;
             }
 
