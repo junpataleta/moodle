@@ -926,4 +926,37 @@ class core_useragent {
         // This browser does not support json.
         return false;
     }
+
+    /**
+     * Checks if the browser can properly handle the Content-Disposition: attachment header.
+     *
+     * @return bool
+     */
+    public static function can_handle_downloads() {
+
+        $ua = self::instance();
+        $devicetype = $ua->guess_device_type();
+
+        // Check if mobile/tablet or desktop.
+        if ($devicetype === self::DEVICETYPE_MOBILE || $devicetype === self::DEVICETYPE_TABLET) {
+            // WebKit-based Android browsers (rev 534 and up, Android 4.0 and up) seem to be able to
+            // properly handle the "Content-Disposition: attachment" header.
+            if (self::check_webkit_android_version('534')) {
+                return true;
+            }
+        } else {
+            // Firefox and Chrome can properly handle the Content-Disposition: attachment header.
+            // But we will require minimum versions of 25.0 for FF and 30.0 for Chrome as
+            // indicated in https://docs.moodle.org/dev/Moodle_2.9_release_notes#Browser_support.
+            if (self::check_firefox_version('25.0')) {
+                return true;
+            }
+
+            if (self::check_chrome_version('30.0')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

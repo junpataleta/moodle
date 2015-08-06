@@ -34,6 +34,16 @@ define('BYTESERVING_BOUNDARY', 's1k2o3d4a5k6s7');
  */
 define('FILE_AREA_MAX_BYTES_UNLIMITED', -1);
 
+/**
+ * MIME Type constant for octet-stream.
+ */
+define('MIMETYPE_OCTET_STREAM', 'application/octet-stream');
+
+/**
+ * MIME Type constant for x-forcedownload.
+ */
+define('MIMETYPE_FORCE_DOWNLOAD', 'application/x-forcedownload');
+
 require_once("$CFG->libdir/filestorage/file_exceptions.php");
 require_once("$CFG->libdir/filestorage/file_storage.php");
 require_once("$CFG->libdir/filestorage/zip_packer.php");
@@ -1988,11 +1998,22 @@ function readstring_accel($string, $mimetype, $accelerate) {
 function send_temp_file($path, $filename, $pathisstring=false) {
     global $CFG;
 
-    if (core_useragent::is_firefox()) {
-        // only FF is known to correctly save to disk before opening...
-        $mimetype = mimeinfo('type', $filename);
+    // Let our default MIME type be application/x-forcedownload.
+    $mimetype = MIMETYPE_FORCE_DOWNLOAD;
+
+    // Check whether the browser can properly handle file downloading.
+    if (core_useragent::can_handle_downloads()) {
+        // Guess MIME type using mimeinfo.
+        if (mimeinfo('type', $filename)) {
+            $mimetype = mimeinfo('type', $filename);
+        }
     } else {
-        $mimetype = 'application/x-forcedownload';
+        // Check if device is mobile (Android).
+        if (core_useragent::is_webkit_android()) {
+            // We cannot use application/x-forcedownload on Android devices since using this content type
+            // renders the downloaded files unusable.
+            $mimetype = MIMETYPE_OCTET_STREAM;
+        }
     }
 
     // close session - not needed anymore
@@ -2076,12 +2097,23 @@ function send_file($path, $filename, $lifetime = null , $filter=0, $pathisstring
 
     \core\session\manager::write_close(); // Unlock session during file serving.
 
-    // Use given MIME type if specified, otherwise guess it using mimeinfo.
-    // IE, Konqueror and Opera open html file directly in browser from web even when directed to save it to disk :-O
-    // only Firefox saves all files locally before opening when content-disposition: attachment stated
-    $isFF         = core_useragent::is_firefox(); // only FF properly tested
-    $mimetype     = ($forcedownload and !$isFF) ? 'application/x-forcedownload' :
-                         ($mimetype ? $mimetype : mimeinfo('type', $filename));
+    // Check if forcedownload is enabled and whether the browser can properly handle file downloading.
+    if ($forcedownload && !core_useragent::can_handle_downloads()) {
+        // Check if device is mobile (Android) or PC.
+        if (core_useragent::is_webkit_android()) {
+            // We cannot use application/x-forcedownload on Android devices since using this content type
+            // renders the downloaded files unusable.
+            $mimetype = MIMETYPE_OCTET_STREAM;
+        } else {
+            // Use application/x-forcedownload for others.
+            $mimetype = MIMETYPE_FORCE_DOWNLOAD;
+        }
+    } else {
+        // Use given MIME type if specified, otherwise guess it using mimeinfo.
+        if (!$mimetype && mimeinfo('type', $filename)) {
+            $mimetype = mimeinfo('type', $filename);
+        }
+    }
 
     // if user is using IE, urlencode the filename so that multibyte file name will show up correctly on popup
     if (core_useragent::is_ie()) {
@@ -2183,14 +2215,14 @@ function send_file($path, $filename, $lifetime = null , $filter=0, $pathisstring
  *      defaults to "public".
  *
  * @category files
- * @param stored_file $stored_file local file object
+ * @param stored_file $storedfile local file object
  * @param int $lifetime Number of seconds before the file should expire from caches (null means $CFG->filelifetime)
  * @param int $filter 0 (default)=no filtering, 1=all files, 2=html files only
  * @param bool $forcedownload If true (default false), forces download of file rather than view in browser/plugin
  * @param array $options additional options affecting the file serving
  * @return null script execution stopped unless $options['dontdie'] is true
  */
-function send_stored_file($stored_file, $lifetime=null, $filter=0, $forcedownload=false, array $options=array()) {
+function send_stored_file($storedfile, $lifetime=null, $filter=0, $forcedownload=false, array $options=array()) {
     global $CFG, $COURSE;
 
     if (empty($options['filename'])) {
@@ -2212,8 +2244,8 @@ function send_stored_file($stored_file, $lifetime=null, $filter=0, $forcedownloa
     if (!empty($options['preview'])) {
         // replace the file with its preview
         $fs = get_file_storage();
-        $preview_file = $fs->get_file_preview($stored_file, $options['preview']);
-        if (!$preview_file) {
+        $previewfile = $fs->get_file_preview($storedfile, $options['preview']);
+        if (!$previewfile) {
             // unable to create a preview of the file, send its default mime icon instead
             if ($options['preview'] === 'tinyicon') {
                 $size = 24;
@@ -2222,12 +2254,12 @@ function send_stored_file($stored_file, $lifetime=null, $filter=0, $forcedownloa
             } else {
                 $size = 256;
             }
-            $fileicon = file_file_icon($stored_file, $size);
+            $fileicon = file_file_icon($storedfile, $size);
             send_file($CFG->dirroot.'/pix/'.$fileicon.'.png', basename($fileicon).'.png');
         } else {
             // preview images have fixed cache lifetime and they ignore forced download
             // (they are generated by GD and therefore they are considered reasonably safe).
-            $stored_file = $preview_file;
+            $storedfile = $previewfile;
             $lifetime = DAYSECS;
             $filter = 0;
             $forcedownload = false;
@@ -2235,12 +2267,12 @@ function send_stored_file($stored_file, $lifetime=null, $filter=0, $forcedownloa
     }
 
     // handle external resource
-    if ($stored_file && $stored_file->is_external_file() && !isset($options['sendcachedexternalfile'])) {
-        $stored_file->send_file($lifetime, $filter, $forcedownload, $options);
+    if ($storedfile && $storedfile->is_external_file() && !isset($options['sendcachedexternalfile'])) {
+        $storedfile->send_file($lifetime, $filter, $forcedownload, $options);
         die;
     }
 
-    if (!$stored_file or $stored_file->is_directory()) {
+    if (!$storedfile or $storedfile->is_directory()) {
         // nothing to serve
         if ($dontdie) {
             return;
@@ -2254,13 +2286,27 @@ function send_stored_file($stored_file, $lifetime=null, $filter=0, $forcedownloa
 
     \core\session\manager::write_close(); // Unlock session during file serving.
 
-    // Use given MIME type if specified, otherwise guess it using mimeinfo.
-    // IE, Konqueror and Opera open html file directly in browser from web even when directed to save it to disk :-O
-    // only Firefox saves all files locally before opening when content-disposition: attachment stated
-    $filename     = is_null($filename) ? $stored_file->get_filename() : $filename;
-    $isFF         = core_useragent::is_firefox(); // only FF properly tested
-    $mimetype     = ($forcedownload and !$isFF) ? 'application/x-forcedownload' :
-                         ($stored_file->get_mimetype() ? $stored_file->get_mimetype() : mimeinfo('type', $filename));
+    $filename = is_null($filename) ? $storedfile->get_filename() : $filename;
+
+    // Let our default MIME type be application/x-forcedownload.
+    $mimetype = MIMETYPE_FORCE_DOWNLOAD;
+
+    // Check if forcedownload is enabled and whether the browser can properly handle file downloading.
+    if ($forcedownload && !core_useragent::can_handle_downloads()) {
+        // Check if device is mobile (Android).
+        if (core_useragent::is_webkit_android()) {
+            // We cannot use application/x-forcedownload on Android devices since using this content type
+            // renders the downloaded files unusable.
+            $mimetype = MIMETYPE_OCTET_STREAM;
+        }
+    } else {
+        // Use given MIME type if specified, otherwise guess it using mimeinfo.
+        if ($storedfile->get_mimetype()) {
+            $mimetype = $storedfile->get_mimetype();
+        } else if (mimeinfo('type', $filename)) {
+            $mimetype = mimeinfo('type', $filename);
+        }
+    }
 
     // if user is using IE, urlencode the filename so that multibyte file name will show up correctly on popup
     if (core_useragent::is_ie()) {
@@ -2311,14 +2357,14 @@ function send_stored_file($stored_file, $lifetime=null, $filter=0, $forcedownloa
 
     if (empty($filter)) {
         // send the contents
-        readfile_accel($stored_file, $mimetype, !$dontdie);
+        readfile_accel($storedfile, $mimetype, !$dontdie);
 
     } else {     // Try to put the file through filters
         if ($mimetype == 'text/html' || $mimetype == 'application/xhtml+xml') {
             $options = new stdClass();
             $options->noclean = true;
             $options->nocache = true; // temporary workaround for MDL-5136
-            $text = $stored_file->get_content();
+            $text = $storedfile->get_content();
             $text = file_modify_html_header($text);
             $output = format_text($text, FORMAT_HTML, $options, $COURSE->id);
 
@@ -2329,13 +2375,13 @@ function send_stored_file($stored_file, $lifetime=null, $filter=0, $forcedownloa
             $options = new stdClass();
             $options->newlines = false;
             $options->noclean = true;
-            $text = $stored_file->get_content();
+            $text = $storedfile->get_content();
             $output = '<pre>'. format_text($text, FORMAT_MOODLE, $options, $COURSE->id) .'</pre>';
 
             readstring_accel($output, $mimetype, false);
 
         } else {    // Just send it out raw
-            readfile_accel($stored_file, $mimetype, !$dontdie);
+            readfile_accel($storedfile, $mimetype, !$dontdie);
         }
     }
     if ($dontdie) {

@@ -54,6 +54,7 @@ class core_useragent_testcase extends basic_testcase {
 
                     'supports_svg'                  => false,
                     'supports_json_contenttype'     => false,
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -76,6 +77,7 @@ class core_useragent_testcase extends basic_testcase {
 
                     'supports_svg'                  => false,
                     'supports_json_contenttype'     => false,
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -100,6 +102,7 @@ class core_useragent_testcase extends basic_testcase {
 
                     'supports_svg'                  => false,
                     'supports_json_contenttype'     => false,
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -122,6 +125,7 @@ class core_useragent_testcase extends basic_testcase {
 
                     'supports_svg'                  => false,
                     'supports_json_contenttype'     => false,
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -144,6 +148,7 @@ class core_useragent_testcase extends basic_testcase {
 
                     'supports_svg'                  => false,
                     'supports_json_contenttype'     => false,
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -166,6 +171,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'supports_svg'                  => false,
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -187,6 +193,7 @@ class core_useragent_testcase extends basic_testcase {
                         'ie',
                         'ie9',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -215,6 +222,8 @@ class core_useragent_testcase extends basic_testcase {
 
                     // IE in Compatiblity mode does not support JSON ContentType.
                     'supports_json_contenttype'     => false,
+
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -237,6 +246,7 @@ class core_useragent_testcase extends basic_testcase {
                         'ie',
                         'ie10',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -263,6 +273,8 @@ class core_useragent_testcase extends basic_testcase {
 
                     // IE in Compatiblity mode does not support JSON ContentType.
                     'supports_json_contenttype'     => false,
+
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -286,6 +298,7 @@ class core_useragent_testcase extends basic_testcase {
                         'ie',
                         'ie11',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -313,6 +326,8 @@ class core_useragent_testcase extends basic_testcase {
 
                     // IE in Compatiblity mode does not support JSON ContentType.
                     'supports_json_contenttype'     => false,
+
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -331,6 +346,7 @@ class core_useragent_testcase extends basic_testcase {
                         'gecko',
                         'gecko17',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -354,6 +370,7 @@ class core_useragent_testcase extends basic_testcase {
                         'gecko',
                         'gecko18',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -377,6 +394,7 @@ class core_useragent_testcase extends basic_testcase {
                         'gecko',
                         'gecko18',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -402,6 +420,7 @@ class core_useragent_testcase extends basic_testcase {
                         'gecko',
                         'gecko18',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -427,6 +446,7 @@ class core_useragent_testcase extends basic_testcase {
                         'gecko',
                         'gecko18',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -453,6 +473,7 @@ class core_useragent_testcase extends basic_testcase {
                         'gecko',
                         'gecko19',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -481,6 +502,7 @@ class core_useragent_testcase extends basic_testcase {
                         'gecko',
                         'gecko20',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -511,6 +533,7 @@ class core_useragent_testcase extends basic_testcase {
                     'versionclasses'                => array(
                         'gecko',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -543,6 +566,7 @@ class core_useragent_testcase extends basic_testcase {
                     'versionclasses'                => array(
                         'gecko',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -577,6 +601,7 @@ class core_useragent_testcase extends basic_testcase {
                     'versionclasses'                => array(
                         'gecko',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -614,6 +639,7 @@ class core_useragent_testcase extends basic_testcase {
                     'versionclasses'                => array(
                         'gecko',
                     ),
+                    'can_handle_downloads'          => true,
                 ),
             ),
 
@@ -635,6 +661,7 @@ class core_useragent_testcase extends basic_testcase {
                         'gecko',
                         'gecko19',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -665,6 +692,7 @@ class core_useragent_testcase extends basic_testcase {
                         'gecko',
                         'gecko20',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -694,6 +722,7 @@ class core_useragent_testcase extends basic_testcase {
                     'versionclasses'                => array(
                         'gecko',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -720,6 +749,7 @@ class core_useragent_testcase extends basic_testcase {
 
                     'supports_svg'                  => false,
                     'supports_json_contenttype'     => false,
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -747,6 +777,7 @@ class core_useragent_testcase extends basic_testcase {
 
                     'supports_svg'                  => false,
                     'supports_json_contenttype'     => false,
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -758,6 +789,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'is_msword'                     => true,
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -776,6 +808,7 @@ class core_useragent_testcase extends basic_testcase {
                     'versionclasses'                => array(
                         'safari',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -794,6 +827,7 @@ class core_useragent_testcase extends basic_testcase {
                     'versionclasses'                => array(
                         'safari',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -812,6 +846,7 @@ class core_useragent_testcase extends basic_testcase {
                     'versionclasses'                => array(
                         'safari',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -833,6 +868,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'devicetype'                    => 'mobile',
+                    'can_handle_downloads'          => false,
                ),
             ),
 
@@ -856,6 +892,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'devicetype'                    => 'mobile',
+                    'can_handle_downloads'          => false,
                ),
             ),
 
@@ -877,6 +914,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'devicetype'                    => 'tablet',
+                    'can_handle_downloads'          => false,
                ),
             ),
 
@@ -899,6 +937,7 @@ class core_useragent_testcase extends basic_testcase {
                     'devicetype'                    => 'mobile',
 
                     'supports_svg'                  => false,
+                    'can_handle_downloads'          => false,
                ),
             ),
 
@@ -922,6 +961,7 @@ class core_useragent_testcase extends basic_testcase {
                     'devicetype'                    => 'mobile',
 
                     'supports_svg'                  => false,
+                    'can_handle_downloads'          => false,
                ),
             ),
 
@@ -950,6 +990,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'devicetype'                    => 'mobile',
+                    'can_handle_downloads'          => true,
                 ),
             ),
 
@@ -978,6 +1019,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'devicetype'                    => 'mobile',
+                    'can_handle_downloads'          => true,
                 ),
             ),
 
@@ -996,6 +1038,7 @@ class core_useragent_testcase extends basic_testcase {
                     'versionclasses'                => array(
                         'safari',
                     ),
+                    'can_handle_downloads'          => false,
                 ),
             ),
 
@@ -1016,6 +1059,7 @@ class core_useragent_testcase extends basic_testcase {
                     'versionclasses'                => array(
                         'safari',
                     ),
+                    'can_handle_downloads'          => true,
                 ),
             ),
 
@@ -1033,6 +1077,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'supports_svg'                  => false,
+                    'can_handle_downloads'          => false,
                ),
             ),
 
@@ -1051,6 +1096,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'supports_svg'                  => false,
+                    'can_handle_downloads'          => false,
                ),
             ),
 
@@ -1071,6 +1117,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'supports_svg'                  => false,
+                    'can_handle_downloads'          => false,
                ),
             ),
 
@@ -1089,6 +1136,7 @@ class core_useragent_testcase extends basic_testcase {
                     ),
 
                     'supports_svg'                  => false,
+                    'can_handle_downloads'          => false,
                ),
             ),
         );
@@ -1524,5 +1572,24 @@ class core_useragent_testcase extends basic_testcase {
             $this->assertContains($expectedclass, $actual);
         }
         $this->assertCount(count($tests['versionclasses']), $actual);
+    }
+
+    /**
+     * Test case for core_useragent::can_handle_downloads().
+     *
+     * @dataProvider user_agents_providers
+     * @param string $useragent The string to force as the user agent.
+     * @param array $tests Array of user agents to be used for testing.
+     */
+    public function test_can_handle_downloads($useragent, $tests) {
+        // Setup the core_useragent instance.
+        core_useragent::instance(true, $useragent);
+
+        $expected = false;
+        if (isset($tests['can_handle_downloads'])) {
+            $expected = $tests['can_handle_downloads'];
+        }
+
+        $this->assertEquals($expected, core_useragent::can_handle_downloads());
     }
 }
