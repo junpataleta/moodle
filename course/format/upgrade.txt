@@ -6,6 +6,10 @@ Overview of this plugin type at http://docs.moodle.org/dev/Course_formats
 * Course formats may support deleting sections, see MDL-10405 for more details.
   format_section_renderer_base::section_edit_controls() is now also called for
   stealth sections and it also returns "delete" control.
+* New method format_base::get_default_section_name retrieves the default section name for the given course format. The base
+  implementation basically uses the implementation of format_base::get_section_name. The method can be overridden in
+  format_base subclasses that use sections (i.e. format_topics, format_weeks). In relation to the changes made for the default
+  section name, the default section name is now being shown when editing the section information.
 
 === 2.8 ===
 * The activity chooser now uses M.course.format.get_sectionwrapperclass()
