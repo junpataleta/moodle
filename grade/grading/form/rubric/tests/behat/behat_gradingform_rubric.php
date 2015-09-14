@@ -100,6 +100,12 @@ class behat_gradingform_rubric extends behat_base {
 
         if ($criteria) {
             foreach ($criteria as $criterionit => $criterion) {
+                // Unset empty levels in criterion.
+                foreach ($criterion as $i => $value) {
+                    if (empty($value)) {
+                        unset($criterion[$i]);
+                    }
+                }
 
                 // Checking the number of cells.
                 if (count($criterion) % 2 === 0) {
