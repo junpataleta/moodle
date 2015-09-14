@@ -927,7 +927,8 @@ class gradingform_rubric_instance extends gradingform_instance {
         }
         $currentinstance = $this->get_current_instance();
         if ($currentinstance && $currentinstance->get_status() == gradingform_instance::INSTANCE_STATUS_NEEDUPDATE) {
-            $html .= html_writer::tag('div', get_string('needregrademessage', 'gradingform_rubric'), array('class' => 'gradingform_rubric-regrade'));
+            $html .= html_writer::tag('div', get_string('needregrademessage', 'gradingform_rubric'),
+                                      array('class' => 'gradingform_rubric-regrade', 'role' => 'alert'));
         }
         $haschanges = false;
         if ($currentinstance) {

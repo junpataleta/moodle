@@ -51,7 +51,7 @@ class gradingform_rubric_editrubric extends moodleform {
 
         // name
         $form->addElement('text', 'name', get_string('name', 'gradingform_rubric'), array('size'=>52));
-        $form->addRule('name', get_string('required'), 'required');
+        $form->addRule('name', get_string('required'), 'required', null, 'client');
         $form->setType('name', PARAM_TEXT);
 
         // description
