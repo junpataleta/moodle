@@ -55,10 +55,13 @@ class gradingform_guide_renderer extends plugin_renderer_base {
      * @param array $criterion criterion data
      * @param array $value (only in view mode) teacher's feedback on this criterion
      * @param array $validationerrors An array containing validation errors to be shown
+     * @param array $comments Array of frequently used comments.
      * @return string
      */
     public function criterion_template($mode, $options, $elementname = '{NAME}', $criterion = null, $value = null,
-                                       $validationerrors = null) {
+                                       $validationerrors = null, $comments = null) {
+        global $PAGE;
+
         if ($criterion === null || !is_array($criterion) || !array_key_exists('id', $criterion)) {
             $criterion = array('id' => '{CRITERION-id}',
                                'description' => '{CRITERION-description}',
@@ -85,7 +88,7 @@ class gradingform_guide_renderer extends plugin_renderer_base {
                 $value = get_string('criterion'.$key, 'gradingform_guide');
                 $button = html_writer::empty_tag('input', array('type' => 'submit',
                     'name' => '{NAME}[criteria][{CRITERION-id}]['.$key.']',
-                    'id' => '{NAME}-criteria-{CRITERION-id}-'.$key, 'value' => $value, 'title' => $value, 'tabindex' => -1));
+                    'id' => '{NAME}-criteria-{CRITERION-id}-'.$key, 'value' => $value, 'title' => $value));
                 $criteriontemplate .= html_writer::tag('div', $button, array('class' => $key));
             }
             $criteriontemplate .= html_writer::end_tag('td'); // Controls.
@@ -93,15 +96,19 @@ class gradingform_guide_renderer extends plugin_renderer_base {
                 'name' => '{NAME}[criteria][{CRITERION-id}][sortorder]', 'value' => $criterion['sortorder']));
 
             $shortname = html_writer::empty_tag('input', array('type'=> 'text',
-                'name' => '{NAME}[criteria][{CRITERION-id}][shortname]',  'value' => $criterion['shortname'],
-                'id ' => '{NAME}[criteria][{CRITERION-id}][shortname]'));
+                'name' => '{NAME}[criteria][{CRITERION-id}][shortname]',
+                'id ' => '{NAME}-criteria-{CRITERION-id}-shortname',
+                'value' => $criterion['shortname'],
+                'aria-labelledby' => 'criterionnamelabel{CRITERION-id}'));
             $shortname = html_writer::tag('div', $shortname, array('class'=>'criterionname'));
             $description = html_writer::tag('textarea', s($criterion['description']),
-                array('name' => '{NAME}[criteria][{CRITERION-id}][description]', 'cols' => '65', 'rows' => '5'));
+                array('name' => '{NAME}[criteria][{CRITERION-id}][description]',
+                      'id' => '{NAME}[criteria][{CRITERION-id}][description]', 'cols' => '65', 'rows' => '5'));
             $description = html_writer::tag('div', $description, array('class'=>'criteriondesc'));
 
             $descriptionmarkers = html_writer::tag('textarea', s($criterion['descriptionmarkers']),
-                array('name' => '{NAME}[criteria][{CRITERION-id}][descriptionmarkers]', 'cols' => '65', 'rows' => '5'));
+                array('name' => '{NAME}[criteria][{CRITERION-id}][descriptionmarkers]',
+                      'id' => '{NAME}[criteria][{CRITERION-id}][descriptionmarkers]', 'cols' => '65', 'rows' => '5'));
             $descriptionmarkers = html_writer::tag('div', $descriptionmarkers, array('class'=>'criteriondescmarkers'));
 
             $maxscore = html_writer::empty_tag('input', array('type'=> 'text',
@@ -125,8 +132,13 @@ class gradingform_guide_renderer extends plugin_renderer_base {
                        $mode == gradingform_guide_controller::DISPLAY_VIEW) {
                 $descriptionclass = 'descriptionreadonly';
             }
-            $shortname   = html_writer::tag('div', s($criterion['shortname']),
-                array('class'=>'criterionshortname', 'name' => '{NAME}[criteria][{CRITERION-id}][shortname]'));
+
+            $shortnameparams = array(
+                'name' => '{NAME}[criteria][{CRITERION-id}][shortname]',
+                'id' => '{NAME}[criteria][{CRITERION-id}][shortname]'
+            );
+            $shortname = html_writer::div(s($criterion['shortname']), 'criterionshortname', $shortnameparams);
+
             $descmarkerclass = '';
             $descstudentclass = '';
             if ($mode == gradingform_guide_controller::DISPLAY_EVAL) {
@@ -155,9 +167,13 @@ class gradingform_guide_renderer extends plugin_renderer_base {
             $descriptionclass .= ' error';
         }
 
-        $title = html_writer::tag('label', get_string('criterion', 'gradingform_guide'),
-            array('for'=>'{NAME}[criteria][{CRITERION-id}][shortname]', 'class' => 'criterionnamelabel'));
-        $title .= $shortname;
+        $titlelabelparams = array(
+            'class' => 'criterionnamelabel',
+            'id' => 'criterionnamelabel{CRITERION-id}'
+        );
+        $titlelabel = html_writer::label(get_string('criterion', 'gradingform_guide'),
+                                         '{NAME}-criteria-{CRITERION-id}-shortname', false, $titlelabelparams);
+        $title = $titlelabel . $shortname;
         if ($mode == gradingform_guide_controller::DISPLAY_EDIT_FULL ||
             $mode == gradingform_guide_controller::DISPLAY_PREVIEW) {
             $title .= html_writer::tag('label', get_string('descriptionstudents', 'gradingform_guide'),
@@ -180,8 +196,20 @@ class gradingform_guide_renderer extends plugin_renderer_base {
         } else {
             $title .= $description . $descriptionmarkers;
         }
-        $criteriontemplate .= html_writer::tag('td', $title, array('class' => $descriptionclass,
-            'id' => '{NAME}-criteria-{CRITERION-id}-shortname'));
+
+        // Title cell params.
+        $titletdparams = array(
+            'class' => $descriptionclass,
+            'id' => '{NAME}-criteria-{CRITERION-id}-shortname-cell'
+        );
+
+        if ($mode != gradingform_guide_controller::DISPLAY_EDIT_FULL &&
+            $mode != gradingform_guide_controller::DISPLAY_EDIT_FROZEN) {
+            // Set description's cell as tab-focusable.
+            $titletdparams['tabindex'] = '0';
+        }
+
+        $criteriontemplate .= html_writer::tag('td', $title, $titletdparams);
 
         $currentremark = '';
         $currentscore = '';
@@ -191,23 +219,77 @@ class gradingform_guide_renderer extends plugin_renderer_base {
         if (isset($value['score'])) {
             $currentscore = $value['score'];
         }
+
+        // Element ID of the remark text area.
+        $remarkid = $elementname . '-criteria-' . $criterion['id'] . '-remark';
+
+        // Hidden marking guide remark label.
+        $remarklabelparams = array(
+            'class' => 'accesshide',
+            'id' => 'remarklabel{CRITERION-id}'
+        );
+        $remarklabeltext = get_string('markingguideremark', 'gradingform_guide', $criterion['shortname']);
+        $remarklabel = html_writer::label($remarklabeltext, $remarkid, false, $remarklabelparams);
+
+        // Hidden score label.
+        $scorelabelparams = array(
+            'class' => 'accesshide',
+            'id' => 'scorelabel{CRITERION-id}'
+        );
+        $scorelabeltext = get_string('score', 'gradingform_guide');
+        $scorelabel = html_writer::label($scorelabeltext, '{NAME}-criteria-{CRITERION-id}-score', false, $scorelabelparams);
+
         if ($mode == gradingform_guide_controller::DISPLAY_EVAL) {
             $scoreclass = '';
             if (!empty($validationerrors[$criterion['id']]['score'])) {
                 $scoreclass = 'error';
                 $currentscore = $validationerrors[$criterion['id']]['score']; // Show invalid score in form.
             }
-            $input = html_writer::tag('textarea', s($currentremark),
-                array('name' => '{NAME}[criteria][{CRITERION-id}][remark]', 'cols' => '65', 'rows' => '5',
-                      'class' => 'markingguideremark'));
-            $criteriontemplate .= html_writer::tag('td', $input, array('class' => 'remark'));
-            $score = html_writer::tag('label', get_string('score', 'gradingform_guide'),
-                array('for'=>'{NAME}[criteria][{CRITERION-id}][score]', 'class' => $scoreclass));
-            $score .= html_writer::empty_tag('input', array('type'=> 'text',
-                'name' => '{NAME}[criteria][{CRITERION-id}][score]', 'class' => $scoreclass,
-                'id' => '{NAME}[criteria][{CRITERION-id}][score]',
-                'size' => '3', 'value' => $currentscore));
-            $score .= '/'.$maxscore;
+
+            // Grading remark text area parameters.
+            $remarkparams = array(
+                'name' => '{NAME}[criteria][{CRITERION-id}][remark]',
+                'id' => $remarkid,
+                'cols' => '65', 'rows' => '5', 'class' => 'markingguideremark',
+                'aria-labelledby' => 'remarklabel{CRITERION-id}'
+            );
+
+            // Grading remark text area.
+            $input = html_writer::tag('textarea', s($currentremark), $remarkparams);
+
+            // Frequently used comments chooser.
+            $chooserbuttonid = 'criteria-' . $criterion['id'] . '-commentchooser';
+            $commentchooserparams = array('id' => $chooserbuttonid, 'class' => 'commentchooser');
+            $commentchooser = html_writer::tag('button', get_string('insertcomment', 'gradingform_guide'), $commentchooserparams);
+
+            // Option items for the frequently used comments chooser dialog.
+            $commentoptions = array();
+            foreach ($comments as $id => $comment) {
+                $commentoption = new stdClass();
+                $commentoption->id = $id;
+                $commentoption->description = s($comment['description']);
+                $commentoptions[] = $commentoption;
+            }
+
+            // Include string for JS for the comment chooser title.
+            $PAGE->requires->string_for_js('insertcomment', 'gradingform_guide');
+            // Include comment_chooser module.
+            $PAGE->requires->js_call_amd('gradingform_guide/comment_chooser', 'initialise',
+                                         array($criterion['id'], $chooserbuttonid, $remarkid, $commentoptions));
+
+            $criteriontemplate .= html_writer::tag('td', $remarklabel . $input . $commentchooser, array('class' => 'remark'));
+
+            // Score input and max score.
+            $scoreinputparams = array(
+                'type' => 'text',
+                'name' => '{NAME}[criteria][{CRITERION-id}][score]',
+                'class' => $scoreclass,
+                'id' => '{NAME}-criteria-{CRITERION-id}-score',
+                'size' => '3',
+                'value' => $currentscore
+            );
+            $score = $scorelabel . html_writer::empty_tag('input', $scoreinputparams);
+            $score .= html_writer::div('/' . s($criterion['maxscore']));
 
             $criteriontemplate .= html_writer::tag('td', $score, array('class' => 'score'));
         } else if ($mode == gradingform_guide_controller::DISPLAY_EVAL_FROZEN) {
@@ -215,10 +297,25 @@ class gradingform_guide_renderer extends plugin_renderer_base {
                 'name' => '{NAME}[criteria][{CRITERION-id}][remark]', 'value' => $currentremark));
         } else if ($mode == gradingform_guide_controller::DISPLAY_REVIEW ||
             $mode == gradingform_guide_controller::DISPLAY_VIEW) {
-            $criteriontemplate .= html_writer::tag('td', s($currentremark), array('class' => 'remark'));
+
+            // Remarks cell.
+            $remarkdiv = html_writer::div(s($currentremark));
+            $remarkcellparams = array(
+                'class' => 'remark',
+                'tabindex' => '0',
+                'id' => '{NAME}-criteria-{CRITERION-id}-remark'
+            );
+            $criteriontemplate .= html_writer::tag('td', $remarklabel . $remarkdiv, $remarkcellparams);
+
+            // Score cell.
             if (!empty($options['showmarkspercriterionstudents'])) {
-                $criteriontemplate .= html_writer::tag('td', s($currentscore). ' / '.$maxscore,
-                    array('class' => 'score'));
+                $scorecellparams = array(
+                    'class' => 'score',
+                    'tabindex' => '0',
+                    'id' => '{NAME}-criteria-{CRITERION-id}-score'
+                );
+                $scorediv = html_writer::div(s($currentscore) . ' / ' . s($criterion['maxscore']));
+                $criteriontemplate .= html_writer::tag('td', $scorelabel . $scorediv, $scorecellparams);
             }
         }
         $criteriontemplate .= html_writer::end_tag('tr'); // Criterion.
@@ -270,14 +367,16 @@ class gradingform_guide_renderer extends plugin_renderer_base {
                 $value = get_string('comments'.$key, 'gradingform_guide');
                 $button = html_writer::empty_tag('input', array('type' => 'submit',
                     'name' => '{NAME}[comments][{COMMENT-id}]['.$key.']', 'id' => '{NAME}-comments-{COMMENT-id}-'.$key,
-                    'value' => $value, 'title' => $value, 'tabindex' => -1));
+                    'value' => $value, 'title' => $value));
                 $criteriontemplate .= html_writer::tag('div', $button, array('class' => $key));
             }
             $criteriontemplate .= html_writer::end_tag('td'); // Controls.
             $criteriontemplate .= html_writer::empty_tag('input', array('type' => 'hidden',
                 'name' => '{NAME}[comments][{COMMENT-id}][sortorder]', 'value' => $comment['sortorder']));
             $description = html_writer::tag('textarea', s($comment['description']),
-                array('name' => '{NAME}[comments][{COMMENT-id}][description]', 'cols' => '65', 'rows' => '5'));
+                array('name' => '{NAME}[comments][{COMMENT-id}][description]',
+                      'id' => '{NAME}-comments-{COMMENT-id}-description',
+                      'aria-labelledby' => 'label-comments', 'cols' => '65', 'rows' => '5'));
             $description = html_writer::tag('div', $description, array('class'=>'criteriondesc'));
         } else {
             if ($mode == gradingform_guide_controller::DISPLAY_EDIT_FROZEN) {
@@ -301,8 +400,16 @@ class gradingform_guide_renderer extends plugin_renderer_base {
         if (isset($comment['error_description'])) {
             $descriptionclass .= ' error';
         }
-        $criteriontemplate .= html_writer::tag('td', $description, array('class' => $descriptionclass,
-            'id' => '{NAME}-comments-{COMMENT-id}-description'));
+        $descriptioncellparams = array(
+            'class' => $descriptionclass,
+            'id' => '{NAME}-comments-{COMMENT-id}-description-cell'
+        );
+        // Make description cell tab-focusable when in review mode.
+        if ($mode != gradingform_guide_controller::DISPLAY_EDIT_FULL &&
+            $mode != gradingform_guide_controller::DISPLAY_EDIT_FROZEN) {
+            $descriptioncellparams['tabindex'] = '0';
+        }
+        $criteriontemplate .= html_writer::tag('td', $description, $descriptioncellparams);
         $criteriontemplate .= html_writer::end_tag('tr'); // Criterion.
 
         $criteriontemplate = str_replace('{NAME}', $elementname, $criteriontemplate);
@@ -356,7 +463,12 @@ class gradingform_guide_renderer extends plugin_renderer_base {
                 break;
         }
 
-        $guidetemplate = html_writer::start_tag('div', array('id' => 'guide-{NAME}',
+        // Hidden guide label.
+        $guidelabelparams = array('class' => 'accesshide');
+        $guidelabel = html_writer::label(get_string('guide', 'gradingform_guide'), 'guide-{NAME}', false, $guidelabelparams);
+        $guidetemplate = $guidelabel;
+
+        $guidetemplate .= html_writer::start_tag('div', array('id' => 'guide-{NAME}',
             'class' => 'clearfix gradingform_guide'.$classsuffix));
         $guidetemplate .= html_writer::tag('table', $criteriastr, array('class' => 'criteria', 'id' => '{NAME}-criteria'));
         if ($mode == gradingform_guide_controller::DISPLAY_EDIT_FULL) {
@@ -368,13 +480,13 @@ class gradingform_guide_renderer extends plugin_renderer_base {
 
         if (!empty($commentstr)) {
             $guidetemplate .= html_writer::tag('label', get_string('comments', 'gradingform_guide'),
-                array('for' => '{NAME}-comments', 'class' => 'commentheader'));
+                array('for' => '{NAME}-comments', 'class' => 'commentheader', 'id' => 'label-comments'));
             $guidetemplate .= html_writer::tag('table', $commentstr, array('class' => 'comments', 'id' => '{NAME}-comments'));
         }
         if ($mode == gradingform_guide_controller::DISPLAY_EDIT_FULL) {
             $value = get_string('addcomment', 'gradingform_guide');
             $input = html_writer::empty_tag('input', array('type' => 'submit', 'name' => '{NAME}[comments][addcomment]',
-                'id' => '{NAME}-comments-addcomment', 'value' => $value, 'title' => $value));
+                'id' => '{NAME}-comments-addcomment', 'value' => $value, 'title' => $value, 'aria-labelledby' => 'label-comments'));
             $guidetemplate .= html_writer::tag('div', $input, array('class' => 'addcomment'));
         }
 
@@ -481,24 +593,25 @@ class gradingform_guide_renderer extends plugin_renderer_base {
                 $criterionvalue = null;
             }
             $criteriastr .= $this->criterion_template($mode, $options, $elementname, $criterion, $criterionvalue,
-                                                      $validationerrors);
+                                                      $validationerrors, $comments);
         }
+
+        $output = '';
         $cnt = 0;
         $commentstr = '';
         // Check if comments should be displayed.
         if ($mode == gradingform_guide_controller::DISPLAY_EDIT_FULL ||
             $mode == gradingform_guide_controller::DISPLAY_EDIT_FROZEN ||
             $mode == gradingform_guide_controller::DISPLAY_PREVIEW ||
-            $mode == gradingform_guide_controller::DISPLAY_EVAL ||
             $mode == gradingform_guide_controller::DISPLAY_EVAL_FROZEN) {
 
             foreach ($comments as $id => $comment) {
                 $comment['id'] = $id;
                 $comment['class'] = $this->get_css_class_suffix($cnt++, count($comments) -1);
-                $commentstr  .= $this->comment_template($mode, $elementname, $comment);
+                $commentstr .= $this->comment_template($mode, $elementname, $comment);
             }
         }
-        $output = $this->guide_template($mode, $options, $elementname, $criteriastr, $commentstr);
+        $output .= $this->guide_template($mode, $options, $elementname, $criteriastr, $commentstr);
         if ($mode == gradingform_guide_controller::DISPLAY_EVAL) {
             $showdesc = get_user_preferences('gradingform_guide-showmarkerdesc', true);
             $showdescstud = get_user_preferences('gradingform_guide-showstudentdesc', true);
@@ -613,7 +726,7 @@ class gradingform_guide_renderer extends plugin_renderer_base {
      * @return string
      */
     public function display_regrade_confirmation($elementname, $changelevel, $value) {
-        $html = html_writer::start_tag('div', array('class' => 'gradingform_guide-regrade'));
+        $html = html_writer::start_tag('div', array('class' => 'gradingform_guide-regrade', 'role' => 'alert'));
         if ($changelevel<=2) {
             $html .= get_string('regrademessage1', 'gradingform_guide');
             $selectoptions = array(
