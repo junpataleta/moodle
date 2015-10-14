@@ -911,6 +911,7 @@ class assign_grading_table extends table_sql implements renderable {
 
         $group = false;
         $submission = false;
+        $timesubmitted = false;
         $this->get_group_and_submission($row->id, $group, $submission, -1);
 
         if ($instance->teamsubmission && !$group && !$instance->preventsubmissionnotingroup) {
@@ -918,11 +919,18 @@ class assign_grading_table extends table_sql implements renderable {
         }
 
         if ($group && $submission) {
-            $timesubmitted = $submission->timemodified;
+            if ($submission->status == ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
+                $timesubmitted = $submission->timemodified;
+            }
             $status = $submission->status;
         } else {
-            $timesubmitted = $row->timesubmitted;
+            if (!empty($submission->status) && $submission->status == ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
+                $timesubmitted = $row->timesubmitted;
+            }
             $status = $row->status;
+        }
+        if ($status == ASSIGN_SUBMISSION_STATUS_NEW) {
+            $status = '';
         }
 
         if ($this->assignment->is_any_submission_plugin_enabled()) {
