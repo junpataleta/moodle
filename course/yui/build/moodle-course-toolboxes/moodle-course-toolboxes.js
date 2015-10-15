@@ -423,17 +423,25 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
 
         // Handle removal/addition of the moveleft button.
         if (newindent === INDENTLIMITS.MIN) {
-            button.addClass('hidden');
+            button
+                .addClass('hidden')
+                .setAttribute('aria-hidden', 'true');
             remainingmove = activity.one('.editing_moveright');
         } else if (newindent > INDENTLIMITS.MIN && oldindent === INDENTLIMITS.MIN) {
-            button.ancestor('.menu').one('[data-action=moveleft]').removeClass('hidden');
+            button.ancestor('.menu').one('[data-action=moveleft]')
+                .removeClass('hidden')
+                .setAttribute('aria-hidden', 'false');
         }
 
         if (newindent === INDENTLIMITS.MAX) {
-            button.addClass('hidden');
+            button
+                .addClass('hidden')
+                .setAttribute('aria-hidden', 'true');
             remainingmove = activity.one('.editing_moveleft');
         } else if (newindent < INDENTLIMITS.MAX && oldindent === INDENTLIMITS.MAX) {
-            button.ancestor('.menu').one('[data-action=moveright]').removeClass('hidden');
+            button.ancestor('.menu').one('[data-action=moveright]')
+                .removeClass('hidden')
+                .setAttribute('aria-hidden', 'false');
         }
 
         // Handle massive indentation to match non-ajax display

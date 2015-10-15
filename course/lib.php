@@ -2075,14 +2075,21 @@ function course_get_cm_edit_actions(cm_info $mod, $indent = -1, $sr = null) {
 
         if ($indent <= $indentlimits->min) {
             $enabledclass = 'hidden';
+            $ariahidden = true;
         } else {
             $enabledclass = '';
+            $ariahidden = false;
         }
         $actions['moveleft'] = new action_menu_link_secondary(
             new moodle_url($baseurl, array('id' => $mod->id, 'indent' => '-1')),
             new pix_icon($leftarrow, $str->moveleft, 'moodle', array('class' => 'iconsmall', 'title' => '')),
             $str->moveleft,
-            array('class' => 'editing_moveleft ' . $enabledclass, 'data-action' => 'moveleft', 'data-keepopen' => true)
+            array(
+                'class' => 'editing_moveleft ' . $enabledclass,
+                'data-action' => 'moveleft',
+                'data-keepopen' => true,
+                'aria-hidden' => $ariahidden,
+            )
         );
 
     }
