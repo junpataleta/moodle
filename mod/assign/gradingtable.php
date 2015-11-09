@@ -924,10 +924,13 @@ class assign_grading_table extends table_sql implements renderable {
             }
             $status = $submission->status;
         } else {
-            if (!empty($submission->status) && $submission->status == ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
+            $status = $row->status;
+            if (!empty($submission->status)) {
+                $status = $submission->status;
+            }
+            if ($status == ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
                 $timesubmitted = $row->timesubmitted;
             }
-            $status = $row->status;
         }
         if ($status == ASSIGN_SUBMISSION_STATUS_NEW) {
             $status = '';
