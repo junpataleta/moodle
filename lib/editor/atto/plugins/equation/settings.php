@@ -158,7 +158,7 @@ if ($ADMIN->fulltree) {
 (a)
 [a]
 \lbrace{a}\rbrace
-\left| \begin{matrix} a_1 & a_2 \\ a_3 & a_4 \end{matrix} \right|
+\left| \begin{matrix} a_1 & a_2 \\\\ a_3 & a_4 \end{matrix} \right|
 ';
     $setting = new admin_setting_configtextarea('atto_equation/librarygroup4',
                                                 $name,
