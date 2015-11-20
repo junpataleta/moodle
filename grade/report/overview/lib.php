@@ -87,7 +87,7 @@ class grade_report_overview extends grade_report {
         $this->user = $DB->get_record('user', array('id' => $userid));
 
         // Load the user's courses.
-        $this->courses = enrol_get_users_courses($this->user->id, false, 'id, shortname, showgrades');
+        $this->courses = enrol_get_users_courses($this->user->id, true, 'id, shortname, showgrades');
 
         $this->showrank = array();
         $this->showrank['any'] = false;
