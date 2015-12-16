@@ -1,0 +1,108 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_threesixty/list_360_items
+
+    Moodle template to the template library
+
+    The purpose of this template is build the entire page for the template library (by including smaller templates).
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * addtext - Label for the add item button.
+    * allitems - Array of all the 360-degree feedback items.
+
+    Example context (json):
+    {
+        "addtext" : "Add new item",
+        "allitems": [
+            {
+                "question" : "Is reliable.",
+                "type" : "Rated",
+                "editlink" : "Edit",
+                "deletelink" : "Delete",
+                "movedownlink" : "Move down"
+            },
+            {
+                "question" : "Has high technical skills.",
+                "type" : "Rated",
+                "editlink" : "Edit",
+                "deletelink" : "Delete",
+                "moveuplink" : "Move up",
+                "movedownlink" : "Move down"
+            },
+            {
+                "question" : "What can you say about him?",
+                "type" : "Comment",
+                "editlink" : "Edit",
+                "deletelink" : "Delete",
+                "moveuplink" : "Move up"
+            }
+        ]
+    }
+}}
+<div class="panel panel-default">
+    <div class="panel-body">
+        <table class="flexible generaltable generalbox">
+            <thead>
+            <tr>
+                <th class="span4">Question</th>
+                <th class="span4">Type</th>
+                <th class="span4">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{# allitems }}
+                <tr class="user3 unselectedrow">
+                    <td>
+                        {{ question }}
+                    </td>
+                    <td>
+                        <span class="label">{{ type }}</span>
+                    </td>
+                    <td>
+                        {{# editlink }}
+                            <span class="icon">{{{ editlink }}}</span>
+                            &nbsp;
+                        {{/editlink}}
+
+                        {{# deletelink }}
+                            <span class="icon">{{{ deletelink }}}</span>
+                            &nbsp;
+                        {{/deletelink}}
+
+                        {{# moveuplink }}
+                            <span class="icon">{{{ moveuplink }}}</span>
+                            &nbsp;
+                        {{/moveuplink}}
+
+                        {{# movedownlink }}
+                            <span class="icon">{{{ movedownlink }}}</span>
+                            &nbsp;
+                        {{/movedownlink}}
+                    </td>
+                </tr>
+            {{/ allitems }}
+            </tbody>
+        </table>
+    </div>
+</div>
