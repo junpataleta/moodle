@@ -42,31 +42,6 @@ define(['jquery', 'core/templates', 'core/notification', 'core/yui'], function (
         initialise: function (criterionId, buttonId, remarkId, commentOptions) {
             var chooserDialog;
 
-                // Bind click event for the comments chooser button.
-            $("#" + buttonId).click(function (e) {
-                e.preventDefault();
-
-                generateCommentsChooser();
-            });
-
-            /**
-             * Generates the comments chooser dialog from the grading_form/comment_chooser mustache template.
-             */
-            function generateCommentsChooser() {
-                // Template context.
-                var context = {
-                    criterionId: criterionId,
-                    comments: commentOptions
-                };
-
-                // Render the template and display the comment chooser dialog.
-                templates.render('gradingform_guide/comment_chooser', context)
-                    .done(function (compiledSource) {
-                        displayChooserDialog(compiledSource, commentOptions);
-                    })
-                    .fail(notification.exception);
-            }
-
             /**
              * Display the chooser dialog using the compiled HTML from the mustache template
              * and binds onclick events for the generated comment options.
@@ -82,16 +57,16 @@ define(['jquery', 'core/templates', 'core/notification', 'core/yui'], function (
                 if (typeof chooserDialog === 'undefined') {
                     // Set dialog's body content.
                     chooserDialog = new M.core.dialogue({
-                            modal: true,
-                            headerContent: titleLabel,
-                            bodyContent: compiledSource,
-                            footerContent: cancelButton,
-                            focusAfterHide: '#' + remarkId,
-                            id: "comments-chooser-dialog-" + criterionId
-                        });
+                        modal: true,
+                        headerContent: titleLabel,
+                        bodyContent: compiledSource,
+                        footerContent: cancelButton,
+                        focusAfterHide: '#' + remarkId,
+                        id: "comments-chooser-dialog-" + criterionId
+                    });
 
                     // Bind click event to the cancel button.
-                    $(document).off('click', "#" + cancelButtonId).on('click', "#" + cancelButtonId, function() {
+                    $("#" + cancelButtonId).click(function() {
                         if (typeof chooserDialog !== 'undefined') {
                             chooserDialog.hide();
                         }
@@ -102,8 +77,7 @@ define(['jquery', 'core/templates', 'core/notification', 'core/yui'], function (
                         var commentOptionId = '#comment-option-' + criterionId + '-' + comment.id;
 
                         // Delegate click event for the generated option link.
-                        // Turn its click event off before turning it on in order to fire the click event only once.
-                        $(document).off('click', commentOptionId).on('click', commentOptionId, function () {
+                        $(commentOptionId).click(function () {
                             var remarkTextArea = $('#' + remarkId);
                             var remarkText = remarkTextArea.val();
 
@@ -136,6 +110,31 @@ define(['jquery', 'core/templates', 'core/notification', 'core/yui'], function (
                 // Show dialog.
                 chooserDialog.show();
             }
+
+            /**
+             * Generates the comments chooser dialog from the grading_form/comment_chooser mustache template.
+             */
+            function generateCommentsChooser() {
+                // Template context.
+                var context = {
+                    criterionId: criterionId,
+                    comments: commentOptions
+                };
+
+                // Render the template and display the comment chooser dialog.
+                templates.render('gradingform_guide/comment_chooser', context)
+                    .done(function (compiledSource) {
+                        displayChooserDialog(compiledSource, commentOptions);
+                    })
+                    .fail(notification.exception);
+            }
+
+            // Bind click event for the comments chooser button.
+            $("#" + buttonId).click(function (e) {
+                e.preventDefault();
+
+                generateCommentsChooser();
+            });
         }
     };
 });
