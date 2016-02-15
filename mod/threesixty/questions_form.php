@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_threesixty\api;
+namespace mod_threesixty;
+
+use moodleform;
 
 /**
  * 360-degree feedback items management page form.
@@ -23,7 +25,7 @@ use mod_threesixty\api;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_threesixty
  */
-class mod_threesixty_edit_items_form extends moodleform {
+class edit_questions_form extends moodleform {
 
     /**
      * Form definition. Abstract method - always override!

@@ -54,20 +54,20 @@
 <div class="panel panel-default">
     <div class="panel-body">
         <div>
-            <input type="text" class="form-control" id="question" value="{{ question }}" placeholder="{{ placeholdertext }}"/>
+            <textarea class="form-control" id="question-input" placeholder="{{ placeholderText }}" cols="44" rows="5">{{ question }}</textarea>
         </div>
         <div>
-            <select id="question-type">
-            {{ # questiontypes }}
-                <option value="{{typeval}}" {{# selected }}selected="selected"{{/selected}}>
-                    {{name}}
+            <select id="question-type-select">
+            {{ # questionTypes }}
+                <option value="{{typeVal}}" {{# selected }}selected="selected"{{/selected}}>
+                    {{typeName}}
                 </option>
-            {{/ questiontypes }}
+            {{/ questionTypes }}
             </select>
         </div>
         <div>
-            <button id="btnsubmit" class="btn-primary">{{ savetext }}</button>
-            <button id="btncancel" class="btn-cancel">{{ canceltext }}</button>
+            <button id="btn-save-question" class="btn btn-primary">{{ lblSave }}</button>
+            <button id="btn-cancel-question-input" class="btn btn-cancel">{{ lblCancel }}</button>
         </div>
     </div>
 </div>

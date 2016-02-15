@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_threesixty\output\list_360_members;
+
 /**
  * The first page to view the 360-degree feedback.
  *
@@ -21,7 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_threesixty
  */
-require('../../config.php');
+require_once('../../config.php');
 require_once('lib.php');
 
 global $CFG, $DB, $PAGE, $OUTPUT;
@@ -29,17 +31,17 @@ global $CFG, $DB, $PAGE, $OUTPUT;
 $id = required_param('id', PARAM_INT);
 list ($course, $cm) = get_course_and_cm_from_cmid($id, 'threesixty');
 $context = context_module::instance($cm->id);
-$threesixty = $DB->get_record('threesixty', array('id'=> $cm->instance), '*', MUST_EXIST);
+$threesixty = $DB->get_record('threesixty', array('id' => $cm->instance), '*', MUST_EXIST);
 
 /// Print the page header
 $strfeedbacks = get_string("modulenameplural", "threesixty");
-$strfeedback  = get_string("modulename", "threesixty");
+$strfeedback = get_string("modulename", "threesixty");
 
 $PAGE->set_context($context);
 $PAGE->set_cm($cm, $course);
 $PAGE->set_pagelayout('incourse');
 
-$PAGE->set_url('/mod/threesixty/view.php', array('id'=>$cm->id, 'do_show'=>'view'));
+$PAGE->set_url('/mod/threesixty/view.php', array('id' => $cm->id, 'do_show' => 'view'));
 $PAGE->set_title($threesixty->name);
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
@@ -54,9 +56,8 @@ if (has_capability('mod/threesixty:edititems', $context)) {
 }
 
 // 360-degree feedback To-do list.
-$memberslist = new \mod_threesixty\output\list_360_members($id, $course->id, $threesixty->id);
+$memberslist = new list_360_members($id, $course->id, $threesixty->id);
 $memberslistoutput = $PAGE->get_renderer('mod_threesixty');
 echo $memberslistoutput->render($memberslist);
 
 echo $OUTPUT->footer();
-

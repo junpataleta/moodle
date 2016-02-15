@@ -25,6 +25,7 @@ namespace mod_threesixty\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+use mod_threesixty\api;
 use renderable;
 use renderer_base;
 use templatable;
@@ -90,16 +91,16 @@ class list_360_members implements \renderable, \templatable {
                 $viewonly = false;
                 $declined = false;
                 switch ($user->status) {
-                    case \mod_threesixty\constants::STATUS_IN_PROGRESS: // In Progress
+                    case api::STATUS_IN_PROGRESS: // In Progress
                         $member->statusclass = 'label-info';
                         $member->status = get_string('statusinprogress', 'threesixty');
                         break;
-                    case \mod_threesixty\constants::STATUS_COMPLETE: // Completed
+                    case api::STATUS_COMPLETE: // Completed
                         $member->statusclass = 'label-success';
                         $member->status = get_string('statuscompleted', 'threesixty');
                         $viewonly = true;
                         break;
-                    case \mod_threesixty\constants::STATUS_DECLINED: // Declined
+                    case api::STATUS_DECLINED: // Declined
                         $member->statusclass = 'label-warning';
                         $member->status = get_string('statusdeclined', 'threesixty');
                         $declined = true;

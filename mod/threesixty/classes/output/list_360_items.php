@@ -30,6 +30,7 @@ use renderer_base;
 use templatable;
 use stdClass;
 use moodle_url;
+use mod_threesixty\api;
 use html_writer;
 
 /**
@@ -69,12 +70,18 @@ class list_360_items implements \renderable, \templatable {
         $data = new stdClass();
         $data->allitems = array();
         $data->addtext = get_string('additem', 'mod_threesixty');
-        $itemssql = 'SELECT i.id, i.question, i.type, i.position
-                      FROM {threesixty_item} i
-                      INNER JOIN {threesixty} t ON i.id = t.id
-                      WHERE t.id = :threesixtyid
-                      ORDER BY i.position ASC';
-        $itemssqlparams = array("threesixtyid" => $this->threesixtyid);
+        $itemssql = 'SELECT
+                        i.id,
+                        q.question,
+                        q.type,
+                        i.position
+                     FROM {threesixty_item} i, {threesixty} t, {threesixty_question} q
+                     WHERE
+                        t.id = i.threesixty AND
+                        q.id = i.question AND
+                        t.id = :threesixtyid
+                     ORDER BY i.position ASC';
+        $itemssqlparams = array('threesixtyid' => $this->threesixtyid);
         if ($items = $DB->get_records_sql($itemssql, $itemssqlparams)) {
             $output = $PAGE->get_renderer('mod_threesixty');
 
@@ -87,6 +94,19 @@ class list_360_items implements \renderable, \templatable {
 
                 // Question column.
                 $listitem->question = $item->question;
+
+                // Question type.
+                switch ($item->type) {
+                    case api::QTYPE_RATED:
+                        $qtype = get_string('qtyperated', 'threesixty');
+                        break;
+                    case api::QTYPE_COMMENT:
+                        $qtype = get_string('qtypecomment', 'threesixty');
+                        break;
+                    default:
+                        $qtype = '';
+                }
+                $listitem->type = $qtype;
 
                 // Action buttons column
                 // Show action buttons depending on status.

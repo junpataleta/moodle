@@ -18,15 +18,19 @@
  * Library of functions and constants for module feedback
  * includes the main-part of feedback-functions
  *
- * @package mod_feedback
+ * @package mod_threesixty
  * @copyright Andreas Grabs
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
 // Include forms lib.
 require_once($CFG->libdir.'/formslib.php');
+
+define('MOVE_UP', 1);
+define('MOVE_DOWN', 2);
 
 /**
  * Adds a new 360-degree feedback instance.
@@ -172,26 +176,27 @@ function threesixty_save_values($feedbackcompletedtmp, $statusid) {
     $DB->delete_records('feedback_completedtmp', array('id'=>$tmpcplid));
 
     if ($statusrecord) {
-        $statusrecord->status = \mod_feedback\constants::STATUS_COMPLETE;
+        $statusrecord->status = \mod_threesixty\constants::STATUS_COMPLETE;
         $DB->update_record('threesixty_status', $statusrecord);
     }
 
+    // TODO Event
     // Trigger event for the delete action we performed.
-    $cm = get_coursemodule_from_instance('feedback', $feedbackcompletedtmp->feedback);
-    $event = \mod_feedback\event\response_submitted::create(array(
-        'relateduserid' => $USER->id,
-        'objectid' => $feedbackcompletedtmp->id,
-        'context' => context_module::instance($cm->id),
-        'anonymous' => ($feedbackcompletedtmp->anonymous_response == FEEDBACK_ANONYMOUS_YES),
-        'other' => array(
-            'cmid' => $cm->id,
-            'instanceid' => $feedbackcompletedtmp->feedback,
-            'anonymous' => $feedbackcompletedtmp->anonymous_response // Deprecated.
-        )
-    ));
-
-    $event->add_record_snapshot('threesixty_status', $statusrecord);
-    $event->trigger();
+//    $cm = get_coursemodule_from_instance('feedback', $feedbackcompletedtmp->feedback);
+//    $event = \mod_threesixty\event\response_submitted::create(array(
+//        'relateduserid' => $USER->id,
+//        'objectid' => $feedbackcompletedtmp->id,
+//        'context' => context_module::instance($cm->id),
+//        'anonymous' => ($feedbackcompletedtmp->anonymous_response == FEEDBACK_ANONYMOUS_YES),
+//        'other' => array(
+//            'cmid' => $cm->id,
+//            'instanceid' => $feedbackcompletedtmp->feedback,
+//            'anonymous' => $feedbackcompletedtmp->anonymous_response // Deprecated.
+//        )
+//    ));
+//
+//    $event->add_record_snapshot('threesixty_status', $statusrecord);
+//    $event->trigger();
 
     return $statusrecord->id;
 }
@@ -199,20 +204,83 @@ function threesixty_save_values($feedbackcompletedtmp, $statusid) {
 function threesixty_count_todos($feedbackid, $userid) {
     global $DB;
 
-    list($statuses, $params) = $DB->get_in_or_equal(array(\mod_feedback\constants::STATUS_PENDING, \mod_feedback\constants::STATUS_IN_PROGRESS));
+    list($statuses, $params) = $DB->get_in_or_equal(array(\mod_threesixty\constants::STATUS_PENDING, \mod_threesixty\constants::STATUS_IN_PROGRESS));
 
     $params = array_merge(array($feedbackid, $userid), $params);
 
     return $DB->count_records_select('threesixty_status', 'feedback = ? AND fromuser = ? AND status ' . $statuses, $params);
 }
 
-function threesixty_add_item(stdClass $data) {
+function threesixty_save_item(stdClass $data) {
     global $DB;
 
     $item = new stdClass();
-    $item->threesixty = $data->threesixty;
+    $item->threesixty = $data->threesixtyid;
     $item->question = $data->question;
-    $item->type = $data->type;
+    $item->type = $data->questiontype;
 
-    $position = $DB->get_records('threesixty_item', array('threesixty' => $item->threesixty), array('position'));
+    // Insert or update the record.
+    if ($data->itemid) {
+        $item->id = $data->itemid;
+        return $DB->update_record('threesixty_item', $item);
+    } else {
+        $position = 1;
+        if ($results = $DB->get_records('threesixty_item', array('threesixty' => $item->threesixty), 'position DESC', 'position', 0, 1)) {
+            foreach ($results as $resitem) {
+                $position = $resitem->position + 1;
+            }
+        }
+        $item->position = $position;
+        return $DB->insert_record('threesixty_item', $item);
+    }
+}
+
+function threesixty_move_item_up($itemid) {
+    return threesixty_move_item($itemid, MOVE_UP);
+}
+
+function threesixty_move_item_down($itemid) {
+    return threesixty_move_item($itemid, MOVE_DOWN);
+}
+
+function threesixty_move_item($itemid, $direction) {
+    global $DB;
+    $result = false;
+
+    // Get the feedback item.
+    if ($item = $DB->get_record('threesixty_item', ['id' => $itemid])) {
+        $oldposition = $item->position;
+        $itemcount = $DB->count_records('threesixty_item', ['threesixty' => $item->threesixty]);
+
+        switch ($direction) {
+            case MOVE_UP:
+                if ($item->position > 1) {
+                    $item->position--;
+                }
+                break;
+            case MOVE_DOWN:
+                if ($item->position < $itemcount) {
+                    $item->position++;
+                }
+                break;
+            default:
+                break;
+        }
+        // Update the item to be swapped.
+        if ($swapitem = $DB->get_record('threesixty_item', ['threesixty' => $item->threesixty, 'position' => $item->position])) {
+            $swapitem->position = $oldposition;
+            $result = $DB->update_record('threesixty_item', $swapitem);
+        }
+        // Update the item being moved.
+        $result = $result && $DB->update_record('threesixty_item', $item);
+    } else {
+        throw new moodle_exception('erroritemnotfound');
+    }
+
+    return $result;
+}
+
+function threesixty_delete_item($itemid) {
+    global $DB;
+    return $DB->delete_records('threesixty_item', ['id' => $itemid]);
 }

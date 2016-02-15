@@ -21,10 +21,15 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_threesixty
  */
+namespace mod_threesixty;
 
-require_once("../../config.php");
-require_once("lib.php");
-require_once('decline_360_form.php');
+use moodle_url;
+use context_module;
+use html_writer;
+
+//require_once("../../config.php");
+//require_once("lib.php");
+//require_once('decline_360_form.php');
 
 global $DB, $OUTPUT, $PAGE;
 
@@ -55,7 +60,7 @@ $context = context_module::instance($cm->id);
 
 require_login($course, true, $cm);
 
-$mform = new mod_threesixty_decline_360_form();
+$mform = new decline_360_form();
 $declineformdata = array('id' => $id, 'statusid' => $statusid, 'confirmdecline' => 1);
 $mform->set_data($declineformdata);
 $formdata = $mform->get_data();
@@ -69,7 +74,7 @@ if ($mform->is_cancelled()) {
 $statusrecord = $DB->get_record('threesixty_status', array('id' => $statusid));
 
 if (isset($formdata->confirmdecline) AND $formdata->confirmdecline == 1) {
-    if (threesixty_set_completion($statusid, \mod_threesixty\constants::STATUS_DECLINED)) {
+    if (threesixty_set_completion($statusid, api::STATUS_DECLINED)) {
         $redirurl = new moodle_url('view.php');
         $redirurl->param('id', $id);
         redirect($redirurl, get_string('messageafterdecline', 'threesixty'));

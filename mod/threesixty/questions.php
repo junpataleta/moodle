@@ -21,14 +21,11 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_threesixty
  */
-
 require_once("../../config.php");
 require_once("lib.php");
 require_once('edit_items_form.php');
 
-use mod_threesixty\external;
-use mod_threesixty\output\list_360_items;
-use mod_threesixty\api;
+use \mod_threesixty\output\list_360_items;
 
 global $DB, $OUTPUT, $PAGE;
 
@@ -116,36 +113,7 @@ $PAGE->set_title($threesixty->name);
 echo $OUTPUT->header();
 /// Print the main part of the page.
 echo $OUTPUT->heading(format_string($threesixty->name));
-
-// Question bank button.
-$questionbankbtnid = 'btn-question-bank';
-$questionchooserparams = array('id' => $questionbankbtnid, 'class' => 'commentchooser');
-echo html_writer::tag('button', get_string('labelpickfromquestionbank', 'mod_threesixty'), $questionchooserparams);
-
-// Include string for JS for the question chooser title.
-$jsstrings = [
-    'labelactions',
-    'labelcancel',
-    'labeldone',
-    'labelenterquestion',
-    'labelpick',
-    'labelpickfromquestionbank',
-    'labelquestion',
-    'labelquestiontype',
-    'labelsave',
-    'placeholderquestion',
-    'qtypecomment',
-    'qtyperated',
-];
-$PAGE->requires->strings_for_js($jsstrings, 'mod_threesixty');
-
-// Get question types.
-$questiontypes = api::get_question_types();
-
-// Include question_chooser module.
-$PAGE->requires->js_call_amd('mod_threesixty/question_bank', 'initialise', [$threesixty->id, $questiontypes]);
-
-//$mform->display();
+$mform->display();
 
 // 360-degree feedback item list.
 $itemslist = new list_360_items($instanceid, $course->id, $threesixty->id);
@@ -154,5 +122,4 @@ echo $itemslistoutput->render($itemslist);
 
 echo $OUTPUT->footer();
 
-
-//$PAGE->requires->js_call_amd('mod_threesixty/item_edit', 'initialise', $params);
+$PAGE->requires->js_call_amd('mod_threesixty/item_edit', 'initialise', $params);

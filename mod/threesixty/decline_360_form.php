@@ -14,13 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_threesixty;
+
+use moodleform;
+
 /**
  * Moodle form subclass for decline 360 feedback.
  *
  * @copyright  2015 Jun Pataleta
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_threesixty_decline_360_form extends moodleform {
+class decline_360_form extends moodleform {
 
     /**
      * Form definition. Abstract method - always override!
