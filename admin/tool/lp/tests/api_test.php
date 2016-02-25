@@ -3575,7 +3575,6 @@ class tool_lp_api_testcase extends advanced_testcase {
         $c2ctx = context_course::instance($c2->id);
 
         $teacher1 = $dg->create_user();
-        $noneditingteacher = $dg->create_user();
         $student1 = $dg->create_user();
         $student2 = $dg->create_user();
         $notstudent1 = $dg->create_user();
@@ -3672,16 +3671,71 @@ class tool_lp_api_testcase extends advanced_testcase {
         // Try to grade a user that is not enrolled, even though they are 'gradable'.
         $this->assertExceptionWithGradeCompetencyInCourse('coding_exception', 'The competency may not be rated at this time.',
             $c1->id, $notstudent1->id, $comp1->get_id());
+    }
 
-        // Non-Editing teacher can suggest grade in user competency.
-        $dg->role_assign($canviewucrole, $noneditingteacher->id, $c1ctx->id);
+    /**
+     * This tests the following competencies for the teacher and editing teacher archetypes when:
+     * - Viewing a user competency
+     * - Suggesting a grade for a competency
+     * - Grading a competency
+     */
+    public function test_teacher_archetype_capabilities() {
+        $this->resetAfterTest();
+        $dg = $this->getDataGenerator();
+
+        // Create a course.
+        $course = $dg->create_course();
+        $coursecontext = context_course::instance($course->id);
+
+        // Create a student and enrol into the course.
+        $student = $dg->create_user();
+        $studentarch = get_archetype_roles('student');
+        $studentrole = array_shift($studentarch);
+        $dg->role_assign($studentrole->id, $student->id, $coursecontext->id);
+        $dg->enrol_user($student->id, $course->id, $studentrole->id);
+
+        // Create a competency for the course.
+        $lpg = $dg->get_plugin_generator('tool_lp');
+        $framework = $lpg->create_framework();
+        $comp = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+        $lpg->create_course_competency(array('courseid' => $course->id, 'competencyid' => $comp->get_id()));
+
+        // Test suggest and grade capabilities for non-editing teacher role.
+        // Create non-editing teacher.
+        $noneditingteacher = $dg->create_user();
+        // Get non-editing teacher role from the 'teacher' archetype.
+        $noneditingteacherarch = get_archetype_roles('teacher');
+        $noneditingteacherrole = array_shift($noneditingteacherarch);
+        // Assign non-editing teacher role to the non-editing teacher.
+        $dg->role_assign($noneditingteacherrole->id, $noneditingteacher->id, $coursecontext->id);
+        // Set current user to the non-editing teacher.
         $this->setUser($noneditingteacher);
         accesslib_clear_all_caches_for_unit_testing();
+        // Assert that a non-editing teacher has the capability to view a user competency.
+        $this->assertTrue(has_capability('tool/lp:usercompetencyview', $coursecontext, $noneditingteacher));
+        // Assert that a non-editing teacher can suggest a grade for a competency.
+        $this->assertSuccessWithGradeCompetencyInCourse($course->id, $student->id, $comp->get_id(), 1, false);
+        // Assert that a non-editing teacher cannot grade a competency.
         $this->assertExceptionWithGradeCompetencyInCourse('required_capability_exception', 'Set competency grade',
-            $c1->id, $student1->id, $comp1->get_id());
-        // Give permission for non-editing teacher to suggest.
-        $dg->role_assign($cansuggestrole, $noneditingteacher->id, $c1ctx->id);
-        $this->assertSuccessWithGradeCompetencyInCourse($c1->id, $student1->id, $comp1->get_id(), 1, false);
+            $course->id, $student->id, $comp->get_id());
+
+        // Test suggest and grade capabilities for editing teacher role.
+        // Create editing teacher.
+        $editingteacher = $dg->create_user();
+        // Get editing teacher role from the 'editingteacher' archetype.
+        $editingteacherarch = get_archetype_roles('editingteacher');
+        $editingteacherrole = array_shift($editingteacherarch);
+        // Assign editing teacher role to the editing teacher.
+        $dg->role_assign($editingteacherrole->id, $editingteacher->id, $coursecontext->id);
+        // Set current user to the editing teacher.
+        $this->setUser($editingteacher);
+        accesslib_clear_all_caches_for_unit_testing();
+        // Assert that an editing teacher has the capability to view a user competency.
+        $this->assertTrue(has_capability('tool/lp:usercompetencyview', $coursecontext, $editingteacher));
+        // Assert that an editing teacher can suggest a grade for a competency.
+        $this->assertSuccessWithGradeCompetencyInCourse($course->id, $student->id, $comp->get_id(), 1, false);
+        // Assert that an editing teacher can grade a competency.
+        $this->assertSuccessWithGradeCompetencyInCourse($course->id, $student->id, $comp->get_id(), 1, true);
     }
 
     protected function assertSuccessWithGradeCompetencyInCourse($courseid, $userid, $compid, $grade = 1, $override = true) {
