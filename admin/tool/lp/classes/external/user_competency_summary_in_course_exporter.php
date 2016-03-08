@@ -38,12 +38,15 @@ class user_competency_summary_in_course_exporter extends exporter {
 
     protected static function define_related() {
         // We cache the context so it does not need to be retrieved from the framework every time.
-        return array('competency' => '\\tool_lp\\competency',
-                     'relatedcompetencies' => '\\tool_lp\\competency[]',
-                     'user' => '\\stdClass',
-                     'course' => '\\stdClass',
-                     'usercompetency' => '\\tool_lp\\user_competency?',
-                     'evidence' => '\\tool_lp\\evidence[]');
+        return array(
+            'competency' => '\\tool_lp\\competency',
+            'relatedcompetencies' => '\\tool_lp\\competency[]',
+            'user' => '\\stdClass',
+            'course' => '\\stdClass',
+            'usercompetency' => '\\tool_lp\\user_competency?',
+            'evidence' => '\\tool_lp\\evidence[]',
+            'usercompetencycourse' => '\\tool_lp\\user_competency_course?'
+        );
     }
 
     protected static function define_other_properties() {
@@ -57,7 +60,14 @@ class user_competency_summary_in_course_exporter extends exporter {
             'coursemodules' => array(
                 'type' => course_module_summary_exporter::read_properties_definition(),
                 'multiple' => true
-            )
+            ),
+            'suggestedrating' => array(
+                'type' => user_competency_course_exporter::read_properties_definition(),
+                'optional' => true
+            ),
+            'hasrating' => array(
+                'type' => PARAM_BOOL
+            ),
         );
     }
 
@@ -86,6 +96,20 @@ class user_competency_summary_in_course_exporter extends exporter {
             $exportedmodules[] = $cmexporter->export($output);
         }
         $result->coursemodules = $exportedmodules;
+
+        $hasrating = false;
+        if ($related['usercompetency'] && $related['usercompetency']->get_grade()) {
+            $hasrating = true;
+        }
+        // For the suggested rating and calculated proficiency.
+        if ($usercompcourse = $this->related['usercompetencycourse']) {
+            $scale = $this->related['competency']->get_framework()->get_scale();
+            $usercompcourseexporter = new user_competency_course_exporter($usercompcourse, ['scale' => $scale]);
+            $result->suggestedrating = $usercompcourseexporter->export($output);
+            $hasrating = true;
+        }
+        // Set flag to indicate if the user competency has suggested/final rating.
+        $result->hasrating = $hasrating;
 
         return (array) $result;
     }

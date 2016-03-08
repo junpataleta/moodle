@@ -34,6 +34,7 @@ use context_course;
 use tool_lp\api;
 use tool_lp\course_competency;
 use tool_lp\competency;
+use tool_lp\external\user_competency_course_exporter;
 use tool_lp\external\competency_exporter;
 use tool_lp\external\course_competency_exporter;
 use tool_lp\external\course_module_summary_exporter;
@@ -107,6 +108,7 @@ class course_competencies_page implements renderable, templatable {
 
         $gradable = is_enrolled($this->context, $USER, 'tool/lp:coursecompetencygradable');
         if ($gradable) {
+            $usercompetencycourserecs = api::list_user_competency_course_records($this->courseid, $USER->id);
             $usercompetencies = api::list_user_competencies_in_course($this->courseid, $USER->id);
             $data->gradableuserid = $USER->id;
         }
@@ -147,16 +149,30 @@ class course_competencies_page implements renderable, templatable {
                 'ruleoutcomeoptions' => $ccoutcomeoptions,
                 'coursemodules' => $exportedmodules
             );
+
+            $onerow['hasrating'] = false;
             if ($gradable) {
-                $foundusercompetency = false;
-                foreach ($usercompetencies as $usercompetency) {
-                    if ($usercompetency->get_competencyid() == $competency->get_id()) {
-                        $foundusercompetency = $usercompetency;
+                $exporterparams = ['scale' => $competency->get_scale()];
+                // Get user_competency_course record for the competency. (Suggested rating).
+                foreach ($usercompetencycourserecs as $usercompcourse) {
+                    if ($usercompcourse->get_competencyid() == $competency->get_id()) {
+                        $uccexporter = new user_competency_course_exporter($usercompcourse, $exporterparams);
+                        $onerow['usercompetencycourse'] = $uccexporter->export($output);
+                        $onerow['hasrating'] = true;
+                        break;
                     }
                 }
-                if ($foundusercompetency) {
-                    $exporter = new user_competency_exporter($foundusercompetency, array('scale' => $competency->get_scale()));
-                    $onerow['usercompetency'] = $exporter->export($output);
+
+                // Get user_competency_record. (Final rating).
+                foreach ($usercompetencies as $usercompetency) {
+                    if ($usercompetency->get_competencyid() == $competency->get_id()) {
+                        $exporter = new user_competency_exporter($usercompetency, $exporterparams);
+                        $onerow['usercompetency'] = $exporter->export($output);
+                        if ($onerow['usercompetency']->grade) {
+                            $onerow['hasrating'] = true;
+                        }
+                        break;
+                    }
                 }
             }
             array_push($data->competencies, $onerow);

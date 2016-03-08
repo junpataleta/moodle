@@ -36,6 +36,8 @@
         * usercompetency - user competency record
         * evidence - array of evidence
     * course - course summary record
+    * hasrating - boolean Flag to indicate whether the user proficiency has a sugggested/final rating.
+    * suggestedcompetency - object user_competency_course object.
 
     This template does not have an example context because it includes ajax functionality.
 }}
@@ -75,16 +77,18 @@
                 - {{reviewer.fullname}}
             {{/isstatusinreview}}
         </dd>
-        <dt>{{#str}}proficient, tool_lp{{/str}}</dt>
-        <dd>
-            <span class="label{{^proficiency}} label-important{{/proficiency}} pull-left">
-                {{proficiencyname}}
-            </span>
-        </dd>
         <dt>{{#str}}rating, tool_lp{{/str}}</dt>
-        <dd>{{gradename}}
+        <dd>
+            {{#hasrating}}
+                {{>tool_lp/rating_summary}}
+            {{/hasrating}}
+            {{^hasrating}}
+                <span class="label">
+                    {{#str}}notrated, tool_lp{{/str}}
+                </span>
+            {{/hasrating}}
             {{#cangradeorsuggest}}
-                <buttn class="btn" id="rate_{{uniqid}}">{{#str}}rate, tool_lp{{/str}}</button>
+                <button class="btn" id="rate_{{uniqid}}">{{#str}}rate, tool_lp{{/str}}</button>
             {{/cangradeorsuggest}}
         </dd>
         {{#js}}
@@ -132,6 +136,7 @@
             {{/evidence}}
         </dd>
     </dl>
+</div>
 </div>
 {{/usercompetencysummary}}
 

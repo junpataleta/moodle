@@ -24,6 +24,9 @@
 
 $string['competency'] = 'Competency';
 $string['coursecompetencybreakdownsummary'] = 'A report of all the students in the course, and their progress towards the course competencies';
+$string['final'] = 'Final';
+$string['notrated'] = 'Not rated';
 $string['pluginname'] = 'Competency breakdown';
 $string['rating'] = 'Rating';
+$string['suggested'] = 'Suggested';
 $string['usercompetencysummary'] = 'User competency summary';

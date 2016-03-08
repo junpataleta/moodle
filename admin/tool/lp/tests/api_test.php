@@ -2415,6 +2415,7 @@ class tool_lp_api_testcase extends advanced_testcase {
     public function test_add_evidence_for_user_competency_course_suggest_in_course() {
         global $USER;
         $this->resetAfterTest(true);
+        $this->setAdminUser();
         $dg = $this->getDataGenerator();
 
         // Create a course.
@@ -2477,6 +2478,7 @@ class tool_lp_api_testcase extends advanced_testcase {
         global $USER;
 
         $this->resetAfterTest(true);
+        $this->setAdminUser();
         $dg = $this->getDataGenerator();
 
         // Create a course.
@@ -4027,6 +4029,67 @@ class tool_lp_api_testcase extends advanced_testcase {
         $this->assertEquals($user->id, $uc2->get_userid());
         $this->assertEquals(null, $uc2->get_grade());
         $this->assertEquals(null, $uc2->get_proficiency());
+    }
+
+    /**
+     * Tests for user_competency_course_record().
+     */
+    public function test_get_user_competency_course_record() {
+        $this->resetAfterTest(true);
+        $dg = $this->getDataGenerator();
+        $lpg = $dg->get_plugin_generator('tool_lp');
+        $this->setAdminUser();
+
+        $user = $dg->create_user();
+        $c1 = $dg->create_course();
+        $framework = $lpg->create_framework();
+        $comp1 = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+        $comp2 = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+
+        // Create a user_competency_course record for comp1.
+        $lpg->create_user_competency_course(array('courseid' => $c1->id, 'userid' => $user->id, 'competencyid' => $comp1->get_id(),
+            'proficiency' => true, 'grade' => 1 ));
+
+        // Test that there is a user_competency_course record for comp1 in c1.
+        $uc = api::get_user_competency_course_record($c1->id, $user->id, $comp1->get_id());
+        $this->assertEquals($comp1->get_id(), $uc->get_competencyid());
+        $this->assertEquals($user->id, $uc->get_userid());
+        $this->assertEquals(1, $uc->get_grade());
+        $this->assertEquals(true, $uc->get_proficiency());
+
+        // Test that there is no user_competency_course record for comp2 in c1.
+        $uc2 = api::get_user_competency_course_record($c1->id, $user->id, $comp2->get_id());
+        $this->assertFalse($uc2);
+    }
+
+    /**
+     * Tests for user_competency_course_record().
+     */
+    public function test_list_user_competency_course_record() {
+        $this->resetAfterTest(true);
+        $dg = $this->getDataGenerator();
+        $lpg = $dg->get_plugin_generator('tool_lp');
+        $this->setAdminUser();
+
+        $user = $dg->create_user();
+        $c1 = $dg->create_course();
+        $framework = $lpg->create_framework();
+        $comp1 = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+        $comp2 = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+
+        $list = api::list_user_competency_course_records($c1->id, $user->id);
+        $this->assertCount(0, $list);
+
+        // Create a user_competency_course record for comp1.
+        $lpg->create_user_competency_course(array('courseid' => $c1->id, 'userid' => $user->id, 'competencyid' => $comp1->get_id(),
+            'proficiency' => true, 'grade' => 1 ));
+        $list = api::list_user_competency_course_records($c1->id, $user->id);
+        $this->assertCount(1, $list);
+
+        $lpg->create_user_competency_course(array('courseid' => $c1->id, 'userid' => $user->id, 'competencyid' => $comp2->get_id(),
+            'proficiency' => true, 'grade' => 1 ));
+        $list = api::list_user_competency_course_records($c1->id, $user->id);
+        $this->assertCount(2, $list);
     }
 
     /**

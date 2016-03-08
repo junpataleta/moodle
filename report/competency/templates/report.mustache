@@ -2,25 +2,41 @@
 <div class="row-fluid">
 <span class="span6">
 <table class="table table-bordered">
-<summary class="accesshide"><p>{{#str}}coursecompetencybreakdownsummary, report_competency{{/str}}</p></summary>
-<tr>
-<th scope="col">{{#str}}competency, report_competency{{/str}}</span></th>
-<th scope="col">{{#str}}rating, report_competency{{/str}}</span></th>
-</tr>
+    <summary class="accesshide"><p>{{#str}}coursecompetencybreakdownsummary, report_competency{{/str}}</p></summary>
+    <tr>
+        <th scope="col" rowspan="2"><span>{{#str}}competency, report_competency{{/str}}</span></th>
+        <th scope="colgroup" colspan="2"><span>{{#str}}rating, report_competency{{/str}}</span></th>
+    </tr>
+    <tr>
+        <th scope="col"><span>{{#str}}suggested, report_competency{{/str}}</span></th>
+        <th scope="col"><span>{{#str}}final, report_competency{{/str}}</span></th>
+    </tr>
 {{#usercompetencies}}
-<tr>
-{{#competency}}
-<td><a href="#" data-action="competency-dialogue" data-id="{{competency.id}}">{{competency.shortname}} <em>{{competency.idnumber}}</em></a></td>
-{{/competency}}
-{{#usercompetency}}
-<td class="alert {{#proficiency}}alert-success{{/proficiency}}"
-    data-user-competency="true"
-    data-userid="{{user.id}}"
-    data-competencyid="{{competencyid}}"
-    data-courseid="{{course.id}}">
-{{> report_competency/user_competency_summary}}
-</td>
-{{/usercompetency}}
+    <tr>
+    {{#competency}}
+        <td>
+            <a href="#" data-action="competency-dialogue" data-id="{{competency.id}}">{{competency.shortname}} <em>{{competency.idnumber}}</em></a>
+        </td>
+    {{/competency}}
+    {{#usercompetencycourse}}
+        <td class="alert {{#proficiency}}alert-success{{/proficiency}}"
+            data-user-competency-course="true"
+            data-userid="{{user.id}}"
+            data-competencyid="{{competencyid}}"
+            data-courseid="{{course.id}}">
+            {{> report_competency/user_competency_summary}}
+        </td>
+    {{/usercompetencycourse}}
+    {{#usercompetency}}
+        <td class="alert {{#proficiency}}alert-success{{/proficiency}}"
+            data-user-competency="true"
+            data-userid="{{user.id}}"
+            data-competencyid="{{competencyid}}"
+            data-courseid="{{course.id}}">
+            {{> report_competency/user_competency_summary}}
+        </td>
+    {{/usercompetency}}
+    </tr>
 {{/usercompetencies}}
 </table>
 </span>
@@ -33,5 +49,6 @@ require(['tool_lp/competencydialogue'], function(Compdialogue) {
 });
 require(['report_competency/grading_popup'], function(Popup) {
     (new Popup('[data-region=competency-breakdown-report]', '[data-user-competency=true]'));
+    (new Popup('[data-region=competency-breakdown-report]', '[data-user-competency-course=true]'));
 });
 {{/js}}

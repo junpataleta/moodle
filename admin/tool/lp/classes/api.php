@@ -1243,6 +1243,70 @@ class api {
     }
 
     /**
+     * Get a user_competency_course record.
+     *
+     * @param int $courseid The id of the course to check.
+     * @param int $userid The id of the course to check.
+     * @param int $competencyid The id of the competency.
+     * @return user_competency_course|false The user_competency_course object, or false if no record was found.
+     * @throws moodle_exception
+     * @throws required_capability_exception
+     */
+    public static function get_user_competency_course_record($courseid, $userid, $competencyid) {
+        static::require_enabled();
+        // First we do a permissions check.
+        $context = context_course::instance($courseid);
+
+        $capabilities = array('tool/lp:coursecompetencyread', 'tool/lp:coursecompetencymanage');
+        if (!has_any_capability($capabilities, $context)) {
+            throw new required_capability_exception($context, 'tool/lp:coursecompetencyread', 'nopermissions', '');
+        } else if (!user_competency::can_read_user_in_course($userid, $courseid)) {
+            throw new required_capability_exception($context, 'tool/lp:usercompetencyview', 'nopermissions', '');
+        }
+
+        // Get user_competency_course record.
+        $usercompcoursefilters = [
+            'userid' => $userid,
+            'courseid' => $courseid,
+            'competencyid' => $competencyid
+        ];
+        $usercompcourse = user_competency_course::get_record($usercompcoursefilters);
+
+        return $usercompcourse;
+    }
+
+    /**
+     * List user_competency_course records.
+     *
+     * @param int $courseid The id of the course to check.
+     * @param int $userid The id of the course to check.
+     * @return array Array containing the list of user_competency_course records.
+     * @throws moodle_exception
+     * @throws required_capability_exception
+     */
+    public static function list_user_competency_course_records($courseid, $userid) {
+        static::require_enabled();
+
+        // First we do a permissions check.
+        $context = context_course::instance($courseid);
+        $capabilities = array('tool/lp:coursecompetencyread', 'tool/lp:coursecompetencymanage');
+        if (!has_any_capability($capabilities, $context)) {
+            throw new required_capability_exception($context, 'tool/lp:coursecompetencyread', 'nopermissions', '');
+        } else if (!user_competency::can_read_user_in_course($userid, $courseid)) {
+            throw new required_capability_exception($context, 'tool/lp:usercompetencyview', 'nopermissions', '');
+        }
+
+        // Get records.
+        $filters = [
+            'userid' => $userid,
+            'courseid' => $courseid
+        ];
+        $records = user_competency_course::get_records($filters);
+
+        return $records;
+    }
+
+    /**
      * List the user competencies to review.
      *
      * The method returns values in this format:
@@ -4181,13 +4245,8 @@ class api {
                 if (in_array($context->contextlevel, array(CONTEXT_COURSE, CONTEXT_MODULE))) {
                     $coursecontext = $context->get_course_context();
                     $courseid = $coursecontext->instanceid;
-                    $filterparams = array(
-                        'userid' => $userid,
-                        'competencyid' => $competencyid,
-                        'courseid' => $courseid
-                    );
                     // Fetch or create user competency course.
-                    $usercompetencycourse = user_competency_course::get_record($filterparams);
+                    $usercompetencycourse = static::get_user_competency_course_record($courseid, $userid, $competencyid);
                     if (!$usercompetencycourse) {
                         $usercompetencycourse = user_competency_course::create_relation($userid, $competencyid, $courseid);
                         $usercompetencycourse->create();

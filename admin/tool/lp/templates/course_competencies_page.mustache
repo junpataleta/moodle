@@ -40,11 +40,29 @@
             </a>
             <p>{{{competency.description}}}</p>
         {{/competency}}
-        {{#usercompetency}}
-            {{#grade}}
-            <span class="label {{^proficiency}}label-important{{/proficiency}}">{{gradename}}</span>
-            {{/grade}}
-        {{/usercompetency}}
+        {{#hasrating}}
+            <div class="row-fluid">
+                <div class="span1 bold">
+                    {{#str}} rating, tool_lp {{/str}}
+                </div>
+                {{#usercompetencycourse}}
+                    <div class="span5">
+                        {{#grade}}
+                            {{#str}} suggested, tool_lp {{/str}}:
+                            <span class="label {{#proficiency}}label-success{{/proficiency}}{{^proficiency}}label-important{{/proficiency}}">{{gradename}}</span>
+                        {{/grade}}
+                    </div>
+                {{/usercompetencycourse}}
+                {{#usercompetency}}
+                    <div class="span5">
+                        {{#grade}}
+                            {{#str}} final, tool_lp {{/str}}:
+                            <span class="label {{#proficiency}}label-success{{/proficiency}}{{^proficiency}}label-important{{/proficiency}}">{{gradename}}</span>
+                        {{/grade}}
+                    </div>
+                {{/usercompetency}}
+            </div>
+        {{/hasrating}}
         {{#canmanagecoursecompetencies}}
         <div data-region="coursecompetency-ruleoutcome">
             <label>

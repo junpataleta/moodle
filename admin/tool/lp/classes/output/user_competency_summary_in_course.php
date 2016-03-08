@@ -28,6 +28,7 @@ use renderer_base;
 use templatable;
 use tool_lp\api;
 use tool_lp\user_competency;
+use tool_lp\user_competency_course;
 use tool_lp\external\user_competency_summary_in_course_exporter;
 
 /**
@@ -81,13 +82,20 @@ class user_competency_summary_in_course implements renderable, templatable {
         $evidence = api::list_evidence_in_course($this->userid, $this->courseid, $this->competencyid);
         $course = $DB->get_record('course', array('id' => $this->courseid));
 
+        // Get user_competency_course record.
+        $usercompcourse = api::get_user_competency_course_record($this->courseid, $this->userid, $this->competencyid);
+        if ($usercompcourse === false) {
+            $usercompcourse = null;
+        }
+
         $params = array(
             'competency' => $competency,
             'usercompetency' => $usercompetency,
             'evidence' => $evidence,
             'user' => $user,
             'course' => $course,
-            'relatedcompetencies' => $relatedcompetencies
+            'relatedcompetencies' => $relatedcompetencies,
+            'usercompetencycourse' => $usercompcourse
         );
         $exporter = new user_competency_summary_in_course_exporter(null, $params);
         $data = $exporter->export($output);

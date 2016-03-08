@@ -25,6 +25,7 @@ namespace report_competency;
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
 require_once("$CFG->libdir/externallib.php");
 
 use context_course;
@@ -35,6 +36,7 @@ use external_single_structure;
 use external_value;
 use tool_lp\external\competency_summary_exporter;
 use tool_lp\external\course_summary_exporter;
+use tool_lp\external\user_competency_course_exporter;
 use tool_lp\external\user_competency_exporter;
 use tool_lp\external\user_summary_exporter;
 
@@ -113,7 +115,8 @@ class external extends external_api {
             'usercompetencies' => new external_multiple_structure(
                 new external_single_structure(array(
                     'usercompetency' => user_competency_exporter::get_read_structure(),
-                    'competency' => competency_summary_exporter::get_read_structure()
+                    'competency' => competency_summary_exporter::get_read_structure(),
+                    'usercompetencycourse' => user_competency_course_exporter::get_read_structure(),
                 ))
             )
         ));

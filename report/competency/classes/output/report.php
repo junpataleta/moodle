@@ -27,8 +27,10 @@ use context_course;
 use tool_lp\external\competency_summary_exporter;
 use tool_lp\external\course_summary_exporter;
 use tool_lp\external\user_competency_exporter;
+use tool_lp\external\user_competency_course_exporter;
 use tool_lp\external\user_summary_exporter;
 use tool_lp\user_competency;
+use tool_lp\user_competency_course;
 use renderable;
 use core_user;
 use templatable;
@@ -92,6 +94,7 @@ class report implements renderable, templatable {
         $data->user = $exporter->export($output);
         $data->usercompetencies = array();
         $coursecompetencies = api::list_course_competencies($this->courseid);
+        $usercompcourserecords = api::list_user_competency_course_records($this->courseid, $user->id);
         $usercompetencies = api::list_user_competencies_in_course($this->courseid, $user->id);
 
         foreach ($usercompetencies as $usercompetency) {
@@ -124,8 +127,8 @@ class report implements renderable, templatable {
                 $scalecache[$competency->get_scaleid()] = $competency->get_scale();
             }
             $scale = $scalecache[$competency->get_scaleid()];
-
-            $exporter = new user_competency_exporter($usercompetency, array('scale' => $scale));
+            $exporterparams = ['scale' => $scale];
+            $exporter = new user_competency_exporter($usercompetency, $exporterparams);
             $record = $exporter->export($output);
             $onerow->usercompetency = $record;
             $exporter = new competency_summary_exporter(null, array('competency' => $competency,
@@ -133,6 +136,23 @@ class report implements renderable, templatable {
                                                                     'context' => $framework->get_context(),
                                                                     'relatedcompetencies' => array(),
                                                                     'linkedcourses' => array()));
+
+            // Get user_competency_course record for the competency. (Suggested rating).
+            $usercompcourse = null;
+            foreach ($usercompcourserecords as $usercompcourserecord) {
+                if ($usercompcourserecord->get_competencyid() == $usercompetency->get_competencyid()) {
+                    $usercompcourse = $usercompcourserecord;
+                    break;
+                }
+            }
+            // Create a dummy user_competency_course object if there is no matching user_competency_course record found.
+            if ($usercompcourse === null) {
+                $usercompcourse = user_competency_course::create_relation($this->userid, $this->courseid,
+                    $usercompetency->get_competencyid());
+            }
+            $uccexporter = new user_competency_course_exporter($usercompcourse, $exporterparams);
+            $onerow->usercompetencycourse = $uccexporter->export($output);
+
             $onerow->competency = $exporter->export($output);
             array_push($data->usercompetencies, $onerow);
         }

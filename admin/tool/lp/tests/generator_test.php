@@ -33,6 +33,7 @@ use tool_lp\template;
 use tool_lp\template_cohort;
 use tool_lp\template_competency;
 use tool_lp\user_competency;
+use tool_lp\user_competency_course;
 use tool_lp\user_competency_plan;
 use tool_lp\plan_competency;
 use tool_lp\evidence;
@@ -112,6 +113,56 @@ class tool_lp_generator_testcase extends advanced_testcase {
         $rc = $lpg->create_user_competency(array('userid' => $user->id, 'competencyid' => $c2->get_id()));
         $this->assertEquals(2, user_competency::count_records());
         $this->assertInstanceOf('\tool_lp\user_competency', $rc);
+    }
+
+    /**
+     * Test for create_user_competency_course() generator method.
+     *
+     * @throws coding_exception
+     */
+    public function test_create_user_competency_course() {
+        $this->resetAfterTest(true);
+
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $lpg = $this->getDataGenerator()->get_plugin_generator('tool_lp');
+        $framework = $lpg->create_framework();
+        $c1 = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+        $c2 = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+        $c3 = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+
+        // Initial count.
+        $this->assertEquals(0, user_competency_course::count_records());
+
+        // Add c1 to user's competency.
+        $data1 = [
+            'courseid' => $course->id,
+            'userid' => $user->id,
+            'competencyid' => $c1->get_id()
+        ];
+        $rc = $lpg->create_user_competency_course($data1);
+        $this->assertInstanceOf('\tool_lp\user_competency_course', $rc);
+        $this->assertEquals(1, user_competency_course::count_records());
+
+        // Add c3 to user's competency.
+        $data2 = [
+            'courseid' => $course->id,
+            'userid' => $user->id,
+            'competencyid' => $c2->get_id()
+        ];
+        $rc = $lpg->create_user_competency_course($data2);
+        $this->assertInstanceOf('\tool_lp\user_competency_course', $rc);
+        $this->assertEquals(2, user_competency_course::count_records());
+
+        // Add c3 to user's competency.
+        $data3 = [
+            'courseid' => $course->id,
+            'userid' => $user->id,
+            'competencyid' => $c3->get_id()
+        ];
+        $rc = $lpg->create_user_competency_course($data3);
+        $this->assertInstanceOf('\tool_lp\user_competency_course', $rc);
+        $this->assertEquals(3, user_competency_course::count_records());
     }
 
     public function test_create_user_competency_plan() {
