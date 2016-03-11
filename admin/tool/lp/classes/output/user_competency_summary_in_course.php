@@ -81,13 +81,17 @@ class user_competency_summary_in_course implements renderable, templatable {
         $evidence = api::list_evidence_in_course($this->userid, $this->courseid, $this->competencyid);
         $course = $DB->get_record('course', array('id' => $this->courseid));
 
+        // Get list of related learning plans linked to this competency.
+        $relatedplans = api::list_user_plans_with_competency($this->userid, $this->competencyid);
+
         $params = array(
             'competency' => $competency,
             'usercompetency' => $usercompetency,
             'evidence' => $evidence,
             'user' => $user,
             'course' => $course,
-            'relatedcompetencies' => $relatedcompetencies
+            'relatedcompetencies' => $relatedcompetencies,
+            'relatedplans' => $relatedplans,
         );
         $exporter = new user_competency_summary_in_course_exporter(null, $params);
         $data = $exporter->export($output);

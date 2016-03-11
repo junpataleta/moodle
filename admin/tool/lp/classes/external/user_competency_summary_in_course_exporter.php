@@ -38,12 +38,15 @@ class user_competency_summary_in_course_exporter extends exporter {
 
     protected static function define_related() {
         // We cache the context so it does not need to be retrieved from the framework every time.
-        return array('competency' => '\\tool_lp\\competency',
-                     'relatedcompetencies' => '\\tool_lp\\competency[]',
-                     'user' => '\\stdClass',
-                     'course' => '\\stdClass',
-                     'usercompetency' => '\\tool_lp\\user_competency?',
-                     'evidence' => '\\tool_lp\\evidence[]');
+        return array(
+            'competency' => '\\tool_lp\\competency',
+            'relatedcompetencies' => '\\tool_lp\\competency[]',
+            'user' => '\\stdClass',
+            'course' => '\\stdClass',
+            'usercompetency' => '\\tool_lp\\user_competency?',
+            'evidence' => '\\tool_lp\\evidence[]',
+            'relatedplans' => '\\tool_lp\\plan[]'
+        );
     }
 
     protected static function define_other_properties() {
@@ -57,7 +60,14 @@ class user_competency_summary_in_course_exporter extends exporter {
             'coursemodules' => array(
                 'type' => course_module_summary_exporter::read_properties_definition(),
                 'multiple' => true
-            )
+            ),
+            'relatedplans' => array(
+                'type' => plan_exporter::read_properties_definition(),
+                'multiple' => true
+            ),
+            'showrelatedplans' => array(
+                'type' => PARAM_BOOL
+            ),
         );
     }
 
@@ -86,6 +96,18 @@ class user_competency_summary_in_course_exporter extends exporter {
             $exportedmodules[] = $cmexporter->export($output);
         }
         $result->coursemodules = $exportedmodules;
+
+        // Show related user learning plans for the competency.
+        $relatedplans = [];
+        $result->showrelatedplans = false;
+        if (!empty($related['relatedplans'])) {
+            $result->showrelatedplans = true;
+            foreach ($related['relatedplans'] as $plan) {
+                $relplansexporter = new plan_exporter($plan, ['template' => null]);
+                $relatedplans[] = $relplansexporter->export($output);
+            }
+        }
+        $result->relatedplans = $relatedplans;
 
         return (array) $result;
     }

@@ -2246,6 +2246,42 @@ class api {
     }
 
     /**
+     * Retrieves the list of learning plans that are linked to a competency.
+     *
+     * @param int $userid
+     * @param int $competencyid
+     * @return plan[]
+     * @throws \dml_exception
+     * @throws coding_exception
+     * @throws moodle_exception
+     * @throws required_capability_exception
+     */
+    public static function list_user_plans_with_competency($userid, $competencyid) {
+        static::require_enabled();
+
+        // Array containing user learning plans that has the competency.
+        $userplanswithcompetency = [];
+        // Get user learning plans.
+        $userplans =  static::list_user_plans($userid);
+        // Loop over user learning plans.
+        foreach ($userplans as $plan) {
+            // Get plan competencies of each user learning plan.
+            $plancomps = static::list_plan_competencies($plan->get_id());
+            // Loop over each plan competency .
+            foreach ($plancomps as $competency) {
+                // Compare the plan's competency ID with the competencyid parameter.
+                if ($competency->competency->get_id() == $competencyid) {
+                    // Add the plan to the list.
+                    $userplanswithcompetency[] = $plan;
+                    break;
+                }
+            }
+        }
+
+        return $userplanswithcompetency;
+    }
+
+    /**
      * List the plans to review.
      *
      * The method returns values in this format:

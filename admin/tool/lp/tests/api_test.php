@@ -4028,4 +4028,60 @@ class tool_lp_api_testcase extends advanced_testcase {
         $this->assertEquals(null, $uc2->get_grade());
         $this->assertEquals(null, $uc2->get_proficiency());
     }
+
+    /**
+     * Test for list_user_plans_with_competency.
+     */
+    public function test_list_user_plans_with_competency() {
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $dg = $this->getDataGenerator();
+        $lpg = $this->getDataGenerator()->get_plugin_generator('tool_lp');
+
+        // Create users and roles for the test.
+        $user = $dg->create_user();
+
+        // Create a framework and assign competencies.
+        $framework = $lpg->create_framework();
+        $c1 = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+        $c2 = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+        $c3 = $lpg->create_competency(array('competencyframeworkid' => $framework->get_id()));
+
+        // Create a user learning plan and assign competencies.
+        $plan1 = $lpg->create_plan(array('userid' => $user->id));
+        $plan2 = $lpg->create_plan(array('userid' => $user->id));
+
+        // Link competencies c1, c2 to plan1.
+        $lpg->create_plan_competency(array('planid' => $plan1->get_id(), 'competencyid' => $c1->get_id()));
+        $lpg->create_plan_competency(array('planid' => $plan1->get_id(), 'competencyid' => $c2->get_id()));
+
+        // Link competencies c2 to plan2.
+        $lpg->create_plan_competency(array('planid' => $plan2->get_id(), 'competencyid' => $c2->get_id()));
+
+        // Get related plans to user competency c1.
+        $relatedplans = api::list_user_plans_with_competency($user->id, $c1->get_id());
+        $this->assertNotEmpty($relatedplans);
+        $this->assertCount(1, $relatedplans);
+        $planids = [];
+        foreach ($relatedplans as $plan) {
+            $planids[] = $plan->get_id();
+        }
+        $this->assertContains($plan1->get_id(), $planids);
+        $this->assertNotContains($plan2->get_id(), $planids);
+
+        // Get related plans to user competency c2.
+        $relatedplans = api::list_user_plans_with_competency($user->id, $c2->get_id());
+        $this->assertNotEmpty($relatedplans);
+        $this->assertCount(2, $relatedplans);
+        $planids = [];
+        foreach ($relatedplans as $plan) {
+            $planids[] = $plan->get_id();
+        }
+        $this->assertContains($plan1->get_id(), $planids);
+        $this->assertContains($plan2->get_id(), $planids);
+
+        // Assert that there are no plans related to c3.
+        $relatedplans = api::list_user_plans_with_competency($user->id, $c3->get_id());
+        $this->assertEmpty($relatedplans);
+    }
 }
