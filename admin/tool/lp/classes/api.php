@@ -3343,12 +3343,15 @@ class api {
     /**
      * Request a user competency review.
      *
-     * @param  int $userid       The user ID.
+     * @param  int $userid The user ID.
      * @param  int $competencyid The competency ID.
-     * @param  bool $onlyidle  Return exception if status is not idle.
      * @return bool
+     * @throws coding_exception
+     * @throws invalid_persistent_exception
+     * @throws moodle_exception
+     * @throws required_capability_exception
      */
-    public static function user_competency_request_review($userid, $competencyid, $onlyidle = true) {
+    public static function user_competency_request_review($userid, $competencyid) {
         static::require_enabled();
         $uc = user_competency::get_record(array('userid' => $userid, 'competencyid' => $competencyid));
         if (!$uc) {
@@ -3359,11 +3362,7 @@ class api {
         if (!$uc->can_read()) {
             throw new required_capability_exception($uc->get_context(), 'tool/lp:usercompetencyread', 'nopermissions', '');
         } else if ($uc->get_status() != user_competency::STATUS_IDLE) {
-            if ($onlyidle) {
-                throw new coding_exception('The competency can not be sent for review at this stage.');
-            } else {
-                return true;
-            }
+            throw new coding_exception('The competency can not be sent for review at this stage.');
         } else if (!$uc->can_request_review()) {
             throw new required_capability_exception($uc->get_context(), 'tool/lp:usercompetencyrequestreview', 'nopermissions', '');
         }
@@ -3848,9 +3847,10 @@ class api {
      *
      * @param  int $id The user evidence ID.
      * @return bool
+     * @throws coding_exception
+     * @throws required_capability_exception
      */
     public static function request_review_of_user_evidence_linked_competencies($id) {
-        $onlyidle = false;
         $userevidence = new user_evidence($id);
         $context = $userevidence->get_context();
         $userid = $userevidence->get_userid();
@@ -3859,9 +3859,12 @@ class api {
             throw new required_capability_exception($context, 'tool/lp:userevidencemanage', 'nopermissions', '');
         }
 
-        $competencies = user_evidence_competency::get_competencies_by_userevidenceid($id);
-        foreach ($competencies as $competency) {
-            static::user_competency_request_review($userid, $competency->get_id(), $onlyidle);
+        $usercompetencies = user_evidence_competency::get_user_competencies_by_userevidenceid($id);
+        foreach ($usercompetencies as $usercomp) {
+            // Request review only if user competency status is idle.
+            if ($usercomp->get_status() == user_competency::STATUS_IDLE) {
+                static::user_competency_request_review($userid, $usercomp->get_competencyid());
+            }
         }
 
         return true;

@@ -115,11 +115,11 @@ class user_evidence_competency extends persistent {
         global $DB;
 
         $sql = "SELECT uc.*
-                  FROM {" . user_evidence::TABLE . "} ue
+                  FROM {" . user_competency::TABLE . "} uc
                   JOIN {" . self::TABLE . "} uec
-                    ON uec.userevidenceid = ue.id
-                  JOIN {" . user_competency::TABLE . "} uc
                     ON uc.competencyid = uec.competencyid
+                  JOIN {" . user_evidence::TABLE . "} ue
+                    ON uec.userevidenceid = ue.id
                    AND uc.userid = ue.userid
                    AND ue.id = ?";
 
