@@ -24,6 +24,12 @@
  */
 define(['jquery'], function($) {
 
+    /** @property {boolean}  Flag to indicate if we have already registered a click event handler for the document. */
+    var documentClickHandlerRegistered = false;
+
+    /** @property {Object} Flag to indicate if a menu is currently opened. */
+    var menuActive = false;
+
     /**
      * Close all open submenus anywhere in the page (there should only ever be one open at a time).
      *
@@ -31,6 +37,8 @@ define(['jquery'], function($) {
      */
     var closeAllSubMenus = function() {
         $('.tool-lp-menu .tool-lp-sub-menu').attr('aria-hidden', 'true');
+        // Every menu's closed at this point, so set active menu to null.
+        menuActive = false;
     };
 
     /**
@@ -75,6 +83,8 @@ define(['jquery'], function($) {
         this.setOpenDirection();
         closeAllSubMenus();
         menu.attr('aria-hidden', 'false');
+        // Set this menu as the current active menu.
+        menuActive = true;
     };
 
 
@@ -84,6 +94,19 @@ define(['jquery'], function($) {
      */
     Menubar.prototype.addEventListeners = function() {
         var currentThis = this;
+
+        // When clicking outside the menubar.
+        if (documentClickHandlerRegistered === false) {
+            $(document).click(function() {
+                // Check if the clicked item is not the menu bar or its child items.
+                if (menuActive) {
+                    // Close menu.
+                    closeAllSubMenus();
+                }
+            });
+            // Set this flag to true so that we won't need to add a document click handler for the other Menubar instances.
+            documentClickHandlerRegistered = true;
+        }
 
         // Hovers.
         this.subMenuItems.mouseenter(function() {
@@ -124,6 +147,8 @@ define(['jquery'], function($) {
      * @return boolean Returns false
      */
     Menubar.prototype.handleClick = function(item, e) {
+        e.stopPropagation();
+
         var parentUL = item.parent();
 
         if (parentUL.is('.tool-lp-menu')) {
@@ -131,15 +156,14 @@ define(['jquery'], function($) {
             if (item.children('ul').first().attr('aria-hidden') == 'true') {
                 this.openSubMenu(item.children('ul').first());
             } else {
-                item.children('ul').first().attr('aria-hidden', 'true');
+                closeAllSubMenus();
             }
-            e.stopPropagation();
         } else {
             // Remove hover and focus styling.
             this.allItems.removeClass('menu-hover menu-focus');
 
             // Close the menu.
-            this.menuRoot.find('ul').not('.root-level').attr('aria-hidden','true');
+            closeAllSubMenus();
             // Follow any link, or call the click handlers.
             var anchor = item.find('a').first();
             var clickEvent = new $.Event('click');
@@ -272,7 +296,7 @@ define(['jquery'], function($) {
             case this.keys.tab: {
 
                 // Hide all menu items and update their aria attributes.
-                this.menuRoot.find('ul').attr('aria-hidden', 'true');
+                closeAllSubMenus();
 
                 // Remove focus styling from all menu items.
                 this.allItems.removeClass('menu-focus');
@@ -286,11 +310,7 @@ define(['jquery'], function($) {
             case this.keys.esc: {
                 var itemUL = item.parent();
 
-                if (itemUL.is('.tool-lp-menu')) {
-                    // Hide the child menu and update the aria attributes.
-                    item.children('ul').first().attr('aria-hidden', 'true');
-                } else {
-
+                if (!itemUL.is('.tool-lp-menu')) {
                     // Move up one level.
                     this.activeItem = itemUL.parent();
 
@@ -299,10 +319,9 @@ define(['jquery'], function($) {
 
                     // Set focus on the new item.
                     this.activeItem.focus();
-
-                    // Hide the active menu and update the aria attributes.
-                    itemUL.attr('aria-hidden', 'true');
                 }
+                // Close the menu.
+                closeAllSubMenus();
 
                 e.stopPropagation();
                 return false;
@@ -322,8 +341,7 @@ define(['jquery'], function($) {
                     this.allItems.removeClass('menu-focus');
 
                     // Close the menu.
-                    this.menuRoot.find('ul').not('.tool-lp-menu').attr('aria-hidden','true');
-
+                    closeAllSubMenus();
 
                     // Clear the active item.
                     this.activeItem = null;
@@ -443,7 +461,7 @@ define(['jquery'], function($) {
 
                 if (childMenu.attr('aria-hidden') == 'false') {
                     // Update the child menu's aria-hidden attribute.
-                    childMenu.attr('aria-hidden', 'true');
+                    closeAllSubMenus();
                     this.isChildOpen = true;
                 }
             }
@@ -480,7 +498,7 @@ define(['jquery'], function($) {
                 parentMenus = item.parentsUntil('ul.tool-lp-menu').filter('ul').not('.tool-lp-menu');
 
                 // Hide the current menu and update its aria attributes accordingly.
-                parentMenus.attr('aria-hidden', 'true');
+                closeAllSubMenus();
 
                 // Remove the focus styling from the active menu.
                 parentMenus.find('li').removeClass('menu-focus');
@@ -558,7 +576,7 @@ define(['jquery'], function($) {
 
                 if (childMenu.attr('aria-hidden') == 'false') {
                     // Update the child menu's aria-hidden attribute.
-                    childMenu.attr('aria-hidden', 'true');
+                    closeAllSubMenus();
                     this.isChildOpen = true;
                 }
             }
@@ -590,7 +608,7 @@ define(['jquery'], function($) {
                 newItem = itemUL.parent();
 
                 // Hide the active menu and update aria-hidden.
-                itemUL.attr('aria-hidden', 'true');
+                closeAllSubMenus();
 
                 // Remove the focus highlight from the item.
                 item.removeClass('menu-focus');
@@ -599,7 +617,7 @@ define(['jquery'], function($) {
                 // Move to previous root-level menu.
 
                 // Hide the current menu and update the aria attributes accordingly.
-                itemUL.attr('aria-hidden', 'true');
+                closeAllSubMenus();
 
                 // Remove the focus styling from the active menu.
                 item.removeClass('menu-focus');
