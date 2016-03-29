@@ -17,8 +17,13 @@ var CSS = {
     EDITINGMOVE: 'editing_move',
     ICONCLASS: 'iconsmall'
 };
+
+var dnd = null;
 Y.extend(DRAGREORDER, M.core.dragdrop, {
     initializer: function(args) {
+        if (dnd !== null) {
+            dnd.destroy();
+        }
         if (Y.one('.' + args.parentNodeClass).all('.' + args.dragHandleInsertClass).size() <= 1) {
             // We can't re-order when there is only one item.
             return;
@@ -35,7 +40,7 @@ Y.extend(DRAGREORDER, M.core.dragdrop, {
         this.parentnodelabel = args.parentNodeLabel;
         this.callback = args.callback;
 
-        var delegate = new Y.DD.Delegate({
+        this.delegate = new Y.DD.Delegate({
             container: '.' + args.parentNodeClass,
             nodes: '.' + args.sameNodeClass,
             target: true,
@@ -43,7 +48,7 @@ Y.extend(DRAGREORDER, M.core.dragdrop, {
             dragConfig: {groups: this.groups}
         });
 
-        delegate.dd.plug(Y.Plugin.DDProxy);
+        this.delegate.dd.plug(Y.Plugin.DDProxy);
 
         Y.one('.' + args.parentNodeClass)
          .all('.' + args.dragHandleInsertClass)
@@ -51,10 +56,15 @@ Y.extend(DRAGREORDER, M.core.dragdrop, {
             function (node) {
                 node.insert(this.draghandle.cloneNode(true));
             } , this);
+        dnd = this;
     },
 
     drop_hit: function(e) {
         this.callback(e);
+    },
+
+    destructor: function() {
+        this.delegate.destroy();
     }
 
 }, {
