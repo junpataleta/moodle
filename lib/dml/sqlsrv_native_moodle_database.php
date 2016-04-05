@@ -50,6 +50,9 @@ class sqlsrv_native_moodle_database extends moodle_database {
     /** @var array list of open recordsets */
     protected $recordsets = array();
 
+    /** Maximum number of list parameters (usually for SQL-IN queries). 2100 for SQL Server.*/
+    const MAX_LIST_PARAMS = 2100;
+
     /**
      * Constructor - instantiates the database, specifying if it's external (connect to other systems) or no (Moodle DB)
      *              note this has effect to decide if prefix checks must be performed or no

@@ -13,6 +13,17 @@ information provided here is intended especially for developers.
 * External function core_group_external::get_activity_allowed_groups now returns an additional field: canaccessallgroups.
   It indicates whether the user will be able to access all the activity groups.
 * file_get_draft_area_info does not sum the root folder anymore when calculating the foldercount.
+* Split very large SQL-IN parameters into chunks for:
+  * moodle_database::delete_records_list()
+  * moodle_database::get_records_list()
+* New constant moodle_database::MAX_LIST_PARAMS to set the maximum number of list parameters a database accepts.
+  The values are currently as follows:
+  * PostgreSQL - 65535
+  * MSSQL - 2100
+  * Oracle - 1000
+* New method moodle_database::get_max_list_params() which basically retrieves the MAX_LIST_PARAMS constant for a
+  moodle_database implementation. However, since the number of list parameters for MySQL depends on the size of the
+  "max_allowed_packet" setting, this method is being overridden by mysqli_native_moodle_database.
 
 === 3.3.1 ===
 

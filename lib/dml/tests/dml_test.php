@@ -1489,6 +1489,48 @@ class core_dml_testcase extends database_driver_testcase {
         // Note: delegate limits testing to test_get_records_sql().
     }
 
+    /**
+     * Test for get_records_list when querying with a huge list.
+     */
+    public function test_get_records_list_with_large_dataset() {
+        $DB = $this->tdb;
+        $dbman = $DB->get_manager();
+
+        $table = $this->get_test_table();
+        $tablename = $table->getName();
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $dbman->create_table($table);
+
+        // Array of records to be inserted.
+        $records = [];
+        // Array of course IDs to be deleted.
+        $courseids = [];
+
+        // Set count of records to be created to 100k by default.
+        $count = 100000;
+        $maxparamcount = $DB->get_max_list_params();
+        if ($maxparamcount > 0) {
+            // Or if applicable, set to 1.01x of the DB's max list params, just to make sure we trigger batch processing.
+            $count = 1.01 * $maxparamcount;
+        }
+
+        // Create records.
+        for ($i = 1; $i <= $count; $i++) {
+            $record = new stdClass();
+            $record->course = $i;
+            $records[] = $record;
+            $courseids[] = $i;
+        }
+        $DB->insert_records($tablename, $records);
+
+        // Assert that we are able to query all of the records.
+        $results = $DB->get_records_list($tablename, 'course', $courseids, 'id');
+        $this->assertEquals($DB->count_records($tablename), count($results));
+    }
+
     public function test_get_records_sql() {
         $DB = $this->tdb;
         $dbman = $DB->get_manager();
@@ -3388,6 +3430,67 @@ class core_dml_testcase extends database_driver_testcase {
 
         $this->assertTrue($DB->delete_records_list($tablename, 'course', array())); // Must delete 0 rows without conditions. MDL-17645.
         $this->assertEquals(1, $DB->count_records($tablename));
+    }
+
+    /**
+     * Test for delete_records_list when deleting with a huge list.
+     *
+     * @throws coding_exception
+     * @throws ddl_exception
+     */
+    public function test_delete_records_list_with_large_dataset() {
+        $DB = $this->tdb;
+        $dbman = $DB->get_manager();
+
+        $table = $this->get_test_table();
+        $tablename = $table->getName();
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $dbman->create_table($table);
+
+        // Array of records to be inserted.
+        $records = [];
+        // Array of course IDs to be deleted.
+        $courseids = [];
+
+        // Set count of records to be created to 100k by default.
+        $count = 100000;
+        $maxparamcount = $DB->get_max_list_params();
+        if ($maxparamcount > 0) {
+            // Or if applicable, set to 1.01x of the DB's max list params, just to make sure we trigger batch processing.
+            $count = 1.01 * $maxparamcount;
+        }
+
+        // Create records.
+        for ($i = 1; $i <= $count; $i++) {
+            $record = new stdClass();
+            $record->course = $i;
+            $records[] = $record;
+            $courseids[] = $i;
+        }
+        $DB->insert_records($tablename, $records);
+
+        // Test for failed bulk delete.
+        $withinvalidids = $courseids;
+        // Insert an invalid ID among our list.
+        $withinvalidids[] = 'aaa';
+        try {
+            // Confirm that bulk delete with an invalid parameter fails.
+            $DB->delete_records_list($tablename, 'course', $withinvalidids);
+            $this->fail('\moodle_database::delete_records_list() should have thrown an exception.');
+        } catch (Exception $e) {
+            // Confirm that we get a DML write exception.
+            $this->assertInstanceOf('dml_write_exception', $e);
+        }
+        // Confirm that no record was deleted after failed bulk deletion.
+        $this->assertEquals(count($records), $DB->count_records($tablename));
+
+        // Confirm that bulk delete proceeds okay.
+        $this->assertTrue($DB->delete_records_list($tablename, 'course', $courseids));
+        // Confirm that all records are deleted after bulk deletion.
+        $this->assertEquals(0, $DB->count_records($tablename));
     }
 
     public function test_object_params() {

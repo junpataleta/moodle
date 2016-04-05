@@ -139,6 +139,9 @@ abstract class moodle_database {
      */
     private $inorequaluniqueindex = 1;
 
+    /** Maximum number of list parameters (usually for SQL-IN queries). You may override this in subclasses. 0 means no limit. */
+    const MAX_LIST_PARAMS = 0;
+
     /**
      * @var boolean variable use to temporarily disable logging.
      */
@@ -1356,8 +1359,32 @@ abstract class moodle_database {
      * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function get_records_list($table, $field, array $values, $sort='', $fields='*', $limitfrom=0, $limitnum=0) {
-        list($select, $params) = $this->where_clause_list($field, $values);
-        return $this->get_records_select($table, $select, $params, $sort, $fields, $limitfrom, $limitnum);
+        // Count params.
+        $paramscount = count($values);
+        // Get params count limit.
+        $paramlimit = $this->get_max_list_params();
+
+        // Check if there's a params count limit and the list is too large.
+        if ($paramlimit > 0 && $paramscount > $paramlimit) {
+            // Break down params array into smaller chunks.
+            $chunks = array_chunk($values, $paramlimit);
+            $results = [];
+            // Perform query for each chunk.
+            foreach ($chunks as $chunk) {
+                list($select, $params) = $this->where_clause_list($field, $chunk);
+                // Get the partial results.
+                $partial = $this->get_records_select($table, $select, $params, $sort, $fields, $limitfrom, $limitnum);
+                // Merge the partial results to the main results.
+                $results = array_merge($results, $partial);
+            }
+        } else {
+            // Just do the usual. array_merge() is expensive so it's better to directly query than treat as chunk.
+            list($select, $params) = $this->where_clause_list($field, $values);
+            $results = $this->get_records_select($table, $select, $params, $sort, $fields, $limitfrom, $limitnum);
+        }
+
+        // Return the final results.
+        return $results;
     }
 
     /**
@@ -1918,11 +1945,41 @@ abstract class moodle_database {
      * @param string $field The field to search
      * @param array $values array of values
      * @return bool true.
-     * @throws dml_exception A DML specific exception is thrown for any errors.
+     * @throws dml_transaction_exception
+     * @throws dml_write_exception
      */
     public function delete_records_list($table, $field, array $values) {
-        list($select, $params) = $this->where_clause_list($field, $values);
-        return $this->delete_records_select($table, $select, $params);
+        // Count params.
+        $paramscount = count($values);
+        // Get params count limit.
+        $limit = $this->get_max_list_params();
+
+        // Check if there's a params count limit and the list is too large.
+        if ($limit > 0 && $paramscount > $limit) {
+            // Break down params array into smaller chunks.
+            $chunks = array_chunk($values, $limit);
+            // Start transaction.
+            $transaction = $this->start_delegated_transaction();
+            try {
+                // Perform deletion for each chunk.
+                foreach ($chunks as $chunk) {
+                    list($select, $params) = $this->where_clause_list($field, $chunk);
+                    $this->delete_records_select($table, $select, $params);
+                }
+            } catch (dml_write_exception $e) {
+                // Rollback the transaction first.
+                $transaction->rollback($e);
+                // Throw after rollback.
+                throw $e;
+            }
+            // All good. Commit.
+            $transaction->allow_commit();
+            return true;
+        } else {
+            // Just do the usual.
+            list($select, $params) = $this->where_clause_list($field, $values);
+            return $this->delete_records_select($table, $select, $params);
+        }
     }
 
     /**
@@ -2666,5 +2723,14 @@ abstract class moodle_database {
      */
     public function perf_get_queries_time() {
         return $this->queriestime;
+    }
+
+    /**
+     * Returns the maximum number of parameters (usually for SQL IN list queries) that the DB supports.
+     *
+     * @return int
+     */
+    public function get_max_list_params() {
+        return static::MAX_LIST_PARAMS;
     }
 }
