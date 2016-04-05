@@ -3375,6 +3375,51 @@ class core_dml_testcase extends database_driver_testcase {
         $this->assertEquals(1, $DB->count_records($tablename));
     }
 
+    /**
+     * Test for delete_records_list when deleting with a huge list.
+     *
+     * @throws coding_exception
+     * @throws ddl_exception
+     */
+    public function test_delete_records_list_with_large_dataset() {
+        $DB = $this->tdb;
+        $dbman = $DB->get_manager();
+
+        $table = $this->get_test_table();
+        $tablename = $table->getName();
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $dbman->create_table($table);
+
+        // Array of records to be inserted.
+        $records = [];
+        // Array of course IDs to be deleted.
+        $courseids = [];
+
+        // Set count of records to be created to 150k by default.
+        $count = 150000;
+        if ($DB::MAX_LIST_PARAMS > 0) {
+            // Or if MAX_LIST_PARAMS is defined, set to 1.5x of the DB's max list params.
+            $count = 1.5 * $DB::MAX_LIST_PARAMS;
+        }
+
+        // Create records.
+        for ($i = 1; $i <= $count; $i++) {
+            $record = new stdClass();
+            $record->course = $i;
+            $records[] = $record;
+            $courseids[] = $i;
+        }
+        $DB->insert_records($tablename, $records);
+
+        // Confirm that bulk delete proceeds okay.
+        $this->assertTrue($DB->delete_records_list($tablename, 'course', $courseids));
+        // Confirm that all records are deleted after bulk deletion.
+        $this->assertEquals(0, $DB->count_records($tablename));
+    }
+
     public function test_object_params() {
         $DB = $this->tdb;
         $dbman = $DB->get_manager();

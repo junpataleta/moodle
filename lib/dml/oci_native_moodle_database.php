@@ -52,6 +52,9 @@ class oci_native_moodle_database extends moodle_database {
     /** @var To store unique_session_id. Needed for temp tables unique naming.*/
     private $unique_session_id;
 
+    /** Maximum number of list parameters (usually for SQL-IN queries). 1000 for Oracle.*/
+    const MAX_LIST_PARAMS = 1000;
+
     /**
      * Detects if all needed PHP stuff installed.
      * Note: can be used before connect()
