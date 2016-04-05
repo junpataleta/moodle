@@ -46,6 +46,9 @@ class pgsql_native_moodle_database extends moodle_database {
     /** @var bool savepoint hack for MDL-35506 - workaround for automatic transaction rollback on error */
     protected $savepointpresent = false;
 
+    /** Maximum number of list parameters (usually for SQL-IN queries).  65535 for PostgreSQL. */
+    const MAX_LIST_PARAMS = 65535;
+
     /**
      * Detects if all needed PHP stuff installed.
      * Note: can be used before connect()

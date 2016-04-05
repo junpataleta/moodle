@@ -1796,4 +1796,34 @@ class mysqli_native_moodle_database extends moodle_database {
 
         return true;
     }
+
+    /**
+     * Returns the maximum number of parameters (usually for SQL IN list queries) that the DB supports.
+     * Overriding this in MySQL since there is really no defined limit for the maximum number of parameters
+     * and it just depends on the server's max_allowed_packet configuration.
+     *
+     * @return int
+     */
+    public function get_max_list_params() {
+        // Query the max_allowed_packet setting.
+        $sql = "SHOW VARIABLES LIKE 'max_allowed_packet'";
+        $this->query_start($sql, null, SQL_QUERY_AUX);
+        $result = $this->mysqli->query($sql);
+        $this->query_end($result);
+        $maxallowedpacket = 0;
+        if ($rec = $result->fetch_assoc()) {
+            $maxallowedpacket = $rec['Value'];
+        }
+        $result->close();
+
+        // Let's divide the max allowed packet size by 1000. (Hopefully this should be enough).
+        $maxlistparams = (int) ($maxallowedpacket / 1000);
+
+        // Set an upper limit of 10k.
+        $upperlimit = 10000;
+        if ($maxlistparams > $upperlimit) {
+            $maxlistparams = $upperlimit;
+        }
+        return $maxlistparams;
+    }
 }

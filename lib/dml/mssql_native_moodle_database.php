@@ -46,6 +46,9 @@ class mssql_native_moodle_database extends moodle_database {
      */
     protected $supportsoffsetfetch;
 
+    /** Maximum number of list parameters (usually for SQL-IN queries). 2100 for SQL Server. */
+    const MAX_LIST_PARAMS = 2100;
+
     /**
      * Detects if all needed PHP stuff installed.
      * Note: can be used before connect()
