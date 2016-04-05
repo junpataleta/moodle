@@ -136,6 +136,9 @@ abstract class moodle_database {
      */
     private $inorequaluniqueindex = 1;
 
+    /** Maximum number of list parameters (usually for SQL-IN queries). You may override this in subclasses. 0 means no limit. */
+    const MAX_LIST_PARAMS = 0;
+
     /**
      * Constructor - Instantiates the database, specifying if it's external (connect to other systems) or not (Moodle DB).
      *              Note that this affects the decision of whether prefix checks must be performed or not.
@@ -1890,8 +1893,25 @@ abstract class moodle_database {
      * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function delete_records_list($table, $field, array $values) {
-        list($select, $params) = $this->where_clause_list($field, $values);
-        return $this->delete_records_select($table, $select, $params);
+        $result = true;
+        // Count params.
+        $paramscount = count($values);
+        // Get params count limit.
+        $limit = $this->get_max_list_params();
+
+        $chunks = [$values];
+        // If there's a params count limit and the list is too large, break down into chunks.
+        if ($limit > 0 && $paramscount > $limit) {
+            $chunks = array_chunk($values, $limit);
+        }
+
+        // Perform deletion for each chunk.
+        foreach ($chunks as $chunk) {
+            list($select, $params) = $this->where_clause_list($field, $chunk);
+            $result = $result && $this->delete_records_select($table, $select, $params);
+        }
+
+        return $result;
     }
 
     /**
@@ -2608,5 +2628,14 @@ abstract class moodle_database {
      */
     public function perf_get_queries_time() {
         return $this->queriestime;
+    }
+
+    /**
+     * Returns the maximum number of parameters (usually for SQL IN list queries) that the DB supports.
+     *
+     * @return int
+     */
+    protected function get_max_list_params() {
+        return static::MAX_LIST_PARAMS;
     }
 }
