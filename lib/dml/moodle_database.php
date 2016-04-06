@@ -1905,13 +1905,26 @@ abstract class moodle_database {
             $chunks = array_chunk($values, $limit);
         }
 
-        // Perform deletion for each chunk.
-        foreach ($chunks as $chunk) {
-            list($select, $params) = $this->where_clause_list($field, $chunk);
-            $result = $result && $this->delete_records_select($table, $select, $params);
+        $transaction = $this->start_delegated_transaction();
+        $exception = null;
+        try {
+            // Perform deletion for each chunk.
+            foreach ($chunks as $chunk) {
+                list($select, $params) = $this->where_clause_list($field, $chunk);
+                $this->delete_records_select($table, $select, $params);
+            }
+        } catch (dml_write_exception $e) {
+            $exception = $e;
+            $transaction->rollback($e);
         }
 
-        return $result;
+        if ($exception) {
+            throw $exception;
+        } else {
+            $transaction->allow_commit();
+        }
+
+        return true;
     }
 
     /**
@@ -2635,7 +2648,7 @@ abstract class moodle_database {
      *
      * @return int
      */
-    protected function get_max_list_params() {
+    public function get_max_list_params() {
         return static::MAX_LIST_PARAMS;
     }
 }

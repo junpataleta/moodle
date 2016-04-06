@@ -1804,7 +1804,7 @@ class mysqli_native_moodle_database extends moodle_database {
      *
      * @return int
      */
-    protected function get_max_list_params() {
+    public function get_max_list_params() {
         // Query the max_allowed_packet setting.
         $sql = "SHOW VARIABLES LIKE 'max_allowed_packet'";
         $this->query_start($sql, null, SQL_QUERY_AUX);

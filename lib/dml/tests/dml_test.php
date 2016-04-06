@@ -3400,9 +3400,10 @@ class core_dml_testcase extends database_driver_testcase {
 
         // Set count of records to be created to 150k by default.
         $count = 150000;
-        if ($DB::MAX_LIST_PARAMS > 0) {
+        $maxparamcount = $DB->get_max_list_params();
+        if ($maxparamcount > 0) {
             // Or if MAX_LIST_PARAMS is defined, set to 1.5x of the DB's max list params.
-            $count = 1.5 * $DB::MAX_LIST_PARAMS;
+            $count = 1.5 * $maxparamcount;
         }
 
         // Create records.
@@ -3413,6 +3414,18 @@ class core_dml_testcase extends database_driver_testcase {
             $courseids[] = $i;
         }
         $DB->insert_records($tablename, $records);
+
+        $withinvalidids = $courseids;
+        $withinvalidids[] = 'aaa';
+        try {
+            // Confirm that bulk delete proceeds okay.
+            $DB->delete_records_list($tablename, 'course', $withinvalidids);
+        } catch (dml_write_exception $e) {
+            
+        }
+
+        // Confirm that no record was deleted after failed bulk deletion.
+        $this->assertEquals(count($records), $DB->count_records($tablename));
 
         // Confirm that bulk delete proceeds okay.
         $this->assertTrue($DB->delete_records_list($tablename, 'course', $courseids));
