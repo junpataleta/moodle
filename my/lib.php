@@ -158,14 +158,18 @@ function my_reset_page_for_all_users($private = MY_PAGE_PRIVATE, $pagetype = 'my
         $usercontext = context_user::instance($page->userid);
 
         // Find all block instances in that page.
-        $blocks = $DB->get_recordset('block_instances', array('parentcontextid' => $usercontext->id,
-            'pagetypepattern' => $pagetype), '', 'id, subpagepattern');
+        $blockswhere = 'parentcontextid = :parentcontextid AND 
+            pagetypepattern = :pagetypepattern AND 
+            (subpagepattern IS NULL OR subpagepattern = :subpagepattern)';
+        $blockswhereparams = [
+            'parentcontextid' => $usercontext->id,
+            'pagetypepattern' => $pagetype,
+            'subpagepattern' => $page->id
+        ];
+        $blocks = $DB->get_records_select('block_instances', $blockswhere, $blockswhereparams, '', 'id');
         foreach ($blocks as $block) {
-            if (is_null($block->subpagepattern) || $block->subpagepattern == $page->id) {
-                $blockids[] = $block->id;
-            }
+            $blockids[] = $block->id;
         }
-        $blocks->close();
     }
     $pages->close();
 
