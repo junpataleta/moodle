@@ -2079,15 +2079,36 @@ function blocks_delete_instances($instanceids) {
     }
     $instances->close();
 
-    $DB->delete_records_list('block_positions', 'blockinstanceid', $instanceids);
-    $DB->delete_records_list('block_instances', 'id', $instanceids);
-
-    $preferences = array();
-    foreach ($instanceids as $instanceid) {
-        $preferences[] = 'block' . $instanceid . 'hidden';
-        $preferences[] = 'docked_block_instance_' . $instanceid;
+    $limit = 1000;
+    $count = count($instanceids);
+    $chunks = [$instanceids];
+    if ($count > $limit) {
+        $chunks = array_chunk($instanceids, $limit);
     }
-    $DB->delete_records_list('user_preferences', 'name', $preferences);
+
+    // Perform deletion for each chunk.
+    foreach ($chunks as $chunk) {
+        // Start transaction.
+        $transaction = $this->start_delegated_transaction();
+        try {
+            $DB->delete_records_list('block_positions', 'blockinstanceid', $chunk);
+            $DB->delete_records_list('block_instances', 'id', $chunk);
+
+            $preferences = array();
+            foreach ($chunk as $instanceid) {
+                $preferences[] = 'block' . $instanceid . 'hidden';
+                $preferences[] = 'docked_block_instance_' . $instanceid;
+            }
+            $DB->delete_records_list('user_preferences', 'name', $preferences);
+        } catch (dml_write_exception $e) {
+            // Rollback the transaction first.
+            $transaction->rollback($e);
+            // Throw after rollback.
+            throw $e;
+        }
+        // All good. Commit.
+        $transaction->allow_commit();
+    }
 }
 
 /**
