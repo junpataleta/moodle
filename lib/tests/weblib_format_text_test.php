@@ -95,4 +95,13 @@ class core_weblib_format_text_testcase extends advanced_testcase {
         $this->assertEquals('<div class="no-overflow"><p>:-)</p></div>',
                 format_text('<p>:-)</p>', FORMAT_HTML, array('overflowdiv' => true)));
     }
+
+    public function test_format_text_blanktarget() {
+        $this->resetAfterTest();
+        $expected = '<div class="text_to_html"><a href="https://www.youtube.com/watch?v=JeimE8Wz6e4" target="_blank"' .
+                ' rel="noreferrer">Hey, that\'s pretty good!</a></div>';
+        $actual = format_text('<a href="https://www.youtube.com/watch?v=JeimE8Wz6e4">Hey, that\'s pretty good!</a>', FORMAT_MOODLE,
+                array('blanktarget' => true, 'filter' => false));
+        $this->assertEquals($expected, $actual);
+    }
 }

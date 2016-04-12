@@ -1175,6 +1175,7 @@ function format_text_menu() {
  *                      with the class no-overflow before being returned. Default false.
  *      allowid     :   If true then id attributes will not be removed, even when
  *                      using htmlpurifier. Default false.
+ *      blanktarget :   If true all <a> tags will have target="_blank" added unless target is explicitly specified.
  * </pre>
  *
  * @staticvar array $croncache
@@ -1222,6 +1223,7 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
     if (!isset($options['overflowdiv'])) {
         $options['overflowdiv'] = false;
     }
+    $options['blanktarget'] = !empty($options['blanktarget']);
 
     // Calculate best context.
     if (empty($CFG->version) or $CFG->version < 2013051400 or during_initial_install()) {
@@ -1316,6 +1318,28 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
 
     if (!empty($options['overflowdiv'])) {
         $text = html_writer::tag('div', $text, array('class' => 'no-overflow'));
+    }
+
+    if ($options['blanktarget']) {
+        $flag = defined('LIBXML_HTML_NOIMPLIED') && defined('LIBXML_HTML_NODEFDTD');
+        $domdoc = new DOMDocument();
+        if ($flag) {
+            $domdoc->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        } else {
+            $domdoc->loadHTML($text);
+        }
+        array_map(function ($link) {
+            !$link->hasAttribute('target') && $link->setAttribute('target', '_blank');
+            if (strpos($link->getAttribute('rel'), 'noreferrer') === false) {
+                $link->setAttribute('rel', trim($link->getAttribute('rel') . ' noreferrer'));
+            }
+        }, iterator_to_array($domdoc->getElementsByTagName('a')));
+
+        if ($flag) {
+            $text = $domdoc->saveHTML();
+        } else {
+            $text = trim(preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', $domdoc->saveHTML()));
+        }
     }
 
     return $text;
