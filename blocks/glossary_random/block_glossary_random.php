@@ -189,7 +189,12 @@ class block_glossary_random extends block_base {
             }
         }
 
-        $modinfo = get_fast_modinfo($this->config->courseid);
+        try {
+            $modinfo = get_fast_modinfo($this->config->courseid);
+        } catch (moodle_exception $e) {
+            debugging('Invalid course ID.', DEBUG_DEVELOPER);
+        }
+
         // If deleted glossary or non-global glossary on different course page, then reset.
         if (!isset($modinfo->instances['glossary'][$this->config->glossary])
                 || ((empty($this->config->globalglossary) && ($this->config->courseid != $this->page->course->id)))) {
