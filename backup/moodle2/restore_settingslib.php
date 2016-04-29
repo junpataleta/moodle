@@ -79,6 +79,11 @@ class restore_comments_setting extends restore_role_assignments_setting {}
 class restore_badges_setting extends restore_generic_setting {}
 
 /**
+ * root setting to control if competencies will also be restored.
+ */
+class restore_competencies_setting extends restore_generic_setting {}
+
+/**
  * root setting to control if restore will create
  * events or no, depends of @restore_users_setting
  * exactly in the same way than @restore_role_assignments_setting so we extend from it

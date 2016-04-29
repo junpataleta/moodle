@@ -130,6 +130,11 @@ class backup_calendarevents_setting extends backup_anonymize_setting {}
  */
 class backup_userscompletion_setting extends backup_anonymize_setting {}
 
+/**
+ * root setting to control if backup will include competencies or not.
+ */
+class backup_competencies_setting extends backup_generic_setting {}
+
 // Section backup settings
 
 /**

@@ -266,5 +266,21 @@ class restore_root_task extends restore_task {
         $groups->set_ui(new backup_setting_ui_checkbox($groups, get_string('rootsettinggroups', 'backup')));
         $groups->get_ui()->set_changeable($changeable);
         $this->add_setting($groups);
+
+        // Competencies restore setting. Show when competencies is enabled and the setting is available.
+        $defaultvalue = false;
+        $visibility = base_setting::HIDDEN;
+        $status = base_setting::LOCKED_BY_CONFIG;
+        if (\core_competency\api::is_enabled()) {
+            $visibility = base_setting::VISIBLE;
+            if (!empty($rootsettings['competencies'])) {
+                $defaultvalue = true;
+                $status = base_setting::NOT_LOCKED;
+            }
+        }
+        $competencies = new restore_competencies_setting('competencies', base_setting::IS_BOOLEAN,
+            $defaultvalue, $visibility, $status);
+        $competencies->set_ui(new backup_setting_ui_checkbox($competencies, get_string('rootsettingcompetencies', 'backup')));
+        $this->add_setting($competencies);
     }
 }
