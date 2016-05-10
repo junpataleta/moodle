@@ -10,7 +10,13 @@ YUI.add('moodle-tool_lp-dragdrop-reorder', function (Y, NAME) {
  * @extends M.core.dragdrop
  */
 var DRAGREORDER = function() {
-    DRAGREORDER.superclass.constructor.apply(this, arguments);
+    // No need to call the M.core.dragdrop's constructor if it's already been previously initialised.
+    if (!M.tool_lp.dragDropInitialised) {
+        DRAGREORDER.superclass.constructor.apply(this, arguments);
+        M.tool_lp.dragDropInitialised = true;
+    }
+    var args = arguments[0];
+    this.moreInit(args);
 };
 
 var CSS = {
@@ -18,7 +24,7 @@ var CSS = {
     ICONCLASS: 'iconsmall'
 };
 Y.extend(DRAGREORDER, M.core.dragdrop, {
-    initializer: function(args) {
+    moreInit: function(args) {
         if (Y.one('.' + args.parentNodeClass).all('.' + args.dragHandleInsertClass).size() <= 1) {
             // We can't re-order when there is only one item.
             return;
@@ -64,6 +70,7 @@ Y.extend(DRAGREORDER, M.core.dragdrop, {
 });
 
 M.tool_lp = M.tool_lp || {};
+M.tool_lp.dragDropInitialised = M.tool_lp.dragDropInitialised || false;
 M.tool_lp.dragdrop_reorder = function(params) {
     new DRAGREORDER(params);
 };
