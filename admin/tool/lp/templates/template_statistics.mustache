@@ -46,50 +46,51 @@
 }}
 {{#competencycount}}
 <div data-region="templatestatistics" class="well">
-    <div class="clearfix">
-        <div class="span4">
+    {{< core/columns-1to2}}
+        {{$column1}}
             <div class="progresstext">
                 {{#str}}xcompetencieslinkedoutofy, tool_lp, { "x": "{{linkedcompetencycount}}", "y": "{{competencycount}}" } {{/str}}
             </div>
-        </div>
-        <div class="span6">
-            <span class="pull-right label label-info">{{linkedcompetencypercentageformatted}} %</span>
+        {{/column1}}
+        {{$column2}}
             <div class="progress">
-                <div class="bar" style="width: {{linkedcompetencypercentage}}%;"></div>
-            </div>
-        </div>
-    </div>
-    {{#plancount}}
-    <div class="clearfix">
-        <div class="span4">
-            <div class="progresstext">
-                {{#str}}xplanscompletedoutofy, tool_lp, { "x": "{{completedplancount}}", "y": "{{plancount}}" } {{/str}}
-            </div>
-        </div>
-        <div class="span6">
-            <span class="pull-right label label-info">{{completedplanpercentageformatted}} %</span>
-            <div class="progress">
-                <div class="bar" style="width: {{completedplanpercentage}}%;">
-
+                <div class="bar" style="width: {{linkedcompetencypercentage}}%;" role="progressbar" aria-valuenow="{{linkedcompetencypercentage}}" aria-valuemin="0" aria-valuemax="100">
+                    {{linkedcompetencypercentageformatted}}&nbsp;%
                 </div>
             </div>
-        </div>
-    </div>
+        {{/column2}}
+    {{/core/columns-1to2}}
+    {{#plancount}}
+        {{< core/columns-1to2}}
+            {{$column1}}
+                <div class="progresstext">
+                    {{#str}}xplanscompletedoutofy, tool_lp, { "x": "{{completedplancount}}", "y": "{{plancount}}" } {{/str}}
+                </div>
+            {{/column1}}
+            {{$column2}}
+                <div class="progress">
+                    <div class="bar" style="width: {{completedplanpercentage}}%;" role="progressbar" aria-valuenow="{{completedplanpercentage}}" aria-valuemin="0" aria-valuemax="100">
+                        {{completedplanpercentageformatted}}&nbsp;%
+                    </div>
+                </div>
+            {{/column2}}
+        {{/core/columns-1to2}}
     {{/plancount}}
     {{#usercompetencyplancount}}
-    <div  class="clearfix">
-        <div class="span4">
-            <div class="progresstext">
-                {{#str}}averageproficiencyrate, tool_lp, {{proficientusercompetencyplanpercentageformatted}} {{/str}}
-            </div>
-        </div>
-        <div class="span6">
-            <span class="pull-right label label-info">{{proficientusercompetencyplanpercentageformatted}} %</span>
-            <div class="progress">
-                <div class="bar" style="width: {{proficientusercompetencyplanpercentage}}%;"></div>
-            </div>
-        </div>
-    </div>
+        {{< core/columns-1to2}}
+            {{$column1}}
+                <div class="progresstext">
+                    {{#str}}averageproficiencyrate, tool_lp, {{proficientusercompetencyplanpercentageformatted}} {{/str}}
+                </div>
+            {{/column1}}
+            {{$column2}}
+                <div class="progress">
+                    <div class="bar" style="width: {{proficientusercompetencyplanpercentage}}%;" role="progressbar" aria-valuenow="{{proficientusercompetencyplanpercentage}}" aria-valuemin="0" aria-valuemax="100">
+                        {{proficientusercompetencyplanpercentageformatted}}&nbsp;%
+                    </div>
+                </div>
+            {{/column2}}
+        {{/core/columns-1to2}}
     {{/usercompetencyplancount}}
     {{#leastproficientcount}}
     <div>

@@ -91,17 +91,20 @@
             {{/description}}
             <dt>{{#str}}progress, tool_lp{{/str}}</dt>
             <dd>
-                <div class="span4">
+            {{< core/columns-1to2}}
+                {{$column1}}
                     <div class="progresstext">
                         {{#str}}xcompetenciesproficientoutofy, tool_lp, { "x": "{{proficientcompetencycount}}", "y": "{{competencycount}}" }{{/str}}
                     </div>
-                </div>
-                <div class="span4">
-                    <span class="pull-right label label-info">{{proficientcompetencypercentageformatted}} %</span>
+                {{/column1}}
+                {{$column2}}
                     <div class="progress">
-                        <div class="bar" style="width: {{proficientcompetencypercentage}}%;"></div>
+                        <div class="bar" style="width: {{proficientcompetencypercentage}}%;" role="progressbar" aria-valuenow="{{proficientcompetencypercentage}}" aria-valuemin="0" aria-valuemax="100">
+                            {{proficientcompetencypercentageformatted}}&nbsp;%
+                        </div>
                     </div>
-                </div>
+                {{/column2}}
+            {{/core/columns-1to2}}
             </dd>
         </dl>
     </div>

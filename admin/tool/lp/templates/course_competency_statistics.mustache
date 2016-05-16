@@ -45,19 +45,20 @@
 {{#competencycount}}
 <div data-region="coursecompetencystatistics" class="well">
     {{#canbegradedincourse}}
-    <div class="clearfix">
-        <div class="span6">
-            <div class="progresstext">
-                {{#str}}xcompetenciesproficientoutofyincourse, tool_lp, { "x": "{{proficientcompetencycount}}", "y": "{{competencycount}}" } {{/str}}
-            </div>
-        </div>
-        <div class="span6">
-            <span class="pull-right label label-info">{{proficientcompetencypercentageformatted}} %</span>
-            <div class="progress">
-                <div class="bar" style="width: {{proficientcompetencypercentage}}%;"></div>
-            </div>
-        </div>
-    </div>
+        {{< core/columns-1to2}}
+            {{$column1}}
+                <div class="progresstext">
+                    {{#str}}xcompetenciesproficientoutofyincourse, tool_lp, { "x": "{{proficientcompetencycount}}", "y": "{{competencycount}}" } {{/str}}
+                </div>
+            {{/column1}}
+            {{$column2}}
+                <div class="progress">
+                    <div class="bar" style="width: {{proficientcompetencypercentage}}%;" role="progressbar" aria-valuenow="{{proficientcompetencypercentage}}" aria-valuemin="0" aria-valuemax="100">
+                        {{proficientcompetencypercentageformatted}}&nbsp;%
+                    </div>
+                </div>
+            {{/column2}}
+        {{/core/columns-1to2}}
     {{/canbegradedincourse}}
     {{#canmanagecoursecompetencies}}
     {{#leastproficientcount}}
