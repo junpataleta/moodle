@@ -29,6 +29,9 @@ define('BGR_NEXTALPHA',    '3');
 
 class block_glossary_random extends block_base {
 
+    /** @var false|stdClass This block instance's glossary record. */
+    protected $glossaryrecord = false;
+
     function init() {
         $this->title = get_string('pluginname','block_glossary_random');
     }
@@ -66,17 +69,12 @@ class block_glossary_random extends block_base {
             }
 
             // Get glossary instance, if not found then return without error, as this will be handled in get_content.
-            if (!$glossary = $DB->get_record('glossary', array('id' => $this->config->glossary))) {
+            if (!$this->glossaryrecord = $DB->get_record('glossary', array('id' => $this->config->glossary))) {
                 return false;
             }
 
-            $this->config->globalglossary = $glossary->globalglossary;
-
-            // Save course id in config, so we can get correct course module.
-            $this->config->courseid = $glossary->course;
-
             // Get module and context, to be able to rewrite urls
-            if (! $cm = get_coursemodule_from_instance('glossary', $glossary->id, $this->config->courseid)) {
+            if (!$cm = get_coursemodule_from_instance('glossary', $this->glossaryrecord->id, $this->glossaryrecord->course)) {
                 return false;
             }
             $glossaryctx = context_module::instance($cm->id);
@@ -163,61 +161,44 @@ class block_glossary_random extends block_base {
     }
 
     function get_content() {
-        global $USER, $CFG, $DB;
+        global $CFG, $DB;
 
-        if (empty($this->config->glossary)) {
-            $this->content = new stdClass();
-            if ($this->user_can_edit()) {
-                $this->content->text = get_string('notyetconfigured','block_glossary_random');
-            } else {
-                $this->content->text = '';
-            }
-            $this->content->footer = '';
+        if ($this->content !== NULL) {
             return $this->content;
         }
 
-        require_once($CFG->dirroot.'/course/lib.php');
+        if (empty($this->config->glossary)) {
+            return $this->generate_empty_content();
+        }
 
-        // If $this->config->globalglossary is not set then get glossary info from db.
-        if (!isset($this->config->globalglossary)) {
-            if (!$glossary = $DB->get_record('glossary', array('id' => $this->config->glossary))) {
-                return '';
-            } else {
-                $this->config->courseid = $glossary->course;
-                $this->config->globalglossary = $glossary->globalglossary;
-                $this->instance_config_commit();
+        // Check if we a have the cached glossary record.
+        if ($this->glossaryrecord === false) {
+            // Query the DB if there's no cached glossary record.
+            if (!$this->glossaryrecord = $DB->get_record('glossary', array('id' => $this->config->glossary))) {
+                // If there's no record fetched, just generate empty content.
+                return $this->generate_empty_content();
             }
         }
 
-        $modinfo = get_fast_modinfo($this->config->courseid);
+        $modinfo = get_fast_modinfo($this->glossaryrecord->course);
+
         // If deleted glossary or non-global glossary on different course page, then reset.
         if (!isset($modinfo->instances['glossary'][$this->config->glossary])
-                || ((empty($this->config->globalglossary) && ($this->config->courseid != $this->page->course->id)))) {
+                || ((empty($this->glossaryrecord->globalglossary) && ($this->glossaryrecord->course != $this->page->course->id)))) {
             $this->config->glossary = 0;
             $this->config->cache = '';
             $this->instance_config_commit();
 
-            $this->content = new stdClass();
-            if ($this->user_can_edit()) {
-                $this->content->text = get_string('notyetconfigured','block_glossary_random');
-            } else {
-                $this->content->text = '';
-            }
-            $this->content->footer = '';
-            return $this->content;
+            return $this->generate_empty_content();
         }
 
         $cm = $modinfo->instances['glossary'][$this->config->glossary];
         if (!has_capability('mod/glossary:view', context_module::instance($cm->id))) {
-            return '';
+            return $this->generate_empty_content();
         }
 
         if (empty($this->config->cache)) {
             $this->config->cache = '';
-        }
-
-        if ($this->content !== NULL) {
-            return $this->content;
         }
 
         $this->content = new stdClass();
@@ -239,6 +220,24 @@ class block_glossary_random extends block_base {
         } else {
             $this->content->footer = $this->config->invisible;
         }
+
+        return $this->content;
+    }
+
+    /**
+     * Generates a default, empty content object.
+     *
+     * @return stdClass This block's content.
+     * @throws coding_exception
+     */
+    protected function generate_empty_content() {
+        $this->content = new stdClass();
+        if ($this->user_can_edit()) {
+            $this->content->text = get_string('notyetconfigured', 'block_glossary_random');
+        } else {
+            $this->content->text = '';
+        }
+        $this->content->footer = '';
 
         return $this->content;
     }
