@@ -146,26 +146,39 @@ function my_reset_page($userid, $private=MY_PAGE_PRIVATE, $pagetype='my-index') 
 function my_reset_page_for_all_users($private = MY_PAGE_PRIVATE, $pagetype = 'my-index') {
     global $DB;
 
+    // This may take a while. Raise the execution time limit.
+    core_php_time_limit::raise();
+
     // Find all the user pages.
     $where = 'userid IS NOT NULL AND private = :private';
     $params = array('private' => $private);
     $pages = $DB->get_recordset_select('my_pages', $where, $params, 'id, userid');
     $pageids = array();
-    $blockids = array();
+    $usercontextids = array();
+
+    // Flag to indicate if we also have some block instances to delete.
+    $hasblocks = false;
 
     foreach ($pages as $page) {
         $pageids[] = $page->id;
         $usercontext = context_user::instance($page->userid);
 
-        // Find all block instances in that page.
-        $blocks = $DB->get_recordset('block_instances', array('parentcontextid' => $usercontext->id,
-            'pagetypepattern' => $pagetype), '', 'id, subpagepattern');
-        foreach ($blocks as $block) {
-            if (is_null($block->subpagepattern) || $block->subpagepattern == $page->id) {
-                $blockids[] = $block->id;
-            }
+        if (!in_array($usercontext->id, $usercontextids)) {
+            $usercontextids[] = $usercontext->id;
         }
-        $blocks->close();
+
+        // Check if we have blocks to delete.
+        if (!$hasblocks) {
+            $blockswhere = 'parentcontextid = :parentcontextid AND 
+                            pagetypepattern = :pagetypepattern AND 
+                            (subpagepattern IS NULL OR subpagepattern = :subpagepattern)';
+            $blockswhereparams = [
+                'parentcontextid' => $usercontext->id,
+                'pagetypepattern' => $pagetype,
+                'subpagepattern' => $page->id
+            ];
+            $hasblocks = $DB->count_records_select('block_instances', $blockswhere, $blockswhereparams) > 0;
+        }
     }
     $pages->close();
 
@@ -173,14 +186,13 @@ function my_reset_page_for_all_users($private = MY_PAGE_PRIVATE, $pagetype = 'my
     $transaction = $DB->start_delegated_transaction();
 
     // Delete the block instances.
-    if (!empty($blockids)) {
-        blocks_delete_instances($blockids);
+    if ($hasblocks) {
+        blocks_delete_instances_by_params($usercontextids, $pagetype, $pageids);
     }
 
     // Finally delete the pages.
     if (!empty($pageids)) {
-        list($insql, $inparams) = $DB->get_in_or_equal($pageids);
-        $DB->delete_records_select('my_pages', "id $insql", $pageids);
+        $DB->delete_records_select('my_pages', $where, $params);
     }
 
     // We should be good to go now.

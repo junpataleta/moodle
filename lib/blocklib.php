@@ -2091,6 +2091,77 @@ function blocks_delete_instances($instanceids) {
 }
 
 /**
+ * Perform block instance, position and user preference based on given query parameters.
+ *
+ * @param array $parentcontextids A list of parent context IDs.
+ * @param string $pagetypepattern The page type pattern.
+ * @param array $subpagepatterns A list of subpage patterns.
+ */
+function blocks_delete_instances_by_params($parentcontextids = [], $pagetypepattern = null, $subpagepatterns = []) {
+    global $DB;
+
+    // Subquery for getting ID numbers of block instances that we want to delete.
+    $blockssubwhere = "parentcontextid = :parentcontextid 
+                       AND pagetypepattern = :pagetypepattern 
+                       AND (subpagepattern IS NULL OR subpagepattern = :subpagepattern)";
+    $blockssubselect = "SELECT id 
+                          FROM {block_instances} 
+                         WHERE {$blockssubwhere}";
+
+    // Subquery for getting block instance-related user preferences that we want to delete.
+    $blockidhidden = $DB->sql_concat("'block'", 'id', "'hidden'");
+    $dockedblockinstanceid = $DB->sql_concat("'docked_block_instance_'", 'id');
+    $userprefssubsql = "SELECT {$blockidhidden} 
+                          FROM {block_instances} 
+                         WHERE {$blockssubwhere}
+                         UNION
+                        SELECT {$dockedblockinstanceid}     
+                          FROM {block_instances} 
+                         WHERE parentcontextid = :parentcontextid2 
+                               AND pagetypepattern = :pagetypepattern2 
+                               AND (subpagepattern IS NULL OR subpagepattern = :subpagepattern2)";
+
+    // Where part query fragment for deleting block positions.
+    $delblockpositionsselect = "blockinstanceid IN ($blockssubselect)";
+    // Where part query fragment for deleting block instances.
+    $delblockinstancesselect = "id IN ($blockssubselect)";
+    // Where part query fragment for deleting user preferences.
+    $deluserprefsselect = "name IN ($userprefssubsql)";
+
+    foreach ($parentcontextids as $parentcontextid) {
+        foreach ($subpagepatterns as $subpagepattern) {
+            // Subquery parameters.
+            $params = [
+                'parentcontextid' => $parentcontextid,
+                'pagetypepattern' => $pagetypepattern,
+                'subpagepattern' => $subpagepattern
+            ];
+
+            $instances = $DB->get_recordset_select('block_instances', $blockssubwhere, $params);
+            foreach ($instances as $instance) {
+                blocks_delete_instance($instance, false, true);
+            }
+            $instances->close();
+
+            // Delete block positions.
+            $DB->delete_records_select('block_positions', $delblockpositionsselect, $params);
+
+            // Delete block instances.
+            $DB->delete_records_select('block_instances', $delblockinstancesselect, $params);
+
+            // Delete related user preferences.
+            $params2 = [
+                'parentcontextid2' => $parentcontextid,
+                'pagetypepattern2' => $pagetypepattern,
+                'subpagepattern2' => $subpagepattern
+            ];
+            $params2 = array_merge($params, $params2);
+            $DB->delete_records_select('user_preferences', $deluserprefsselect, $params2);
+        }
+    }
+}
+
+/**
  * Delete all the blocks that belong to a particular context.
  *
  * @param int $contextid the context id.
