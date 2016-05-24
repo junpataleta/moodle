@@ -2070,7 +2070,7 @@ function blocks_delete_instance($instance, $nolongerused = false, $skipblockstab
  *
  * @param array $instanceids A list of block instance ID.
  */
-function blocks_delete_instances($instanceids) {
+function blocks_delete_instances($instanceids, $parentcontextids = null, $pagetypepattern = null, $subpagepatterns = null) {
     global $DB;
 
     $instances = $DB->get_recordset_list('block_instances', 'id', $instanceids);
@@ -2079,15 +2079,65 @@ function blocks_delete_instances($instanceids) {
     }
     $instances->close();
 
-    $DB->delete_records_list('block_positions', 'blockinstanceid', $instanceids);
-    $DB->delete_records_list('block_instances', 'id', $instanceids);
+    if ($parentcontextids !== null && $pagetypepattern !== null && $subpagepatterns !== null) {
+        foreach ($parentcontextids as $parentcontextid) {
+            foreach ($subpagepatterns as $subpagepattern) {
+                $params = [
+                    'parentcontextid' => $parentcontextid,
+                    'pagetypepattern' => $pagetypepattern,
+                    'subpagepattern' => $subpagepattern
+                ];
+                $blockssubsql = "
+                    SELECT id 
+                    FROM {block_instances} 
+                    WHERE parentcontextid = :parentcontextid 
+                    AND pagetypepattern = :pagetypepattern 
+                    AND (subpagepattern IS NULL OR subpagepattern = :subpagepattern)
+                    ";
+                $delblockpositionssql = "DELETE FROM {block_positions} WHERE blockinstanceid IN ($blockssubsql)";
+                $DB->execute($delblockpositionssql, $params);
 
-    $preferences = array();
-    foreach ($instanceids as $instanceid) {
-        $preferences[] = 'block' . $instanceid . 'hidden';
-        $preferences[] = 'docked_block_instance_' . $instanceid;
+                $delblockinstancessql = "DELETE FROM {block_instances} WHERE id IN ($blockssubsql)";
+                $DB->execute($delblockinstancessql, $params);
+
+                $userprefssubsql = "
+                    SELECT 
+                      " . $DB->sql_concat("'block'", 'id', "'hidden'") . " 
+                    FROM {block_instances} 
+                    WHERE 
+                      parentcontextid = :parentcontextid2 AND 
+                      pagetypepattern = :pagetypepattern2 AND 
+                      (subpagepattern IS NULL OR subpagepattern = :subpagepattern2)
+                    UNION
+                    SELECT 
+                      " . $DB->sql_concat("'docked_block_instance_'", 'id') . "
+                    FROM {block_instances} 
+                    WHERE 
+                      parentcontextid = :parentcontextid AND 
+                      pagetypepattern = :pagetypepattern AND 
+                      (subpagepattern IS NULL OR subpagepattern = :subpagepattern)";
+                $params2 = [
+                    'parentcontextid2' => $parentcontextid,
+                    'pagetypepattern2' => $pagetypepattern,
+                    'subpagepattern2' => $subpagepattern
+                ];
+
+                $deluserprefssql = "DELETE FROM {user_preferences} WHERE name IN ($userprefssubsql)";
+                $DB->execute($deluserprefssql, array_merge($params, $params2));
+            }
+        }
+    } else {
+        // Do the old implementation of deleting based on the list of instance IDs.
+        $DB->delete_records_list('block_positions', 'blockinstanceid', $instanceids);
+        $DB->delete_records_list('block_instances', 'id', $instanceids);
+
+        $preferences = array();
+        foreach ($instanceids as $instanceid) {
+            $preferences[] = 'block' . $instanceid . 'hidden';
+            $preferences[] = 'docked_block_instance_' . $instanceid;
+        }
+        $DB->delete_records_list('user_preferences', 'name', $preferences);
     }
-    $DB->delete_records_list('user_preferences', 'name', $preferences);
 }
 
 /**
