@@ -183,7 +183,7 @@ function my_reset_page_for_all_users($private = MY_PAGE_PRIVATE, $pagetype = 'my
 
     // Delete the block instances.
     if (!empty($blockids)) {
-        blocks_delete_instances($blockids, $usercontextids, $pagetype, $usercontextids);
+        blocks_delete_instances($blockids, $usercontextids, $pagetype, $pageids);
     }
 
     // Finally delete the pages.

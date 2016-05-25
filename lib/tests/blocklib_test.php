@@ -542,6 +542,62 @@ class core_blocklib_testcase extends advanced_testcase {
         context_block::instance($tokeep);   // Would throw an exception if it was deleted.
     }
 
+    public function test_delete_a_lot_of_instances() {
+        global $DB, $USER;
+        $this->purge_blocks();
+        $this->setAdminUser();
+
+        $regionname = 'a-region';
+        $blockname = $this->get_a_known_block_type();
+        $context = context_system::instance();
+        $count = 100;
+
+        list($page, $blockmanager) = $this->get_a_page_and_block_manager(array($regionname), $context, 'my-index');
+
+        $blocknames = [];
+        for ($i = 0; $i < $count; $i++) {
+            $blocknames[] = $blockname;
+        }
+        $blockmanager->add_blocks([$regionname => $blocknames], null, null, false, 3);
+        $blockmanager->load_blocks();
+
+        $blocks = $blockmanager->get_blocks_for_region($regionname);
+        $blockids = array();
+        $preferences = array();
+
+        // Create block related data.
+        foreach ($blocks as $block) {
+            $instance = $block->instance;
+            $pref = 'block' . $instance->id . 'hidden';
+            set_user_preference($pref, "{$USER->id}", $USER->id);
+            $preferences[] = $pref;
+            $pref = 'docked_block_instance_' . $instance->id;
+            set_user_preference($pref, "{$USER->id}", $USER->id);
+            $preferences[] = $pref;
+            blocks_set_visibility($instance, $page, 1);
+            $blockids[] = $instance->id;
+        }
+
+        // Confirm what has been set.
+        $this->assertCount($count, $blockids);
+        list($insql, $inparams) = $DB->get_in_or_equal($blockids);
+        $this->assertEquals($count, $DB->count_records_select('block_positions', "blockinstanceid $insql", $inparams));
+        list($insql, $inparams) = $DB->get_in_or_equal($preferences);
+        $this->assertEquals($count * 2, $DB->count_records_select('user_preferences', "name $insql", $inparams));
+
+
+        $usercontext = context_user::instance($USER->id);
+
+        // Delete and confirm what should have happened.
+        blocks_delete_instances($blockids, [$usercontext->id], $regionname, []);
+
+        // Reload the manager.
+        list($page, $blockmanager) = $this->get_a_page_and_block_manager(array($regionname), $context, 'page-type');
+        $blockmanager->load_blocks();
+        $blocks = $blockmanager->get_blocks_for_region($regionname);
+
+        $this->assertCount(0, $blocks);
+    }
 }
 
 /**

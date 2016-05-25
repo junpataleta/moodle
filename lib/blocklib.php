@@ -2069,6 +2069,9 @@ function blocks_delete_instance($instance, $nolongerused = false, $skipblockstab
  * Delete multiple blocks at once.
  *
  * @param array $instanceids A list of block instance ID.
+ * @param array $parentcontextids A list of parent context IDs.
+ * @param string $pagetypepattern The page type pattern.
+ * @param array $subpagepatterns A list of subpage patterns.
  */
 function blocks_delete_instances($instanceids, $parentcontextids = null, $pagetypepattern = null, $subpagepatterns = null) {
     global $DB;
@@ -2082,48 +2085,52 @@ function blocks_delete_instances($instanceids, $parentcontextids = null, $pagety
     if ($parentcontextids !== null && $pagetypepattern !== null && $subpagepatterns !== null) {
         foreach ($parentcontextids as $parentcontextid) {
             foreach ($subpagepatterns as $subpagepattern) {
+                // Subquery paramters.
                 $params = [
                     'parentcontextid' => $parentcontextid,
                     'pagetypepattern' => $pagetypepattern,
                     'subpagepattern' => $subpagepattern
                 ];
-                $blockssubsql = "
-                    SELECT id 
-                    FROM {block_instances} 
-                    WHERE parentcontextid = :parentcontextid 
-                    AND pagetypepattern = :pagetypepattern 
-                    AND (subpagepattern IS NULL OR subpagepattern = :subpagepattern)
-                    ";
-                $delblockpositionssql = "DELETE FROM {block_positions} WHERE blockinstanceid IN ($blockssubsql)";
-                $DB->execute($delblockpositionssql, $params);
 
-                $delblockinstancessql = "DELETE FROM {block_instances} WHERE id IN ($blockssubsql)";
-                $DB->execute($delblockinstancessql, $params);
+                // Subquery for getting ID numbers of block instances that we want to delete.
+                $blockssubsql = "SELECT id 
+                                   FROM {block_instances} 
+                                  WHERE parentcontextid = :parentcontextid 
+                                        AND pagetypepattern = :pagetypepattern 
+                                        AND (subpagepattern IS NULL OR subpagepattern = :subpagepattern)";
 
-                $userprefssubsql = "
-                    SELECT 
-                      " . $DB->sql_concat("'block'", 'id', "'hidden'") . " 
-                    FROM {block_instances} 
-                    WHERE 
-                      parentcontextid = :parentcontextid2 AND 
-                      pagetypepattern = :pagetypepattern2 AND 
-                      (subpagepattern IS NULL OR subpagepattern = :subpagepattern2)
-                    UNION
-                    SELECT 
-                      " . $DB->sql_concat("'docked_block_instance_'", 'id') . "
-                    FROM {block_instances} 
-                    WHERE 
-                      parentcontextid = :parentcontextid AND 
-                      pagetypepattern = :pagetypepattern AND 
-                      (subpagepattern IS NULL OR subpagepattern = :subpagepattern)";
+                // Delete block positions.
+                $delblockpositionsselect = "blockinstanceid IN ($blockssubsql)";
+                $DB->delete_records_select('block_positions', $delblockpositionsselect, $params);
+
+                // Delete block instances.
+                $delblockinstancesselect = "id IN ($blockssubsql)";
+                $DB->delete_records_select('block_instances', $delblockinstancesselect, $params);
+
+                // Subquery for getting block instance-related user preferences that we want to delete.
+                $blockidhidden = $DB->sql_concat("'block'", 'id', "'hidden'");
+                $dockedblockinstanceid = $DB->sql_concat("'docked_block_instance_'", 'id');
+                $userprefssubsql = "SELECT {$blockidhidden} 
+                                      FROM {block_instances} 
+                                     WHERE parentcontextid = :parentcontextid 
+                                           AND pagetypepattern = :pagetypepattern 
+                                           AND (subpagepattern IS NULL OR subpagepattern = :subpagepattern)
+                                     UNION
+                                    SELECT {$dockedblockinstanceid}     
+                                      FROM {block_instances} 
+                                     WHERE parentcontextid = :parentcontextid2 
+                                           AND pagetypepattern = :pagetypepattern2 
+                                           AND (subpagepattern IS NULL OR subpagepattern = :subpagepattern2)";
                 $params2 = [
                     'parentcontextid2' => $parentcontextid,
                     'pagetypepattern2' => $pagetypepattern,
                     'subpagepattern2' => $subpagepattern
                 ];
 
-                $deluserprefssql = "DELETE FROM {user_preferences} WHERE name IN ($userprefssubsql)";
-                $DB->execute($deluserprefssql, array_merge($params, $params2));
+                // Delete related user preferences.
+                $deluserprefsselect = "name IN ($userprefssubsql)";
+                $params2 = array_merge($params, $params2);
+                $DB->delete_records_select('user_preferences', $deluserprefsselect, $params2);
             }
         }
     } else {
