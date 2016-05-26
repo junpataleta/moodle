@@ -2076,16 +2076,10 @@ function blocks_delete_instance($instance, $nolongerused = false, $skipblockstab
 function blocks_delete_instances($instanceids, $parentcontextids = null, $pagetypepattern = null, $subpagepatterns = null) {
     global $DB;
 
-    $instances = $DB->get_recordset_list('block_instances', 'id', $instanceids);
-    foreach ($instances as $instance) {
-        blocks_delete_instance($instance, false, true);
-    }
-    $instances->close();
-
     if ($parentcontextids !== null && $pagetypepattern !== null && $subpagepatterns !== null) {
         foreach ($parentcontextids as $parentcontextid) {
             foreach ($subpagepatterns as $subpagepattern) {
-                // Subquery paramters.
+                // Subquery parameters.
                 $params = [
                     'parentcontextid' => $parentcontextid,
                     'pagetypepattern' => $pagetypepattern,
@@ -2098,6 +2092,12 @@ function blocks_delete_instances($instanceids, $parentcontextids = null, $pagety
                                   WHERE parentcontextid = :parentcontextid 
                                         AND pagetypepattern = :pagetypepattern 
                                         AND (subpagepattern IS NULL OR subpagepattern = :subpagepattern)";
+
+                $instances = $DB->get_recordset_select('block_instances', $blockssubsql, $params);
+                foreach ($instances as $instance) {
+                    blocks_delete_instance($instance, false, true);
+                }
+                $instances->close();
 
                 // Delete block positions.
                 $delblockpositionsselect = "blockinstanceid IN ($blockssubsql)";
@@ -2135,6 +2135,12 @@ function blocks_delete_instances($instanceids, $parentcontextids = null, $pagety
         }
     } else {
         // Do the old implementation of deleting based on the list of instance IDs.
+        $instances = $DB->get_recordset_list('block_instances', 'id', $instanceids);
+        foreach ($instances as $instance) {
+            blocks_delete_instance($instance, false, true);
+        }
+        $instances->close();
+
         $DB->delete_records_list('block_positions', 'blockinstanceid', $instanceids);
         $DB->delete_records_list('block_instances', 'id', $instanceids);
 
