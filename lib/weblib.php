@@ -1321,13 +1321,12 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
     }
 
     if ($options['blanktarget']) {
-        $flag = defined('LIBXML_HTML_NOIMPLIED') && defined('LIBXML_HTML_NODEFDTD');
-        $domdoc = new DOMDocument();
-        if ($flag) {
-            $domdoc->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        } else {
-            $domdoc->loadHTML($text);
+        $options = 0;
+        if (defined('LIBXML_HTML_NOIMPLIED') && defined('LIBXML_HTML_NODEFDTD')) {
+            $options = LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD;
         }
+        $domdoc = new DOMDocument();
+        $domdoc->loadHTML($text, $options);
         array_map(function ($link) {
             !$link->hasAttribute('target') && $link->setAttribute('target', '_blank');
             if (strpos($link->getAttribute('rel'), 'noreferrer') === false) {
@@ -1335,7 +1334,7 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
             }
         }, iterator_to_array($domdoc->getElementsByTagName('a')));
 
-        if ($flag) {
+        if ($options) {
             $text = $domdoc->saveHTML();
         } else {
             $text = trim(preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', $domdoc->saveHTML()));

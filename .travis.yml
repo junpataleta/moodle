@@ -144,7 +144,7 @@ script:
     - >
       if [ "$PHPUNIT" = 'true' ];
       then
-        vendor/bin/phpunit;
+        vendor/bin/phpunit core_weblib_format_text_testcase lib/tests/weblib_format_text_test.php;
       fi
 
     ########################################################################
