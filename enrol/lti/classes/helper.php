@@ -465,6 +465,34 @@ class helper {
     }
 
     /**
+     * Returns the url to the tool proxy registration url.
+     *
+     * If you have slash arguments enabled, this will be a nice url ending in cartridge.xml.
+     * If not it will be a php page with some parameters passed.
+     *
+     * @param stdClass $tool The lti tool
+     * @return string The url to the cartridge representing the tool
+     */
+    public static function get_proxy_url($tool) {
+        global $CFG;
+        $url = null;
+
+        $id = $tool->id;
+        $token = self::generate_tool_token($tool->id);
+        if ($CFG->slasharguments) {
+            $url = new \moodle_url('/enrol/lti/proxy.php/' . $id . '/' . $token . '/');
+        } else {
+            $url = new \moodle_url('/enrol/lti/proxy.php',
+                    array(
+                        'id' => $id,
+                        'token' => $token
+                    )
+                );
+        }
+        return $url;
+    }
+
+    /**
      * Returns a unique hash for this site and this enrolment instance.
      *
      * Used to verify that the link to the cartridge has not just been guessed.

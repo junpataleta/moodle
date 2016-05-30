@@ -69,13 +69,15 @@ class manage_table extends \table_sql {
 
         $this->define_columns(array(
             'name',
-            'url',
+            'cartridge_url',
+            'proxy_url',
             'secret',
             'edit'
         ));
         $this->define_headers(array(
             get_string('name'),
-            get_string('url'),
+            get_string('cartridgeurl', 'enrol_lti'),
+            get_string('proxyurl', 'enrol_lti'),
             get_string('secret', 'enrol_lti'),
             get_string('edit')
         ));
@@ -102,13 +104,25 @@ class manage_table extends \table_sql {
     }
 
     /**
-     * Generate the URL column.
+     * Generate the cartridge URL column.
      *
      * @param \stdClass $tool event data.
      * @return string
      */
-    public function col_url($tool) {
+    public function col_cartridge_url($tool) {
         $url = helper::get_cartridge_url($tool);
+
+        return $this->get_copyable_text($tool, $url);
+    }
+
+    /**
+     * Generate the proxy URL column.
+     *
+     * @param \stdClass $tool event data.
+     * @return string
+     */
+    public function col_proxy_url($tool) {
+        $url = helper::get_proxy_url($tool);
 
         return $this->get_copyable_text($tool, $url);
     }
