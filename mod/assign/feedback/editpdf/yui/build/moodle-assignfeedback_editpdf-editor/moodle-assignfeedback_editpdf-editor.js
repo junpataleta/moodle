@@ -3866,6 +3866,7 @@ EDITOR.prototype = {
                      y: e.clientY - offset[1] + scrolltop},
             selected = false,
             lastannotation;
+            // bounds = this.get_canvas_bounds();
 
         // Ignore right mouse click.
         if (e.button === 3) {
@@ -3880,6 +3881,13 @@ EDITOR.prototype = {
             return;
         }
 
+        // Ignore events out of the canvas area.
+        // if (point.x < 0 || point.x > bounds.width || point.y < 0 || point.y > bounds.height) {
+        //     // Reset the current annotation.
+        //     this.currentannotation = null;
+        //     return;
+        // }
+
         this.currentedit.starttime = new Date().getTime();
         this.currentedit.start = point;
         this.currentedit.end = {x: point.x, y: point.y};
@@ -3893,6 +3901,7 @@ EDITOR.prototype = {
                 if (((x - annotation.x) * (x - annotation.endx)) <= 0 &&
                     ((y - annotation.y) * (y - annotation.endy)) <= 0) {
                     selected = annotation;
+                    return;
                 }
             });
 
@@ -3948,8 +3957,26 @@ EDITOR.prototype = {
 
         if (this.currentedit.tool === 'select') {
             if (this.currentannotation && this.currentedit) {
-                this.currentannotation.move(this.currentedit.annotationstart.x + point.x - this.currentedit.start.x,
-                                             this.currentedit.annotationstart.y + point.y - this.currentedit.start.y);
+                var annotationWidth = this.currentannotation.endx - this.currentannotation.x;
+                var annotationHeight = this.currentannotation.endy - this.currentannotation.y;
+                // Set the maximum coordinates that the annotation can move to.
+                var maxMoveX = bounds.width - annotationWidth;
+                var maxMoveY = bounds.height - annotationHeight;
+                // Calculate the coordinates that the annotation will move to.
+                var moveX = this.currentedit.annotationstart.x + point.x - this.currentedit.start.x;
+                var moveY = this.currentedit.annotationstart.y + point.y - this.currentedit.start.y;
+                // Allow to move only if the new location does not make the annotation go out of the canvas' bounds.
+                if (moveX < 0) {
+                    moveX = 0;
+                } else if (moveX > maxMoveX) {
+                    moveX = maxMoveX;
+                }
+                if (moveY < 0) {
+                    moveY = 0;
+                } else if (moveY > maxMoveY) {
+                    moveY = maxMoveY;
+                }
+                this.currentannotation.move(moveX, moveY);
             }
         } else if (this.currentedit.tool === 'drag') {
             diffX = point.x - this.currentedit.start.x;
@@ -4158,9 +4185,38 @@ EDITOR.prototype = {
         while (this.drawables.length > 0) {
             this.drawables.pop().erase();
         }
-
+        var bounds = this.get_canvas_bounds();
         for (i = 0; i < page.annotations.length; i++) {
-            this.drawables.push(page.annotations[i].draw());
+            var annotation = page.annotations[i];
+            if (annotation.type === 'line') {
+            }
+
+            var annotationWidth = Math.abs(annotation.endx - annotation.x),
+                annotationHeight = Math.abs(annotation.endy - annotation.y),
+                maxX = bounds.width - annotationWidth,
+                maxY = bounds.height - annotationHeight;
+            // Adjust the x and y coordinates of the annotation object if they are out of bounds.
+            if (annotation.x < 0) {
+                annotation.x = 0;
+            } else if (annotation.x > maxX) {
+                annotation.x = maxX;
+            }
+            if (annotation.endx < 0) {
+                annotation.endx = 0;
+            } else if (annotation.endx > maxX) {
+                annotation.endx = maxX;
+            }
+            if (annotation.y < 0) {
+                annotation.y = 0;
+            } else if (annotation.y > maxY) {
+                annotation.y = maxY;
+            }
+            if (annotation.endy < 0) {
+                annotation.endy = 0;
+            } else if (annotation.endy > maxY) {
+                annotation.endy = maxY;
+            }
+            this.drawables.push(annotation.draw());
         }
         for (i = 0; i < page.comments.length; i++) {
             this.drawables.push(page.comments[i].draw(false));
@@ -4197,6 +4253,8 @@ EDITOR.prototype = {
         drawingcanvas.setStyle('backgroundImage', 'url("' + page.url + '")');
         drawingcanvas.setStyle('width', page.width + 'px');
         drawingcanvas.setStyle('height', page.height + 'px');
+        drawingcanvas.setStyle('border-style', 'solid');
+        drawingcanvas.setStyle('border-width', '1px');
 
         // Update page select.
         this.get_dialogue_element(SELECTOR.PAGESELECT).set('selectedIndex', this.currentpage);
