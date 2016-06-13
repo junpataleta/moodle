@@ -31,6 +31,7 @@ use templatable;
 use stdClass;
 use moodle_url;
 use html_writer;
+use \mod_threesixty\api;
 
 /**
  * Class containing data for users that need to be given with 360 feedback.
@@ -38,11 +39,11 @@ use html_writer;
  * @copyright  2015 Jun Pataleta
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class profile_360_member implements \renderable, \templatable {
-    private $userid;
+class questionnaire implements \renderable, \templatable {
+    protected $submissionid;
 
-    public function __construct($userid) {
-        $this->userid = $userid;
+    public function __construct($submissionid) {
+        $this->submissionid = $submissionid;
     }
 
     /**
@@ -55,14 +56,49 @@ class profile_360_member implements \renderable, \templatable {
      * @return stdClass|array
      */
     public function export_for_template(renderer_base $output) {
-        global $DB, $PAGE;
-
         $data = new stdClass();
 
-        if ($touser = $DB->get_record('user', array('id' => $this->userid), '*', MUST_EXIST)) {
-            $data->title = get_string('feedbacksurvey', 'feedback', $touser->firstname . ' ' . $touser->lastname);
+        $submission = api::get_submission($this->submissionid);
+        switch ($submission->status) {
+            case api::STATUS_IN_PROGRESS: // In Progress.
+                $data->statusclass = 'label-info';
+                $data->status = get_string('statusinprogress', 'threesixty');
+                break;
+            case api::STATUS_COMPLETE: // Completed.
+                $data->statusclass = 'label-success';
+                $data->status = get_string('statuscompleted', 'threesixty');
+                break;
+            case api::STATUS_DECLINED: // Declined.
+                $data->statusclass = 'label-warning';
+                $data->status = get_string('statusdeclined', 'threesixty');
+                break;
+            default: // Pending.
+                $data->statusclass = 'label';
+                $data->status = get_string('statuspending', 'threesixty');
+                break;
         }
+        $data->scales = api::get_scales();
 
+        $items = api::get_items($submission->threesixty);
+        $ratedquestions = [];
+        $commentquestions = [];
+
+        foreach ($items as $item) {
+            switch ($item->type) {
+                case api::QTYPE_RATED:
+                    $ratedquestions[] = $item;
+                    break;
+                case api::QTYPE_COMMENT:
+                    $commentquestions[] = $item;
+                    break;
+                default:
+                    break;
+            }
+        }
+        $data->ratedquestions = $ratedquestions;
+        $data->commentquestions = $commentquestions;
+        $data->touserid = $submission->touser;
+        $data->threesixtyid = $submission->threesixty;
         return $data;
     }
 }

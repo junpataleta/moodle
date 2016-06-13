@@ -1,0 +1,12 @@
+textarea {
+    resize: none;
+}
+
+.question-bank {
+    max-height: 100%;
+}
+
+.hideoverflow {
+    overflow: hidden;
+    position: relative;
+}

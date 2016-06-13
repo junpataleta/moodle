@@ -38,20 +38,29 @@ class renderer extends plugin_renderer_base {
     /**
      * Defer to template.
      *
-     * @param list_360_members $page
-     *
+     * @param list_participants $page
      * @return string html for the page
      */
-    public function render_list_360_members($page) {
+    public function render_list_participants($page) {
         $data = $page->export_for_template($this);
-        return parent::render_from_template('mod_threesixty/list_360_members', $data);
+        return parent::render_from_template('mod_threesixty/list_participants', $data);
     }
 
-    public function render_profile_360_member($page) {
+    /**
+     * @param questionnaire $page
+     * @return bool|string
+     * @throws \moodle_exception
+     */
+    public function render_questionnaire($page) {
         $data = $page->export_for_template($this);
-        return parent::render_from_template('mod_threesixty/profile_360_member', $data);
+        return parent::render_from_template('mod_threesixty/questionnaire', $data);
     }
 
+    /**
+     * @param list_360_items $page
+     * @return bool|string html for the page.
+     * @throws \moodle_exception
+     */
     public function render_list_360_items($page) {
         $data = $page->export_for_template($this);
         return parent::render_from_template('mod_threesixty/list_360_items', $data);

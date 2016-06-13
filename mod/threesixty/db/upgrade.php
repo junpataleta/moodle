@@ -42,6 +42,22 @@ function xmldb_threesixty_upgrade($oldversion) {
     // Moodle v3.1.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2016021900.09) {
+
+        // Changing type of field fromuser on table threesixty_response to int.
+        $table = new xmldb_table('threesixty_response');
+        $field = new xmldb_field('fromuser', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'item');
+        // Launch change of type for field fromuser.
+        $dbman->change_field_type($table, $field);
+
+        $field = new xmldb_field('touser', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'fromuser');
+        // Launch change of type for field touser.
+        $dbman->change_field_type($table, $field);
+
+        // Threesixty savepoint reached.
+        upgrade_mod_savepoint(true, 2016021900.09, 'threesixty');
+    }
+
     return true;
 }
 

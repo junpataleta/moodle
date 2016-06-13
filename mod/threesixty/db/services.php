@@ -26,8 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$functions = array(
-    'mod_threesixty_get_questions' => array(
+$functions = [
+    'mod_threesixty_get_questions' => [
         'classname'   => 'mod_threesixty\external',
         'methodname'  => 'get_questions',
         'classpath'   => '',
@@ -36,8 +36,8 @@ $functions = array(
         'capabilities'=> '',
         'ajax'        => true,
         'loginrequired' => false,
-    ),
-    'mod_threesixty_add_question' => array(
+    ],
+    'mod_threesixty_add_question' => [
         'classname'   => 'mod_threesixty\external',
         'methodname'  => 'add_question',
         'classpath'   => '',
@@ -46,8 +46,8 @@ $functions = array(
         'capabilities'=> 'mod/threesixty:editquestions',
         'ajax'        => true,
         'loginrequired' => false,
-    ),
-    'mod_threesixty_update_question' => array(
+    ],
+    'mod_threesixty_update_question' => [
         'classname'   => 'mod_threesixty\external',
         'methodname'  => 'update_question',
         'classpath'   => '',
@@ -56,8 +56,8 @@ $functions = array(
         'capabilities'=> 'mod/threesixty:editquestions',
         'ajax'        => true,
         'loginrequired' => false,
-    ),
-    'mod_threesixty_delete_question' => array(
+    ],
+    'mod_threesixty_delete_question' => [
         'classname'   => 'mod_threesixty\external',
         'methodname'  => 'delete_question',
         'classpath'   => '',
@@ -66,21 +66,85 @@ $functions = array(
         'capabilities'=> 'mod/threesixty:editquestions',
         'ajax'        => true,
         'loginrequired' => false,
-    ),
-    'mod_threesixty_get_items' => array(
+    ],
+    'mod_threesixty_get_items' => [
         'classname'   => 'mod_threesixty\external',
         'methodname'  => 'get_items',
         'description' => 'Get items for a specific 360-degree feedback instance.',
         'type'        => 'read',
         'ajax'        => true,
         'loginrequired' => false,
-    ),
-    'mod_threesixty_set_items' => array(
+    ],
+    'mod_threesixty_set_items' => [
         'classname'   => 'mod_threesixty\external',
         'methodname'  => 'set_items',
         'description' => 'Set the items for a specific 360-degree feedback instance.',
         'type'        => 'read',
         'ajax'        => true,
         'loginrequired' => false,
-    ),
-);
+    ],
+    'mod_threesixty_delete_item' => [
+        'classname'   => 'mod_threesixty\external',
+        'methodname'  => 'delete_item',
+        'description' => 'Delete item.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'loginrequired' => false,
+    ],
+    'mod_threesixty_get_question_types' => [
+        'classname'   => 'mod_threesixty\external',
+        'methodname'  => 'get_question_types',
+        'description' => 'Get 360-degree feedback question types.',
+        'type'        => 'read',
+        'ajax'        => true,
+        'loginrequired' => false,
+    ],
+    'mod_threesixty_move_item_up' => [
+        'classname'   => 'mod_threesixty\external',
+        'methodname'  => 'move_item_up',
+        'description' => 'Move item up.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'loginrequired' => false,
+    ],
+    'mod_threesixty_move_item_down' => [
+        'classname'   => 'mod_threesixty\external',
+        'methodname'  => 'move_item_down',
+        'description' => 'Move item down.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'loginrequired' => false,
+    ],
+    'mod_threesixty_decline_feedback' => [
+        'classname'   => 'mod_threesixty\external',
+        'methodname'  => 'decline_feedback',
+        'description' => 'Decline feedback request.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'loginrequired' => false,
+    ],
+    'mod_threesixty_submit_feedback' => [
+        'classname'   => 'mod_threesixty\external',
+        'methodname'  => 'submit_feedback',
+        'description' => 'Submit feedback response.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'loginrequired' => false,
+    ],
+    'mod_threesixty_data_for_participant_list' => [
+        'classname'   => 'mod_threesixty\external',
+        'methodname'  => 'data_for_participant_list',
+        'description' => 'Get data for the list of participants.',
+        'type'        => 'read',
+        'ajax'        => true,
+        'loginrequired' => false,
+    ],
+    'mod_threesixty_save_responses' => [
+        'classname'   => 'mod_threesixty\external',
+        'methodname'  => 'save_responses',
+        'description' => 'Save responses for the 360 degree feedback.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'loginrequired' => false,
+    ],
+];

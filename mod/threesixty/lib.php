@@ -29,9 +29,6 @@ global $CFG;
 // Include forms lib.
 require_once($CFG->libdir.'/formslib.php');
 
-define('MOVE_UP', 1);
-define('MOVE_DOWN', 2);
-
 /**
  * Adds a new 360-degree feedback instance.
  *
@@ -99,7 +96,7 @@ function threesixty_delete_instance($id) {
     $DB->delete_records("threesixty_response", array("threesixty"=>$id));
 
     // Delete statuses.
-    $DB->delete_records("threesixty_status", array("threesixty"=>$id));
+    $DB->delete_records("threesixty_submission", array("threesixty"=>$id));
 
     // Delete items.
     $DB->delete_records('threesixty_item', array('threesixty'=>$id));
@@ -109,24 +106,6 @@ function threesixty_delete_instance($id) {
 
     // Finally, delete the 360-degree feedback.
     return $DB->delete_records("threesixty", array("id"=>$id));
-}
-
-/**
- * Sets the current completion status of a 360-feedback status record.
- *
- * @param int $statusid
- * @param int $status
- * @return bool True if status record was successfully updated. False, otherwise.
- */
-function threesixty_set_completion($statusid, $status) {
-    global $DB;
-
-    if ($statusrecord = $DB->get_record('threesixty_status', array('id' => $statusid))) {
-        $statusrecord->status = $status;
-        return $DB->update_record('threesixty_status', $statusrecord);
-    }
-
-    return false;
 }
 
 /**
@@ -141,7 +120,7 @@ function threesixty_set_completion($statusid, $status) {
 function threesixty_save_values($feedbackcompletedtmp, $statusid) {
     global $DB, $USER;
 
-    $statusrecord = $DB->get_record('threesixty_status', array('id' => $statusid), '*', MUST_EXIST);
+    $statusrecord = $DB->get_record('threesixty_submission', array('id' => $statusid), '*', MUST_EXIST);
 
     $tmpcplid = $feedbackcompletedtmp->id;
 
@@ -177,7 +156,7 @@ function threesixty_save_values($feedbackcompletedtmp, $statusid) {
 
     if ($statusrecord) {
         $statusrecord->status = \mod_threesixty\constants::STATUS_COMPLETE;
-        $DB->update_record('threesixty_status', $statusrecord);
+        $DB->update_record('threesixty_submission', $statusrecord);
     }
 
     // TODO Event
@@ -195,7 +174,7 @@ function threesixty_save_values($feedbackcompletedtmp, $statusid) {
 //        )
 //    ));
 //
-//    $event->add_record_snapshot('threesixty_status', $statusrecord);
+//    $event->add_record_snapshot('threesixty_submission', $statusrecord);
 //    $event->trigger();
 
     return $statusrecord->id;
@@ -208,7 +187,7 @@ function threesixty_count_todos($feedbackid, $userid) {
 
     $params = array_merge(array($feedbackid, $userid), $params);
 
-    return $DB->count_records_select('threesixty_status', 'feedback = ? AND fromuser = ? AND status ' . $statuses, $params);
+    return $DB->count_records_select('threesixty_submission', 'feedback = ? AND fromuser = ? AND status ' . $statuses, $params);
 }
 
 function threesixty_save_item(stdClass $data) {
@@ -233,51 +212,6 @@ function threesixty_save_item(stdClass $data) {
         $item->position = $position;
         return $DB->insert_record('threesixty_item', $item);
     }
-}
-
-function threesixty_move_item_up($itemid) {
-    return threesixty_move_item($itemid, MOVE_UP);
-}
-
-function threesixty_move_item_down($itemid) {
-    return threesixty_move_item($itemid, MOVE_DOWN);
-}
-
-function threesixty_move_item($itemid, $direction) {
-    global $DB;
-    $result = false;
-
-    // Get the feedback item.
-    if ($item = $DB->get_record('threesixty_item', ['id' => $itemid])) {
-        $oldposition = $item->position;
-        $itemcount = $DB->count_records('threesixty_item', ['threesixty' => $item->threesixty]);
-
-        switch ($direction) {
-            case MOVE_UP:
-                if ($item->position > 1) {
-                    $item->position--;
-                }
-                break;
-            case MOVE_DOWN:
-                if ($item->position < $itemcount) {
-                    $item->position++;
-                }
-                break;
-            default:
-                break;
-        }
-        // Update the item to be swapped.
-        if ($swapitem = $DB->get_record('threesixty_item', ['threesixty' => $item->threesixty, 'position' => $item->position])) {
-            $swapitem->position = $oldposition;
-            $result = $DB->update_record('threesixty_item', $swapitem);
-        }
-        // Update the item being moved.
-        $result = $result && $DB->update_record('threesixty_item', $item);
-    } else {
-        throw new moodle_exception('erroritemnotfound');
-    }
-
-    return $result;
 }
 
 function threesixty_delete_item($itemid) {

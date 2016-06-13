@@ -34,7 +34,6 @@
     Example context (json):
     {
         "question": "",
-        "placeholdertext": "Enter question",
         "questiontypes": [
             {
                 "typeval": "1",
@@ -46,19 +45,21 @@
                 "selected": false,
                 "name": "Remarks"
             }
-        ],
-        "savetext": "Save",
-        "canceltext": "Cancel"
+        ]
     }
 }}
 <div class="panel panel-default">
     <div class="panel-body">
         <div>
-            <textarea class="form-control" id="question-input" placeholder="{{ placeholderText }}" cols="44" rows="5">{{ question }}</textarea>
+            <label for="question-input">
+                {{#str}}questiontext, mod_threesixty{{/str}} {{#pix }} req, core, {{#str}}requiredelement, form{{/str}} {{/pix }}
+            </label>
+            <div class="error-container"></div>
+            <textarea class="form-control" id="question-input" placeholder="{{#str}}labelenterquestion, mod_threesixty{{/str}}" cols="44" rows="5">{{ question }}</textarea>
         </div>
         <div>
             <select id="question-type-select">
-            {{ # questionTypes }}
+            {{# questionTypes }}
                 <option value="{{typeVal}}" {{# selected }}selected="selected"{{/selected}}>
                     {{typeName}}
                 </option>
@@ -66,8 +67,8 @@
             </select>
         </div>
         <div>
-            <button id="btn-save-question" class="btn btn-primary">{{ lblSave }}</button>
-            <button id="btn-cancel-question-input" class="btn btn-cancel">{{ lblCancel }}</button>
+            <button id="btn-save-question" class="btn btn-primary">{{#str}}labelsave, mod_threesixty{{/str}}</button>
+            <button id="btn-cancel-question-input" class="btn btn-cancel">{{#str}}labelcancel, mod_threesixty{{/str}}</button>
         </div>
     </div>
 </div>

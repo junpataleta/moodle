@@ -22,42 +22,48 @@
  * @package mod_threesixty
  */
 require_once('../../config.php');
-require_once('lib.php');
 
-global $CFG, $DB, $PAGE, $OUTPUT;
+// The threesixty record id.
+$id = required_param('threesixty', PARAM_INT);
+$submissionid = required_param('submission', PARAM_INT);
 
-$id = required_param('id', PARAM_INT);
-list ($course, $cm) = get_course_and_cm_from_cmid($id, 'threesixty');
-
+list ($course, $cm) = get_course_and_cm_from_instance($id, 'threesixty');
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
-$threesixty = $DB->get_record('threesixty', array('id' => $cm->instance), '*', MUST_EXIST);
-
-/// Print the page header
-$strfeedbacks = get_string("modulenameplural", "threesixty");
-$strfeedback = get_string("modulename", "threesixty");
+$threesixty = $DB->get_record('threesixty', ['id' => $cm->instance], '*', MUST_EXIST);
+$submission = $DB->get_record('threesixty_submission', ['id' => $submissionid], '*', MUST_EXIST);
 
 $PAGE->set_context($context);
 $PAGE->set_cm($cm, $course);
 $PAGE->set_pagelayout('incourse');
 
-$PAGE->set_url('/mod/threesixty/view.php', array('id' => $cm->id, 'do_show' => 'view'));
-$PAGE->set_title($threesixty->name);
+$PAGE->set_url('/mod/threesixty/view.php', ['id' => $cm->id]);
 $PAGE->set_heading($course->fullname);
+$title = get_string('modulename', 'mod_threesixty');
+$PAGE->set_title($title);
+
 echo $OUTPUT->header();
+echo $OUTPUT->heading(format_string($title));
 
-echo $OUTPUT->heading(format_string($threesixty->name));
-
-// Edit items.
-if (has_capability('mod/threesixty:edititems', $context)) {
-    $edititemsurl = new moodle_url('edit_items.php');
-    $edititemsurl->param('id', $cm->id);
-    echo html_writer::link($edititemsurl, get_string('edititems', 'threesixty'), ['class' => 'btn btn-default']);
+// Render user heading.
+if ($submission->touser > 0) {
+    $touser = core_user::get_user($submission->touser);
+    $userheading = [
+        'heading' => fullname($touser),
+        'user' => $touser,
+        'usercontext' => context_user::instance($submission->touser)
+    ];
+    echo $OUTPUT->context_header($userheading, 3);
 }
 
+// Set status to in progress if pending.
+if ($submission->status == \mod_threesixty\api::STATUS_PENDING) {
+    \mod_threesixty\api::set_completion($submission->id, \mod_threesixty\api::STATUS_IN_PROGRESS);
+} 
+
 // 360-degree feedback To-do list.
-$memberslist = new mod_threesixty\output\list_participants($threesixty->id, $USER->id, true);
+$memberslist = new mod_threesixty\output\questionnaire($submissionid);
 $memberslistoutput = $PAGE->get_renderer('mod_threesixty');
 echo $memberslistoutput->render($memberslist);
 

@@ -23,17 +23,10 @@
  */
 
 require_once("../../config.php");
-require_once("lib.php");
-require_once('edit_items_form.php');
-
-use mod_threesixty\external;
-use mod_threesixty\output\list_360_items;
-use mod_threesixty\api;
 
 global $DB, $OUTPUT, $PAGE;
 
 $instanceid = required_param('id', PARAM_INT);
-$action = optional_param('action', '', PARAM_ALPHA);
 $itemid = optional_param('itemid', 0, PARAM_INT);
 
 $viewurl = new moodle_url('view.php');
@@ -68,47 +61,6 @@ if (!has_capability('mod/threesixty:edititems', $context)) {
 $question = '';
 $questiontype = 0;
 
-if ($itemid) {
-    switch ($action) {
-        case 'edit':
-            if ($item = $DB->get_record('threesixty_item', array('id' => $itemid))) {
-                $question = $item->question;
-                $questiontype = $item->type;
-            } else {
-                print_error('erroritemnotfound', 'mod_threesixty', $PAGE->url);
-            }
-            break;
-        case 'moveup':
-            threesixty_move_item_up($itemid);
-            break;
-        case 'movedown':
-            threesixty_move_item_down($itemid);
-            break;
-        default:
-            break;
-    }
-}
-
-$mform = new mod_threesixty_edit_items_form($PAGE->url);
-$itemformdata = [
-    'threesixtyid' => $threesixty->id,
-    'submit' => 1,
-    'itemid' => $itemid,
-    'question' => $question,
-    'questiontype' => $questiontype
-];
-$mform->set_data($itemformdata);
-
-if ($data = data_submitted() and confirm_sesskey()) {
-    if (!threesixty_save_item($data)) {
-        if ($itemid) {
-            print_error('errorcannotadditem', 'threesixty');
-        } else {
-            print_error('errorcannotupdateitem', 'threesixty');
-        }
-    }
-}
-
 $PAGE->navbar->add(get_string('titlemanageitems', 'threesixty'));
 $PAGE->set_heading($course->fullname);
 $PAGE->set_title($threesixty->name);
@@ -117,42 +69,9 @@ echo $OUTPUT->header();
 /// Print the main part of the page.
 echo $OUTPUT->heading(format_string($threesixty->name));
 
-// Question bank button.
-$questionbankbtnid = 'btn-question-bank';
-$questionchooserparams = array('id' => $questionbankbtnid, 'class' => 'commentchooser');
-echo html_writer::tag('button', get_string('labelpickfromquestionbank', 'mod_threesixty'), $questionchooserparams);
-
-// Include string for JS for the question chooser title.
-$jsstrings = [
-    'labelactions',
-    'labelcancel',
-    'labeldone',
-    'labelenterquestion',
-    'labelpick',
-    'labelpickfromquestionbank',
-    'labelquestion',
-    'labelquestiontype',
-    'labelsave',
-    'placeholderquestion',
-    'qtypecomment',
-    'qtyperated',
-];
-$PAGE->requires->strings_for_js($jsstrings, 'mod_threesixty');
-
-// Get question types.
-$questiontypes = api::get_question_types();
-
-// Include question_chooser module.
-$PAGE->requires->js_call_amd('mod_threesixty/question_bank', 'initialise', [$threesixty->id, $questiontypes]);
-
-//$mform->display();
-
 // 360-degree feedback item list.
-$itemslist = new list_360_items($instanceid, $course->id, $threesixty->id);
+$itemslist = new mod_threesixty\output\list_360_items($instanceid, $course->id, $threesixty->id);
 $itemslistoutput = $PAGE->get_renderer('mod_threesixty');
 echo $itemslistoutput->render($itemslist);
 
 echo $OUTPUT->footer();
-
-
-//$PAGE->requires->js_call_amd('mod_threesixty/item_edit', 'initialise', $params);

@@ -65,26 +65,11 @@ class list_360_items implements \renderable, \templatable {
      * @return stdClass|array
      */
     public function export_for_template(renderer_base $output) {
-        global $DB, $PAGE;
-
         $data = new stdClass();
         $data->allitems = array();
-        $data->addtext = get_string('additem', 'mod_threesixty');
-        $itemssql = 'SELECT
-                        i.id,
-                        q.question,
-                        q.type,
-                        i.position
-                     FROM {threesixty_item} i, {threesixty} t, {threesixty_question} q
-                     WHERE
-                        t.id = i.threesixty AND
-                        q.id = i.question AND
-                        t.id = :threesixtyid
-                     ORDER BY i.position ASC';
-        $itemssqlparams = array('threesixtyid' => $this->threesixtyid);
-        if ($items = $DB->get_records_sql($itemssql, $itemssqlparams)) {
-            $output = $PAGE->get_renderer('mod_threesixty');
+        $data->threesixtyid = $this->threesixtyid;
 
+        if ($items = api::get_items($this->threesixtyid)) {
             $itemcount = count($items);
 
             foreach ($items as $item) {
@@ -96,69 +81,25 @@ class list_360_items implements \renderable, \templatable {
                 $listitem->question = $item->question;
 
                 // Question type.
-                switch ($item->type) {
-                    case api::QTYPE_RATED:
-                        $qtype = get_string('qtyperated', 'threesixty');
-                        break;
-                    case api::QTYPE_COMMENT:
-                        $qtype = get_string('qtypecomment', 'threesixty');
-                        break;
-                    default:
-                        $qtype = '';
-                }
-                $listitem->type = $qtype;
+                $listitem->type = $item->typetext;
 
                 // Action buttons column
-                // Show action buttons depending on status.
-                $showmoveup = false;
-                $showmovedown = false;
+                // Move up and move down button display flags.
+                $listitem->moveupbutton = false;
+                $listitem->movedownbutton = false;
                 if ($itemcount > 1) {
                     if ($item->position == 1) {
-                        $showmovedown = true;
+                        $listitem->movedownbutton = true;
                     } else if ($item->position == $itemcount) {
-                        $showmoveup = true;
+                        $listitem->moveupbutton = true;
                     } else if ($item->position > 1 && $item->position < $itemcount) {
-                        $showmoveup = true;
-                        $showmovedown = true;
+                        $listitem->moveupbutton = true;
+                        $listitem->movedownbutton = true;
                     }
                 }
 
-                // Move up.
-                if ($showmoveup) {
-                    $moveupurlparams = array('id' => $this->cmid, 'itemid' => $item->id, 'action' => 'moveup');
-                    $moveupurl = new moodle_url('/mod/threesixty/edit_items.php', $moveupurlparams);
-
-                    $moveupimg = $output->pix_icon('t/up', get_string('up'));
-                    $moveuplink = $output->action_link($moveupurl, $moveupimg);
-
-                    $listitem->moveuplink = $moveuplink;
-                }
-
-                // Move down.
-                if ($showmovedown) {
-                    // View action
-                    $movedownurlparams = array('id' => $this->cmid, 'itemid' => $item->id, 'action' => 'movedown');
-                    $movedownurl = new moodle_url('/mod/threesixty/edit_items.php', $movedownurlparams);
-
-                    $movedownimg = $output->pix_icon('t/down', get_string('down'));
-                    $movedownlink = $output->action_link($movedownurl, $movedownimg);
-
-                    $listitem->movedownlink = $movedownlink;
-                }
-
-                // Edit action.
-                $editimg = $output->pix_icon('t/edit', get_string('edit'));
-                $editurlparams = array('id' => $this->cmid, 'itemid' => $item->id, 'action' => 'edit');
-                $editurl = new moodle_url('/mod/threesixty/edit_items.php', $editurlparams);
-                $editlink = $output->action_link($editurl, $editimg);
-                $listitem->editlink = $editlink;
-
                 // Delete action
-                $deleteimg = $output->pix_icon('t/delete', get_string('delete'));
-                $deleteurlparams = array('id' => $this->cmid, 'itemid' => $item->id, 'action' => 'delete');
-                $deleteurl = new moodle_url('/mod/threesixty/edit_items.php', $deleteurlparams);
-                $deletelink = $output->action_link($deleteurl, $deleteimg);
-                $listitem->deletelink = $deletelink;
+                $listitem->deletebutton = true;
 
                 $data->allitems[] = $listitem;
             }
@@ -168,7 +109,7 @@ class list_360_items implements \renderable, \templatable {
     }
 
     /**
-     * Generate default records for the table threesixty_status.
+     * Generate default records for the table threesixty_submission.
      */
     private function generate_360_feedback_statuses() {
         global $DB;
@@ -185,7 +126,7 @@ class list_360_items implements \renderable, \templatable {
                         AND u.id NOT IN (
                           SELECT
                             fs.touser
-                          FROM {threesixty_status} fs
+                          FROM {threesixty_submission} fs
                           WHERE fs.threesixty = f.id AND fs.fromuser = :fromuser2
                         )';
         $params = array("threesixtyid" => $this->threesixtyid, "fromuser" => $this->userid, "fromuser2" => $this->userid);
@@ -196,7 +137,7 @@ class list_360_items implements \renderable, \templatable {
                 $status->fromuser = $this->userid;
                 $status->touser = $user->id;
 
-                $DB->insert_record('threesixty_status', $status);
+                $DB->insert_record('threesixty_submission', $status);
             }
         }
     }

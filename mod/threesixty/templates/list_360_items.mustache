@@ -22,45 +22,45 @@
     The purpose of this template is build the entire page for the template library (by including smaller templates).
 
     Classes required for JS:
-    * none
+    * mod_threesixty/edit_items
 
     Data attributes required for JS:
     * none
 
     Context variables required for this template:
-    * addtext - Label for the add item button.
+    * threesixtyid - Optional. The 360-degree feedback ID.
     * allitems - Array of all the 360-degree feedback items.
 
     Example context (json):
     {
-        "addtext" : "Add new item",
+        "threesixtyid" : 1,
         "allitems": [
             {
                 "question" : "Is reliable.",
                 "type" : "Rated",
-                "editlink" : "Edit",
-                "deletelink" : "Delete",
-                "movedownlink" : "Move down"
+                "deletebutton" : true,
+                "moveupbutton" : false,
+                "movedownbutton" : true
             },
             {
                 "question" : "Has high technical skills.",
                 "type" : "Rated",
-                "editlink" : "Edit",
-                "deletelink" : "Delete",
-                "moveuplink" : "Move up",
-                "movedownlink" : "Move down"
+                "deletebutton" : "Delete",
+                "moveupbutton" : true,
+                "movedownbutton" : true
             },
             {
                 "question" : "What can you say about him?",
                 "type" : "Comment",
-                "editlink" : "Edit",
-                "deletelink" : "Delete",
-                "moveuplink" : "Move up"
+                "deletebutton" : "Delete",
+                "moveupbutton" : true,
+                "movedownbutton" : false
             }
         ]
     }
 }}
-<div class="panel panel-default">
+<div class="panel panel-default" data-region="itemlist">
+    <button class="btn btn-default" id="btn-question-bank">{{#str}}labelpickfromquestionbank, mod_threesixty{{/str}}</button>
     <div class="panel-body">
         <table class="flexible generaltable generalbox">
             <thead>
@@ -80,25 +80,21 @@
                         <span class="label">{{ type }}</span>
                     </td>
                     <td>
-                        {{# editlink }}
-                            <span class="icon">{{{ editlink }}}</span>
-                            &nbsp;
-                        {{/editlink}}
-
-                        {{# deletelink }}
-                            <span class="icon">{{{ deletelink }}}</span>
-                            &nbsp;
-                        {{/deletelink}}
-
-                        {{# moveuplink }}
-                            <span class="icon">{{{ moveuplink }}}</span>
-                            &nbsp;
-                        {{/moveuplink}}
-
-                        {{# movedownlink }}
-                            <span class="icon">{{{ movedownlink }}}</span>
-                            &nbsp;
-                        {{/movedownlink}}
+                        {{#deletebutton}}
+                            <button class="btn btn-link delete-item-button" id="delete-item-{{id}}" data-itemid="{{id}}" title="{{#str}}deletequestion, mod_threesixty{{/str}}">
+                                {{#pix }} t/delete, core, {{#str}}deletequestion, mod_threesixty{{/str}} {{/pix }}
+                            </button>
+                        {{/deletebutton}}
+                        {{#moveupbutton}}
+                            <button class="btn btn-link move-item-up-button" id="move-item-up-{{id}}" data-itemid="{{id}}" title="{{#str}}moveitemup, mod_threesixty{{/str}}">
+                                {{#pix }} t/up, core, {{#str}}moveitemup, mod_threesixty{{/str}} {{/pix }}
+                            </button>
+                        {{/moveupbutton}}
+                        {{#movedownbutton}}
+                            <button class="btn btn-link move-item-down-button" id="move-item-down-{{id}}" data-itemid="{{id}}" title="{{#str}}moveitemdown, mod_threesixty{{/str}}">
+                                {{#pix }} t/down, core, {{#str}}moveitemdown, mod_threesixty{{/str}} {{/pix }}
+                            </button>
+                        {{/movedownbutton}}
                     </td>
                 </tr>
             {{/ allitems }}
@@ -106,3 +102,8 @@
         </table>
     </div>
 </div>
+{{#js}}
+    require(['mod_threesixty/edit_items'], function(mod) {
+        new mod({{threesixtyid}});
+    });
+{{/js}}

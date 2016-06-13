@@ -34,9 +34,6 @@
 
     Example context (json):
     {
-        "lblActions": "Actions",
-        "lblPick": "Pick",
-        "lblQuestion": "Question",
         "pickerMode": true,
         "questions": [
             {
@@ -62,24 +59,25 @@
     <tr>
         {{#pickerMode}}
             <th>
-                {{lblPick}}
+                {{#str}}labelpick, mod_threesixty{{/str}}
             </th>
         {{/pickerMode}}
         <th>
-            {{lblQuestion}}
+            {{#str}}labelquestion, mod_threesixty{{/str}}
         </th>
         <th>
-            {{lblType}}
+            {{#str}}labelquestiontype, mod_threesixty{{/str}}
         </th>
         <th>
-            {{lblActions}}
+            {{#str}}labelactions, mod_threesixty{{/str}}
         </th>
     </tr>
     {{#questions}}
         <tr>
             {{#pickerMode}}
                 <td>
-                    <input type="checkbox" id="check-question-{{id}}" class="question-checkbox" title="{{question}}" data-questionid="{{id}}" {{#checked}}checked="checked"{{/checked}}/>
+                    <input type="checkbox" id="check-question-{{id}}" class="question-checkbox" title="{{question}}"
+                           data-questionid="{{id}}" {{#checked}}checked="checked"{{/checked}}/>
                 </td>
             {{/pickerMode}}
             <td>
@@ -89,21 +87,14 @@
                 {{typeName}}
             </td>
             <td>
-                {{# editLink }}
-                    <button class="btn btn-link edit-question-button" id="edit-question-{{id}}" data-questionid="{{id}}">
-                        <span class="icon">
-                            <img src="{{{ editLink }}}" />
-                        </span>
+                {{#pickerMode}}
+                    <button class="btn btn-link edit-question-button" id="edit-question-{{id}}" data-questionid="{{id}}" title="{{#str}}editquestion, mod_threesixty{{/str}}">
+                        {{#pix }} t/edit, core, {{#str}}editquestion, mod_threesixty{{/str}} {{/pix}}
                     </button>
-                {{/editLink}}
-
-                {{# deleteLink }}
-                    <button class="btn btn-link delete-question-button" id="delete-question-{{id}}" data-questionid="{{id}}">
-                        <span class="icon">
-                            <img src="{{{ deleteLink }}}" />
-                        </span>
+                    <button class="btn btn-link delete-question-button" id="delete-question-{{id}}" data-questionid="{{id}}" title="{{#str}}deletequestion, mod_threesixty{{/str}}">
+                        {{#pix }} t/delete, core, {{#str}}deletequestion, mod_threesixty{{/str}} {{/pix}}
                     </button>
-                {{/deleteLink}}
+                {{/pickerMode}}
             </td>
         </tr>
     {{/questions}}

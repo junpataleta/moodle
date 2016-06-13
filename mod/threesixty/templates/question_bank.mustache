@@ -29,74 +29,30 @@
     * none
 
     Context variables required for this template:
-    * lblActions Actions header label.
-    * lblCancel Cancel button label.
-    * lblDone Done button label.
-    * lblPick Pick button label.
-    * lblQuestion The question text label.
-    * lblSave Save button label.
-    * lblType The question type label.
-    * pickerMode Whether to render template in picker mode or not.
-    * questionDesc The question description placeholder.
-    * questions Array of questions with id, question and question type.
-    * questionTypes Array of question types with type value (typeVal) and type name (typeName).
+    * none
 
     Example context (json):
     {
-        "lblCancel": "Cancel",
-        "lblDone": "Done",
-        "lblSave": "Save",
-        "lblType": "Type",
-        "pickerMode": true,
-        "questionDesc": "Enter question text",
-        "questions": [
-            {
-                "id": "1",
-                "question": "Example question 1",
-                "type": "Rated"
-            },
-            {
-                "id": "2",
-                "question": "Example question 2",
-                "type": "Rated"
-            },
-            {
-                "id": "3",
-                "question": "Example question 3",
-                "type": "Comment"
-            }
-        ],
-        "questionTypes": [
-            {
-                "typeVal": "0",
-                "typeName": "Rated"
-            },
-            {
-                "typeVal": "1",
-                "typeName": "Comment"
-            }
-        ]
     }
 }}
-<div class="container" id="mod-threesixty-question-bank">
+<div class="container question-bank">
     <div class="row" id="question-edit-form-container">
         <button class="btn btn-default" id="btn-question-bank-add">
-            <span class="icon">
-                <img src="{{{ addLink }}}" />
-            </span>
+            {{#pix }} t/add, core, {{#str}}addanewquestion, mod_threesixty{{/str}} {{/pix }}
         </button>
     </div>
     <div class="row">
         &nbsp;
     </div>
     <div class="row" id="questionListWrapper">
+        {{> mod_threesixty/question_list}}
     </div>
     <div>
         <button class="btn btn-default" id="btn-question-bank-done">
-            {{lblDone}}
+            {{#str}}labeldone, mod_threesixty{{/str}}
         </button>
         <button class="btn btn-default" id="btn-question-bank-cancel">
-            {{lblCancel}}
+            {{#str}}labelcancel, mod_threesixty{{/str}}
         </button>
     </div>
 </div>

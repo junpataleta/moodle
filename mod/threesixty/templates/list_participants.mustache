@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_threesixty/list_360_members
+    @template mod_threesixty/list_participants
 
     Moodle template to the template library
 
@@ -28,11 +28,13 @@
     * none
 
     Context variables required for this template:
-    * allmembers - array of all the members that will be given feedback. Each component has a name and an actions attribute.
+    * threesixtyid - int The ID for the 360 degree feedback.
+    * participants - array of all the members that will be given feedback. Each component has a name and an actions attribute.
 
     Example context (json):
     {
-        "allmembers": [
+        "threesixtyid": threesixtyid,
+        "participants": [
             {
                 "name" : "Kurdapyo Dimagiba",
                 "actions" : "Aksyon!"
@@ -44,18 +46,18 @@
         ]
     }
 }}
-<div class="panel panel-default">
+<div class="panel panel-default" data-region="participantlist">
     <div class="panel-body">
         <table class="flexible generaltable generalbox">
             <thead>
-            <tr>
-                <th class="span4">Name</th>
-                <th class="span4">Status</th>
-                <th class="span4">Actions</th>
-            </tr>
+                <tr>
+                    <th class="span4">{{#str}}name, mod_threesixty{{/str}}</th>
+                    <th class="span4">{{#str}}status, mod_threesixty{{/str}}</th>
+                    <th class="span4">{{#str}}labelactions, mod_threesixty{{/str}}</th>
+                </tr>
             </thead>
             <tbody>
-            {{# allmembers }}
+            {{# participants }}
                 <tr class="user3 unselectedrow">
                     <td>
                         {{ name }}
@@ -64,21 +66,30 @@
                         <span class="label {{statusclass}}">{{ status }}</span>
                     </td>
                     <td>
-                        {{# respondlink }}
-                            <span class="icon">{{{ respondlink }}}</span>
+                        {{#respondlink}}
+                            <a href="{{{respondlink}}}" title="{{#str}}providefeedback, mod_threesixty{{/str}}">
+                                {{#pix}} t/editstring, core, {{#str}}providefeedback, mod_threesixty{{/str}} {{/pix}}
+                            </a>
                         {{/respondlink}}
-                        &nbsp;
-                        {{# viewlink }}
-                            <span class="icon">{{{ viewlink }}}</span>
+                        {{#viewlink}}
+                            <button class="btn btn-link view-feedback-button" data-id="{{id}}" data-userid="{{userid}}" title="{{#str}}view, mod_threesixty{{/str}}">
+                                {{#pix}} t/preview, core, {{#str}}view, mod_threesixty{{/str}} {{/pix}}
+                            </button>
                         {{/viewlink}}
-                        &nbsp;
-                        {{# declinelink }}
-                            <span class="icon">{{{ declinelink }}}</span>
+                        {{#declinelink}}
+                            <button class="btn btn-link decline-feedback-button" data-statusid="{{statusid}}" data-userid="{{userid}}" data-name="{{name}}" title="{{#str}}decline, mod_threesixty{{/str}}">
+                                {{#pix}} t/delete, core, {{#str}}decline, mod_threesixty{{/str}} {{/pix}}
+                            </button>
                         {{/declinelink}}
                     </td>
                 </tr>
-            {{/ allmembers }}
+            {{/ participants }}
             </tbody>
         </table>
     </div>
 </div>
+{{#js}}
+    require(['mod_threesixty/view'], function(mod) {
+        new mod({{threesixtyid}});
+    });
+{{/js}}
