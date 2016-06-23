@@ -69,15 +69,15 @@
                     <a class="delete" href="#" title="{{#str}} delete {{/str}}">{{#pix}} t/delete, core, {{#str}} delete {{/str}}{{/pix}}</a>
                 </div>
             </div>
-            <img class="tool-card-icon" src="{{{urls.icon}}}" alt="{{name}}"></img>
+            <img class="tool-card-icon" src="{{{urls.icon}}}" alt="{{{name}}}" />
             <div class="contenteditable-container">
-                <h4 class="name" contenteditable="true">{{name}}</h4>
+                <h4 class="name" contenteditable="true">{{{name}}}</h4>
                 <div class="overlay-container">{{> mod_lti/loader }}</div>
             </div>
         </div>
         <div class="tool-card-body">
             <div class="contenteditable-container">
-                <p class="description" contenteditable="true">{{description}}</p>
+                <p class="description" contenteditable="true">{{{description}}}</p>
                 <div class="overlay-container">{{> mod_lti/loader }}</div>
             </div>
         </div>

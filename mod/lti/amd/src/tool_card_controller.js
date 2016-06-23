@@ -370,7 +370,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/templates', 'mod_lti/t
             descriptionElement.removeClass('loading');
             // Make sure the text is updated with the description from the
             // server, just in case the update didn't work.
-            descriptionElement.text(type.description);
+            descriptionElement.html(type.description);
         }).fail(notification.exception);
 
         // Probably need to handle failures better so that we can revert
@@ -440,7 +440,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/templates', 'mod_lti/t
             nameElement.removeClass('loading');
             // Make sure the text is updated with the name from the
             // server, just in case the update didn't work.
-            nameElement.text(type.name);
+            nameElement.html(type.name);
         });
 
         // Probably need to handle failures better so that we can revert

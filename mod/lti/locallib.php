@@ -2492,10 +2492,17 @@ function serialise_tool_type(stdClass $type) {
     $capabilitygroups = get_tool_type_capability_groups($type);
     $instanceids = get_tool_type_instance_ids($type);
 
+    $context = context_system::instance();
+    if (isset($type->description)) {
+        list($description, $format) = external_format_text($type->description, FORMAT_MOODLE, $context->id, 'mod_lti', '', 0);
+        $type->description = $description;
+    } else {
+        $type->description = get_string('editdescription', 'mod_lti');
+    }
     return array(
         'id' => $type->id,
-        'name' => $type->name,
-        'description' => isset($type->description) ? $type->description : get_string('editdescription', 'mod_lti'),
+        'name' => external_format_string($type->name, $context->id),
+        'description' => $type->description,
         'urls' => get_tool_type_urls($type),
         'state' => get_tool_type_state_info($type),
         'hascapabilitygroups' => !empty($capabilitygroups),
