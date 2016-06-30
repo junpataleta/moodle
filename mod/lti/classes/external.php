@@ -780,6 +780,14 @@ class mod_lti_external extends external_api {
             if (empty($data->lti_toolurl)) {
                 throw new moodle_exception('unabletocreatetooltype', 'mod_lti');
             } else {
+                // Clean LTI type name data.
+                if (!empty($data->lti_typename)) {
+                    $data->lti_typename = clean_param($data->lti_typename, PARAM_TEXT);
+                }
+                // Clean LTI type description data.
+                if (!empty($data->lti_description)) {
+                    $data->lti_description = clean_param($data->lti_description, PARAM_TEXT);
+                }
                 $id = lti_add_type($type, $data);
             }
         }
@@ -812,8 +820,8 @@ class mod_lti_external extends external_api {
         return new external_function_parameters(
             array(
                 'id' => new external_value(PARAM_INT, 'Tool type id'),
-                'name' => new external_value(PARAM_TEXT, 'Tool type name', VALUE_DEFAULT, null),
-                'description' => new external_value(PARAM_TEXT, 'Tool type description', VALUE_DEFAULT, null),
+                'name' => new external_value(PARAM_RAW, 'Tool type name', VALUE_DEFAULT, null),
+                'description' => new external_value(PARAM_RAW, 'Tool type description', VALUE_DEFAULT, null),
                 'state' => new external_value(PARAM_INT, 'Tool type state', VALUE_DEFAULT, null)
             )
         );
@@ -854,11 +862,13 @@ class mod_lti_external extends external_api {
         }
 
         if (!empty($name)) {
-            $type->name = $name;
+            // Clean name.
+            $type->name = clean_param($name, PARAM_TEXT);
         }
 
         if (!empty($description)) {
-            $type->description = $description;
+            // Clean description.
+            $type->description = clean_param($description, PARAM_TEXT);
         }
 
         if (!empty($state)) {
