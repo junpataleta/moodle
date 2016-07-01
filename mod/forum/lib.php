@@ -2618,7 +2618,7 @@ function forum_get_discussions($cm, $forumsort="", $fullpost=true, $unused=-1, $
                    u.email, u.picture, u.imagealt $umfields
               FROM {forum_discussions} d
                    JOIN {forum_posts} p ON p.discussion = d.id
-                   JOIN {user} u ON p.userid = u.id
+                   LEFT JOIN {user} u ON p.userid = u.id
                    $umtable
              WHERE d.forum = ? AND p.parent = 0
                    $timelimit $groupselect
@@ -3287,6 +3287,8 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         $forumpostclass .= ' lastpost';
     }
 
+    // Flag to determine if the forum post is from a real user or not.
+    $realuser = core_user::is_real_user($post->userid);
     $postbyuser = new stdClass;
     $postbyuser->post = $post->subject;
     $postbyuser->user = $postuser->fullname;
@@ -3297,7 +3299,12 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
                                                    'aria-label' => $discussionbyuser));
     $output .= html_writer::start_tag('div', array('class'=>'row header clearfix'));
     $output .= html_writer::start_tag('div', array('class'=>'left picture'));
-    $output .= $OUTPUT->user_picture($postuser, array('courseid'=>$course->id));
+    $pictureoptions = [
+        'courseid' => $course->id,
+        'link' => $realuser,
+        'alttext' => $realuser,
+    ];
+    $output .= $OUTPUT->user_picture($postuser, $pictureoptions);
     $output .= html_writer::end_tag('div');
 
 
@@ -3312,11 +3319,19 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
                                                            'aria-level' => '2'));
 
     $by = new stdClass();
-    $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
     $by->date = userdate($post->modified);
-    $output .= html_writer::tag('div', get_string('bynameondate', 'forum', $by), array('class'=>'author',
-                                                                                       'role' => 'heading',
-                                                                                       'aria-level' => '2'));
+    if ($realuser) {
+        $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
+        $bytext = get_string('bynameondate', 'forum', $by);
+    } else {
+        $bytext = $by->date;
+    }
+    $bytextoptions = [
+        'class' => 'author',
+        'role' => 'heading',
+        'aria-level' => '2',
+    ];
+    $output .= html_writer::tag('div', $bytext, $bytextoptions);
 
     $output .= html_writer::end_tag('div'); //topic
     $output .= html_writer::end_tag('div'); //row
@@ -3669,15 +3684,25 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
     $postuserfields = explode(',', user_picture::fields());
     $postuser = username_load_fields_from_object($postuser, $post, null, $postuserfields);
     $postuser->id = $post->userid;
-    echo '<td class="picture">';
-    echo $OUTPUT->user_picture($postuser, array('courseid'=>$forum->course));
-    echo "</td>\n";
+    $realuser = core_user::is_real_user($post->userid);
+    $pictureoptions = [
+        'courseid' => $forum->course,
+        'link' => $realuser,
+        'alttext' => $realuser,
+    ];
+    $userpicture = $OUTPUT->user_picture($postuser, $pictureoptions);
+    echo html_writer::tag('td', $userpicture, ['class' => 'picture']);
 
     // User name
-    $fullname = fullname($postuser, has_capability('moodle/site:viewfullnames', $modcontext));
-    echo '<td class="author">';
-    echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->userid.'&amp;course='.$forum->course.'">'.$fullname.'</a>';
-    echo "</td>\n";
+    if ($realuser) {
+        $fullname = fullname($postuser, has_capability('moodle/site:viewfullnames', $modcontext));
+        $userurl = new moodle_url('/user/view.php');
+        $userurl->params(['id' => $post->userid, 'course' => $forum->course]);
+        $userlink = html_writer::link($userurl, $fullname);
+    } else {
+        $userlink = '';
+    }
+    echo html_writer::tag('td', $userlink, ['class' => 'author']);
 
     // Group picture
     if ($group !== -1) {  // Groups are active - group is a group data object or NULL
@@ -3731,23 +3756,36 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
         }
     }
 
-    echo '<td class="lastpost">';
+    // Start last post td.
+    echo html_writer::start_tag('td', ['class' => 'lastpost']);
     $usedate = (empty($post->timemodified)) ? $post->modified : $post->timemodified;  // Just in case
-    $parenturl = '';
-    $usermodified = new stdClass();
-    $usermodified->id = $post->usermodified;
-    $usermodified = username_load_fields_from_object($usermodified, $post, 'um');
+    $parenturl = new moodle_url('/mod/forum/discuss.php');
+    $parenturl->param('d', $post->discussion);
 
     // In QA forums we check that the user can view participants.
     if ($forum->type !== 'qanda' || $canviewparticipants) {
-        echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->usermodified.'&amp;course='.$forum->course.'">'.
-             fullname($usermodified).'</a><br />';
-        $parenturl = (empty($post->lastpostid)) ? '' : '&amp;parent='.$post->lastpostid;
+        $usermodified = new stdClass();
+        $usermodified->id = $post->usermodified;
+        $realuser = core_user::is_real_user($post->usermodified);
+        if ($realuser) {
+            $usermodified = username_load_fields_from_object($usermodified, $post, 'um');
+            $fullname = fullname($usermodified);
+            $usermodifiedurl = new moodle_url('/user/view.php');
+            $usermodifiedurl->params(['id' => $post->usermodified, 'course' => $forum->course]);
+            $usermodifiedlink = html_writer::link($usermodifiedurl, $fullname);
+        } else {
+            $usermodifiedlink = '';
+        }
+        // Output last user modified link.
+        echo $usermodifiedlink . html_writer::empty_tag('br');
+        if (!empty($post->lastpostid)) {
+            $parenturl->param('parent', $post->lastpostid);
+        }
     }
-
-    echo '<a href="'.$CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.$parenturl.'">'.
-          userdate($usedate, $datestring).'</a>';
-    echo "</td>\n";
+    // Output last post link.
+    echo html_writer::link($parenturl, userdate($usedate, $datestring));
+    // Close lastpost td.
+    echo html_writer::end_tag('td');
 
     // is_guest should be used here as this also checks whether the user is a guest in the current course.
     // Guests and visitors cannot subscribe - only enrolled users.
