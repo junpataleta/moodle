@@ -43,8 +43,6 @@
  * @author     Jordi Piguillem
  * @author     Nikolas Galanis
  * @author     Chris Scribner
- * @copyright  2015 Vital Source Technologies http://vitalsource.com
- * @author     Stephen Vickers
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -56,16 +54,19 @@ require_once($CFG->dirroot.'/mod/lti/locallib.php');
 class mod_lti_mod_form extends moodleform_mod {
 
     public function definition() {
-        global $DB, $PAGE, $OUTPUT, $USER, $COURSE, $sesskey, $section;
+        global $DB, $PAGE, $OUTPUT, $USER, $COURSE;
 
         if ($type = optional_param('type', false, PARAM_ALPHA)) {
             component_callback("ltisource_$type", 'add_instance_hook');
         }
+        $section = optional_param('section', 0, PARAM_INT);
         $sectionreturn = optional_param('sr', 0, PARAM_INT);
 
         $this->typeid = 0;
 
         $mform =& $this->_form;
+        // Disable form change checker since we'll support auto-redirect (e.g. via Content-Item selection).
+        $mform->disable_form_change_checker();
         // Adding the "general" fieldset, where all the common settings are shown.
         $mform->addElement('header', 'general', get_string('general', 'form'));
         // Adding the standard "name" field.
@@ -108,7 +109,8 @@ class mod_lti_mod_form extends moodleform_mod {
         $mform->getElement('typeid')->setValue($typeid);
         $mform->addHelpButton('typeid', 'external_tool_type', 'lti');
         $toolproxy = array();
-
+        $contentitemurl = new moodle_url('/mod/lti/contentitem.php',
+            ['course' => $COURSE->id, 'section' => $section, 'sr' => $sectionreturn]);
         foreach (lti_get_types_for_add_instance() as $id => $type) {
             if (!empty($type->toolproxyid)) {
                 $toolproxy[] = $type->id;
@@ -133,16 +135,33 @@ class mod_lti_mod_form extends moodleform_mod {
             }
             if (!$update && $id) {
                 $config = lti_get_type_config($id);
-                if (isset($config['contentitem']) && $config['contentitem']) {
-                    $contentitemurl = new moodle_url('/mod/lti/contentitem2.php',
-                        array('course' => $COURSE->id, 'section' => $section, 'id' => $id, 'sr' => $sectionreturn));
-                    $attributes['contentitem'] = 1;
-                    $attributes['contentitemurl'] = $contentitemurl->out(false);
+                if (!empty($config['contentitem'])) {
+                    $attributes['data-contentitem'] = 1;
+                    $contentitemurl->param('id', $id);
+                    $attributes['data-contentitemurl'] = $contentitemurl->out(false);
                 }
             }
 
             $tooltypes->addOption($type->name, $id, $attributes);
         }
+        // Add Configure from link button. Disable this by default.
+        // Conditionally enable if the selected value supports Content-Item selection and not in update mode.
+        $selectedtooltypes = $tooltypes->getSelected();
+        $configurebuttonattributes = ['disabled' => 'disabled'];
+        if (!$update && !empty($selectedtooltypes)) {
+            foreach ($tooltypes->_options as $option) {
+                if ($option['attr']['value'] == $selectedtooltypes[0]) {
+                    if (!empty($option['attr']['data-contentitem'])) {
+                        // Remove disabled attribute.
+                        unset($configurebuttonattributes['disabled']);
+                        // Set contentitem URL.
+                        $configurebuttonattributes['data-contentitemurl'] = $option['attr']['data-contentitemurl'];
+                    }
+                    break;
+                }
+            }
+        }
+        $mform->addElement('button', 'configurefromlink', get_string('configurefromlink', 'lti'), $configurebuttonattributes);
 
         $mform->addElement('text', 'toolurl', get_string('launch_url', 'lti'), array('size' => '64'));
         $mform->setType('toolurl', PARAM_URL);
@@ -264,8 +283,7 @@ class mod_lti_mod_form extends moodleform_mod {
                 array('tooltypedeleted', 'lti'),
                 array('tooltypenotdeleted', 'lti'),
                 array('tooltypeupdated', 'lti'),
-                array('forced_help', 'lti'),
-                array('configure_item', 'lti')
+                array('forced_help', 'lti')
             ),
         );
 
