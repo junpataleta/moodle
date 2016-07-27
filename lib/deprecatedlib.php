@@ -1111,6 +1111,7 @@ function print_checkbox($name, $value, $checked = true, $label = '', $alt = '', 
  *
  * @deprecated since Moodle 2.0
  *
+ * @see \core_renderer::update_module_button()
  * @param string $cmid the course_module id.
  * @param string $ignored not used any more. (Used to be courseid.)
  * @param string $string the module name - get_string('modulename', 'xxx')
@@ -1119,9 +1120,7 @@ function print_checkbox($name, $value, $checked = true, $label = '', $alt = '', 
 function update_module_button($cmid, $ignored, $string) {
     global $CFG, $OUTPUT;
 
-    // debugging('update_module_button() has been deprecated. Please change your code to use $OUTPUT->update_module_button().');
-
-    //NOTE: DO NOT call new output method because it needs the module name we do not have here!
+    debugging('update_module_button() has been deprecated. Please change your code to use $OUTPUT->update_module_button().');
 
     if (has_capability('moodle/course:manageactivities', context_module::instance($cmid))) {
         $string = get_string('updatethis', '', $string);
