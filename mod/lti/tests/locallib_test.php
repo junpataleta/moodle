@@ -325,4 +325,74 @@ class mod_lti_locallib_testcase extends advanced_testcase {
         $this->assertEquals('http://download.moodle.org/unittest/test.jpg', $lti->icon);
         $this->assertEquals('https://download.moodle.org/unittest/test.jpg', $lti->secureicon);
     }
+
+    /**
+     * Tests for lti_build_content_item_selection_request().
+     */
+    public function test_lti_build_content_item_selection_request() {
+        $this->resetAfterTest();
+
+        $this->setAdminUser();
+        // Create a tool proxy.
+        $proxy = mod_lti_external::create_tool_proxy('Test proxy', $this->getExternalTestFileUrl('/test.html'), array(), array());
+
+        // Create a tool type, associated with that proxy.
+        $type = new stdClass();
+        $data = new stdClass();
+        $data->lti_contentitem = true;
+        $type->state = LTI_TOOL_STATE_CONFIGURED;
+        $type->name = "Test tool";
+        $type->description = "Example description";
+        $type->toolproxyid = $proxy->id;
+        $type->baseurl = $this->getExternalTestFileUrl('/test.html');
+
+        $typeid = lti_add_type($type, $data);
+
+        $typeconfig = lti_get_type_config($typeid);
+
+        $course = $this->getDataGenerator()->create_course();
+        $returnurl = new moodle_url('/');
+
+        // Default parameters.
+        $result = lti_build_content_item_selection_request($typeid, $course, $returnurl);
+        $this->assertNotEmpty($result);
+        $this->assertNotEmpty($result->params);
+        $this->assertNotEmpty($result->url);
+        $params = $result->params;
+        $url = $result->url;
+        $this->assertEquals($typeconfig['toolurl'], $url);
+        $this->assertEquals('ContentItemSelectionRequest', $params['lti_message_type']);
+        $this->assertEquals(LTI_VERSION_2, $params['lti_version']);
+        $this->assertEquals('application/vnd.ims.lti.v1.ltilink', $params['accept_media_types']);
+        $this->assertEquals('frame,iframe,window', $params['accept_presentation_document_targets']);
+        $this->assertEquals($returnurl->out(false), $params['content_item_return_url']);
+        $this->assertEquals('false', $params['accept_unsigned']);
+        $this->assertEquals('false', $params['accept_multiple']);
+        $this->assertEquals('false', $params['accept_copy_advice']);
+        $this->assertEquals('false', $params['auto_create']);
+        $this->assertEquals($type->name, $params['title']);
+        $this->assertFalse(isset($params['resource_link_id']));
+        $this->assertFalse(isset($params['resource_link_title']));
+        $this->assertFalse(isset($params['resource_link_description']));
+        $this->assertFalse(isset($params['launch_presentation_return_url']));
+        $this->assertFalse(isset($params['lis_result_sourcedid']));
+
+        // Custom parameters.
+        $title = 'My custom title';
+        $mediatypes = ['image/*', 'video/*'];
+        $targets = ['embed', 'iframe'];
+        $result = lti_build_content_item_selection_request($typeid, $course, $returnurl, $title, $mediatypes, $targets,
+            true, true, true, true, true);
+        $this->assertNotEmpty($result);
+        $this->assertNotEmpty($result->params);
+        $this->assertNotEmpty($result->url);
+        $params = $result->params;
+        $this->assertEquals(implode(',', $mediatypes), $params['accept_media_types']);
+        $this->assertEquals(implode(',', $targets), $params['accept_presentation_document_targets']);
+        $this->assertEquals('true', $params['accept_unsigned']);
+        $this->assertEquals('true', $params['accept_multiple']);
+        $this->assertEquals('true', $params['accept_copy_advice']);
+        $this->assertEquals('true', $params['auto_create']);
+        $this->assertEquals($title, $params['title']);
+    }
 }
