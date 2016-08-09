@@ -48,7 +48,6 @@ $url = new moodle_url('/enrol/lti/tp.php');
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('popup');
 $PAGE->set_title(get_string('registration', 'enrol_lti'));
-echo $OUTPUT->header();
 
 // Only show the cartridge if the token parameter is correct.
 // If we do not compare with a shared secret, someone could very easily
@@ -57,5 +56,5 @@ echo $OUTPUT->header();
 
 $tool = new \enrol_lti\tool_provider($toolid, $token);
 $tool->handleRequest();
-
+echo $OUTPUT->header();
 echo $OUTPUT->footer();

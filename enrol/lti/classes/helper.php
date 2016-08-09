@@ -436,6 +436,18 @@ class helper {
     }
 
     /**
+     * Returns the icon of the tool.
+     *
+     * @param stdClass $tool The lti tool
+     * @return moodle_url A url to the icon of the tool
+     * @since Moodle 3.2
+     */
+    public static function get_icon($tool) {
+        global $OUTPUT;
+        return $OUTPUT->favicon();
+    }
+
+    /**
      * Returns the url to the cartridge representing the tool.
      *
      * If you have slash arguments enabled, this will be a nice url ending in cartridge.xml.
@@ -528,7 +540,7 @@ class helper {
      * @since Moodle 3.2
      */
     protected static function get_cartridge_parameters($toolid) {
-        global $OUTPUT, $PAGE, $SITE;
+        global $PAGE, $SITE;
         $PAGE->set_context(\context_system::instance());
 
         // Get the tool.
@@ -538,8 +550,7 @@ class helper {
         $title = self::get_name($tool);
         $launchurl = self::get_launch_url($toolid);
         $launchurl = $launchurl->out();
-        $icon = $OUTPUT->favicon();
-        $icon = $icon->out();
+        $icon = self::get_icon($tool);
         $securelaunchurl = null;
         $secureicon = null;
         $vendorurl = new \moodle_url('/');

@@ -38,31 +38,69 @@ use IMSGlobal\LTI\ToolProvider\DataConnector;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_provider extends ToolProvider\ToolProvider {
+
+    private function stripBaseUrl($url) {
+        if (substr($url, 0, strlen($this->baseUrl)) == $this->baseUrl) {
+            return substr($url, strlen($this->baseUrl));
+        }
+        # TODO Oh no this will break!!
+        print_object($icon);
+        print_object($this->baseUrl);
+        print_object("no good!!");
+        die;
+        return null;
+    }
+
     function __construct($toolid, $token) {
         global $CFG, $SITE;
 
         $this->debugMode = debugging();
+        $tool = \enrol_lti\helper::get_lti_tool($toolid);
 
-        $data_connector = DataConnector\DataConnector::getDataConnector();
-        parent::__construct($data_connector);
+        $dataconnector = DataConnector\DataConnector::getDataConnector();
+        parent::__construct($dataconnector);
 
-        $this->baseUrl = $CFG->wwwroot . '/enrol/lti/tp.php';
+        #$this->baseUrl = $CFG->wwwroot . '/enrol/lti/proxy.php';
+        $this->baseUrl = $CFG->wwwroot;
+        $toolpath = $this->stripBaseUrl(\enrol_lti\helper::get_proxy_url($tool));
 
         $vendorid = $SITE->shortname;
         $vendorname = $SITE->fullname;
         $vendordescription = trim(html_to_text($SITE->summary));
         $this->vendor = new Profile\Item($vendorid, $vendorname, $vendordescription, $CFG->wwwroot);
 
-        $this->product = new Profile\Item($token, 'Shared tool', 'Shared moodle tool.',
-                'http://www.spvsoftwareproducts.com/php/rating/', '1.0');
+        $name = \enrol_lti\helper::get_name($tool);
+        $description = \enrol_lti\helper::get_description($tool);
+        $icon = \enrol_lti\helper::get_icon($tool)->out();
+        // Strip the baseUrl off the icon path.
+        $icon = $this->stripBaseUrl($icon);
 
-        $requiredMessages = array(new Profile\Message('basic-lti-launch-request', 'connect.php', array('User.id', 'Membership.role')));
-        $optionalMessages = array(new Profile\Message('ContentItemSelectionRequest', 'connect.php', array('User.id', 'Membership.role')),
-                new Profile\Message('DashboardRequest', 'connect.php', array('User.id'), array('a' => 'User.id'), array('b' => 'User.id')));
+        $this->product = new Profile\Item(
+            $token,
+            $name,
+            $description,
+            \enrol_lti\helper::get_proxy_url($tool),
+            '1.0'
+        );
+
+        $requiredmessages = array(
+            new Profile\Message('basic-lti-launch-request', $toolpath, array('User.id', 'Membership.role'))
+        );
+        $optionalmessages = array(
+            new Profile\Message('ContentItemSelectionRequest', $toolpath, array('User.id', 'Membership.role')),
+            new Profile\Message('DashboardRequest', $toolpath, array('User.id'), array('a' => 'User.id'), array('b' => 'User.id'))
+        );
 
         $this->resourceHandlers[] = new Profile\ResourceHandler(
-                new Profile\Item('rating', 'Rating app', 'An example tool provider which generates lists of items for rating.'), 'images/icon50.png',
-                $requiredMessages, $optionalMessages);
+             new Profile\Item(
+                 $token,
+                 \enrol_lti\helper::get_name($tool),
+                 $description
+             ),
+             $icon,
+             $requiredmessages,
+             $optionalmessages
+        );
 
         $this->requiredServices[] = new Profile\ServiceDefinition(array('application/vnd.ims.lti.v2.toolproxy+json'), array('POST'));
 
@@ -74,17 +112,19 @@ class tool_provider extends ToolProvider\ToolProvider {
 
     }
     function onError() {
+        error_log("onError()");
+        error_log($this->reason);
         $message = $this->message;
         if ($this->debugMode && !empty($this->reason)) {
             $message = $this->reason;
         }
-        $title = "moodle";
 
         $this->errorOutput = ''; # TODO remove this
         \core\notification::error($message); # TODO is it better to have a generic, yet translatable error?
     }
     function onLaunch() {
-        // Launching tool. Basically tool.php code needs to go here.
+        error_log("onLaunch()");
+        // TODO Launching tool. Basically tool.php code needs to go here.
         echo "This is a tool";
     }
     function onRegister() {
