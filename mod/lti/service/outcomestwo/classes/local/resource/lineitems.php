@@ -26,7 +26,15 @@
 
 namespace ltiservice_outcomestwo\local\resource;
 
+require_once($CFG->libdir.'/gradelib.php');
+require_once($CFG->libdir.'/dmllib.php');
+
+use dml_exception;
+use Exception;
+use grade_item;
 use ltiservice_outcomestwo\local\service\outcomestwo;
+use mod_lti\local\ltiservice\resource_base;
+use mod_lti\local\ltiservice\response;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -34,145 +42,197 @@ defined('MOODLE_INTERNAL') || die();
  * A resource implementing LineItem container.
  *
  * @package    ltiservice_outcomestwo
- * @since      Moodle 3.0
+ * @since      Moodle 3.2
  * @copyright  2015 Vital Source Technologies http://vitalsource.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class lineitems extends \mod_lti\local\ltiservice\resource_base {
+class lineitems extends resource_base {
+
+    /** Default page size constant. */
+    const PAGE_SIZE = 10;
 
     /**
      * Class constructor.
      *
-     * @param ltiservice_outcomestwo\local\service\outcomestwo $service Service instance
+     * @param outcomestwo $service Service instance
      */
     public function __construct($service) {
-
         parent::__construct($service);
         $this->id = 'LineItem.collection';
         $this->template = '/{context_id}/lineitems';
         $this->variables[] = 'LineItems.url';
-        $this->formats[] = 'application/vnd.ims.lis.v2.lineitemcontainer+json';
-        $this->formats[] = 'application/vnd.ims.lis.v2.lineitem+json';
+        $this->formats[] = outcomestwo::FORMAT_LINE_ITEM_CONTAINER;
+        $this->formats[] = outcomestwo::FORMAT_LINE_ITEM;
         $this->methods[] = 'GET';
         $this->methods[] = 'POST';
-
     }
 
     /**
      * Execute the request for this resource.
      *
-     * @param mod_lti\local\ltiservice\response $response  Response object for this request.
+     * @param response $response  Response object for this request.
      */
     public function execute($response) {
-
         $params = $this->parse_template();
         $contextid = $params['context_id'];
-        $isget = $response->get_request_method() === 'GET';
+        $method =  $response->get_request_method();
+        $isget = $method === 'GET';
         if ($isget) {
             $contenttype = $response->get_accept();
         } else {
             $contenttype = $response->get_content_type();
         }
-        $container = empty($contenttype) || ($contenttype === $this->formats[0]);
-
+        $container = empty($contenttype) || ($contenttype === outcomestwo::FORMAT_LINE_ITEM_CONTAINER);
         try {
             if (!$this->check_tool_proxy(null, $response->get_request_data())) {
-                throw new \Exception(null, 401);
+                throw new Exception(null, 401);
             }
-            if (empty($contextid) || !($container ^ ($response->get_request_method() === 'POST')) ||
+            if (empty($contextid) || !($container ^ ($method === 'POST')) ||
                 (!empty($contenttype) && !in_array($contenttype, $this->formats))) {
-                throw new \Exception(null, 400);
+                throw new Exception(null, 400);
             }
-            $items = $this->get_service()->get_lineitems($contextid);
 
-            switch ($response->get_request_method()) {
+            switch ($method) {
                 case 'GET':
-                    $json = $this->get_request_json($contextid, $items);
-                    $response->set_content_type($this->formats[0]);
+                    $json = $this->process_get_request($response, $contextid);
                     break;
                 case 'POST':
-                    $json = $this->post_request_json($response->get_request_data(), $contextid, $items);
-                    $response->set_code(201);
-                    $response->set_content_type($this->formats[1]);
+                    $json = $this->process_post_request($response, $contextid);
                     break;
                 default:  // Should not be possible.
-                    throw new \Exception(null, 405);
+                    throw new Exception(null, 405);
             }
             $response->set_body($json);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $response->set_code($e->getCode());
         }
+    }
 
+    /**
+     * Fetch the grade item records that have been created by the tool proxy instance.
+     *
+     * @param string $courseid ID of course
+     * @param int $activityid The activity ID associated to the grade items to be fetched.
+     * @param int $page Determines the offset for our grade items query.
+     * @param int $limit The maximum number of line items to be returned. 0 means no limit.
+     * @return array Array of grade item objects.
+     * @throws Exception
+     */
+    public function get_lineitems($courseid, $activityid = 0, $page = 0, $limit = 0) {
+        global $DB;
+        $service = $this->get_service();
+        $proxyid = $service->get_tool_proxy()->id;
+        $params = [
+            'courseid' => $courseid,
+            'tpid' => $proxyid,
+            'tpid2' => $proxyid
+        ];
+        $activitywhere = '';
+        if ($activityid > 0) {
+            $activitywhere = "AND o.activityid = :activityid";
+            $params['activityid'] = $activityid;
+        }
+        $sql = "SELECT i.*
+                  FROM {grade_items} i
+             LEFT JOIN {lti} m ON i.iteminstance = m.id
+             LEFT JOIN {lti_types} t ON m.typeid = t.id
+             LEFT JOIN {ltiservice_outcomestwo} o ON i.id = o.gradeitemid
+                 WHERE i.courseid = :courseid
+                       AND (
+                         (i.itemtype = 'mod' AND i.itemmodule = 'lti' AND t.toolproxyid = :tpid)
+                         OR (o.toolproxyid = :tpid2 AND i.id = o.gradeitemid {$activitywhere})
+                       )
+              ORDER BY i.id ASC";
+
+        $offset = 0;
+        if ($limit > 0 && $page > 0) {
+            $offset = ($page - 1) * $limit;
+        }
+        try {
+            $lineitems = $DB->get_records_sql($sql, $params, $offset, self::PAGE_SIZE);
+        } catch (dml_exception $e) {
+            throw new Exception(null, 500);
+        }
+
+        return $lineitems;
+    }
+
+    /**
+     * Processes the get request.
+     *
+     * @param response $response
+     * @param int $contextid The context
+     * @return string The JSON
+     */
+    protected function process_get_request(response $response, $contextid) {
+        $activityid = optional_param('activityid', 0, PARAM_INT);
+        $firstpage = optional_param('firstPage', null, PARAM_TEXT);
+        $limit = optional_param('limit', static::PAGE_SIZE, PARAM_INT);
+        if ($firstpage !== null) {
+            $page = 1;
+        } else {
+            $page = optional_param('p', 1, PARAM_INT);
+        }
+        $items = $this->get_lineitems($contextid, $activityid, $page, $limit);
+        $response->set_content_type(outcomestwo::FORMAT_LINE_ITEM_CONTAINER);
+
+        return $this->build_get_response_json($contextid, $items);
     }
 
     /**
      * Generate the JSON for a GET request.
      *
-     * @param string $contextid  Course ID
-     * @param array  $items      Array of lineitems
+     * @param string $contextid Course ID
+     * @param array $items Array of lineitems
      *
-     * return string
+     * @return string
      */
-    private function get_request_json($contextid, $items) {
-
-        $json = <<< EOD
-{
-  "@context" : [
-    "http://purl.imsglobal.org/ctx/lis/v2/outcomes/LineItemContainer",
-    {
-      "res" : "http://purl.imsglobal.org/ctx/lis/v2p1/Result#"
-    }
-  ],
-  "@type" : "Page",
-  "@id" : "{$this->get_endpoint()}",
-  "pageOf" : {
-    "@type" : "LineItemContainer",
-    "membershipSubject" : {
-      "@type" : "Context",
-      "contextId" : "{$contextid}",
-      "lineItem" : [
-
-EOD;
-        $endpoint = parent::get_endpoint();
-        $sep = '        ';
+    protected function build_get_response_json($contextid, $items) {
+        $lineitems = [];
         foreach ($items as $item) {
-            $json .= $sep . outcomestwo::item_to_json($item, $endpoint);
-            $sep = ",\n        ";
+            $lineitems[] = lineitem::build_line_item($item, parent::get_endpoint());
         }
-        $json .= <<< EOD
+        $result = [
+            '@context' => [
+                'http://purl.imsglobal.org/ctx/lis/v2/outcomes/LineItemContainer',
+                ['res' => 'http://purl.imsglobal.org/ctx/lis/v2p1/Result#']
+            ],
+            '@type' => 'Page',
+            '@id' => $this->get_endpoint(),
+            'pageOf' => [
+                '@type' => 'LineItemContainer',
+                'membershipSubject' => [
+                    '@type' => 'Context',
+                    'contextId' => $contextid,
+                    'lineItem' => $lineitems
+                ]
+            ]
+        ];
 
-      ]
-    }
-  }
-}
-EOD;
-
-        return $json;
-
+        $options = 0;
+        if (debugging()) {
+            $options = JSON_PRETTY_PRINT;
+        }
+        return json_encode($result, $options);
     }
 
     /**
      * Generate the JSON for a POST request.
      *
-     * @param string $body       POST body
-     * @param string $contextid  Course ID
-     * @param array  $items      Array of lineitems
-     *
-     * return string
+     * @param response $response The response data.
+     * @param string $contextid Course ID
+     * @return string The JSON string for the POST response.
+     * @throws Exception
      */
-    private function post_request_json($body, $contextid, $items) {
-        global $CFG, $DB;
-
-        $json = json_decode($body);
-        if (empty($json) || !isset($json->{"@type"}) || ($json->{"@type"} != 'LineItem')) {
-            throw new \Exception(null, 400);
+    protected function process_post_request(response $response, $contextid) {
+        $json = json_decode($response->get_request_data());
+        if (empty($json) || !isset($json->{"@type"}) || ($json->{"@type"} !== 'LineItem')) {
+            throw new Exception(null, 400);
         }
 
-        require_once($CFG->libdir.'/gradelib.php');
-        $label = (isset($json->label)) ? $json->label : 'Item ' . time();
-        $activity = (isset($json->assignedActivity) && isset($json->assignedActivity->activityId)) ?
-            $json->assignedActivity->activityId : '';
+        $label = !empty($json->label) ? $json->label : 'Item ' . time();
+        $activity = !empty($json->assignedActivity->activityId) ? $json->assignedActivity->activityId : '';
         $max = 1;
         if (isset($json->scoreConstraints)) {
             $reportingmethod = 'totalScore';
@@ -186,29 +246,34 @@ EOD;
             }
         }
 
-        $params = array();
-        $params['itemname'] = $label;
-        $params['gradetype'] = GRADE_TYPE_VALUE;
-        $params['grademax']  = $max;
-        $params['grademin']  = 0;
-        $item = new \grade_item(array('id' => 0, 'courseid' => $contextid));
-        \grade_item::set_properties($item, $params);
-        $item->itemtype = 'manual';
+        $params = [
+            'id' => 0,
+            'courseid' => $contextid,
+            'itemname' => $label,
+            'itemtype' => 'manual',
+            'gradetype' => GRADE_TYPE_VALUE,
+            'grademax' => $max,
+            'grademin' => 0
+        ];
+        $item = new grade_item($params);
         $id = $item->insert('mod/ltiservice_outcomestwo');
         try {
-            $DB->insert_record('ltiservice_outcomestwo', array(
-                'toolproxyid' => $this->get_service()->get_tool_proxy()->id,
-                'gradeitemid' => $id,
-                'activityid' => $activity
-            ));
-        } catch (\Exception $e) {
-            throw new \Exception(null, 500);
+            $service = $this->get_service();
+            $service->create_outcomestwo_record($id, $activity);
+        } catch (dml_exception $e) {
+            throw new Exception(null, 500);
         }
         $json->{"@id"} = parent::get_endpoint() . "/{$id}";
         $json->results = parent::get_endpoint() . "/{$id}/results";
 
-        return json_encode($json);
+        $response->set_code(201);
+        $response->set_content_type(outcomestwo::FORMAT_LINE_ITEM);
 
+        $options = 0;
+        if (debugging()) {
+            $options = JSON_PRETTY_PRINT;
+        }
+        return json_encode($json, $options);
     }
 
     /**
@@ -222,11 +287,7 @@ EOD;
         global $COURSE;
 
         $this->params['context_id'] = $COURSE->id;
-
         $value = str_replace('$LineItems.url', parent::get_endpoint(), $value);
-
         return $value;
-
     }
-
 }

@@ -22,11 +22,14 @@
  * @author     Stephen Vickers
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-
 namespace ltiservice_outcomestwo\local\resource;
 
+require_once($CFG->libdir.'/gradelib.php');
+
+use Exception;
+use grade_grade;
 use ltiservice_outcomestwo\local\service\outcomestwo;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -34,7 +37,7 @@ defined('MOODLE_INTERNAL') || die();
  * A resource implementing LISResult.
  *
  * @package    ltiservice_outcomestwo
- * @since      Moodle 3.0
+ * @since      Moodle 3.2
  * @copyright  2015 Vital Source Technologies http://vitalsource.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -43,25 +46,28 @@ class result extends \mod_lti\local\ltiservice\resource_base {
     /**
      * Class constructor.
      *
-     * @param ltiservice_outcomestwo\local\service\outcomestwo $service Service instance
+     * @param outcomestwo $service Service instance
      */
     public function __construct($service) {
 
         parent::__construct($service);
         $this->id = 'Result.item';
+        // In Moodle:
+        // context_id = Course ID,
+        // item_id = Grade item ID,
+        // result_id = User ID.
         $this->template = '/{context_id}/lineitems/{item_id}/results/{result_id}';
         $this->variables[] = 'Result.url';
-        $this->formats[] = 'application/vnd.ims.lis.v2p1.result+json';
+        $this->formats[] = outcomestwo::FORMAT_LIS_RESULT;
         $this->methods[] = 'GET';
         $this->methods[] = 'PUT';
         $this->methods[] = 'DELETE';
-
     }
 
     /**
      * Execute the request for this resource.
      *
-     * @param mod_lti\local\ltiservice\response $response  Response object for this request.
+     * @param response $response  Response object for this request.
      */
     public function execute($response) {
         global $CFG;
@@ -79,20 +85,18 @@ class result extends \mod_lti\local\ltiservice\resource_base {
 
         try {
             if (!$this->check_tool_proxy(null, $response->get_request_data())) {
-                throw new \Exception(null, 401);
+                throw new Exception(null, 401);
             }
             if (empty($contextid) || (!empty($contenttype) && !in_array($contenttype, $this->formats))) {
-                throw new \Exception(null, 400);
+                throw new Exception(null, 400);
             }
             if (($item = $this->get_service()->get_lineitem($contextid, $itemid, true)) === false) {
-                throw new \Exception(null, 400);
+                throw new Exception(null, 400);
             }
 
-            require_once($CFG->libdir.'/gradelib.php');
-
-            $grade = \grade_grade::fetch(array('itemid' => $itemid, 'userid' => $resultid));
+            $grade = grade_grade::fetch(array('itemid' => $itemid, 'userid' => $resultid));
             if ($grade === false) {
-                throw new \Exception(null, 400);
+                throw new Exception(null, 400);
             }
             switch ($response->get_request_method()) {
                 case 'GET':
@@ -107,10 +111,10 @@ class result extends \mod_lti\local\ltiservice\resource_base {
                     $this->delete_request($item, $resultid);
                     break;
                 default:  // Should not be possible.
-                    throw new \Exception(null, 405);
+                    throw new Exception(null, 405);
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $response->set_code($e->getCode());
         }
 
@@ -120,16 +124,15 @@ class result extends \mod_lti\local\ltiservice\resource_base {
      * Generate the JSON for a GET request.
      *
      * @param object $grade       Grade instance
-     *
-     * return string
+     * @return string
      */
-    private function get_request_json($grade) {
+    protected function get_request_json($grade) {
 
         if (empty($grade->timemodified)) {
-            throw new \Exception(null, 400);
+            throw new Exception(null, 400);
         }
         $lineitem = new lineitem($this->get_service());
-        $json = outcomestwo::grade_to_json($grade, $lineitem->get_endpoint(), true);
+        $json = outcomestwo::build_grade_data($grade, $lineitem->get_endpoint(), true);
 
         return $json;
 
@@ -142,13 +145,13 @@ class result extends \mod_lti\local\ltiservice\resource_base {
      * @param object $item        Lineitem instance
      * @param string $userid      User ID
      */
-    private function put_request($body, $item, $userid) {
+    protected function put_request($body, $item, $userid) {
 
         $result = json_decode($body);
         if (empty($result) || !isset($result->{"@type"}) || ($result->{"@type"} != 'LISResult') ||
             (isset($result->resultAgent) && isset($result->resultAgent->userId) && ($result->resultAgent->userId !== $userid)) ||
             (!isset($result->totalScore) && !isset($result->normalScore))) {
-            throw new \Exception(null, 400);
+            throw new Exception(null, 400);
         }
         outcomestwo::set_grade_item($item, $result, $userid);
 
@@ -161,9 +164,9 @@ class result extends \mod_lti\local\ltiservice\resource_base {
      * @param object $item       Lineitem instance
      * @param string  $userid    User ID
      */
-    private function delete_request($item, $userid) {
+    protected function delete_request($item, $userid) {
 
-        $grade = new \stdClass();
+        $grade = new stdClass();
         $grade->userid = $userid;
         $grade->rawgrade = null;
         $grade->feedback = null;
@@ -171,7 +174,7 @@ class result extends \mod_lti\local\ltiservice\resource_base {
         $status = grade_update('mod/ltiservice_outcomestwo', $item->courseid, $item->itemtype, $item->itemmodule,
                                $item->iteminstance, $item->itemnumber, $grade);
         if ($status !== GRADE_UPDATE_OK) {
-            throw new \Exception(null, 500);
+            throw new Exception(null, 500);
         }
 
     }

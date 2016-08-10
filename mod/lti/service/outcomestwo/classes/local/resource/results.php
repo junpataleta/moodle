@@ -22,10 +22,12 @@
  * @author     Stephen Vickers
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-
 namespace ltiservice_outcomestwo\local\resource;
 
+require_once($CFG->libdir . '/gradelib.php');
+
+use Exception;
+use grade_grade;
 use ltiservice_outcomestwo\local\service\outcomestwo;
 
 defined('MOODLE_INTERNAL') || die();
@@ -34,7 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  * A resource implementing LISResult container.
  *
  * @package    ltiservice_outcomestwo
- * @since      Moodle 3.0
+ * @since      Moodle 3.2
  * @copyright  2015 Vital Source Technologies http://vitalsource.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -43,7 +45,7 @@ class results extends \mod_lti\local\ltiservice\resource_base {
     /**
      * Class constructor.
      *
-     * @param ltiservice_outcomestwo\local\service\outcomestwo $service Service instance
+     * @param outcomestwo $service Service instance
      */
     public function __construct($service) {
 
@@ -55,13 +57,12 @@ class results extends \mod_lti\local\ltiservice\resource_base {
         $this->formats[] = 'application/vnd.ims.lis.v2p1.result+json';
         $this->methods[] = 'GET';
         $this->methods[] = 'POST';
-
     }
 
     /**
      * Execute the request for this resource.
      *
-     * @param mod_lti\local\ltiservice\response $response  Response object for this request.
+     * @param response $response Response object for this request.
      */
     public function execute($response) {
         global $CFG;
@@ -80,16 +81,15 @@ class results extends \mod_lti\local\ltiservice\resource_base {
 
         try {
             if (!$this->check_tool_proxy(null, $response->get_request_data())) {
-                throw new \Exception(null, 401);
+                throw new Exception(null, 401);
             }
             if (empty($contextid) || !($container ^ ($response->get_request_method() === 'POST')) ||
                 (!empty($contenttype) && !in_array($contenttype, $this->formats))) {
-                throw new \Exception(null, 400);
+                throw new Exception(null, 400);
             }
             if (($item = $this->get_service()->get_lineitem($contextid, $itemid, true)) === false) {
-                throw new \Exception(null, 400);
+                throw new Exception(null, 400);
             }
-            require_once($CFG->libdir.'/gradelib.php');
             switch ($response->get_request_method()) {
                 case 'GET':
                     $json = $this->get_request_json($item->id);
@@ -101,11 +101,11 @@ class results extends \mod_lti\local\ltiservice\resource_base {
                     $response->set_content_type($this->formats[1]);
                     break;
                 default:  // Should not be possible.
-                    throw new \Exception(null, 405);
+                    throw new Exception(null, 405);
             }
             $response->set_body($json);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $response->set_code($e->getCode());
         }
 
@@ -114,13 +114,11 @@ class results extends \mod_lti\local\ltiservice\resource_base {
     /**
      * Generate the JSON for a GET request.
      *
-     * @param int $itemid       Grade item instance ID
-     *
-     * return string
+     * @param int $itemid   Grade item instance ID
+     * @return string       The JSON formatted string.
      */
-    private function get_request_json($itemid) {
-
-        $grades = \grade_grade::fetch_all(array('itemid' => $itemid));
+    protected function get_request_json($itemid) {
+        $grades = grade_grade::fetch_all(array('itemid' => $itemid));
         $json = <<< EOD
 {
   "@context" : [
@@ -141,7 +139,7 @@ EOD;
         $sep = "\n        ";
         foreach ($grades as $grade) {
             if (!empty($grade->timemodified)) {
-                $json .= $sep . outcomestwo::grade_to_json($grade, $endpoint);
+                $json .= $sep . json_encode(outcomestwo::build_grade_data($grade, $endpoint));
                 $sep = ",\n        ";
             }
         }
@@ -159,23 +157,27 @@ EOD;
     /**
      * Generate the JSON for a POST request.
      *
-     * @param string $body       POST body
-     * @param string $item       Grade item instance
-     *
-     * return string
+     * @param string $body POST body
+     * @param string $item Grade item instance
+     * @return string
+     * @throws Exception
      */
-    private function post_request_json($body, $item) {
+    protected function post_request_json($body, $item) {
 
         $result = json_decode($body);
         if (empty($result) || !isset($result->{"@type"}) || ($result->{"@type"} != 'LISResult') ||
             !isset($result->resultAgent) || !isset($result->resultAgent->userId) ||
             (!isset($result->totalScore) && !isset($result->normalScore))) {
-            throw new \Exception(null, 400);
+            throw new Exception(null, 400);
         }
         outcomestwo::set_grade_item($item, $result, $result->resultAgent->userId);
         $result->{"@id"} = parent::get_endpoint() . "/{$result->resultAgent->userId}";
 
-        return json_encode($result);
+        $options = 0;
+        if (debugging()) {
+            $options = JSON_PRETTY_PRINT;
+        }
+        return json_encode($result, $options);
 
     }
 
@@ -183,13 +185,10 @@ EOD;
      * Parse a value for custom parameter substitution variables.
      *
      * @param string $value String to be parsed
-     *
      * @return string
      */
     public function parse_value($value) {
-        global $COURSE, $CFG;
-
-        require_once($CFG->libdir . '/gradelib.php');
+        global $COURSE;
 
         $this->params['context_id'] = $COURSE->id;
         $id = optional_param('id', 0, PARAM_INT); // Course Module ID.
@@ -203,7 +202,5 @@ EOD;
         $value = str_replace('$Results.url', parent::get_endpoint(), $value);
 
         return $value;
-
     }
-
 }

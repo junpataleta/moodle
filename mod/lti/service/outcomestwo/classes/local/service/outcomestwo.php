@@ -23,10 +23,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace ltiservice_outcomestwo\local\service;
 
+require_once($CFG->libdir.'/dmllib.php');
+
+use dml_exception;
+use Exception;
 use ltiservice_outcomestwo\local\resource\lineitem;
+use ltiservice_outcomestwo\local\resource\lineitems;
+use ltiservice_outcomestwo\local\resource\result;
+use ltiservice_outcomestwo\local\resource\results;
+use mod_lti\local\ltiservice\service_base;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -38,17 +46,19 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2015 Vital Source Technologies http://vitalsource.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class outcomestwo extends \mod_lti\local\ltiservice\service_base {
+class outcomestwo extends service_base {
 
+    const FORMAT_LINE_ITEM = 'application/vnd.ims.lis.v2.lineitem+json';
+    const FORMAT_LINE_ITEM_CONTAINER = 'application/vnd.ims.lis.v2.lineitemcontainer+json';
+    const FORMAT_LINE_ITEM_RESULTS = 'application/vnd.ims.lis.v2.lineitemresults+json';
+    const FORMAT_LIS_RESULT = 'application/vnd.ims.lis.v2p1.result+json';
     /**
      * Class constructor.
      */
     public function __construct() {
-
         parent::__construct();
         $this->id = 'outcomestwo';
         $this->name = get_string('servicename', 'ltiservice_outcomestwo');
-
     }
 
     /**
@@ -57,52 +67,14 @@ class outcomestwo extends \mod_lti\local\ltiservice\service_base {
      * @return array
      */
     public function get_resources() {
-
         if (empty($this->resources)) {
-            $this->resources = array();
-            $this->resources[] = new \ltiservice_outcomestwo\local\resource\lineitems($this);
-            $this->resources[] = new \ltiservice_outcomestwo\local\resource\lineitem($this);
-            $this->resources[] = new \ltiservice_outcomestwo\local\resource\results($this);
-            $this->resources[] = new \ltiservice_outcomestwo\local\resource\result($this);
+            $this->resources = [];
+            $this->resources[] = new lineitem($this);
+            $this->resources[] = new lineitems($this);
+            $this->resources[] = new result($this);
+            $this->resources[] = new results($this);
         }
-
         return $this->resources;
-
-    }
-
-    /**
-     * Fetch the lineitem instances.
-     *
-     * @param string $courseid   ID of course
-     *
-     * @return array
-     */
-    public function get_lineitems($courseid) {
-        global $DB;
-
-        $sql = "SELECT i.*
-                  FROM {grade_items} i
-             LEFT JOIN {lti} m ON i.iteminstance = m.id
-             LEFT JOIN {lti_types} t ON m.typeid = t.id
-             LEFT JOIN {ltiservice_outcomestwo} o ON i.id = o.gradeitemid
-                 WHERE (i.courseid = :courseid)
-                       AND (((i.itemtype = :itemtype)
-                             AND (i.itemmodule = :itemmodule)
-                             AND (t.toolproxyid = :tpid))
-                            OR ((o.toolproxyid = :tpid2)
-                                AND (i.id = o.gradeitemid)))";
-        $params = array('courseid' => $courseid, 'itemtype' => 'mod', 'itemmodule' => 'lti',
-                        'tpid' => $this->get_tool_proxy()->id,
-                        'tpid2' => $this->get_tool_proxy()->id
-                        );
-        try {
-            $lineitems = $DB->get_records_sql($sql, $params);
-        } catch (\Exception $e) {
-            throw new \Exception(null, 500);
-        }
-
-        return $lineitems;
-
     }
 
     /**
@@ -115,62 +87,54 @@ class outcomestwo extends \mod_lti\local\ltiservice\service_base {
      * @param boolean  $any        False if the lineitem should be one created via this web service
      *                             and not one automatically created by LTI 1.1
      *
-     * @return object
+     * @return false|stdClass False if 0 or multiple grade items are found. The grade item record otherwise.
      */
     public function get_lineitem($courseid, $itemid, $any) {
         global $DB;
-
-        $where = '(o.toolproxyid = :tpid) AND (i.id = o.gradeitemid)';
+        $proxy = $this->get_tool_proxy();
+        $where = 'o.toolproxyid = :tpid AND i.id = o.gradeitemid';
+        $params = [
+            'courseid' => $courseid,
+            'itemid' => $itemid,
+            'tpid' => $proxy->id
+        ];
         if ($any) {
-            $where = "(((i.itemtype = :itemtype)
-                             AND (i.itemmodule = :itemmodule)
-                             AND (t.toolproxyid = :tpid2))
-                            OR ({$where}))";
+            $where = "((i.itemtype = 'mod' AND i.itemmodule = 'lti' AND t.toolproxyid = :tpid2) OR ({$where}))";
+            $params['tpid2'] = $proxy->id;
         }
         $sql = "SELECT i.*
                   FROM {grade_items} i
              LEFT JOIN {lti} m ON i.iteminstance = m.id
              LEFT JOIN {lti_types} t ON m.typeid = t.id
              LEFT JOIN {ltiservice_outcomestwo} o ON i.id = o.gradeitemid
-                 WHERE (i.courseid = :courseid)
-                       AND (i.id = :itemid)
+                 WHERE i.courseid = :courseid
+                       AND i.id = :itemid
                        AND {$where}";
-        $params = array('courseid' => $courseid, 'itemid' => $itemid, 'tpid' => $this->get_tool_proxy()->id);
-        if ($any) {
-            $params = array_merge($params, array('itemtype' => 'mod', 'itemmodule' => 'lti',
-                                                 'tpid2' => $this->get_tool_proxy()->id));
-        }
         try {
-            $lineitem = $DB->get_records_sql($sql, $params);
-            if (count($lineitem) === 1) {
-                $lineitem = reset($lineitem);
-            } else {
-                $lineitem = false;
-            }
-        } catch (\Exception $e) {
+            $lineitem = $DB->get_record_sql($sql, $params, MUST_EXIST);
+        } catch (dml_exception $e) {
             $lineitem = false;
         }
 
         return $lineitem;
-
     }
-
 
     /**
      * Set a grade item.
      *
-     * @param object  $item               Grade Item record
-     * @param object  $result             Result object
-     * @param string  $userid             User ID
+     * @param object $item Grade Item record
+     * @param object $result Result object
+     * @param string $userid User ID
+     * @throws Exception
      */
     public static function set_grade_item($item, $result, $userid) {
         global $DB;
 
-        if ($DB->get_record('user', array('id' => $userid)) === false) {
-            throw new \Exception(null, 400);
+        if ($DB->get_record('user', ['id' => $userid]) === false) {
+            throw new Exception(null, 400);
         }
 
-        $grade = new \stdClass();
+        $grade = new stdClass();
         $grade->userid = $userid;
         $grade->rawgrademin = grade_floatval(0);
         $max = null;
@@ -203,54 +167,8 @@ class outcomestwo extends \mod_lti\local\ltiservice\service_base {
         $status = grade_update('mod/ltiservice_outcomestwo', $item->courseid, $item->itemtype, $item->itemmodule,
                                $item->iteminstance, $item->itemnumber, $grade);
         if ($status !== GRADE_UPDATE_OK) {
-            throw new \Exception(null, 500);
+            throw new Exception(null, 500);
         }
-
-    }
-
-    /**
-     * Get the JSON representation of the grade item.
-     *
-     * @param object  $item               Grade Item record
-     * @param string  $endpoint           Endpoint for lineitems container request
-     * @param boolean $includecontext     True if the @context and @type should be included in the JSON
-     * @param array   $results            Array of JSON result elements (null if results are not to be included)
-     *
-     * @return string
-     */
-    public static function item_to_json($item, $endpoint, $includecontext = false, $results = null) {
-
-        $lineitem = new \stdClass();
-        if ($includecontext) {
-            $context = array();
-            $context[] = 'http://purl.imsglobal.org/ctx/lis/v2/LineItem';
-            $res = new \stdClass();
-            $res->res = 'http://purl.imsglobal.org/ctx/lis/v2p1/Result#';
-            $context[] = $res;
-            $lineitem->{"@context"} = $context;
-            $lineitem->{"@type"} = 'LineItem';
-            $lineitem->{"@id"} = $endpoint;
-        } else {
-            $lineitem->{"@id"} = "{$endpoint}/{$item->id}";
-        }
-        $lineitem->results = "{$lineitem->{"@id"}}/results";
-        $lineitem->label = $item->itemname;
-        $lineitem->reportingMethod = 'res:totalScore';
-        if (!empty($item->iteminfo)) {
-            $assignedactivity = new \stdClass();
-            $assignedactivity->activityId = $item->iteminfo;
-            $lineitem->assignedActivity = $assignedactivity;
-        }
-        $scoreconstraints = new \stdClass();
-        $scoreconstraints->{"@type"} = 'NumericLimits';
-        $scoreconstraints->totalMaximum = intval($item->grademax);
-        $lineitem->scoreConstraints = $scoreconstraints;
-        if (!is_null($results)) {
-            $lineitem->result = $results;
-        }
-        $json = json_encode($lineitem);
-
-        return $json;
 
     }
 
@@ -263,35 +181,48 @@ class outcomestwo extends \mod_lti\local\ltiservice\service_base {
      *
      * @return string
      */
-    public static function grade_to_json($grade, $endpoint, $includecontext = false) {
+    public static function build_grade_data($grade, $endpoint, $includecontext = false) {
 
         $id = "{$endpoint}/results/{$grade->userid}";
-        $result = new \stdClass();
+        $result = [];
         if ($includecontext) {
-            $result->{"@context"} = 'http://purl.imsglobal.org/ctx/lis/v2p1/Result';
-            $result->{"@type"} = 'LISResult';
-            $result->{"@id"} = $id;
-            $result->resultOf = $endpoint;
+            $result['@context'] = 'http://purl.imsglobal.org/ctx/lis/v2p1/Result';
+            $result['@type'] = 'LISResult';
+            $result['@id'] = $id;
+            $result['resultOf'] = $endpoint;
         } else {
-            $result->{"@id"} = $id;
+            $result['@id'] = $id;
         }
-        $result->resultAgent = new \stdClass();
-        $result->resultAgent->userId = $grade->userid;
+        $result['resultAgent'] = [
+            'userId' => $grade->userid
+        ];
         if (!empty($grade->finalgrade)) {
-            $result->totalScore = $grade->finalgrade;
-            $scoreconstraints = new \stdClass();
-            $scoreconstraints->{"@type"} = 'NumericLimits';
-            $scoreconstraints->totalMaximum = intval($grade->rawgrademax);
-            $result->resultScoreConstraints = $scoreconstraints;
+            $result['totalScore'] = $grade->finalgrade;
+            $result['resultScoreConstraints'] = [
+                '@type' => 'NumericLimits',
+                'totalMaximum' => intval($grade->rawgrademax)
+            ];
         }
         if (!empty($grade->feedback)) {
-            $result->comment = $grade->feedback;
+            $result['comment'] = $grade->feedback;
         }
-        $result->timestamp = date('Y-m-d\TH:iO', $grade->timemodified);
-        $json = json_encode($result);
-
-        return $json;
-
+        $result['timestamp'] = date('Y-m-d\TH:iO', $grade->timemodified);
+        return $result;
     }
 
+    /**
+     * Creates an entry for the ltiservice_outcomestwo table that links the grade item to the line item.
+     *
+     * @param int $gradeitemid The grade item ID associated with this line item.
+     * @param int $activityid The activity ID for the line item
+     */
+    public function create_outcomestwo_record($gradeitemid, $activityid) {
+        global $DB;
+        $params = (object) [
+            'toolproxyid' => $this->get_tool_proxy()->id,
+            'gradeitemid' => $gradeitemid,
+            'activityid' => $activityid
+        ];
+        $DB->insert_record('ltiservice_outcomestwo', $params);
+    }
 }
