@@ -55,7 +55,7 @@
     </TABLE>
     <TABLE NAME="enrol_lti_lti2_consumer" COMMENT="TODO">
       <FIELDS>
-        <FIELD NAME="consumer_pk" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="consumer_key256" TYPE="char" LENGTH="256" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="consumer_key" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
@@ -69,14 +69,14 @@
         <FIELD NAME="settings" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="protected" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="enabled_from" TYPE="datetime" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="enabled_until" TYPE="datetime" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="enable_from" TYPE="datetime" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="enable_until" TYPE="datetime" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="last_access" TYPE="datetime" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="created" TYPE="datetime" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="updated" TYPE="datetime" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="consumer_pk"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <!-- <KEY NAME="consumer_key256_uniq" TYPE="unique" FIELDS="consumer_key256"/> TODO We can't have unique 256... either no unique or 255 length -->
       </KEYS>
     </TABLE>
@@ -92,7 +92,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="tool_proxy_pk"/>
         <KEY NAME="tool_proxy_id_uniq" TYPE="unique" FIELDS="tool_proxy_id"/>
-        <KEY NAME="consumer_pk" TYPE="foreign" FIELDS="consumer_pk" REFTABLE="enrol_lti_lti2_consumer" REFFIELDS="consumer_pk"/>
+        <KEY NAME="consumer_pk" TYPE="foreign" FIELDS="consumer_pk" REFTABLE="enrol_lti_lti2_consumer" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="enrol_lti_item" COMMENT="TODO">
@@ -124,7 +124,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="context_pk"/>
-        <KEY NAME="consumer_pk" TYPE="foreign" FIELDS="consumer_pk" REFTABLE="enrol_lti_lti2_consumer" REFFIELDS="consumer_pk"/>
+        <KEY NAME="consumer_pk" TYPE="foreign" FIELDS="consumer_pk" REFTABLE="enrol_lti_lti2_consumer" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="enrol_lti_lti2_nonce" COMMENT="TODO">
@@ -135,7 +135,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="consumer_pk,value"/>
-        <KEY NAME="consumer_pk" TYPE="foreign" FIELDS="consumer_pk" REFTABLE="enrol_lti_lti2_consumer" REFFIELDS="consumer_pk"/>
+        <KEY NAME="consumer_pk" TYPE="foreign" FIELDS="consumer_pk" REFTABLE="enrol_lti_lti2_consumer" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="enrol_lti_lti2_resource_link" COMMENT="TODO">
