@@ -57,7 +57,8 @@ class tool_provider extends ToolProvider\ToolProvider {
         $this->debugMode = debugging();
         $tool = \enrol_lti\helper::get_lti_tool($toolid);
 
-        $dataconnector = DataConnector\DataConnector::getDataConnector();
+        $dataconnector = new data_connector();
+        #$dataconnector = DataConnector\DataConnector::getDataConnector();
         parent::__construct($dataconnector);
 
         #$this->baseUrl = $CFG->wwwroot . '/enrol/lti/proxy.php';
