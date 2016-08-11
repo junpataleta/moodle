@@ -77,7 +77,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="consumer_pk"/>
-        <KEY NAME="consumer_key256_uniq" TYPE="unique" FIELDS="consumer_key256"/>
+        <!-- <KEY NAME="consumer_key256_uniq" TYPE="unique" FIELDS="consumer_key256"/> TODO We can't have unique 256... either no unique or 255 length -->
       </KEYS>
     </TABLE>
     <TABLE NAME="enrol_lti_lti2_tool_proxy" COMMENT="TODO">
@@ -141,7 +141,7 @@
     <TABLE NAME="enrol_lti_lti2_resource_link" COMMENT="TODO">
       <FIELDS>
         <FIELD NAME="resource_link_pk" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="context_pk" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="true"/>
+        <FIELD NAME="context_pk" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="consumer_pk" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="lti_resource_link_id" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="settings" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
