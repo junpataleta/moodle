@@ -212,7 +212,7 @@ class tool_provider extends ToolProvider\ToolProvider {
         } else if ($context->contextlevel == CONTEXT_MODULE) {
             $cmid = $context->instanceid;
             $cm = get_coursemodule_from_id(false, $context->instanceid, 0, false, MUST_EXIST);
-            $urltogo = new moodle_url('/mod/' . $cm->modname . '/view.php', array('id' => $cm->id));
+            $urltogo = new \moodle_url('/mod/' . $cm->modname . '/view.php', array('id' => $cm->id));
 
             // If we are a student in the course module context we do not want to display blocks.
             if (!$isinstructor) {
