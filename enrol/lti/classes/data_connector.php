@@ -530,79 +530,96 @@ class data_connector extends DataConnector {
 ###  ResourceLink methods
 ###
 
-/**
- * Load resource link object.
- *
- * @param ResourceLink $resourceLink Resource_Link object
- *
- * @return boolean True if the resource link object was successfully loaded
- */
-    public function loadResourceLink($resourceLink)
-    {
+    /**
+     * Load resource link object.
+     *
+     * @param ResourceLink $resourceLink Resource_Link object
+     *
+     * @return boolean True if the resource link object was successfully loaded
+     */
+    public function loadResourceLink($resourceLink) {
+        global $DB;
+
+        $table = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_TABLE_NAME;
 
         $ok = false;
-        if (!empty($resourceLink->getRecordId())) {
-            $sql = sprintf('SELECT resource_link_pk, context_pk, consumer_pk, lti_resource_link_id, settings, primary_resource_link_pk, share_approved, created, updated ' .
-                           "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' ' .
-                           'WHERE (resource_link_pk = %d)',
-                           $resourceLink->getRecordId());
+        $resourceid = $resourceLink->getRecordId();
+        $fields = 'resource_link_pk, context_pk, consumer_pk, lti_resource_link_id, settings, primary_resource_link_pk, share_approved, created, updated';
+        if (!empty($resourceid)) {
+            $row = $DB->get_record(
+                $table,
+                array('resource_link_pk' => $resourceid),
+                '',
+                $fields
+            );
         } else if (!empty($resourceLink->getContext())) {
-            $sql = sprintf('SELECT resource_link_pk, context_pk, consumer_pk, lti_resource_link_id, settings, primary_resource_link_pk, share_approved, created, updated ' .
-                           "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' ' .
-                           'WHERE (context_pk = %d) AND (lti_resource_link_id = %s)',
-                           $resourceLink->getContext()->getRecordId(), DataConnector::quoted($resourceLink->getId()));
+            $row = $DB->get_record(
+                $table,
+                array(
+                    'context_pk' => $resourceLink->getContext()->getRecordId(),
+                    'lti_resource_link_id' => $resourceLink->getId()
+                ),
+                '',
+                $fields
+            );
         } else {
-            $sql = sprintf('SELECT r.resource_link_pk, r.context_pk, r.consumer_pk, r.lti_resource_link_id, r.settings, r.primary_resource_link_pk, r.share_approved, r.created, r.updated ' .
-                           "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' r LEFT OUTER JOIN ' .
-                           $this->dbTableNamePrefix . DataConnector::CONTEXT_TABLE_NAME . ' c ON r.context_pk = c.context_pk ' .
-                           ' WHERE ((r.consumer_pk = %d) OR (c.consumer_pk = %d)) AND (lti_resource_link_id = %s)',
-                           $resourceLink->getConsumer()->getRecordId(), $resourceLink->getConsumer()->getRecordId(), DataConnector::quoted($resourceLink->getId()));
+            $fields = 'r.resource_link_pk, r.context_pk, r.consumer_pk, r.lti_resource_link_id, r.settings, r.primary_resource_link_pk, r.share_approved, r.created, r.updated ';
+            $sql = "SELECT $fields " ."FROM {{$table}} r LEFT OUTER JOIN " .
+                   '{' . $this->dbTableNamePrefix . DataConnector::CONTEXT_TABLE_NAME . '} c ' .
+                   'ON r.context_pk = c.context_pk ' .
+                   ' WHERE ((r.consumer_pk = ?) OR (c.consumer_pk = ?)) AND (lti_resource_link_id = ?)';
+            // TODO fix this to use proper xmldb instead of this crazy gross SQL!!
+            $row = $DB->get_record_sql(
+                $sql,
+                array($resourceLink->getConsumer()->getRecordId(),
+                $resourceLink->getConsumer()->getRecordId(),
+                $resourceLink->getId())
+            );
         }
-        #$rsContext = mysql_query($sql);
-        if ($rsContext) {
-            $row = mysql_fetch_object($rsContext);
-            if ($row) {
-                $resourceLink->setRecordId(intval($row->resource_link_pk));
-                if (!is_null($row->context_pk)) {
-                    $resourceLink->setContextId(intval($row->context_pk));
-                } else {
-                    $resourceLink->setContextId(null);
-                }
-                if (!is_null($row->consumer_pk)) {
-                    $resourceLink->setConsumerId(intval($row->consumer_pk));
-                } else {
-                    $resourceLink->setConsumerId(null);
-                }
-                $resourceLink->ltiResourceLinkId = $row->lti_resource_link_id;
-                $settings = unserialize($row->settings);
-                if (!is_array($settings)) {
-                    $settings = array();
-                }
-                $resourceLink->setSettings($settings);
-                if (!is_null($row->primary_resource_link_pk)) {
-                    $resourceLink->primaryResourceLinkId = intval($row->primary_resource_link_pk);
-                } else {
-                    $resourceLink->primaryResourceLinkId = null;
-                }
-                $resourceLink->shareApproved = (is_null($row->share_approved)) ? null : (intval($row->share_approved) === 1);
-                $resourceLink->created = strtotime($row->created);
-                $resourceLink->updated = strtotime($row->updated);
-                $ok = true;
+        if ($row) {
+            $resourceLink->setRecordId(intval($row->resource_link_pk));
+            if (!is_null($row->context_pk)) {
+                $resourceLink->setContextId(intval($row->context_pk));
+            } else {
+                $resourceLink->setContextId(null);
             }
+            if (!is_null($row->consumer_pk)) {
+                $resourceLink->setConsumerId(intval($row->consumer_pk));
+            } else {
+                $resourceLink->setConsumerId(null);
+            }
+            $resourceLink->ltiResourceLinkId = $row->lti_resource_link_id;
+            $settings = unserialize($row->settings);
+            if (!is_array($settings)) {
+                $settings = array();
+            }
+            $resourceLink->setSettings($settings);
+            if (!is_null($row->primary_resource_link_pk)) {
+                $resourceLink->primaryResourceLinkId = intval($row->primary_resource_link_pk);
+            } else {
+                $resourceLink->primaryResourceLinkId = null;
+            }
+            $resourceLink->shareApproved = (is_null($row->share_approved)) ? null : (intval($row->share_approved) === 1);
+            $resourceLink->created = strtotime($row->created);
+            $resourceLink->updated = strtotime($row->updated);
+            $ok = true;
         }
 
         return $ok;
 
     }
 
-/**
- * Save resource link object.
- *
- * @param ResourceLink $resourceLink Resource_Link object
- *
- * @return boolean True if the resource link object was successfully saved
- */
+    /**
+     * Save resource link object.
+     *
+     * @param ResourceLink $resourceLink Resource_Link object
+     *
+     * @return boolean True if the resource link object was successfully saved
+     */
     public function saveResourceLink($resourceLink) {
+        global $DB;
+
+        $table = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_TABLE_NAME;
 
         if (is_null($resourceLink->shareApproved)) {
             $approved = 'NULL';
@@ -630,13 +647,17 @@ class data_connector extends DataConnector {
             $contextId = 'NULL';
         }
         $id = $resourceLink->getRecordId();
+        $data = new stdClass();
+        $data->consumer_pk = $consumerId;
+        $data->context_pk = $contextId;
+        $data->lti_resource_link_id = $resourceLink->getId();
+        $data->settings = $settingsValue;
+        $data->primary_resource_link_pk = $primaryResourceLinkId;
+        $data->share_approved = $approved;
+        $data->created = $now;
+        $data->updated = $now;
         if (empty($id)) {
-            $sql = sprintf("INSERT INTO {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' (consumer_pk, context_pk, ' .
-                           'lti_resource_link_id, settings, primary_resource_link_pk, share_approved, created, updated) ' .
-                           'VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
-                           $consumerId, $contextId, DataConnector::quoted($resourceLink->getId()),
-                           DataConnector::quoted($settingsValue),
-                           $primaryResourceLinkId, $approved, DataConnector::quoted($now), DataConnector::quoted($now));
+            $DB->insert_record($table, $data);
         } else if ($contextId !== 'NULL') {
             $sql = sprintf("UPDATE {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' SET ' .
                            'consumer_pk = %s, lti_resource_link_id = %s, settings = %s, '.
@@ -821,7 +842,7 @@ class data_connector extends DataConnector {
 
         // Delete any expired nonce values
         $now = date("{$this->dateFormat} {$this->timeFormat}", time());
-        $DB->delete_records_select($table, "expires <= '{$now}'");
+        $DB->delete_records_select($table, "expires <= ?", array($now));
 
         // Load the nonce
         $result = $DB->get_record($table, array('consumer_pk' => $nonce->getConsumer()->getRecordId(), 'value' => $nonce->getValue()), 'value');
@@ -954,34 +975,34 @@ class data_connector extends DataConnector {
  *
  * @return boolean True if the user object was successfully loaded
  */
-    public function loadUser($user)
-    {
+    public function loadUser($user) {
+        global $DB;
+
+        $table = $this->dbTableNamePrefix . DataConnector::USER_RESULT_TABLE_NAME;
 
         $ok = false;
-        if (!empty($user->getRecordId())) {
-            $sql = sprintf('SELECT user_pk, resource_link_pk, lti_user_id, lti_result_sourcedid, created, updated ' .
-                           "FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' ' .
-                           'WHERE (user_pk = %d)',
-            $user->getRecordId());
+        $userid = $user->getRecordId();
+        $fields = 'user_pk, resource_link_pk, lti_user_id, lti_result_sourcedid, created, updated';
+        if (!empty($userid)) {
+            $row = $DB->get_record($table, array('user_pk' => $userid), $fields);
         } else {
-            $sql = sprintf('SELECT user_pk, resource_link_pk, lti_user_id, lti_result_sourcedid, created, updated ' .
-                           "FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' ' .
-                           'WHERE (resource_link_pk = %d) AND (lti_user_id = %s)',
-                           $user->getResourceLink()->getRecordId(),
-                           DataConnector::quoted($user->getId(ToolProvider\ToolProvider::ID_SCOPE_ID_ONLY)));
+            $resourcelinkid = $user->getResourceLink()->getRecordId();
+            $userid = $user->getId(ToolProvider\ToolProvider::ID_SCOPE_ID_ONLY);
+            $row = $DB->get_record_select(
+                $table,
+                "resource_link_pk = ? AND lti_user_id = ?",
+                array($resourcelinkid, $userid),
+                $fields
+            );
         }
-        #$rsUser = mysql_query($sql);
-        if ($rsUser) {
-            $row = mysql_fetch_object($rsUser);
-            if ($row) {
-                $user->setRecordId(intval($row->user_pk));
-                $user->setResourceLinkId(intval($row->resource_link_pk));
-                $user->ltiUserId = $row->lti_user_id;
-                $user->ltiResultSourcedId = $row->lti_result_sourcedid;
-                $user->created = strtotime($row->created);
-                $user->updated = strtotime($row->updated);
-                $ok = true;
-            }
+        if ($row) {
+            $user->setRecordId(intval($row->user_pk));
+            $user->setResourceLinkId(intval($row->resource_link_pk));
+            $user->ltiUserId = $row->lti_user_id;
+            $user->ltiResultSourcedId = $row->lti_result_sourcedid;
+            $user->created = strtotime($row->created);
+            $user->updated = strtotime($row->updated);
+            $ok = true;
         }
 
         return $ok;
