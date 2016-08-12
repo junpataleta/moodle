@@ -156,7 +156,7 @@ class data_connector extends DataConnector {
         $data->lti_version = $consumer->ltiVersion;
         $data->consumer_name = $consumer->consumerName;
         $data->consumer_version = $consumer->consumerVersion;
-        $data->consumer_guid = $consumer->consumerVersion;
+        $data->consumer_guid = $consumer->consumerGuid;
         $data->profile = $profile;
         $data->tool_proxy = $consumer->toolProxy;
         $data->settings = $settingsValue;
@@ -805,55 +805,51 @@ class data_connector extends DataConnector {
 ###  ConsumerNonce methods
 ###
 
-/**
- * Load nonce object.
- *
- * @param ConsumerNonce $nonce Nonce object
- *
- * @return boolean True if the nonce object was successfully loaded
- */
-    public function loadConsumerNonce($nonce)
-    {
+    /**
+     * Load nonce object.
+     *
+     * @param ConsumerNonce $nonce Nonce object
+     *
+     * @return boolean True if the nonce object was successfully loaded
+     */
+    public function loadConsumerNonce($nonce) {
+        global $DB;
+
+        $table = $this->dbTableNamePrefix . DataConnector::NONCE_TABLE_NAME;
 
         $ok = true;
 
-// Delete any expired nonce values
+        // Delete any expired nonce values
         $now = date("{$this->dateFormat} {$this->timeFormat}", time());
-        $sql = "DELETE FROM {$this->dbTableNamePrefix}" . DataConnector::NONCE_TABLE_NAME . " WHERE expires <= '{$now}'";
-        #mysql_query($sql);
+        $DB->delete_records_select($table, "expires <= '{$now}'");
 
-// Load the nonce
-        $sql = sprintf("SELECT value AS T FROM {$this->dbTableNamePrefix}" . DataConnector::NONCE_TABLE_NAME . ' WHERE (consumer_pk = %d) AND (value = %s)',
-                       $nonce->getConsumer()->getRecordId(), DataConnector::quoted($nonce->getValue()));
-        #$rs_nonce = mysql_query($sql);
-        if ($rs_nonce) {
-            $row = mysql_fetch_object($rs_nonce);
-            if ($row === false) {
-                $ok = false;
-            }
-        }
+        // Load the nonce
+        $result = $DB->get_record($table, array('consumer_pk' => $nonce->getConsumer()->getRecordId(), 'value' => $nonce->getValue()), 'value');
 
-        return $ok;
+        return !empty($result);
 
     }
 
-/**
- * Save nonce object.
- *
- * @param ConsumerNonce $nonce Nonce object
- *
- * @return boolean True if the nonce object was successfully saved
- */
-    public function saveConsumerNonce($nonce)
-    {
+    /**
+     * Save nonce object.
+     *
+     * @param ConsumerNonce $nonce Nonce object
+     *
+     * @return boolean True if the nonce object was successfully saved
+     */
+    public function saveConsumerNonce($nonce) {
+        global $DB;
+
+        $table = $this->dbTableNamePrefix . DataConnector::NONCE_TABLE_NAME;
 
         $expires = date("{$this->dateFormat} {$this->timeFormat}", $nonce->expires);
-        $sql = sprintf("INSERT INTO {$this->dbTableNamePrefix}" . DataConnector::NONCE_TABLE_NAME . " (consumer_pk, value, expires) VALUES (%d, %s, %s)",
-                       $nonce->getConsumer()->getRecordId(), DataConnector::quoted($nonce->getValue()),
-                       DataConnector::quoted($expires));
-        #$ok = mysql_query($sql);
 
-        return $ok;
+        $data = new \stdClass();
+        $data->consumer_pk = $nonce->getConsumer()->getRecordId();
+        $data->value = $nonce->getValue();
+        $data->expires = $expires;
+
+        return $DB->insert_record($table, $data, false);
 
     }
 
