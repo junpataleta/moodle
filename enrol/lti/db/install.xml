@@ -110,7 +110,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="item_pk"/>
-        <KEY NAME="resource_link_pk" TYPE="foreign" FIELDS="resource_link_pk" REFTABLE="enrol_lti_lti2_resource_link" REFFIELDS="resource_link_pk"/>
+        <KEY NAME="resource_link_pk" TYPE="foreign" FIELDS="resource_link_pk" REFTABLE="enrol_lti_lti2_resource_link" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="enrol_lti_lti2_context" COMMENT="TODO">
@@ -140,7 +140,7 @@
     </TABLE>
     <TABLE NAME="enrol_lti_lti2_resource_link" COMMENT="TODO">
       <FIELDS>
-        <FIELD NAME="resource_link_pk" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="context_pk" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="consumer_pk" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="lti_resource_link_id" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
@@ -151,9 +151,9 @@
         <FIELD NAME="updated" TYPE="datetime" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="resource_link_pk"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="context_pk" TYPE="foreign" FIELDS="context_pk" REFTABLE="enrol_lti_lti2_context" REFFIELDS="context_pk"/>
-        <KEY NAME="primary_resource_link_pk" TYPE="foreign" FIELDS="primary_resource_link_pk" REFTABLE="enrol_lti_lti2_resource_link" REFFIELDS="resource_link_pk"/>
+        <KEY NAME="primary_resource_link_pk" TYPE="foreign" FIELDS="primary_resource_link_pk" REFTABLE="enrol_lti_lti2_resource_link" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="consumer_pk" UNIQUE="false" FIELDS="consumer_pk"/> <!-- TODO shouldn't this be foreign?? -->
@@ -168,7 +168,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="share_key_id"/>
-        <KEY NAME="resource_link_pk" TYPE="foreign" FIELDS="resource_link_pk" REFTABLE="enrol_lti_lti2_resource_link" REFFIELDS="resource_link_pk"/>
+        <KEY NAME="resource_link_pk" TYPE="foreign" FIELDS="resource_link_pk" REFTABLE="enrol_lti_lti2_resource_link" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="enrol_lti_lti2_user_result" COMMENT="TODO">
@@ -182,7 +182,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="user_pk"/>
-        <KEY NAME="resource_link_pk" TYPE="foreign" FIELDS="resource_link_pk" REFTABLE="enrol_lti_lti2_resource_link" REFFIELDS="resource_link_pk"/>
+        <KEY NAME="resource_link_pk" TYPE="foreign" FIELDS="resource_link_pk" REFTABLE="enrol_lti_lti2_resource_link" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="enrol_lti_rating" COMMENT="TODO">

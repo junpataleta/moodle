@@ -65,7 +65,7 @@ class data_connector extends DataConnector {
 
         $result = [];
         if (!empty($id)) {
-            $result = $DB->get_records($table, ['id' => $id()], '', $fields);
+            $result = $DB->get_records($table, ['id' => $id], '', $fields);
         } else {
             $key256 = DataConnector::getConsumerKey($consumer->getKey());
             $result = $DB->get_records($table, ['consumer_key256' => $key256], '', $fields);
@@ -544,11 +544,11 @@ class data_connector extends DataConnector {
 
         $ok = false;
         $resourceid = $resourceLink->getRecordId();
-        $fields = 'resource_link_pk, context_pk, consumer_pk, lti_resource_link_id, settings, primary_resource_link_pk, share_approved, created, updated';
+        $fields = 'id, context_pk, consumer_pk, lti_resource_link_id, settings, primary_resource_link_pk, share_approved, created, updated';
         if (!empty($resourceid)) {
             $row = $DB->get_record(
                 $table,
-                array('resource_link_pk' => $resourceid),
+                array('id' => $resourceid),
                 '',
                 $fields
             );
@@ -563,7 +563,7 @@ class data_connector extends DataConnector {
                 $fields
             );
         } else {
-            $fields = 'r.resource_link_pk, r.context_pk, r.consumer_pk, r.lti_resource_link_id, r.settings, r.primary_resource_link_pk, r.share_approved, r.created, r.updated ';
+            $fields = 'r.id, r.context_pk, r.consumer_pk, r.lti_resource_link_id, r.settings, r.primary_resource_link_pk, r.share_approved, r.created, r.updated ';
             $sql = "SELECT $fields " ."FROM {{$table}} r LEFT OUTER JOIN " .
                    '{' . $this->dbTableNamePrefix . DataConnector::CONTEXT_TABLE_NAME . '} c ' .
                    'ON r.context_pk = c.context_pk ' .
@@ -577,7 +577,7 @@ class data_connector extends DataConnector {
             );
         }
         if ($row) {
-            $resourceLink->setRecordId(intval($row->resource_link_pk));
+            $resourceLink->setRecordId(intval($row->id));
             if (!is_null($row->context_pk)) {
                 $resourceLink->setContextId(intval($row->context_pk));
             } else {
@@ -622,14 +622,14 @@ class data_connector extends DataConnector {
         $table = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_TABLE_NAME;
 
         if (is_null($resourceLink->shareApproved)) {
-            $approved = 'NULL';
+            $approved = null;
         } else if ($resourceLink->shareApproved) {
-            $approved = '1';
+            $approved = 1;
         } else {
-            $approved = '0';
+            $approved = 0;
         }
         if (empty($resourceLink->primaryResourceLinkId)) {
-            $primaryResourceLinkId = 'NULL';
+            $primaryResourceLinkId = null;
         } else {
             $primaryResourceLinkId = strval($resourceLink->primaryResourceLinkId);
         }
@@ -637,48 +637,62 @@ class data_connector extends DataConnector {
         $now = date("{$this->dateFormat} {$this->timeFormat}", $time);
         $settingsValue = serialize($resourceLink->getSettings());
         if (!empty($resourceLink->getContext())) {
-            $consumerId = 'NULL';
+            $consumerId = null;
             $contextId = strval($resourceLink->getContext()->getRecordId());
         } else if (!empty($resourceLink->getContextId())) {
-            $consumerId = 'NULL';
+            $consumerId = null;
             $contextId = strval($resourceLink->getContextId());
         } else {
             $consumerId = strval($resourceLink->getConsumer()->getRecordId());
-            $contextId = 'NULL';
+            $contextId = null;
         }
         $id = $resourceLink->getRecordId();
-        $data = new stdClass();
+
+        $data = new \stdClass();
         $data->consumer_pk = $consumerId;
-        $data->context_pk = $contextId;
         $data->lti_resource_link_id = $resourceLink->getId();
         $data->settings = $settingsValue;
         $data->primary_resource_link_pk = $primaryResourceLinkId;
         $data->share_approved = $approved;
-        $data->created = $now;
         $data->updated = $now;
+
+        $returnid = null;
+
         if (empty($id)) {
-            $DB->insert_record($table, $data);
+            $data->created = $now;
+            $data->context_pk = $contextId;
+            $returnid = $DB->insert_record($table, $data);
         } else if ($contextId !== 'NULL') {
-            $sql = sprintf("UPDATE {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' SET ' .
-                           'consumer_pk = %s, lti_resource_link_id = %s, settings = %s, '.
-                           'primary_resource_link_pk = %s, share_approved = %s, updated = %s ' .
-                           'WHERE (context_pk = %s) AND (resource_link_pk = %d)',
-                           $consumerId, DataConnector::quoted($resourceLink->getId()),
-                           DataConnector::quoted($settingsValue), $primaryResourceLinkId, $approved, DataConnector::quoted($now),
-                           $contextId, $id);
+            $sql = "UPDATE {{$table}} SET " .
+                   'consumer_pk = ?, lti_resource_link_id = ?, settings = ?, '.
+                   'primary_resource_link_pk = ?, share_approved = ?, updated = ? ' .
+                   'WHERE (context_pk = ?) AND (id = ?)';
+            $DB->execute($sql, [
+                   $consumerId, $resourceLink->getId(),
+                   $settingsValue, $primaryResourceLinkId, $approved, $now,
+                   $contextId, $id
+                ]
+            );
+            $returnid = $id;
+            // TODO dml-ify.
         } else {
-            $sql = sprintf("UPDATE {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' SET ' .
-                           'context_pk = %s, lti_resource_link_id = %s, settings = %s, '.
-                           'primary_resource_link_pk = %s, share_approved = %s, updated = %s ' .
-                           'WHERE (consumer_pk = %s) AND (resource_link_pk = %d)',
-                           $contextId, DataConnector::quoted($resourceLink->getId()),
-                           DataConnector::quoted($settingsValue), $primaryResourceLinkId, $approved, DataConnector::quoted($now),
-                           $consumerId, $id);
+            $sql = "UPDATE {{$table}} SET " .
+                   'context_pk = ?, lti_resource_link_id = ?, settings = ?, '.
+                   'primary_resource_link_pk = ?, share_approved = ?, updated = ? ' .
+                   'WHERE (consumer_pk = ?) AND (id = ?)';
+            $DB->execute($sql, [
+                $contextId, $resourceLink->getId(),
+                       $settingsValue, $primaryResourceLinkId, $approved, $now,
+                       $consumerId, $id
+                ]
+            );
+            $returnid = $id;
+            // TODO dml-ify.
         }
-        #$ok = mysql_query($sql);
+        $ok = !empty($returnid);
         if ($ok) {
             if (empty($id)) {
-                $resourceLink->setRecordId(mysql_insert_id());
+                $resourceLink->setRecordId($newid);
                 $resourceLink->created = $time;
             }
             $resourceLink->updated = $time;
@@ -724,7 +738,7 @@ class data_connector extends DataConnector {
 // Delete resource link
         if ($ok) {
             $sql = sprintf("DELETE FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' ' .
-                           'WHERE (resource_link_pk = %s)',
+                           'WHERE (id= %s)',
                            $resourceLink->getRecordId());
             #$ok = mysql_query($sql);
         }
