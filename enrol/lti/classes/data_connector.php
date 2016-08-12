@@ -692,7 +692,7 @@ class data_connector extends DataConnector {
         $ok = !empty($returnid);
         if ($ok) {
             if (empty($id)) {
-                $resourceLink->setRecordId($newid);
+                $resourceLink->setRecordId($returnid);
                 $resourceLink->created = $time;
             }
             $resourceLink->updated = $time;
