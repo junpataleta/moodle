@@ -274,8 +274,8 @@ class tool_provider extends ToolProvider\ToolProvider {
         role_assign($roleid, $user->id, $tool->contextid);
 
         // Login user.
-        $sourceid = (!empty($ltirequest->info['lis_result_sourcedid'])) ? $ltirequest->info['lis_result_sourcedid'] : '';
-        $serviceurl = (!empty($ltirequest->info['lis_outcome_service_url'])) ? $ltirequest->info['lis_outcome_service_url'] : '';
+        $sourceid = $this->user->ltiResultSourcedId;
+        $serviceurl = $this->resourceLink->getSetting('lis_outcome_service_url');
 
         // Check if we have recorded this user before.
         if ($userlog = $DB->get_record('enrol_lti_users', array('toolid' => $tool->id, 'userid' => $user->id))) {
@@ -299,20 +299,9 @@ class tool_provider extends ToolProvider\ToolProvider {
             $userlog->lastgrade = 0;
             $userlog->lastaccess = time();
             $userlog->timecreated = time();
+            $userlog->membershipsurl = $this->resourceLink->getSetting('ext_ims_lis_memberships_url');
+            $userlog->membershipsid = $this->resourceLink->getSetting('ext_ims_lis_memberships_id');
 
-            // TODO look for resource link memberships
-            if (!empty($ltirequest->info['ext_ims_lis_memberships_url'])) {
-                $userlog->membershipsurl = $ltirequest->info['ext_ims_lis_memberships_url'];
-            } else {
-                $userlog->membershipsurl = '';
-            }
-
-            // TODO look for resource link memberships
-            if (!empty($ltirequest->info['ext_ims_lis_memberships_id'])) {
-                $userlog->membershipsid = $ltirequest->info['ext_ims_lis_memberships_id'];
-            } else {
-                $userlog->membershipsid = '';
-            }
             $DB->insert_record('enrol_lti_users', $userlog);
         }
 
