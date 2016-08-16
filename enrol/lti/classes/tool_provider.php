@@ -53,15 +53,16 @@ class tool_provider extends ToolProvider\ToolProvider {
         return null;
     }
 
-    function __construct($toolid, $token) {
+    function __construct($toolid) {
         global $CFG, $SITE;
+
+        $token = \enrol_lti\helper::generate_tool_token($toolid);
 
         $this->debugMode = debugging();
         $tool = \enrol_lti\helper::get_lti_tool($toolid);
         $this->tool = $tool;
 
         $dataconnector = new data_connector();
-        #$dataconnector = DataConnector\DataConnector::getDataConnector();
         parent::__construct($dataconnector);
 
         #$this->baseUrl = $CFG->wwwroot . '/enrol/lti/proxy.php';
@@ -88,11 +89,43 @@ class tool_provider extends ToolProvider\ToolProvider {
         );
 
         $requiredmessages = array(
-            new Profile\Message('basic-lti-launch-request', $toolpath, array('User.id', 'Membership.role'))
+            new Profile\Message(
+                'basic-lti-launch-request',
+                $toolpath,
+                array(
+                   'Context.id',
+                   'CourseSection.title',
+                   'CourseSection.label',
+                   'CourseSection.sourcedId',
+                   'CourseSection.longDescription',
+                   'CourseSection.timeFrame.begin',
+                   'ResourceLink.id',
+                   'ResourceLink.title',
+                   'ResourceLink.description',
+                   'User.id',
+                   'User.username',
+                   'Person.name.full',
+                   'Person.name.given',
+                   'Person.name.family',
+                   'Person.email.primary',
+                   'Person.sourcedId',
+                   'Person.name.middle',
+                   'Person.address.street1',
+                   'Person.address.locality',
+                   'Person.address.country',
+                   'Person.address.timezone',
+                   'Person.phone.primary',
+                   'Person.phone.mobile',
+                   'Person.webaddress',
+                   'Membership.role',
+                   'Result.sourcedId',
+                   'Result.autocreate'
+                )
+            )
         );
         $optionalmessages = array(
-            new Profile\Message('ContentItemSelectionRequest', $toolpath, array('User.id', 'Membership.role')),
-            new Profile\Message('DashboardRequest', $toolpath, array('User.id'), array('a' => 'User.id'), array('b' => 'User.id'))
+            #new Profile\Message('ContentItemSelectionRequest', $toolpath, array('User.id', 'Membership.role')),
+            #new Profile\Message('DashboardRequest', $toolpath, array('User.id'), array('a' => 'User.id'), array('b' => 'User.id'))
         );
 
         $this->resourceHandlers[] = new Profile\ResourceHandler(

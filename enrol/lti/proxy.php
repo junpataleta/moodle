@@ -64,7 +64,7 @@ if ($tool->status != ENROL_INSTANCE_ENABLED) {
     exit();
 }
 
-$toolprovider = new \enrol_lti\tool_provider($toolid, $token);
+$toolprovider = new \enrol_lti\tool_provider($toolid);
 $toolprovider->handleRequest();
 echo $OUTPUT->header();
 echo $OUTPUT->footer();
