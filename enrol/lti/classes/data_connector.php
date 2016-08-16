@@ -28,7 +28,10 @@ namespace enrol_lti;
 defined('MOODLE_INTERNAL') || die;
 
 use IMSGlobal\LTI\ToolProvider;
+use IMSGlobal\LTI\ToolProvider\Context;
 use IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector;
+use IMSGlobal\LTI\ToolProvider\ToolConsumer;
+use IMSGlobal\LTI\ToolProvider\User;
 
 /**
  * Extends the IMS Tool provider library data connector for moodle.
@@ -384,91 +387,95 @@ class data_connector extends DataConnector {
 ###  Context methods
 ###
 
-/**
- * Load context object.
- *
- * @param Context $context Context object
- *
- * @return boolean True if the context object was successfully loaded
- */
-    public function loadContext($context)
-    {
-
-        $ok = false;
+    /**
+     * Load context object.
+     *
+     * @param Context $context Context object
+     * @return boolean True if the context object was successfully loaded
+     */
+    public function loadContext($context) {
+        global $DB;
+        $table = $this->dbTableNamePrefix . DataConnector::CONTEXT_TABLE_NAME;
         if (!empty($context->getRecordId())) {
-            $sql = sprintf('SELECT context_pk, consumer_pk, lti_context_id, settings, created, updated ' .
-                           "FROM {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' ' .
-                           'WHERE (context_pk = %d)',
-                           $context->getRecordId());
+            $params = ['context_pk' => $context->getRecordId()];
         } else {
-            $sql = sprintf('SELECT context_pk, consumer_pk, lti_context_id, settings, created, updated ' .
-                           "FROM {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' ' .
-                           'WHERE (consumer_pk = %d) AND (lti_context_id = %s)',
-                           $context->getConsumer()->getRecordId(), DataConnector::quoted($context->ltiContextId));
+            $params = [
+                'consumer_pk' => $context->getConsumer()->getRecordId(),
+                'lti_context_id' => $context->ltiContextId
+            ];
         }
-        #$rs_context = mysql_query($sql);
-        if ($rs_context) {
-            $row = mysql_fetch_object($rs_context);
-            if ($row) {
-                $context->setRecordId(intval($row->context_pk));
-                $context->setConsumerId(intval($row->consumer_pk));
-                $context->ltiContextId = $row->lti_context_id;
-                $settings = unserialize($row->settings);
-                if (!is_array($settings)) {
-                    $settings = array();
-                }
-                $context->setSettings($settings);
-                $context->created = strtotime($row->created);
-                $context->updated = strtotime($row->updated);
-                $ok = true;
+        if ($row = $DB->get_record($table, $params)) {
+            $context->setRecordId(intval($row->context_pk));
+            $context->setConsumerId(intval($row->consumer_pk));
+            $context->ltiContextId = $row->lti_context_id;
+            $settings = unserialize($row->settings);
+            if (!is_array($settings)) {
+                $settings = array();
             }
+            $context->setSettings($settings);
+            $context->created = strtotime($row->created);
+            $context->updated = strtotime($row->updated);
+            return true;
         }
 
-        return $ok;
-
+        return false;
     }
 
-/**
- * Save context object.
- *
- * @param Context $context Context object
- *
- * @return boolean True if the context object was successfully saved
- */
-    public function saveContext($context)
-    {
-
+    /**
+     * Save context object.
+     *
+     * @param Context $context Context object
+     * @return boolean True if the context object was successfully saved
+     */
+    public function saveContext($context) {
+        global $DB;
         $time = time();
         $now = date("{$this->dateFormat} {$this->timeFormat}", $time);
         $settingsValue = serialize($context->getSettings());
         $id = $context->getRecordId();
         $consumer_pk = $context->getConsumer()->getRecordId();
-        if (empty($id)) {
-            $sql = sprintf("INSERT INTO {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' (consumer_pk, lti_context_id, ' .
-                           'settings, created, updated) ' .
-                           'VALUES (%d, %s, %s, %s, %s)',
-               $consumer_pk, DataConnector::quoted($context->ltiContextId),
-               DataConnector::quoted($settingsValue),
-               DataConnector::quoted($now), DataConnector::quoted($now));
+        $table = $this->dbTableNamePrefix . DataConnector::CONTEXT_TABLE_NAME;
+        $isinsert = empty($id);
+        if ($isinsert) {
+            $params = [
+                'consumer_pk' => $consumer_pk,
+                'lti_context_id' => $context->ltiContextId,
+                'settings' => $settingsValue,
+                'created' => $now,
+                'updated' => $now,
+            ];
+            $sql = "INSERT INTO {{$table}} (consumer_pk, lti_context_id, settings, created, updated) 
+                         VALUES (:consumer_pk, :lti_context_id, :settings, :created, :updated)";
         } else {
-            $sql = sprintf("UPDATE {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' SET ' .
-                           'lti_context_id = %s, settings = %s, '.
-                           'updated = %s' .
-                           'WHERE (consumer_pk = %d) AND (context_pk = %d)',
-               DataConnector::quoted($context->ltiContextId), DataConnector::quoted($settingsValue),
-               DataConnector::quoted($now), $consumer_pk, $id);
+            $params = [
+                'lti_context_id' => $context->ltiContextId,
+                'settings' => $settingsValue,
+                'updated' => $now,
+                'consumer_pk' => $consumer_pk,
+                'context_pk' => $id
+            ];
+            $sql = "UPDATE {{$table}} 
+                       SET lti_context_id = :lti_context_id, 
+                           settings = :settings, 
+                           updated = :updated 
+                     WHERE consumer_pk = :consumer_pk 
+                           AND context_pk = :context_pk";
         }
-        #$ok = mysql_query($sql);
-        if ($ok) {
-            if (empty($id)) {
-                $context->setRecordId(mysql_insert_id());
-                $context->created = $time;
+
+        if ($DB->execute($sql, $params)) {
+            if ($isinsert) {
+                // consumer_pk, lti_context_id, created and updated should be enough to identify the data we added.
+                unset($params['settings']);
+                if ($contextrecord = $DB->get_record($table, $params)) {
+                    $context->setRecordId($contextrecord->context_pk);
+                    $context->created = $time;
+                }
             }
             $context->updated = $time;
+            return true;
         }
 
-        return $ok;
-
+        return false;
     }
 
 /**
@@ -1023,44 +1030,53 @@ class data_connector extends DataConnector {
 
     }
 
-/**
- * Save user object.
- *
- * @param User $user User object
- *
- * @return boolean True if the user object was successfully saved
- */
-    public function saveUser($user)
-    {
+    /**
+     * Save user object.
+     *
+     * @param User $user User object
+     * @return boolean True if the user object was successfully saved
+     */
+    public function saveUser($user) {
+        global $DB;
 
         $time = time();
         $now = date("{$this->dateFormat} {$this->timeFormat}", $time);
-        if (is_null($user->created)) {
-            $sql = sprintf("INSERT INTO {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' (resource_link_pk, ' .
-                           'lti_user_id, lti_result_sourcedid, created, updated) ' .
-                           'VALUES (%d, %s, %s, %s, %s)',
-                           $user->getResourceLink()->getRecordId(),
-                           DataConnector::quoted($user->getId(ToolProvider\ToolProvider::ID_SCOPE_ID_ONLY)), DataConnector::quoted($user->ltiResultSourcedId),
-                           DataConnector::quoted($now), DataConnector::quoted($now));
+        $table = $this->dbTableNamePrefix . DataConnector::USER_RESULT_TABLE_NAME;
+        $isinsert = is_null($user->created);
+        if ($isinsert) {
+            $params = [
+                'resource_link_pk' => $user->getResourceLink()->getRecordId(),
+                'lti_user_id' => $user->getId(ToolProvider\ToolProvider::ID_SCOPE_ID_ONLY),
+                'lti_result_sourcedid' => $user->ltiResultSourcedId,
+                'created' => $now,
+                'updated' => $now,
+            ];
+            $sql = "INSERT INTO {{$table}} (resource_link_pk, lti_user_id, lti_result_sourcedid, created, updated) 
+                         VALUES (:resource_link_pk, :lti_user_id, :lti_result_sourcedid, :created, :updated)";
         } else {
-            $sql = sprintf("UPDATE {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' ' .
-                           'SET lti_result_sourcedid = %s, updated = %s ' .
-                           'WHERE (user_pk = %d)',
-                           DataConnector::quoted($user->ltiResultSourcedId),
-                           DataConnector::quoted($now),
-                           $user->getRecordId());
+            $params = [
+                'lti_result_sourcedid' => $user->ltiResultSourcedId,
+                'updated' => $now,
+                'user_pk' => $user->getRecordId()
+            ];
+            $sql = "UPDATE {{$table}} 
+                       SET lti_result_sourcedid = :lti_result_sourcedid, 
+                           updated = :updated 
+                     WHERE user_pk = :user_pk";
         }
-        #$ok = mysql_query($sql);
-        if ($ok) {
-            if (is_null($user->created)) {
-                $user->setRecordId(mysql_insert_id());
-                $user->created = $time;
+
+        if ($DB->execute($sql, $params)) {
+            if ($isinsert) {
+                if ($userrecord = $DB->get_record($table, $params)) {
+                    $user->setRecordId($userrecord->user_pk);
+                    $user->created = $time;
+                }
             }
             $user->updated = $time;
+            return true;
         }
 
-        return $ok;
-
+        return false;
     }
 
 /**
