@@ -30,6 +30,8 @@ defined('MOODLE_INTERNAL') || die;
 use IMSGlobal\LTI\ToolProvider;
 use IMSGlobal\LTI\ToolProvider\Context;
 use IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector;
+use IMSGlobal\LTI\ToolProvider\DataConnector\ToolProxy;
+use IMSGlobal\LTI\ToolProvider\ResourceLinkShareKey;
 use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use IMSGlobal\LTI\ToolProvider\User;
 
@@ -43,7 +45,6 @@ use IMSGlobal\LTI\ToolProvider\User;
 class data_connector extends DataConnector {
 
     function __construct() {
-        global $CFG;
         parent::__construct(null, 'enrol_lti_');
     }
 
@@ -51,7 +52,6 @@ class data_connector extends DataConnector {
      * Load tool consumer object.
      *
      * @param ToolConsumer $consumer ToolConsumer object
-     *
      * @return boolean True if the tool consumer object was successfully loaded
      */
     public function loadToolConsumer($consumer) {
@@ -60,15 +60,15 @@ class data_connector extends DataConnector {
         $table = $this->dbTableNamePrefix . DataConnector::CONSUMER_TABLE_NAME;
 
         $ok = false;
-        $fields = 'id, name, consumer_key256, consumer_key, secret, lti_version, ' .
-                  'consumer_name, consumer_version, consumer_guid, ' .
-                  'profile, tool_proxy, settings, protected, enabled, ' .
-                  'enable_from, enable_until, last_access, created, updated';
+        $fields = 'consumer_pk, name, consumer_key256, consumer_key, secret, lti_version, ' .
+            'consumer_name, consumer_version, consumer_guid, ' .
+            'profile, tool_proxy, settings, protected, enabled, ' .
+            'enable_from, enable_until, last_access, created, updated';
         $id = $consumer->getRecordId();
 
         $result = [];
         if (!empty($id)) {
-            $result = $DB->get_records($table, ['id' => $id], '', $fields);
+            $result = $DB->get_records($table, ['consumer_pk' => $id], '', $fields);
         } else {
             $key256 = DataConnector::getConsumerKey($consumer->getKey());
             $result = $DB->get_records($table, ['consumer_key256' => $key256], '', $fields);
@@ -76,7 +76,7 @@ class data_connector extends DataConnector {
         // TODO Catch exceptions.
         foreach ($result as $row) {
             if (empty($key256) || empty($row->consumer_key) || ($consumer->getKey() === $row->consumer_key)) {
-                $consumer->setRecordId(intval($row->id));
+                $consumer->setRecordId(intval($row->consumer_pk));
                 $consumer->name = $row->name;
                 $consumer->setkey(empty($row->consumer_key) ? $row->consumer_key256 : $row->consumer_key);
                 $consumer->secret = $row->secret;
@@ -113,14 +113,12 @@ class data_connector extends DataConnector {
         }
 
         return $ok;
-
     }
 
     /**
      * Save tool consumer object.
      *
      * @param ToolConsumer $consumer Consumer object
-     *
      * @return boolean True if the tool consumer object was successfully saved
      */
     public function saveToolConsumer($consumer) {
@@ -134,7 +132,7 @@ class data_connector extends DataConnector {
             $key = null;
         }
         $protected = ($consumer->protected) ? 1 : 0;
-        $enabled = ($consumer->enabled)? 1 : 0;
+        $enabled = ($consumer->enabled) ? 1 : 0;
         $profile = (!empty($consumer->profile)) ? json_encode($consumer->profile) : null;
         $settingsValue = serialize($consumer->getSettings());
         $time = time();
@@ -151,164 +149,192 @@ class data_connector extends DataConnector {
         if (!is_null($consumer->lastAccess)) {
             $last = date($this->dateFormat, $consumer->lastAccess);
         }
-        $data = new \stdClass();
-        $data->consumer_key256 = $key256;
-        $data->consumer_key = $key;
-        $data->name = $consumer->name;
-        $data->secret = $consumer->secret;
-        $data->lti_version = $consumer->ltiVersion;
-        $data->consumer_name = $consumer->consumerName;
-        $data->consumer_version = $consumer->consumerVersion;
-        $data->consumer_guid = $consumer->consumerGuid;
-        $data->profile = $profile;
-        $data->tool_proxy = $consumer->toolProxy;
-        $data->settings = $settingsValue;
-        $data->protected = $protected;
-        $data->enabled = $enabled;
-        $data->enable_from = $from;
-        $data->enable_until = $until;
-        $data->last_access = $last;
-        $data->updated = $now;
+        $data = [
+            'consumer_key256' => $key256,
+            'consumer_key' => $key,
+            'name' => $consumer->name,
+            'secret' => $consumer->secret,
+            'lti_version' => $consumer->ltiVersion,
+            'consumer_name' => $consumer->consumerName,
+            'consumer_version' => $consumer->consumerVersion,
+            'consumer_guid' => $consumer->consumerGuid,
+            'profile' => $profile,
+            'tool_proxy' => $consumer->toolProxy,
+            'settings' => $settingsValue,
+            'protected' => $protected,
+            'enabled' => $enabled,
+            'enable_from' => $from,
+            'enable_until' => $until,
+            'last_access' => $last,
+            'updated' => $now,
+        ];
 
         $id = $consumer->getRecordId();
+
         if (empty($id)) {
-            $data->created = $now;
-            $id = $DB->insert_record($table, $data);
-            $consumer->setRecordId($id);
-            $consumer->created = $time;
-            // TODO catch error and set $ok to false
-            $ok = !empty($id);
+            $data['created'] = $now;
+            $sql = $this->build_insert_sql($table, array_keys($data));
         } else {
-            $data->id = $id;
-            $ok = $DB->update_record($table, $data);
+            $sql = $this->build_update_sql($table, array_keys($data), "consumer_pk = :consumer_pk");
+            $data['consumer_pk'] = $id;
         }
-        if ($ok) {
+
+        if ($DB->execute($sql, $data)) {
+            if (empty($id)) {
+                if ($consumerrecord = $DB->get_record($table, ['consumer_key256' => $key256])) {
+                    $consumer->setRecordId($consumerrecord->consumer_pk);
+                    $consumer->created = $time;
+                }
+            }
             $consumer->updated = $time;
+            return true;
         }
 
-        return $ok;
-
+        return false;
     }
 
-/**
- * Delete tool consumer object.
- *
- * @param ToolConsumer $consumer Consumer object
- *
- * @return boolean True if the tool consumer object was successfully deleted
- */
-    public function deleteToolConsumer($consumer)
-    {
+    /**
+     * Builds an SQL INSERT query.
+     *
+     * @param string $table The table name.
+     * @param array $columns The column names.
+     * @return string The SQL insert query.
+     */
+    protected function build_insert_sql($table, $columns) {
+        $params = [];
+        foreach ($columns as $column) {
+            $params[] = ':' . trim($column);
+        }
+        $columnsstring = implode(', ', $columns);
+        $paramstring = implode(', ', $params);
+        return "INSERT INTO {{$table}} ({$columnsstring}) VALUES ({$paramstring})";
+    }
 
-// Delete any nonce values for this consumer
-        $sql = sprintf("DELETE FROM {$this->dbTableNamePrefix}" . DataConnector::NONCE_TABLE_NAME . ' WHERE consumer_pk = %d',
-                       $consumer->getRecordId());
-        #mysql_query($sql);
+    /**
+     * Builds a simple SQL UPDATE query.
+     *
+     * @param string $table The table name.
+     * @param array $updatecolumns The array of column names to be updated.
+     * @param string $where The conditions for the where clause.
+     * @return string The SQL update query.
+     */
+    protected function build_update_sql($table, $updatecolumns, $where) {
+        $setcolumns = [];
+        foreach ($updatecolumns as $column) {
+            $setcolumns[] = $column . ' = :' . trim($column);
+        }
+        $setcolumnsstring = implode(', ', $setcolumns);
 
-// Delete any outstanding share keys for resource links for this consumer
-        $sql = sprintf('DELETE sk ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . ' sk ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON sk.resource_link_pk = rl.resource_link_pk ' .
-                       'WHERE rl.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #mysql_query($sql);
+        return "UPDATE {{$table}} SET {$setcolumnsstring} WHERE ({$where})";
+    }
 
-// Delete any outstanding share keys for resource links for contexts in this consumer
-        $sql = sprintf('DELETE sk ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . ' sk ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON sk.resource_link_pk = rl.resource_link_pk ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' c ON rl.context_pk = c.context_pk ' .
-                       'WHERE c.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #mysql_query($sql);
+    /**
+     * Delete tool consumer object and related records.
+     *
+     * @param ToolConsumer $consumer Consumer object
+     * @return boolean True if the tool consumer object was successfully deleted
+     */
+    public function deleteToolConsumer($consumer) {
+        global $DB;
 
-// Delete any users in resource links for this consumer
-        $sql = sprintf('DELETE u ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' u ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON u.resource_link_pk = rl.resource_link_pk ' .
-                       'WHERE rl.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #mysql_query($sql);
+        $consumerpk = $consumer->getRecordId();
+        $deletecondition = ['consumer_pk' => $consumerpk];
 
-// Delete any users in resource links for contexts in this consumer
-        $sql = sprintf('DELETE u ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' u ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON u.resource_link_pk = rl.resource_link_pk ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' c ON rl.context_pk = c.context_pk ' .
-                       'WHERE c.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #mysql_query($sql);
+        // Delete any nonce values for this consumer.
+        $noncetable = $this->dbTableNamePrefix . DataConnector::NONCE_TABLE_NAME;
+        $DB->delete_records($noncetable, $deletecondition);
 
-// Update any resource links for which this consumer is acting as a primary resource link
-        $sql = sprintf("UPDATE {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' prl ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON prl.primary_resource_link_pk = rl.resource_link_pk ' .
-                       'SET prl.primary_resource_link_pk = NULL, prl.share_approved = NULL ' .
-                       'WHERE rl.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #$ok = mysql_query($sql);
+        $queries = [];
+        // Delete any outstanding share keys for resource links for this consumer.
+        $resourcelinksharekeytable = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME;
+        $resourcelinktable = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_TABLE_NAME;
+        $queries[] = "DELETE sk 
+                       FROM {{$resourcelinksharekeytable}} sk   
+                 INNER JOIN {{$resourcelinktable}} rl 
+                         ON sk.resource_link_pk = rl.resource_link_pk 
+                      WHERE rl.consumer_pk = :consumer_pk";
 
-// Update any resource links for contexts in which this consumer is acting as a primary resource link
-        $sql = sprintf("UPDATE {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' prl ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON prl.primary_resource_link_pk = rl.resource_link_pk ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' c ON rl.context_pk = c.context_pk ' .
-                       'SET prl.primary_resource_link_pk = NULL, prl.share_approved = NULL ' .
-                       'WHERE c.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #$ok = mysql_query($sql);
+        // Delete any outstanding share keys for resource links for contexts in this consumer.
+        $contexttable = $this->dbTableNamePrefix . DataConnector::CONTEXT_TABLE_NAME;
+        $queries[] = "DELETE sk 
+                        FROM {{$resourcelinksharekeytable}} sk 
+                  INNER JOIN {{$resourcelinktable}} rl 
+                          ON sk.resource_link_pk = rl.resource_link_pk 
+                  INNER JOIN {{$contexttable}} c 
+                          ON rl.context_pk = c.context_pk 
+                       WHERE c.consumer_pk = :consumer_pk";
 
-// Delete any resource links for this consumer
-        $sql = sprintf('DELETE rl ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ' .
-                       'WHERE rl.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #mysql_query($sql);
+        // Delete any users in resource links for this consumer.
+        $userresulttable = $this->dbTableNamePrefix . DataConnector::USER_RESULT_TABLE_NAME;
+        $queries[] = "DELETE u 
+                       FROM {{$userresulttable}} u 
+                 INNER JOIN {{$resourcelinktable}} rl 
+                         ON u.resource_link_pk = rl.resource_link_pk
+                      WHERE rl.consumer_pk = :consumer_pk";
 
-// Delete any resource links for contexts in this consumer
-        $sql = sprintf('DELETE rl ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' c ON rl.context_pk = c.context_pk ' .
-                       'WHERE c.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #mysql_query($sql);
+        // Delete any users in resource links for contexts in this consumer.
+        $queries[] = "DELETE u
+                       FROM {{$userresulttable}} u 
+                 INNER JOIN {{$resourcelinktable}} rl 
+                         ON u.resource_link_pk = rl.resource_link_pk
+                 INNER JOIN {{$contexttable}} c 
+                         ON rl.context_pk = c.context_pk
+                      WHERE c.consumer_pk = :consumer_pk";
 
-// Delete any contexts for this consumer
-        $sql = sprintf('DELETE c ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' c ' .
-                       'WHERE c.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #mysql_query($sql);
+        // Update any resource links for which this consumer is acting as a primary resource link.
+        $queries[] = "UPDATE {{$resourcelinktable}} rl 
+                        SET rl.primary_resource_link_pk = NULL, 
+                            rl.share_approved = NULL 
+                      WHERE rl.primary_resource_link_pk = rl.resource_link_pk
+                            AND rl.consumer_pk = :consumer_pk";
 
-// Delete consumer
-        $sql = sprintf('DELETE c ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::CONSUMER_TABLE_NAME . ' c ' .
-                       'WHERE c.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #$ok = mysql_query($sql);
+        // Update any resource links for contexts in which this consumer is acting as a primary resource link.
+        $queries[] = "UPDATE {{$resourcelinktable}} rl 
+                 INNER JOIN {{$contexttable}} c 
+                         ON rl.context_pk = c.context_pk
+                        SET rl.primary_resource_link_pk = NULL, 
+                            rl.share_approved = NULL
+                      WHERE rl.primary_resource_link_pk = rl.resource_link_pk 
+                            AND c.consumer_pk = :consumer_pk";
 
-        if ($ok) {
-            $consumer->initialize();
+        // Delete any resource links for contexts in this consumer.
+        $queries[] = "DELETE rl 
+                      FROM {{$resourcelinktable}} rl
+                      INNER JOIN {{$contexttable}} c 
+                      ON rl.context_pk = c.context_pk
+                      WHERE c.consumer_pk = :consumer_pk";
+
+        // Execute queries.
+        foreach ($queries as $sql) {
+            $DB->execute($sql, $deletecondition);
         }
 
-        return $ok;
+        // Delete any resource links for this consumer.
+        $DB->delete_records($resourcelinktable, $deletecondition);
 
+        // Delete any contexts for this consumer.
+        $DB->delete_records($contexttable, $deletecondition);
+
+        // Delete consumer.
+        $consumertable = $this->dbTableNamePrefix . DataConnector::CONSUMER_TABLE_NAME;
+        $DB->delete_records($consumertable, $deletecondition);
+
+        $consumer->initialize();
+
+        return true;
     }
 
-###
-#    Load all tool consumers from the database
-###
-    public function getToolConsumers()
-    {
+    /**
+     * Load all tool consumers from the database.
+     * @return array
+     */
+    public function getToolConsumers() {
+        global $DB;
+        $consumers = [];
 
-        $consumers = array();
-
-        $sql = 'SELECT consumer_pk, consumer_key, consumer_key, name, secret, lti_version, consumer_name, consumer_version, consumer_guid, ' .
-               'profile, tool_proxy, settings, ' .
-               'protected, enabled, enable_from, enable_until, last_access, created, updated ' .
-               "FROM {$this->dbTableNamePrefix}" . DataConnector::CONSUMER_TABLE_NAME . ' ' .
-               'ORDER BY name';
-        #$rsConsumers = mysql_query($sql);
-        if ($rsConsumers) {
-            while ($row = mysql_fetch_object($rsConsumers)) {
+        $consumertable = $this->dbTableNamePrefix . DataConnector::CONSUMER_TABLE_NAME;
+        if ($rsconsumers = $DB->get_records($consumertable, null, 'name')) {
+            foreach ($rsconsumers as $row) {
                 $consumer = new ToolProvider\ToolConsumer($row->consumer_key, $this);
                 $consumer->setRecordId(intval($row->consumer_pk));
                 $consumer->name = $row->name;
@@ -342,50 +368,48 @@ class data_connector extends DataConnector {
                 $consumer->updated = strtotime($row->updated);
                 $consumers[] = $consumer;
             }
-            mysql_free_result($rsConsumers);
         }
 
         return $consumers;
-
     }
 
-###
-###  ToolProxy methods
-###
+    /*
+     * ToolProxy methods.
+     */
 
-###
-#    Load the tool proxy from the database
-###
-    public function loadToolProxy($toolProxy)
-    {
-
+    /**
+     * Load the tool proxy from the database.
+     *
+     * @param ToolProxy $toolProxy
+     * @return bool
+     */
+    public function loadToolProxy(ToolProxy $toolProxy) {
         return false;
-
     }
 
-###
-#    Save the tool proxy to the database
-###
-    public function saveToolProxy($toolProxy)
-    {
-
+    /**
+     * Save the tool proxy to the database.
+     *
+     * @param ToolProxy $toolProxy
+     * @return bool
+     */
+    public function saveToolProxy(ToolProxy $toolProxy) {
         return false;
-
     }
 
-###
-#    Delete the tool proxy from the database
-###
-    public function deleteToolProxy($toolProxy)
-    {
-
+    /**
+     * Delete the tool proxy from the database.
+     *
+     * @param ToolProxy $toolProxy
+     * @return bool
+     */
+    public function deleteToolProxy($toolProxy) {
         return false;
-
     }
 
-###
-###  Context methods
-###
+    /*
+     * Context methods.
+     */
 
     /**
      * Load context object.
@@ -427,7 +451,7 @@ class data_connector extends DataConnector {
      * @param Context $context Context object
      * @return boolean True if the context object was successfully saved
      */
-    public function saveContext($context) {
+    public function saveContext(Context $context) {
         global $DB;
         $time = time();
         $now = date("{$this->dateFormat} {$this->timeFormat}", $time);
@@ -478,52 +502,50 @@ class data_connector extends DataConnector {
         return false;
     }
 
-/**
- * Delete context object.
- *
- * @param Context $context Context object
- *
- * @return boolean True if the Context object was successfully deleted
- */
-    public function deleteContext($context)
-    {
+    /**
+     * Delete context object.
+     *
+     * @param Context $context Context object
+     * @return boolean True if the Context object was successfully deleted
+     */
+    public function deleteContext($context) {
 
 // Delete any outstanding share keys for resource links for this context
         $sql = sprintf('DELETE sk ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . ' sk ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON sk.resource_link_pk = rl.resource_link_pk ' .
-                       'WHERE rl.context_pk = %d',
-                       $context->getRecordId());
+            "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . ' sk ' .
+            "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON sk.resource_link_pk = rl.resource_link_pk ' .
+            'WHERE rl.context_pk = %d',
+            $context->getRecordId());
         #mysql_query($sql);
 
 // Delete any users in resource links for this context
         $sql = sprintf('DELETE u ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' u ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON u.resource_link_pk = rl.resource_link_pk ' .
-                       'WHERE rl.context_pk = %d',
-                       $context->getRecordId());
+            "FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' u ' .
+            "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON u.resource_link_pk = rl.resource_link_pk ' .
+            'WHERE rl.context_pk = %d',
+            $context->getRecordId());
         #mysql_query($sql);
 
 // Update any resource links for which this consumer is acting as a primary resource link
         $sql = sprintf("UPDATE {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' prl ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON prl.primary_resource_link_pk = rl.resource_link_pk ' .
-                       'SET prl.primary_resource_link_pk = null, prl.share_approved = null ' .
-                       'WHERE rl.context_pk = %d',
-                       $context->getRecordId());
+            "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON prl.primary_resource_link_pk = rl.resource_link_pk ' .
+            'SET prl.primary_resource_link_pk = null, prl.share_approved = null ' .
+            'WHERE rl.context_pk = %d',
+            $context->getRecordId());
         #$ok = mysql_query($sql);
 
 // Delete any resource links for this consumer
         $sql = sprintf('DELETE rl ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ' .
-                       'WHERE rl.context_pk = %d',
-                       $context->getRecordId());
+            "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ' .
+            'WHERE rl.context_pk = %d',
+            $context->getRecordId());
         #mysql_query($sql);
 
 // Delete context
         $sql = sprintf('DELETE c ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' c ',
-                       'WHERE c.context_pk = %d',
-                       $context->getRecordId());
+            "FROM {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' c ',
+            'WHERE c.context_pk = %d',
+            $context->getRecordId());
         #$ok = mysql_query($sql);
         if ($ok) {
             $context->initialize();
@@ -551,11 +573,11 @@ class data_connector extends DataConnector {
 
         $ok = false;
         $resourceid = $resourceLink->getRecordId();
-        $fields = 'id, context_pk, consumer_pk, lti_resource_link_id, settings, primary_resource_link_pk, share_approved, created, updated';
+        $fields = 'resource_link_pk, context_pk, consumer_pk, lti_resource_link_id, settings, primary_resource_link_pk, share_approved, created, updated';
         if (!empty($resourceid)) {
             $row = $DB->get_record(
                 $table,
-                array('id' => $resourceid),
+                array('resource_link_pk' => $resourceid),
                 '',
                 $fields
             );
@@ -570,21 +592,21 @@ class data_connector extends DataConnector {
                 $fields
             );
         } else {
-            $fields = 'r.id, r.context_pk, r.consumer_pk, r.lti_resource_link_id, r.settings, r.primary_resource_link_pk, r.share_approved, r.created, r.updated ';
-            $sql = "SELECT $fields " ."FROM {{$table}} r LEFT OUTER JOIN " .
-                   '{' . $this->dbTableNamePrefix . DataConnector::CONTEXT_TABLE_NAME . '} c ' .
-                   'ON r.context_pk = c.context_pk ' .
-                   ' WHERE ((r.consumer_pk = ?) OR (c.consumer_pk = ?)) AND (lti_resource_link_id = ?)';
+            $fields = 'r.resource_link_pk, r.context_pk, r.consumer_pk, r.lti_resource_link_id, r.settings, r.primary_resource_link_pk, r.share_approved, r.created, r.updated ';
+            $sql = "SELECT $fields " . "FROM {{$table}} r LEFT OUTER JOIN " .
+                '{' . $this->dbTableNamePrefix . DataConnector::CONTEXT_TABLE_NAME . '} c ' .
+                'ON r.context_pk = c.context_pk ' .
+                ' WHERE ((r.consumer_pk = ?) OR (c.consumer_pk = ?)) AND (lti_resource_link_id = ?)';
             // TODO fix this to use proper xmldb instead of this crazy gross SQL!!
             $row = $DB->get_record_sql(
                 $sql,
                 array($resourceLink->getConsumer()->getRecordId(),
-                $resourceLink->getConsumer()->getRecordId(),
-                $resourceLink->getId())
+                    $resourceLink->getConsumer()->getRecordId(),
+                    $resourceLink->getId())
             );
         }
         if ($row) {
-            $resourceLink->setRecordId(intval($row->id));
+            $resourceLink->setRecordId(intval($row->resource_link_pk));
             if (!is_null($row->context_pk)) {
                 $resourceLink->setContextId(intval($row->context_pk));
             } else {
@@ -668,29 +690,31 @@ class data_connector extends DataConnector {
         if (empty($id)) {
             $data->created = $now;
             $data->context_pk = $contextId;
-            $returnid = $DB->insert_record($table, $data);
+            $dataarr = convert_to_array($data);
+            $sql = $this->build_insert_sql($table, array_keys($dataarr));
+            $returnid = $DB->execute($sql, $dataarr);
         } else if ($contextId !== 'NULL') {
             $sql = "UPDATE {{$table}} SET " .
-                   'consumer_pk = ?, lti_resource_link_id = ?, settings = ?, '.
-                   'primary_resource_link_pk = ?, share_approved = ?, updated = ? ' .
-                   'WHERE (context_pk = ?) AND (id = ?)';
+                'consumer_pk = ?, lti_resource_link_id = ?, settings = ?, ' .
+                'primary_resource_link_pk = ?, share_approved = ?, updated = ? ' .
+                'WHERE (context_pk = ?) AND (resource_link_pk = ?)';
             $DB->execute($sql, [
-                   $consumerId, $resourceLink->getId(),
-                   $settingsValue, $primaryResourceLinkId, $approved, $now,
-                   $contextId, $id
+                    $consumerId, $resourceLink->getId(),
+                    $settingsValue, $primaryResourceLinkId, $approved, $now,
+                    $contextId, $id
                 ]
             );
             $returnid = $id;
             // TODO dml-ify.
         } else {
             $sql = "UPDATE {{$table}} SET " .
-                   'context_pk = ?, lti_resource_link_id = ?, settings = ?, '.
-                   'primary_resource_link_pk = ?, share_approved = ?, updated = ? ' .
-                   'WHERE (consumer_pk = ?) AND (id = ?)';
+                'context_pk = ?, lti_resource_link_id = ?, settings = ?, ' .
+                'primary_resource_link_pk = ?, share_approved = ?, updated = ? ' .
+                'WHERE (consumer_pk = ?) AND (resource_link_pk = ?)';
             $DB->execute($sql, [
-                $contextId, $resourceLink->getId(),
-                       $settingsValue, $primaryResourceLinkId, $approved, $now,
-                       $consumerId, $id
+                    $contextId, $resourceLink->getId(),
+                    $settingsValue, $primaryResourceLinkId, $approved, $now,
+                    $consumerId, $id
                 ]
             );
             $returnid = $id;
@@ -709,44 +733,43 @@ class data_connector extends DataConnector {
 
     }
 
-/**
- * Delete resource link object.
- *
- * @param ResourceLink $resourceLink Resource_Link object
- *
- * @return boolean True if the resource link object was successfully deleted
- */
-    public function deleteResourceLink($resourceLink)
-    {
+    /**
+     * Delete resource link object.
+     *
+     * @param ResourceLink $resourceLink Resource_Link object
+     *
+     * @return boolean True if the resource link object was successfully deleted
+     */
+    public function deleteResourceLink($resourceLink) {
 
 // Delete any outstanding share keys for resource links for this consumer
         $sql = sprintf("DELETE FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . ' ' .
-                       'WHERE (resource_link_pk = %d)',
-                       $resourceLink->getRecordId());
+            'WHERE (resource_link_pk = %d)',
+            $resourceLink->getRecordId());
         #$ok = mysql_query($sql);
 
 // Delete users
         if ($ok) {
             $sql = sprintf("DELETE FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' ' .
-                           'WHERE (resource_link_pk = %d)',
-                           $resourceLink->getRecordId());
+                'WHERE (resource_link_pk = %d)',
+                $resourceLink->getRecordId());
             #$ok = mysql_query($sql);
         }
 
 // Update any resource links for which this is the primary resource link
         if ($ok) {
             $sql = sprintf("UPDATE {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' ' .
-                           'SET primary_resource_link_pk = NULL ' .
-                           'WHERE (primary_resource_link_pk = %d)',
-                           $resourceLink->getRecordId());
+                'SET primary_resource_link_pk = NULL ' .
+                'WHERE (primary_resource_link_pk = %d)',
+                $resourceLink->getRecordId());
             #$ok = mysql_query($sql);
         }
 
 // Delete resource link
         if ($ok) {
             $sql = sprintf("DELETE FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' ' .
-                           'WHERE (id= %s)',
-                           $resourceLink->getRecordId());
+                'WHERE (id= %s)',
+                $resourceLink->getRecordId());
             #$ok = mysql_query($sql);
         }
 
@@ -758,38 +781,37 @@ class data_connector extends DataConnector {
 
     }
 
-/**
- * Get array of user objects.
- *
- * Obtain an array of User objects for users with a result sourcedId.  The array may include users from other
- * resource links which are sharing this resource link.  It may also be optionally indexed by the user ID of a specified scope.
- *
- * @param ResourceLink $resourceLink      Resource link object
- * @param boolean     $localOnly True if only users within the resource link are to be returned (excluding users sharing this resource link)
- * @param int         $idScope     Scope value to use for user IDs
- *
- * @return array Array of User objects
- */
-    public function getUserResultSourcedIDsResourceLink($resourceLink, $localOnly, $idScope)
-    {
+    /**
+     * Get array of user objects.
+     *
+     * Obtain an array of User objects for users with a result sourcedId.  The array may include users from other
+     * resource links which are sharing this resource link.  It may also be optionally indexed by the user ID of a specified scope.
+     *
+     * @param ResourceLink $resourceLink Resource link object
+     * @param boolean $localOnly True if only users within the resource link are to be returned (excluding users sharing this resource link)
+     * @param int $idScope Scope value to use for user IDs
+     *
+     * @return array Array of User objects
+     */
+    public function getUserResultSourcedIDsResourceLink($resourceLink, $localOnly, $idScope) {
 
         $users = array();
 
         if ($localOnly) {
             $sql = sprintf('SELECT u.user_pk, u.lti_result_sourcedid, u.lti_user_id, u.created, u.updated ' .
-                           "FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' AS u '  .
-                           "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' AS rl '  .
-                           'ON u.resource_link_pk = rl.resource_link_pk ' .
-                           "WHERE (rl.resource_link_pk = %d) AND (rl.primary_resource_link_pk IS NULL)",
-                           $resourceLink->getRecordId());
+                "FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' AS u ' .
+                "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' AS rl ' .
+                'ON u.resource_link_pk = rl.resource_link_pk ' .
+                "WHERE (rl.resource_link_pk = %d) AND (rl.primary_resource_link_pk IS NULL)",
+                $resourceLink->getRecordId());
         } else {
             $sql = sprintf('SELECT u.user_pk, u.lti_result_sourcedid, u.lti_user_id, u.created, u.updated ' .
-                           "FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' AS u '  .
-                           "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' AS rl '  .
-                           'ON u.resource_link_pk = rl.resource_link_pk ' .
-                           'WHERE ((rl.resource_link_pk = %d) AND (rl.primary_resource_link_pk IS NULL)) OR ' .
-                           '((rl.primary_resource_link_pk = %d) AND (share_approved = 1))',
-                           $resourceLink->getRecordId(), $resourceLink->getRecordId());
+                "FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' AS u ' .
+                "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' AS rl ' .
+                'ON u.resource_link_pk = rl.resource_link_pk ' .
+                'WHERE ((rl.resource_link_pk = %d) AND (rl.primary_resource_link_pk IS NULL)) OR ' .
+                '((rl.primary_resource_link_pk = %d) AND (share_approved = 1))',
+                $resourceLink->getRecordId(), $resourceLink->getRecordId());
         }
         #$rsUser = mysql_query($sql);
         if ($rsUser) {
@@ -811,23 +833,22 @@ class data_connector extends DataConnector {
 
     }
 
-/**
- * Get array of shares defined for this resource link.
- *
- * @param ResourceLink $resourceLink Resource_Link object
- *
- * @return array Array of ResourceLinkShare objects
- */
-    public function getSharesResourceLink($resourceLink)
-    {
+    /**
+     * Get array of shares defined for this resource link.
+     *
+     * @param ResourceLink $resourceLink Resource_Link object
+     *
+     * @return array Array of ResourceLinkShare objects
+     */
+    public function getSharesResourceLink($resourceLink) {
 
         $shares = array();
 
         $sql = sprintf('SELECT consumer_pk, resource_link_pk, share_approved ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' ' .
-                       'WHERE (primary_resource_link_pk = %d) ' .
-                       'ORDER BY consumer_pk',
-                       $resourceLink->getRecordId());
+            "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' ' .
+            'WHERE (primary_resource_link_pk = %d) ' .
+            'ORDER BY consumer_pk',
+            $resourceLink->getRecordId());
         #$rsShare = mysql_query($sql);
         if ($rsShare) {
             while ($row = mysql_fetch_object($rsShare)) {
@@ -895,124 +916,111 @@ class data_connector extends DataConnector {
 
     }
 
+    /*
+     * ResourceLinkShareKey methods.
+     */
 
-###
-###  ResourceLinkShareKey methods
-###
+    /**
+     * Load resource link share key object.
+     *
+     * @param ResourceLinkShareKey $shareKey Resource_Link share key object
+     * @return boolean True if the resource link share key object was successfully loaded
+     */
+    public function loadResourceLinkShareKey($shareKey) {
+        global $DB;
 
-/**
- * Load resource link share key object.
- *
- * @param ResourceLinkShareKey $shareKey Resource_Link share key object
- *
- * @return boolean True if the resource link share key object was successfully loaded
- */
-    public function loadResourceLinkShareKey($shareKey)
-    {
+        $resourcelinksharekeytable = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME;
 
-        $ok = false;
-
-// Clear expired share keys
+        // Clear expired share keys.
         $now = date("{$this->dateFormat} {$this->timeFormat}", time());
-        $sql = "DELETE FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . " WHERE expires <= '{$now}'";
-        #mysql_query($sql);
+        $where = "expires <= :expires";
 
-// Load share key
-        $id = mysql_real_escape_string($shareKey->getId());
-        $sql = 'SELECT resource_link_pk, auto_approve, expires ' .
-               "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . ' ' .
-               "WHERE share_key_id = '{$id}'";
-        #$rsShareKey = mysql_query($sql);
-        if ($rsShareKey) {
-            $row = mysql_fetch_object($rsShareKey);
-            if ($row && (intval($row->resource_link_pk) === $shareKey->resourceLinkId)) {
-                $shareKey->autoApprove = (intval($row->auto_approve) === 1);
-                $shareKey->expires = strtotime($row->expires);
-                $ok = true;
+        $DB->delete_records_select($resourcelinksharekeytable, $where, ['expires' => $now]);
+
+        // Load share key.
+        $fields = 'resource_link_pk, auto_approve, expires';
+        if ($sharekeyrecord = $DB->get_record($resourcelinksharekeytable, ['share_key_id' => $shareKey->getId()], $fields)) {
+            if ($sharekeyrecord->resource_link_pk == $shareKey->resourceLinkId) {
+                $shareKey->autoApprove = $sharekeyrecord->auto_approve == 1;
+                $shareKey->expires = strtotime($sharekeyrecord->expires);
+                return true;
             }
         }
 
-        return $ok;
-
+        return false;
     }
 
-/**
- * Save resource link share key object.
- *
- * @param ResourceLinkShareKey $shareKey Resource link share key object
- *
- * @return boolean True if the resource link share key object was successfully saved
- */
-    public function saveResourceLinkShareKey($shareKey)
-    {
+    /**
+     * Save resource link share key object.
+     *
+     * @param ResourceLinkShareKey $shareKey Resource link share key object
+     * @return boolean True if the resource link share key object was successfully saved
+     */
+    public function saveResourceLinkShareKey($shareKey) {
+        global $DB;
 
         if ($shareKey->autoApprove) {
             $approve = 1;
         } else {
             $approve = 0;
         }
+
+        $resourcelinksharekeytable = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME;
         $expires = date("{$this->dateFormat} {$this->timeFormat}", $shareKey->expires);
-        $sql = sprintf("INSERT INTO {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . ' ' .
-                       '(share_key_id, resource_link_pk, auto_approve, expires) ' .
-                       "VALUES (%s, %d, {$approve}, '{$expires}')",
-                       DataConnector::quoted($shareKey->getId()), $shareKey->resourceLinkId);
-        #$ok = mysql_query($sql);
 
-        return $ok;
+        $params = [
+            'share_key_id' => $shareKey->getId(),
+            'resource_link_pk' => $shareKey->resourceLinkId,
+            'auto_approve' => $approve,
+            'expires' => $expires
+        ];
+        $sql = $this->build_insert_sql($resourcelinksharekeytable, array_keys($params));
 
+        return $DB->execute($sql, $params);
     }
 
-/**
- * Delete resource link share key object.
- *
- * @param ResourceLinkShareKey $shareKey Resource link share key object
- *
- * @return boolean True if the resource link share key object was successfully deleted
- */
-    public function deleteResourceLinkShareKey($shareKey)
-    {
+    /**
+     * Delete resource link share key object.
+     *
+     * @param ResourceLinkShareKey $shareKey Resource link share key object
+     * @return boolean True if the resource link share key object was successfully deleted
+     */
+    public function deleteResourceLinkShareKey(ResourceLinkShareKey $shareKey) {
+        global $DB;
 
-        $sql = "DELETE FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . " WHERE share_key_id = '{$shareKey->getId()}'";
+        $table = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME;
+        $DB->delete_records($table, ['share_key_id' => $shareKey->getId()]);
+        $shareKey->initialize();
 
-        #$ok = mysql_query($sql);
-
-        if ($ok) {
-            $shareKey->initialize();
-        }
-
-        return $ok;
-
+        return true;
     }
 
+    /*
+     * User methods
+     */
 
-###
-###  User methods
-###
-
-/**
- * Load user object.
- *
- * @param User $user User object
- *
- * @return boolean True if the user object was successfully loaded
- */
-    public function loadUser($user) {
+    /**
+     * Load user object.
+     *
+     * @param User $user User object
+     * @return boolean True if the user object was successfully loaded
+     */
+    public function loadUser(User $user) {
         global $DB;
 
         $table = $this->dbTableNamePrefix . DataConnector::USER_RESULT_TABLE_NAME;
 
-        $ok = false;
         $userid = $user->getRecordId();
         $fields = 'user_pk, resource_link_pk, lti_user_id, lti_result_sourcedid, created, updated';
         if (!empty($userid)) {
-            $row = $DB->get_record($table, array('user_pk' => $userid), $fields);
+            $row = $DB->get_record($table, ['user_pk' => $userid], $fields);
         } else {
             $resourcelinkid = $user->getResourceLink()->getRecordId();
             $userid = $user->getId(ToolProvider\ToolProvider::ID_SCOPE_ID_ONLY);
             $row = $DB->get_record_select(
                 $table,
                 "resource_link_pk = ? AND lti_user_id = ?",
-                array($resourcelinkid, $userid),
+                [$resourcelinkid, $userid],
                 $fields
             );
         }
@@ -1023,11 +1031,10 @@ class data_connector extends DataConnector {
             $user->ltiResultSourcedId = $row->lti_result_sourcedid;
             $user->created = strtotime($row->created);
             $user->updated = strtotime($row->updated);
-            $ok = true;
+            return true;
         }
 
-        return $ok;
-
+        return false;
     }
 
     /**
@@ -1036,33 +1043,27 @@ class data_connector extends DataConnector {
      * @param User $user User object
      * @return boolean True if the user object was successfully saved
      */
-    public function saveUser($user) {
+    public function saveUser(User $user) {
         global $DB;
 
         $time = time();
         $now = date("{$this->dateFormat} {$this->timeFormat}", $time);
         $table = $this->dbTableNamePrefix . DataConnector::USER_RESULT_TABLE_NAME;
         $isinsert = is_null($user->created);
+
+        $params = [
+            'lti_result_sourcedid' => $user->ltiResultSourcedId,
+            'updated' => $now
+        ];
+
         if ($isinsert) {
-            $params = [
-                'resource_link_pk' => $user->getResourceLink()->getRecordId(),
-                'lti_user_id' => $user->getId(ToolProvider\ToolProvider::ID_SCOPE_ID_ONLY),
-                'lti_result_sourcedid' => $user->ltiResultSourcedId,
-                'created' => $now,
-                'updated' => $now,
-            ];
-            $sql = "INSERT INTO {{$table}} (resource_link_pk, lti_user_id, lti_result_sourcedid, created, updated) 
-                         VALUES (:resource_link_pk, :lti_user_id, :lti_result_sourcedid, :created, :updated)";
+            $params['resource_link_pk'] = $user->getResourceLink()->getRecordId();
+            $params['lti_user_id'] = $user->getId(ToolProvider\ToolProvider::ID_SCOPE_ID_ONLY);
+            $params['created'] = $now;
+            $sql = $this->build_insert_sql($table, array_key($params));
         } else {
-            $params = [
-                'lti_result_sourcedid' => $user->ltiResultSourcedId,
-                'updated' => $now,
-                'user_pk' => $user->getRecordId()
-            ];
-            $sql = "UPDATE {{$table}} 
-                       SET lti_result_sourcedid = :lti_result_sourcedid, 
-                           updated = :updated 
-                     WHERE user_pk = :user_pk";
+            $sql = $this->build_update_sql($table, array_keys($params), 'user_pk = :user_pk');
+            $params['user_pk'] = $user->getRecordId();
         }
 
         if ($DB->execute($sql, $params)) {
@@ -1079,27 +1080,19 @@ class data_connector extends DataConnector {
         return false;
     }
 
-/**
- * Delete user object.
- *
- * @param User $user User object
- *
- * @return boolean True if the user object was successfully deleted
- */
-    public function deleteUser($user)
-    {
+    /**
+     * Delete user object.
+     *
+     * @param User $user User object
+     * @return boolean True if the user object was successfully deleted
+     */
+    public function deleteUser(User $user) {
+        global $DB;
 
-        $sql = sprintf("DELETE FROM {$this->dbTableNamePrefix}" . DataConnector::USER_RESULT_TABLE_NAME . ' ' .
-                       'WHERE (user_pk = %d)',
-                       $user->getRecordId());
-        #$ok = mysql_query($sql);
+        $usertable = $this->dbTableNamePrefix . DataConnector::USER_RESULT_TABLE_NAME;
+        $DB->delete_records($usertable, ['user_pk' => $user->getRecordId()]);
+        $user->initialize();
 
-        if ($ok) {
-            $user->initialize();
-        }
-
-        return $ok;
-
+        return true;
     }
-
 }
