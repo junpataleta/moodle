@@ -60,7 +60,7 @@ class data_connector extends DataConnector {
         $table = $this->dbTableNamePrefix . DataConnector::CONSUMER_TABLE_NAME;
 
         $ok = false;
-        $fields = 'id, name, consumer_key256, consumer_key, secret, lti_version, ' .
+        $fields = 'consumer_pk, name, consumer_key256, consumer_key, secret, lti_version, ' .
                   'consumer_name, consumer_version, consumer_guid, ' .
                   'profile, tool_proxy, settings, protected, enabled, ' .
                   'enable_from, enable_until, last_access, created, updated';
@@ -68,7 +68,7 @@ class data_connector extends DataConnector {
 
         $result = [];
         if (!empty($id)) {
-            $result = $DB->get_records($table, ['id' => $id], '', $fields);
+            $result = $DB->get_records($table, ['consumer_pk' => $id], '', $fields);
         } else {
             $key256 = DataConnector::getConsumerKey($consumer->getKey());
             $result = $DB->get_records($table, ['consumer_key256' => $key256], '', $fields);
@@ -76,7 +76,7 @@ class data_connector extends DataConnector {
         // TODO Catch exceptions.
         foreach ($result as $row) {
             if (empty($key256) || empty($row->consumer_key) || ($consumer->getKey() === $row->consumer_key)) {
-                $consumer->setRecordId(intval($row->id));
+                $consumer->setRecordId(intval($row->consumer_pk));
                 $consumer->name = $row->name;
                 $consumer->setkey(empty($row->consumer_key) ? $row->consumer_key256 : $row->consumer_key);
                 $consumer->secret = $row->secret;
@@ -151,43 +151,83 @@ class data_connector extends DataConnector {
         if (!is_null($consumer->lastAccess)) {
             $last = date($this->dateFormat, $consumer->lastAccess);
         }
-        $data = new \stdClass();
-        $data->consumer_key256 = $key256;
-        $data->consumer_key = $key;
-        $data->name = $consumer->name;
-        $data->secret = $consumer->secret;
-        $data->lti_version = $consumer->ltiVersion;
-        $data->consumer_name = $consumer->consumerName;
-        $data->consumer_version = $consumer->consumerVersion;
-        $data->consumer_guid = $consumer->consumerGuid;
-        $data->profile = $profile;
-        $data->tool_proxy = $consumer->toolProxy;
-        $data->settings = $settingsValue;
-        $data->protected = $protected;
-        $data->enabled = $enabled;
-        $data->enable_from = $from;
-        $data->enable_until = $until;
-        $data->last_access = $last;
-        $data->updated = $now;
+        $data = [
+            'consumer_key256' => $key256,
+            'consumer_key' => $key,
+            'name' => $consumer->name,
+            'secret' => $consumer->secret,
+            'lti_version' => $consumer->ltiVersion,
+            'consumer_name' => $consumer->consumerName,
+            'consumer_version' => $consumer->consumerVersion,
+            'consumer_guid' => $consumer->consumerGuid,
+            'profile' => $profile,
+            'tool_proxy' => $consumer->toolProxy,
+            'settings' => $settingsValue,
+            'protected' => $protected,
+            'enabled' => $enabled,
+            'enable_from' => $from,
+            'enable_until' => $until,
+            'last_access' => $last,
+            'updated' => $now,
+        ];
 
         $id = $consumer->getRecordId();
+
         if (empty($id)) {
-            $data->created = $now;
-            $id = $DB->insert_record($table, $data);
-            $consumer->setRecordId($id);
-            $consumer->created = $time;
-            // TODO catch error and set $ok to false
-            $ok = !empty($id);
+            $data['created'] = $now;
+            $sql = $this->build_insert_sql($table, array_keys($data));
         } else {
-            $data->id = $id;
-            $ok = $DB->update_record($table, $data);
+            $sql = $this->build_update_sql($table, array_keys($data), "consumer_pk = :consumer_pk");
+            $data['consumer_pk'] = $id;
         }
-        if ($ok) {
+
+        if ($DB->execute($sql, $data)) {
+            if (empty($id)) {
+                if ($consumerrecord = $DB->get_record($table, ['consumer_key256' => $key256])) {
+                    $consumer->setRecordId($consumerrecord->consumer_pk);
+                    $consumer->created = $time;
+                }
+            }
             $consumer->updated = $time;
+            return true;
         }
 
-        return $ok;
+        return false;
+    }
 
+    /**
+     * Builds an SQL INSERT query.
+     *
+     * @param string $table The table name.
+     * @param array $columns The column names.
+     * @return string The SQL insert query.
+     */
+    protected function build_insert_sql($table, $columns) {
+        $params = [];
+        foreach ($columns as $column) {
+            $params[] = ':' . trim($column);
+        }
+        $columnsstring = implode(', ', $columns);
+        $paramstring = implode(', ', $params);
+        return "INSERT INTO {{$table}} ({$columnsstring}) VALUES ({$paramstring})";
+    }
+
+    /**
+     * Builds an SQL UPDATE query.
+     *
+     * @param string $table The table name.
+     * @param array $updatecolumns The array of column names to be updated.
+     * @param string $where The conditions for the where clause.
+     * @return string The SQL update query.
+     */
+    protected function build_update_sql($table, $updatecolumns, $where) {
+        $setcolumns = [];
+        foreach ($updatecolumns as $column) {
+            $setcolumns[] = $column . ' = :' . trim($column);
+        }
+        $setcolumnsstring = implode(', ', $setcolumns);
+
+        return "UPDATE {{$table}} SET {$setcolumnsstring} WHERE ({$where})";
     }
 
 /**
@@ -551,11 +591,11 @@ class data_connector extends DataConnector {
 
         $ok = false;
         $resourceid = $resourceLink->getRecordId();
-        $fields = 'id, context_pk, consumer_pk, lti_resource_link_id, settings, primary_resource_link_pk, share_approved, created, updated';
+        $fields = 'resource_link_pk, context_pk, consumer_pk, lti_resource_link_id, settings, primary_resource_link_pk, share_approved, created, updated';
         if (!empty($resourceid)) {
             $row = $DB->get_record(
                 $table,
-                array('id' => $resourceid),
+                array('resource_link_pk' => $resourceid),
                 '',
                 $fields
             );
@@ -570,7 +610,7 @@ class data_connector extends DataConnector {
                 $fields
             );
         } else {
-            $fields = 'r.id, r.context_pk, r.consumer_pk, r.lti_resource_link_id, r.settings, r.primary_resource_link_pk, r.share_approved, r.created, r.updated ';
+            $fields = 'r.resource_link_pk, r.context_pk, r.consumer_pk, r.lti_resource_link_id, r.settings, r.primary_resource_link_pk, r.share_approved, r.created, r.updated ';
             $sql = "SELECT $fields " ."FROM {{$table}} r LEFT OUTER JOIN " .
                    '{' . $this->dbTableNamePrefix . DataConnector::CONTEXT_TABLE_NAME . '} c ' .
                    'ON r.context_pk = c.context_pk ' .
@@ -584,7 +624,7 @@ class data_connector extends DataConnector {
             );
         }
         if ($row) {
-            $resourceLink->setRecordId(intval($row->id));
+            $resourceLink->setRecordId(intval($row->resource_link_pk));
             if (!is_null($row->context_pk)) {
                 $resourceLink->setContextId(intval($row->context_pk));
             } else {
@@ -668,12 +708,14 @@ class data_connector extends DataConnector {
         if (empty($id)) {
             $data->created = $now;
             $data->context_pk = $contextId;
-            $returnid = $DB->insert_record($table, $data);
+            $dataarr = convert_to_array($data);
+            $sql = $this->build_insert_sql($table, array_keys($dataarr));
+            $returnid = $DB->execute($sql, $dataarr);
         } else if ($contextId !== 'NULL') {
             $sql = "UPDATE {{$table}} SET " .
                    'consumer_pk = ?, lti_resource_link_id = ?, settings = ?, '.
                    'primary_resource_link_pk = ?, share_approved = ?, updated = ? ' .
-                   'WHERE (context_pk = ?) AND (id = ?)';
+                   'WHERE (context_pk = ?) AND (resource_link_pk = ?)';
             $DB->execute($sql, [
                    $consumerId, $resourceLink->getId(),
                    $settingsValue, $primaryResourceLinkId, $approved, $now,
@@ -686,7 +728,7 @@ class data_connector extends DataConnector {
             $sql = "UPDATE {{$table}} SET " .
                    'context_pk = ?, lti_resource_link_id = ?, settings = ?, '.
                    'primary_resource_link_pk = ?, share_approved = ?, updated = ? ' .
-                   'WHERE (consumer_pk = ?) AND (id = ?)';
+                   'WHERE (consumer_pk = ?) AND (resource_link_pk = ?)';
             $DB->execute($sql, [
                 $contextId, $resourceLink->getId(),
                        $settingsValue, $primaryResourceLinkId, $approved, $now,
