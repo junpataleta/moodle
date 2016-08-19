@@ -43,7 +43,6 @@ use IMSGlobal\LTI\ToolProvider\User;
 class data_connector extends DataConnector {
 
     function __construct() {
-        global $CFG;
         parent::__construct(null, 'enrol_lti_');
     }
 
@@ -51,7 +50,6 @@ class data_connector extends DataConnector {
      * Load tool consumer object.
      *
      * @param ToolConsumer $consumer ToolConsumer object
-     *
      * @return boolean True if the tool consumer object was successfully loaded
      */
     public function loadToolConsumer($consumer) {
@@ -120,7 +118,6 @@ class data_connector extends DataConnector {
      * Save tool consumer object.
      *
      * @param ToolConsumer $consumer Consumer object
-     *
      * @return boolean True if the tool consumer object was successfully saved
      */
     public function saveToolConsumer($consumer) {
@@ -230,33 +227,33 @@ class data_connector extends DataConnector {
         return "UPDATE {{$table}} SET {$setcolumnsstring} WHERE ({$where})";
     }
 
-/**
- * Delete tool consumer object.
- *
- * @param ToolConsumer $consumer Consumer object
- *
- * @return boolean True if the tool consumer object was successfully deleted
- */
-    public function deleteToolConsumer($consumer)
-    {
+    /**
+     * Delete tool consumer object.
+     *
+     * @param ToolConsumer $consumer Consumer object
+     * @return boolean True if the tool consumer object was successfully deleted
+     */
+    public function deleteToolConsumer($consumer) {
+        global $DB;
 
-// Delete any nonce values for this consumer
-        $sql = sprintf("DELETE FROM {$this->dbTableNamePrefix}" . DataConnector::NONCE_TABLE_NAME . ' WHERE consumer_pk = %d',
-                       $consumer->getRecordId());
-        #mysql_query($sql);
+        $consumerpk = $consumer->getRecordId();
+        // Delete any nonce values for this consumer.
+        $noncetable = $this->dbTableNamePrefix . DataConnector::NONCE_TABLE_NAME;
+        $DB->delete_records($noncetable, ['consumer_pk' => $consumerpk]);
 
-// Delete any outstanding share keys for resource links for this consumer
-        $sql = sprintf('DELETE sk ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . ' sk ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON sk.resource_link_pk = rl.resource_link_pk ' .
-                       'WHERE rl.consumer_pk = %d',
-                       $consumer->getRecordId());
-        #mysql_query($sql);
+        // Delete any outstanding share keys for resource links for this consumer.
+        $resourcelinksharekeytable = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME;
+        $resourcelinktable = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_TABLE_NAME;
+        $sql = "DELETE sk 
+                  FROM {{$resourcelinksharekeytable}} sk   
+            INNER JOIN {{$resourcelinktable}} rl 
+                    ON sk.resource_link_pk = rl.resource_link_pk 
+                 WHERE rl.consumer_pk = :consumer_pk";
+        $DB->execute($sql, ['consumer_pk' => $consumerpk]);
 
-// Delete any outstanding share keys for resource links for contexts in this consumer
-        $sql = sprintf('DELETE sk ' .
-                       "FROM {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_SHARE_KEY_TABLE_NAME . ' sk ' .
-                       "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON sk.resource_link_pk = rl.resource_link_pk ' .
+        // Delete any outstanding share keys for resource links for contexts in this consumer
+        $contexttable = $this->dbTableNamePrefix . DataConnector::CONTEXT_TABLE_NAME;
+        $sql = "DELETE sk FROM {{$resourcelinksharekeytable}} sk INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::RESOURCE_LINK_TABLE_NAME . ' rl ON sk.resource_link_pk = rl.resource_link_pk ' .
                        "INNER JOIN {$this->dbTableNamePrefix}" . DataConnector::CONTEXT_TABLE_NAME . ' c ON rl.context_pk = c.context_pk ' .
                        'WHERE c.consumer_pk = %d',
                        $consumer->getRecordId());
