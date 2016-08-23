@@ -66,6 +66,7 @@ $string['rolelearner_help'] = 'The role assigned in the tool to the remote stude
 $string['secret'] = 'Secret';
 $string['secret_help'] = 'A string of characters which is shared with the remote system (LTI consumer) to provide access to the tool.';
 $string['sharedexternaltools'] = 'Published as LTI tools';
+$string['successfulregistration'] = 'Successful registration';
 $string['tasksyncgrades'] = 'Publish as LTI tool grade sync';
 $string['tasksyncmembers'] = 'Publish as LTI tool users sync';
 $string['toolsprovided'] = 'Published tools';

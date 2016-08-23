@@ -328,7 +328,7 @@ class tool_provider extends ToolProvider\ToolProvider {
             $separator = '&';
         }
         $guid = $this->consumer->getKey();
-        $returnurl = $returnurl . $separator . 'lti_msg=Successful+registration';
+        $returnurl = $returnurl . $separator . 'lti_msg=' . urlencode(get_string("successfulregistration", "enrol_lti"));
         $returnurl = $returnurl . '&status=success';
         $returnurl = $returnurl . "&tool_proxy_guid=$guid";
         $ok = $this->doToolProxyService($_POST['tc_profile_url']); # TODO only do this right before registering.
