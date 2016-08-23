@@ -164,8 +164,6 @@ class tool_provider extends ToolProvider\ToolProvider {
     function onLaunch() {
         global $DB, $SESSION, $CFG;
 
-        // TODO Remove any references to ltirequest.
-
         // Before we do anything check that the context is valid.
         $tool = $this->tool;
         $context = \context::instance_by_id($tool->contextid);
@@ -221,11 +219,10 @@ class tool_provider extends ToolProvider\ToolProvider {
 
         // Update user image.
         $image = false;
-        // TODO custom parameter substitution.
-        if (!empty($ltirequest->info['user_image'])) {
-            $image = $ltirequest->info['user_image'];
-        } else if (!empty($ltirequest->info['custom_user_image'])) {
-            $image = $ltirequest->info['custom_user_image'];
+        if (!empty($this->resourceLink->getSetting('user_image'))) {
+            $image = $this->resourceLink->getSetting('user_image');
+        } else if (!empty($this->resourceLink->getSetting('custom_user_image'))) {
+            $image = $this->resourceLink->getSetting('custom_user_image');
         }
 
         // Check if there is an image to process.
