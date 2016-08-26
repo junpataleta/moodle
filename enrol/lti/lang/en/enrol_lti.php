@@ -40,6 +40,7 @@ $string['failedregistration'] = 'Failed registration. Reason: {$a->reason}';
 $string['gradesync'] = 'Grade synchronisation';
 $string['gradesync_help'] = 'Whether grades from the tool are sent to the remote system (LTI consumer).';
 $string['incorrecttoken'] = 'The token was incorrect. Please check the URL and try again, or contact the administrator of this tool.';
+$string['invalidrequest'] = 'Invalid request';
 $string['maxenrolled'] = 'Maximum enrolled users';
 $string['maxenrolled_help'] = 'The maximum number of remote users who can access the tool. If set to zero, the number of enrolled users is unlimited.';
 $string['maxenrolledreached'] = 'The maximum number of remote users allowed to access the tool has been reached.';
