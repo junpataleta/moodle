@@ -42,8 +42,9 @@ class registration implements renderable, templatable {
 
     /**
      * Construct a new tool registration page
+     * @param string|null $returnurl The url the consumer wants us to return the user to (optional)
      */
-    public function __construct($returnurl) {
+    public function __construct($returnurl = null) {
         $this->returnurl = $returnurl;
     }
 
