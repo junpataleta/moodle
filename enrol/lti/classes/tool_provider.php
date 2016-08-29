@@ -61,7 +61,7 @@ class tool_provider extends ToolProvider\ToolProvider {
     function __construct($toolid) {
         global $CFG, $SITE;
 
-        $token = \enrol_lti\helper::generate_tool_token($toolid);
+        $token = \enrol_lti\helper::generate_proxy_token($toolid);
 
         $this->debugMode = debugging();
         $tool = \enrol_lti\helper::get_lti_tool($toolid);
