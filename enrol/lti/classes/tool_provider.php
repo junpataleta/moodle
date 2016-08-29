@@ -158,6 +158,8 @@ class tool_provider extends ToolProvider\ToolProvider {
             $message = $this->reason;
         }
 
+        $this->errorOutput = '';
+
         \core\notification::error(get_string('failedregistration', 'enrol_lti', ['reason' => $message]));
     }
 
@@ -328,10 +330,17 @@ class tool_provider extends ToolProvider\ToolProvider {
         $returnurl = $returnurl . $separator . 'lti_msg=' . urlencode(get_string("successfulregistration", "enrol_lti"));
         $returnurl = $returnurl . '&status=success';
         $returnurl = $returnurl . "&tool_proxy_guid=$guid";
-        $ok = $this->doToolProxyService($_POST['tc_profile_url']);
+        $ok = $this->doToolProxyService();
 
-        $registration = new output\registration($returnurl);
-        $output = $PAGE->get_renderer('enrol_lti');
-        echo $output->render($registration);
+        if ($ok) {
+            $registration = new output\registration($returnurl);
+            $output = $PAGE->get_renderer('enrol_lti');
+            echo $output->render($registration);
+        } else {
+            // Tell the consumer that the registration failed.
+            $this->ok = false;
+            $couldnotestablish = get_string('couldnotestablishproxy', 'enrol_lti');
+            $this->message = get_string('failedregistration', 'enrol_lti', array('reason' => $couldnotestablish));
+        }
     }
 }
