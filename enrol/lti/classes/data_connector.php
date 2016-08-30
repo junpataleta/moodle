@@ -30,11 +30,11 @@ use IMSGlobal\LTI\ToolProvider;
 use IMSGlobal\LTI\ToolProvider\ConsumerNonce;
 use IMSGlobal\LTI\ToolProvider\Context;
 use IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector;
-use IMSGlobal\LTI\ToolProvider\DataConnector\ToolProxy;
 use IMSGlobal\LTI\ToolProvider\ResourceLink;
 use IMSGlobal\LTI\ToolProvider\ResourceLinkShare;
 use IMSGlobal\LTI\ToolProvider\ResourceLinkShareKey;
 use IMSGlobal\LTI\ToolProvider\ToolConsumer;
+use IMSGlobal\LTI\ToolProvider\ToolProxy;
 use IMSGlobal\LTI\ToolProvider\User;
 use stdClass;
 
@@ -454,11 +454,15 @@ class data_connector extends DataConnector {
             'primary_resource_link_pk' => null,
             'share_approved' => null
         ];
-        $where = 'primary_resource_link_pk = resource_link_pk AND context_pk = :context_pk';
+        $where = "primary_resource_link_pk IN (
+                    SELECT resource_link_pk 
+                      FROM {{$resourcelinktable}} 
+                     WHERE context_pk = :context_pk
+                  )";
         $sql = $this->build_update_sql($resourcelinktable, $updatecolumns, $where);
         $DB->execute($sql, $params);
 
-        // Delete any resource links for this consumer.
+        // Delete any resource links for this context.
         $DB->delete_records($resourcelinktable, $params);
 
         // Delete context.
