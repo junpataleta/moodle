@@ -400,7 +400,7 @@ class enrol_lti_data_connector_testcase extends advanced_testcase {
     }
 
     /**
-     * Test for data_connector::loadContext().
+     * Test for data_connector::saveContext().
      */
     public function test_save_context() {
         $dc = new data_connector();
