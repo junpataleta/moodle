@@ -605,7 +605,7 @@ class data_connector extends DataConnector {
                 $returnid = $DB->get_field($table, 'resource_link_pk', $queryconditions);
             }
 
-        } else if ($contextid !== 'NULL') {
+        } else if ($contextid !== null) {
             $updatewhere = 'context_pk = :context_pk AND resource_link_pk = :resource_link_pk';
             $sql = $this->build_update_sql($table, array_keys($data), $updatewhere);
             $data['context_pk'] = $contextid;
