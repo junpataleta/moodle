@@ -29,6 +29,7 @@ use IMSGlobal\LTI\ToolProvider\ResourceLink;
 use IMSGlobal\LTI\ToolProvider\ResourceLinkShareKey;
 use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use IMSGlobal\LTI\ToolProvider\ToolProvider;
+use IMSGlobal\LTI\ToolProvider\ToolProxy;
 use IMSGlobal\LTI\ToolProvider\User;
 
 defined('MOODLE_INTERNAL') || die();
@@ -332,5 +333,221 @@ class enrol_lti_data_connector_testcase extends advanced_testcase {
             $this->assertEquals($data['secret'] . $index, $record->secret);
             $record->ltiVersion = $data['lti_version'];
         }
+    }
+
+    /**
+     * Test for data_connector::loadToolProxy().
+     */
+    public function test_get_tool_proxy() {
+        $dc = new data_connector();
+        $toolproxy = new ToolProxy($dc);
+        $this->assertFalse($dc->loadToolProxy($toolproxy));
+    }
+
+    /**
+     * Test for data_connector::saveToolProxy().
+     */
+    public function test_save_tool_proxy() {
+        $dc = new data_connector();
+        $toolproxy = new ToolProxy($dc);
+        $this->assertFalse($dc->saveToolProxy($toolproxy));
+    }
+
+    /**
+     * Test for data_connector::deleteToolProxy().
+     */
+    public function test_delete_tool_proxy() {
+        $dc = new data_connector();
+        $toolproxy = new ToolProxy($dc);
+        $this->assertFalse($dc->deleteToolProxy($toolproxy));
+    }
+
+    /**
+     * Test for data_connector::loadContext().
+     */
+    public function test_load_context() {
+        $dc = new data_connector();
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'testconsumername';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'testsecret';
+        $consumer->save();
+
+        $title = 'testcontexttitle';
+        $settings = ['a', 'b', 'c'];
+        $lticontextid = 'testlticontextid';
+        $context = Context::fromConsumer($consumer, $lticontextid);
+        $context->title = $title;
+        $context->settings = $settings;
+
+        // Load an unsaved context.
+        $this->assertFalse($dc->loadContext($context));
+
+        // Save the context.
+        $dc->saveContext($context);
+        $created = $context->created;
+        $updated = $context->updated;
+
+        // Load saved context.
+        $this->assertTrue($dc->loadContext($context));
+        $this->assertEquals($consumer, $context->getConsumer());
+        $this->assertEquals($title, $context->title);
+        $this->assertEquals($settings, $context->getSettings());
+        $this->assertEquals($lticontextid, $context->ltiContextId);
+        $this->assertEquals($created, $context->created);
+        $this->assertEquals($updated, $context->updated);
+    }
+
+    /**
+     * Test for data_connector::loadContext().
+     */
+    public function test_save_context() {
+        $dc = new data_connector();
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'testconsumername';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'testsecret';
+        $consumer->save();
+
+        $title = 'testcontexttitle';
+        $settings = ['a', 'b', 'c'];
+        $lticontextid = 'testlticontextid';
+        $context = Context::fromConsumer($consumer, $lticontextid);
+        $context->title = $title;
+        $context->settings = $settings;
+
+        // Save the context.
+        $this->assertTrue($dc->saveContext($context));
+        $id = $context->getRecordId();
+        $created = $context->created;
+        $updated = $context->updated;
+
+        // Check saved values.
+        $this->assertNotNull($id);
+        $this->assertNotEmpty($created);
+        $this->assertNotEmpty($updated);
+        $this->assertEquals($consumer, $context->getConsumer());
+        $this->assertEquals($title, $context->title);
+        $this->assertEquals($settings, $context->getSettings());
+        $this->assertEquals($lticontextid, $context->ltiContextId);
+
+        // Edit the context details.
+        $newsettings = array_merge($settings, ['d', 'e']);
+        $context->title = $title . 'edited';
+        $context->settings = $newsettings;
+        $context->ltiContextId = $lticontextid . 'edited';
+
+        // Delay saving of updated values by 1 sec.
+        sleep(1);
+
+        // Confirm that edited context is saved successfully.
+        $this->assertTrue($dc->saveContext($context));
+
+        // Check edited values.
+        $this->assertEquals($title . 'edited', $context->title);
+        $this->assertEquals($newsettings, $context->getSettings());
+        $this->assertEquals($lticontextid . 'edited', $context->ltiContextId);
+        // Created time stamp should not change.
+        $this->assertEquals($created, $context->created);
+        // Updated time stamp should have been changed.
+        $this->assertGreaterThan($updated, $context->updated);
+    }
+
+    /**
+     * Test for data_connector::deleteContext().
+     */
+    public function test_delete_context() {
+        $dc = new data_connector();
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'testconsumername';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'testsecret';
+        $consumer->save();
+
+        $title = 'testcontexttitle';
+        $settings = ['a', 'b', 'c'];
+        $lticontextid = 'testlticontextid';
+        $context = Context::fromConsumer($consumer, $lticontextid);
+        $context->title = $title;
+        $context->settings = $settings;
+
+        // Save the context.
+        $this->assertTrue($dc->saveContext($context));
+
+        $resourcelink = ResourceLink::fromConsumer($consumer, 'testresourcelinkid');
+        $resourcelink->setContextId($context->getRecordId());
+        $resourcelink->save();
+        $this->assertEquals($consumer->getRecordId(), $resourcelink->getConsumer()->getRecordId());
+
+        $resourcelinkchild = ResourceLink::fromConsumer($consumer, 'testresourcelinkchildid');
+        $resourcelinkchild->primaryResourceLinkId = $resourcelink->getRecordId();
+        $resourcelinkchild->shareApproved = true;
+        $resourcelinkchild->setContextId($context->getRecordId());
+        $resourcelinkchild->save();
+        $this->assertEquals($consumer->getRecordId(), $resourcelinkchild->getConsumer()->getRecordId());
+        $this->assertEquals($resourcelink->getRecordId(), $resourcelinkchild->primaryResourceLinkId);
+        $this->assertTrue($resourcelinkchild->shareApproved);
+
+        $resourcelinkchild2 = clone $resourcelink;
+        $resourcelinkchild2->setRecordId(null);
+        $resourcelinkchild2->setConsumerId(null);
+        $resourcelinkchild2->setContextId(0);
+        $resourcelinkchild2->primaryResourceLinkId = $resourcelink->getRecordId();
+        $resourcelinkchild2->shareApproved = true;
+        $resourcelinkchild2->save();
+        $this->assertNull($resourcelinkchild2->getConsumer()->getRecordId());
+        $this->assertEquals(0, $resourcelinkchild2->getContextId());
+        $this->assertNotEquals($resourcelink->getRecordId(), $resourcelinkchild2->getRecordId());
+
+        $resourcelinksharekey = new ResourceLinkShareKey($resourcelink);
+        $resourcelinksharekey->save();
+
+        $user = User::fromResourceLink($resourcelink, '');
+        $user->ltiResultSourcedId = 'testLtiResultSourcedId';
+        $dc->saveUser($user);
+
+        $this->assertTrue($dc->deleteContext($context));
+
+        // Share key record record should have been deleted.
+        $this->assertFalse($dc->loadResourceLinkShareKey($resourcelinksharekey));
+        // Resource record link should have been deleted.
+        $this->assertFalse($dc->loadResourceLink($resourcelink));
+        // Resource links for contexts in this consumer should have been deleted. Even child ones.
+        $this->assertFalse($dc->loadResourceLink($resourcelinkchild));
+
+        // Child resource link primaryResourceLinkId and shareApproved attributes should have been set to null.
+        $this->assertTrue($dc->loadResourceLink($resourcelinkchild2));
+        $this->assertNull($resourcelinkchild2->primaryResourceLinkId);
+        $this->assertNull($resourcelinkchild2->shareApproved);
+    }
+
+    /**
+     * Test for data_connector::loadResourceLink().
+     */
+    public function test_load_resource_link() {
+        $dc = new data_connector();
+
+        // Consumer for the resource link.
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'testconsumername';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'testsecret';
+        $consumer->save();
+
+        // Context for the resource link.
+        $title = 'testcontexttitle';
+        $settings = ['a', 'b', 'c'];
+        $lticontextid = 'testlticontextid';
+        $context = Context::fromConsumer($consumer, $lticontextid);
+        $context->title = $title;
+        $context->settings = $settings;
+        // Save the context.
+        $context->save();
+
+        $resourcelink = ResourceLink::fromConsumer($consumer, 'testresourcelinkid');
+        $resourcelink->setContextId($context->getRecordId());
+        $resourcelink->save();
+        // Load saved context.
+        $this->assertTrue($dc->loadResourceLink($resourcelink));
     }
 }
