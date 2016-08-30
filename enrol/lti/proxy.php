@@ -66,6 +66,14 @@ if ($tool->status != ENROL_INSTANCE_ENABLED) {
     exit();
 }
 
+$messagetype = required_param('lti_message_type', PARAM_TEXT);
+
+// Only accept proxy registration requests from this endpoint.
+if ($messagetype != "ToolProxyRegistrationRequest") {
+    print_error('invalidrequest', 'enrol_lti');
+    exit();
+}
+
 $toolprovider = new \enrol_lti\tool_provider($toolid);
 $toolprovider->handleRequest();
 echo $OUTPUT->header();
