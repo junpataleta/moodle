@@ -544,10 +544,216 @@ class enrol_lti_data_connector_testcase extends advanced_testcase {
         // Save the context.
         $context->save();
 
+        $ltiresourcelinkid = 'testltiresourcelinkid';
+        $resourcelink = ResourceLink::fromConsumer($consumer, $ltiresourcelinkid);
+        $resourcelink->setContextId($context->getRecordId());
+        $resourcelink->setSettings($settings);
+        $resourcelink->shareApproved = true;
+        $resourcelink->primaryResourceLinkId = 999;
+
+        // Try to load an unsaved resource link.
+        $this->assertFalse($dc->loadResourceLink($resourcelink));
+
+        // Save the resource link.
+        $resourcelink->save();
+
+        // Load saved resource link.
+        $this->assertTrue($dc->loadResourceLink($resourcelink));
+        $this->assertNotEmpty($resourcelink->getRecordId());
+        $this->assertEquals($settings, $resourcelink->getSettings());
+        $this->assertTrue($resourcelink->shareApproved);
+        $this->assertEquals(999, $resourcelink->primaryResourceLinkId);
+        $this->assertNotEmpty($resourcelink->created);
+        $this->assertNotEmpty($resourcelink->updated);
+
+        // Create another resource link instance similar to the first one.
+        $resourcelink2 = ResourceLink::fromConsumer($consumer, $ltiresourcelinkid);
+        $resourcelink2->setContextId($context->getRecordId());
+
+        // This should load the previous resource link.
+        $this->assertTrue($dc->loadResourceLink($resourcelink2));
+        $this->assertEquals($resourcelink, $resourcelink2);
+
+        $resourcelink2->ltiResourceLinkId = $ltiresourcelinkid . '2';
+        $resourcelink2->save();
+        $dc->loadResourceLink($resourcelink2);
+        $this->assertNotEquals($resourcelink, $resourcelink2);
+    }
+
+    /**
+     * Test for data_connector::saveResourceLink().
+     */
+    public function test_save_resource_link() {
+        $dc = new data_connector();
+
+        // Consumer for the resource link.
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'testconsumername';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'testsecret';
+        $consumer->save();
+
+        // Context for the resource link.
+        $title = 'testcontexttitle';
+        $settings = ['a', 'b', 'c'];
+        $lticontextid = 'testlticontextid';
+        $context = Context::fromConsumer($consumer, $lticontextid);
+        $context->title = $title;
+        $context->settings = $settings;
+        // Save the context.
+        $context->save();
+
+        $ltiresourcelinkid = 'testltiresourcelinkid';
+        $resourcelink = ResourceLink::fromConsumer($consumer, $ltiresourcelinkid);
+        $resourcelink->setContextId($context->getRecordId());
+        $resourcelink->setSettings($settings);
+        $resourcelink->shareApproved = true;
+        $resourcelink->primaryResourceLinkId = 999;
+
+        // Try to load an unsaved resource link.
+        $this->assertFalse($dc->loadResourceLink($resourcelink));
+
+        // Save the resource link.
+        $this->assertTrue($resourcelink->save());
+
+        // Check values.
+        $resoucelinkid = $resourcelink->getRecordId();
+        $created = $resourcelink->created;
+        $updated = $resourcelink->updated;
+        $this->assertNotEmpty($resoucelinkid);
+        $this->assertEquals($settings, $resourcelink->getSettings());
+        $this->assertTrue($resourcelink->shareApproved);
+        $this->assertEquals(999, $resourcelink->primaryResourceLinkId);
+        $this->assertNotEmpty($created);
+        $this->assertNotEmpty($updated);
+
+        // Update values.
+        $newsettings = array_merge($settings, ['d', 'e']);
+        $resourcelink->setSettings($newsettings);
+        $resourcelink->shareApproved = false;
+        $resourcelink->primaryResourceLinkId = 1000;
+        $resourcelink->ltiResourceLinkId = $ltiresourcelinkid . 'edited';
+
+        // Delay saving by 1 second.
+        sleep(1);
+
+        // Save modified resource link.
+        $this->assertTrue($resourcelink->save());
+
+        // Check edited values.
+        $this->assertEquals($resoucelinkid, $resourcelink->getRecordId());
+        $this->assertEquals($newsettings, $resourcelink->getSettings());
+        $this->assertFalse($resourcelink->shareApproved);
+        $this->assertEquals(1000, $resourcelink->primaryResourceLinkId);
+        $this->assertEquals($created, $resourcelink->created);
+        $this->assertGreaterThan($updated, $resourcelink->updated);
+    }
+
+    /**
+     * Test for data_connector::deleteResourceLink().
+     */
+    public function test_delete_resource_link() {
+        $dc = new data_connector();
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'testconsumername';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'testsecret';
+        $consumer->save();
+
+        $title = 'testcontexttitle';
+        $settings = ['a', 'b', 'c'];
+        $lticontextid = 'testlticontextid';
+        $context = Context::fromConsumer($consumer, $lticontextid);
+        $context->title = $title;
+        $context->settings = $settings;
+
+        // Save the context.
+        $this->assertTrue($dc->saveContext($context));
+
         $resourcelink = ResourceLink::fromConsumer($consumer, 'testresourcelinkid');
         $resourcelink->setContextId($context->getRecordId());
         $resourcelink->save();
-        // Load saved context.
-        $this->assertTrue($dc->loadResourceLink($resourcelink));
+
+        $resourcelinkchild = ResourceLink::fromConsumer($consumer, 'testresourcelinkchildid');
+        $resourcelinkchild->primaryResourceLinkId = $resourcelink->getRecordId();
+        $resourcelinkchild->shareApproved = true;
+        $resourcelinkchild->setContextId($context->getRecordId());
+        $resourcelinkchild->save();
+
+        $resourcelinksharekey = new ResourceLinkShareKey($resourcelink);
+        $resourcelinksharekey->save();
+
+        $user = User::fromResourceLink($resourcelink, '');
+        $user->ltiResultSourcedId = 'testLtiResultSourcedId';
+        $dc->saveUser($user);
+
+        $this->assertTrue($dc->deleteResourceLink($resourcelink));
+
+        // Share key record record should have been deleted.
+        $this->assertFalse($dc->loadResourceLinkShareKey($resourcelinksharekey));
+        // Resource record link should have been deleted.
+        $this->assertFalse($dc->loadResourceLink($resourcelink));
+        // Child resource link should still exist and its primaryResourceLinkId attribute should have been set to null.
+        $this->assertTrue($dc->loadResourceLink($resourcelinkchild));
+        $this->assertNull($resourcelinkchild->primaryResourceLinkId);
+    }
+
+    /**
+     * Test for data_connector::getUserResultSourcedIDsResourceLink().
+     */
+    public function test_get_user_result_sourced_ids_resource_link() {
+        $dc = new data_connector();
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'testconsumername';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'testsecret';
+        $consumer->idScope = ToolProvider::ID_SCOPE_GLOBAL;
+        $consumer->save();
+
+        $title = 'testcontexttitle';
+        $settings = ['a', 'b', 'c'];
+        $lticontextid = 'testlticontextid';
+        $context = Context::fromConsumer($consumer, $lticontextid);
+        $context->title = $title;
+        $context->settings = $settings;
+
+        // Save the context.
+        $this->assertTrue($dc->saveContext($context));
+
+        $resourcelink = ResourceLink::fromConsumer($consumer, 'testresourcelinkid');
+        $resourcelink->setContextId($context->getRecordId());
+        $resourcelink->save();
+
+        $resourcelinkchild = ResourceLink::fromConsumer($consumer, 'testresourcelinkchildid');
+        $resourcelinkchild->primaryResourceLinkId = $resourcelink->getRecordId();
+        $resourcelinkchild->shareApproved = true;
+        $resourcelinkchild->setContextId($context->getRecordId());
+        $resourcelinkchild->save();
+
+        $user = User::fromResourceLink($resourcelink, '');
+        $user->ltiResultSourcedId = 'testLtiResultSourcedId';
+        $user->ltiUserId = 'user1';
+        $dc->saveUser($user);
+
+        $user2 = User::fromResourceLink($resourcelinkchild, '');
+        $user2->ltiResultSourcedId = 'testLtiResultSourcedId2';
+        $user->ltiUserId = 'user2';
+        $dc->saveUser($user2);
+
+        $users = $dc->getUserResultSourcedIDsResourceLink($resourcelink, false, null);
+        $this->assertNotEmpty($users);
+        $this->assertCount(2, $users);
+
+        $users = $dc->getUserResultSourcedIDsResourceLink($resourcelink, true, null);
+        $this->assertNotEmpty($users);
+        $this->assertCount(1, $users);
+
+        $users = $dc->getUserResultSourcedIDsResourceLink($resourcelink, false, ToolProvider::ID_SCOPE_GLOBAL);
+        $this->assertNotEmpty($users);
+        $this->assertCount(2, $users);
+
+        $users = $dc->getUserResultSourcedIDsResourceLink($resourcelink, true, ToolProvider::ID_SCOPE_GLOBAL);
+        $this->assertNotEmpty($users);
+        $this->assertCount(1, $users);
     }
 }
