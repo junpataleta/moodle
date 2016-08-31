@@ -26,6 +26,7 @@ use enrol_lti\data_connector;
 use IMSGlobal\LTI\ToolProvider\ConsumerNonce;
 use IMSGlobal\LTI\ToolProvider\Context;
 use IMSGlobal\LTI\ToolProvider\ResourceLink;
+use IMSGlobal\LTI\ToolProvider\ResourceLinkShare;
 use IMSGlobal\LTI\ToolProvider\ResourceLinkShareKey;
 use IMSGlobal\LTI\ToolProvider\ToolConsumer;
 use IMSGlobal\LTI\ToolProvider\ToolProvider;
@@ -716,9 +717,7 @@ class enrol_lti_data_connector_testcase extends advanced_testcase {
         $context = Context::fromConsumer($consumer, $lticontextid);
         $context->title = $title;
         $context->settings = $settings;
-
-        // Save the context.
-        $this->assertTrue($dc->saveContext($context));
+        $context->save();
 
         $resourcelink = ResourceLink::fromConsumer($consumer, 'testresourcelinkid');
         $resourcelink->setContextId($context->getRecordId());
@@ -755,5 +754,200 @@ class enrol_lti_data_connector_testcase extends advanced_testcase {
         $users = $dc->getUserResultSourcedIDsResourceLink($resourcelink, true, ToolProvider::ID_SCOPE_GLOBAL);
         $this->assertNotEmpty($users);
         $this->assertCount(1, $users);
+    }
+
+    /**
+     * Test for data_connector::getSharesResourceLink().
+     */
+    public function test_get_shares_resource_link() {
+        $dc = new data_connector();
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'testconsumername';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'testsecret';
+        $consumer->idScope = ToolProvider::ID_SCOPE_GLOBAL;
+        $consumer->save();
+
+        $title = 'testcontexttitle';
+        $settings = ['a', 'b', 'c'];
+        $lticontextid = 'testlticontextid';
+        $context = Context::fromConsumer($consumer, $lticontextid);
+        $context->title = $title;
+        $context->settings = $settings;
+        $context->save();
+
+        $resourcelink = ResourceLink::fromConsumer($consumer, 'testresourcelinkid');
+        $resourcelink->setContextId($context->getRecordId());
+        $resourcelink->save();
+        $shares = $dc->getSharesResourceLink($resourcelink);
+        $this->assertEmpty($shares);
+
+        $resourcelinkchild = ResourceLink::fromConsumer($consumer, 'testresourcelinkchildid');
+        $resourcelinkchild->primaryResourceLinkId = $resourcelink->getRecordId();
+        $resourcelinkchild->shareApproved = true;
+        $resourcelinkchild->save();
+
+        $resourcelinkchild2 = ResourceLink::fromConsumer($consumer, 'testresourcelinkchildid2');
+        $resourcelinkchild2->primaryResourceLinkId = $resourcelink->getRecordId();
+        $resourcelinkchild2->shareApproved = false;
+        $resourcelinkchild2->save();
+
+        $shares = $dc->getSharesResourceLink($resourcelink);
+        $this->assertCount(2, $shares);
+        $shareids = [$resourcelinkchild->getRecordId(), $resourcelinkchild2->getRecordId()];
+        foreach ($shares as $share) {
+            $this->assertTrue($share instanceof ResourceLinkShare);
+            $this->assertTrue(in_array($share->resourceLinkId, $shareids));
+            if ($share->resourceLinkId == $shareids[0]) {
+                $this->assertTrue($share->approved);
+            } else {
+                $this->assertFalse($share->approved);
+            }
+        }
+    }
+
+    /**
+     * Test for data_connector::loadConsumerNonce().
+     */
+    public function test_load_consumer_nonce() {
+        $dc = new data_connector();
+
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'TestName';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'TestSecret';
+        $consumer->save();
+
+        $nonce = new ConsumerNonce($consumer, 'testnonce');
+        // Should still not be available since it has not been saved yet.
+        $this->assertFalse($dc->loadConsumerNonce($nonce));
+        // Save the nonce.
+        $nonce->save();
+        // Should now be available.
+        $this->assertTrue($dc->loadConsumerNonce($nonce));
+    }
+
+    /**
+     * Test for data_connector::loadConsumerNonce() for a nonce that has expired.
+     */
+    public function test_load_consumer_nonce_expired() {
+        $dc = new data_connector();
+
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'TestName';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'TestSecret';
+        $consumer->save();
+
+        $nonce = new ConsumerNonce($consumer, 'testnonce');
+        $nonce->expires = time() - 100;
+        // Save the nonce.
+        $nonce->save();
+        // Expired nonce should have been deleted.
+        $this->assertFalse($dc->loadConsumerNonce($nonce));
+    }
+
+    /**
+     * Test for data_connector::saveConsumerNonce().
+     */
+    public function test_save_consumer_nonce() {
+        $dc = new data_connector();
+
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'TestName';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'TestSecret';
+        $consumer->save();
+
+        $nonce = new ConsumerNonce($consumer, 'testnonce');
+
+        // Save the nonce.
+        $this->assertTrue($dc->saveConsumerNonce($nonce));
+
+        // We should only be doing inserts and a consumer can only have one nonce record.
+        // So saving again the nonce without it getting cleaned up (by data_connector::loadConsumerNonce()) will throw an exception.
+        $this->expectException('dml_write_exception');
+        $this->assertTrue($dc->saveConsumerNonce($nonce));
+    }
+
+    /**
+     * Test for data_connector::loadResourceLinkShareKey().
+     */
+    public function test_load_resource_link_share_key() {
+        $dc = new data_connector();
+
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'TestName';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'TestSecret';
+        $consumer->save();
+
+        $resourcelink = ResourceLink::fromConsumer($consumer, 'testresourcelinkid');
+        $resourcelink->save();
+
+        $sharekey = new ResourceLinkShareKey($resourcelink);
+        // Should still not be available since it has not been saved yet.
+        $this->assertFalse($dc->loadResourceLinkShareKey($sharekey));
+        // Save the share key.
+        $sharekey->save();
+        // Should now be available.
+        $this->assertTrue($dc->loadResourceLinkShareKey($sharekey));
+
+        // Check values.
+        $this->assertEquals(strlen($sharekey->getId()), $sharekey->length);
+        $this->assertEquals(ResourceLinkShareKey::DEFAULT_SHARE_KEY_LIFE, $sharekey->life);
+        $this->assertNotNull($sharekey->expires);
+        $this->assertFalse($sharekey->autoApprove);
+    }
+
+    /**
+     * Test for data_connector::loadResourceLinkShareKey() with an expired share key.
+     */
+    public function test_load_resource_link_share_key_expired() {
+        $dc = new data_connector();
+
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'TestName';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'TestSecret';
+        $consumer->save();
+
+        $resourcelink = ResourceLink::fromConsumer($consumer, 'testresourcelinkid');
+        $resourcelink->save();
+
+        $sharekey = new ResourceLinkShareKey($resourcelink, 'testsharelinkid');
+        $sharekey->expires = time() - 100;
+        // $sharekey->save() adds a default expires time and cannot be modified.
+        $dc->saveResourceLinkShareKey($sharekey);
+
+        // Expired shared key should have been deleted.
+        $this->assertFalse($dc->loadResourceLinkShareKey($sharekey));
+    }
+
+    /**
+     * Test for data_connector::saveResourceLinkShareKey().
+     */
+    public function test_save_resource_link_share_key() {
+        $dc = new data_connector();
+
+        $consumer = new ToolConsumer(null, $dc);
+        $consumer->name = 'TestName';
+        $consumer->setKey('TestKey');
+        $consumer->secret = 'TestSecret';
+        $consumer->save();
+
+        $resourcelink = ResourceLink::fromConsumer($consumer, 'testresourcelinkid');
+        $resourcelink->save();
+
+        $expires = time() - 100;
+        $sharekey = new ResourceLinkShareKey($resourcelink, 'testsharelinkid');
+        $sharekey->expires = $expires;
+
+        $this->assertTrue($dc->saveResourceLinkShareKey($sharekey));
+        // Check values.
+        $this->assertEquals(strlen($sharekey->getId()), $sharekey->length);
+        $this->assertEquals(ResourceLinkShareKey::DEFAULT_SHARE_KEY_LIFE, $sharekey->life);
+        $this->assertEquals($expires, $sharekey->expires);
+        $this->assertFalse($sharekey->autoApprove);
     }
 }
