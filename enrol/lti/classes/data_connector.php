@@ -734,7 +734,7 @@ class data_connector extends DataConnector {
         $shares = [];
         $resourcelinktable = $this->dbTableNamePrefix . DataConnector::RESOURCE_LINK_TABLE_NAME;
         $params = ['primary_resource_link_pk' => $resourcelink->getRecordId()];
-        $fields = 'consumer_pk, resource_link_pk, share_approved';
+        $fields = 'resource_link_pk, share_approved, consumer_pk';
         if ($records = $DB->get_records($resourcelinktable, $params, 'consumer_pk', $fields)) {
             foreach ($records as $record) {
                 $share = new ResourceLinkShare();
