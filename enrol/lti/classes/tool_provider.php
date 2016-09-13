@@ -258,11 +258,11 @@ class tool_provider extends ToolProvider\ToolProvider {
         }
 
         // Update user image.
-        $image = false;
-        if (!empty($this->resourceLink->getSetting('user_image'))) {
-            $image = $this->resourceLink->getSetting('user_image');
-        } else if (!empty($this->resourceLink->getSetting('custom_user_image'))) {
-            $image = $this->resourceLink->getSetting('custom_user_image');
+        // Using custom_user_image is the new standard.
+        $image = $this->resourceLink->getSetting('custom_user_image');
+        if (empty($image)) {
+            // Support user_image for backwards compatibility.
+            $image = optional_param('user_image', false, PARAM_URL);
         }
 
         // Check if there is an image to process.
@@ -363,7 +363,7 @@ class tool_provider extends ToolProvider\ToolProvider {
     protected function onRegister() {
         global $PAGE;
 
-        $returnurl = $_POST['launch_presentation_return_url'];
+        $returnurl = $this->returnUrl;
         if (strpos($returnurl, '?') === false) {
             $separator = '?';
         } else {
