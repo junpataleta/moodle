@@ -29,6 +29,9 @@ defined('MOODLE_INTERNAL') || die;
 use IMSGlobal\LTI\Profile;
 use IMSGlobal\LTI\ToolProvider;
 use IMSGlobal\LTI\ToolProvider\DataConnector;
+use moodle_exception;
+use moodle_url;
+
 require_once($CFG->dirroot . '/user/lib.php');
 
 /**
@@ -358,32 +361,42 @@ class tool_provider extends ToolProvider\ToolProvider {
 
     /**
      * Override onRegister with registration code.
-     * @return void
+     *
+     * @throws moodle_exception
      */
     protected function onRegister() {
         global $PAGE;
 
-        $returnurl = $this->returnUrl;
-        if (strpos($returnurl, '?') === false) {
-            $separator = '?';
-        } else {
-            $separator = '&';
+        if (empty($this->consumer)) {
+            throw new moodle_exception('toolconsumernotset', 'enrol_lti');
         }
-        $guid = $this->consumer->getKey();
-        $returnurl = $returnurl . $separator . 'lti_msg=' . urlencode(get_string("successfulregistration", "enrol_lti"));
-        $returnurl = $returnurl . '&status=success';
-        $returnurl = $returnurl . "&tool_proxy_guid=$guid";
-        $ok = $this->doToolProxyService();
 
-        if ($ok) {
-            $registration = new output\registration($returnurl);
+        if (empty($this->returnUrl)) {
+            throw new moodle_exception('returnurlnotset', 'enrol_lti');
+        }
+
+        if ($this->doToolProxyService()) {
+            // Indicate successful processing in message.
+            $this->message = get_string('successfulregistration', 'enrol_lti');
+
+            // Prepare response.
+            $returnurl = new moodle_url($this->returnUrl);
+            $returnurl->param('lti_msg', get_string("successfulregistration", "enrol_lti"));
+            $returnurl->param('status', 'success');
+            $guid = $this->consumer->getKey();
+            $returnurl->param('tool_proxy_guid', $guid);
+
+            $returnurlout = $returnurl->out(false);
+
+            $registration = new output\registration($returnurlout);
             $output = $PAGE->get_renderer('enrol_lti');
             echo $output->render($registration);
+
         } else {
             // Tell the consumer that the registration failed.
             $this->ok = false;
-            $couldnotestablish = get_string('couldnotestablishproxy', 'enrol_lti');
-            $this->message = get_string('failedregistration', 'enrol_lti', array('reason' => $couldnotestablish));
+            $failreason = get_string('couldnotestablishproxy', 'enrol_lti');
+            $this->message = get_string('failedregistration', 'enrol_lti', array('reason' => $failreason));
         }
     }
 }
