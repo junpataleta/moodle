@@ -79,7 +79,8 @@ class core_component {
         'Sabberworm\\CSS' => 'lib/php-css-parser',
         'MoodleHQ\\RTLCSS' => 'lib/rtlcss',
         'Leafo\\ScssPhp' => 'lib/scssphp',
-        'Box\\Spout' => 'lib/spout/src/Spout'
+        'Box\\Spout' => 'lib/spout/src/Spout',
+        'IMSGlobal\LTI' => 'lib/ltiprovider'
     );
 
     /**
