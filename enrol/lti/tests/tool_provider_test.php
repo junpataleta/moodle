@@ -129,8 +129,12 @@ class tool_provider_testcase extends advanced_testcase {
         // Tool provider object should have been created fine. OK flag should be fine for now.
         $this->assertTrue($tp->ok);
 
-        // There's basically no request data submitted so OK flag should turn out false.
+        // Call handleRequest but suppress output.
+        ob_start();
         $tp->handleRequest();
+        ob_end_clean();
+
+        // There's basically no request data submitted so OK flag should turn out false.
         $this->assertFalse($tp->ok);
     }
 
@@ -138,19 +142,13 @@ class tool_provider_testcase extends advanced_testcase {
      * Test for tool_provider::onError().
      */
     public function test_on_error() {
-        global $SESSION;
-
         $tool = $this->tool;
         $tp = new dummy_tool_provider($tool->id);
         $message = "THIS IS AN ERROR!";
         $tp->message = $message;
         $tp->onError();
-        // Assert that a notification has been added.
-        $this->assertCount(1, $SESSION->notifications);
-        $notification = $SESSION->notifications[0];
         $errormessage = get_string('failedrequest', 'enrol_lti', ['reason' => $message]);
-        $this->assertEquals($errormessage, $notification->message);
-        $this->assertEquals('error', $notification->type);
+        $this->assertContains($errormessage, $tp->get_error_output());
     }
 
     /**
@@ -588,6 +586,7 @@ class tool_provider_testcase extends advanced_testcase {
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dummy_tool_provider extends tool_provider {
+
     /**
      * Exposes tool_provider::onError().
      */
@@ -607,6 +606,15 @@ class dummy_tool_provider extends tool_provider {
      */
     public function onRegister() {
         parent::onRegister();
+    }
+
+    /**
+     * Expose protected variable errorOutput.
+     *
+     * @return string
+     */
+    public function get_error_output() {
+        return $this->errorOutput;
     }
 }
 
