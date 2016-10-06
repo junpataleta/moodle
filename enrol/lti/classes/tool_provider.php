@@ -79,12 +79,14 @@ class tool_provider extends ToolProvider {
 
         $token = helper::generate_proxy_token($toolid);
 
-        $this->debugMode = $CFG->debugdeveloper;
         $tool = helper::get_lti_tool($toolid);
         $this->tool = $tool;
 
         $dataconnector = new data_connector();
         parent::__construct($dataconnector);
+
+        // Override debugMode and set to the configured value.
+        $this->debugMode = $CFG->debugdeveloper;
 
         $this->baseUrl = $CFG->wwwroot;
         $toolpath = helper::get_launch_url($toolid);
@@ -165,14 +167,17 @@ class tool_provider extends ToolProvider {
      * @return void
      */
     protected function onError() {
+        global $OUTPUT;
+
         $message = $this->message;
         if ($this->debugMode && !empty($this->reason)) {
             $message = $this->reason;
         }
 
-        $this->errorOutput = '';
-
-        notification::error(get_string('failedrequest', 'enrol_lti', ['reason' => $message]));
+        // Display the error message from the provider's side if the consumer has not specified a URL to pass the error to.
+        if (empty($this->returnUrl)) {
+            $this->errorOutput = $OUTPUT->notification(get_string('failedrequest', 'enrol_lti', ['reason' => $message]), 'error');
+        }
     }
 
     /**
