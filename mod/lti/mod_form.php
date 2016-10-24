@@ -53,6 +53,12 @@ require_once($CFG->dirroot.'/mod/lti/locallib.php');
 
 class mod_lti_mod_form extends moodleform_mod {
 
+    /** @var array $typeids List of available LTI tool type IDs. */
+    protected $typeids  = [];
+
+    /** @var array $noncontentitemtypes List of LTI tool type IDs that don't support LTI content item type selection. */
+    protected $noncontentitemtypes = [];
+
     public function definition() {
         global $PAGE, $OUTPUT, $COURSE;
 
@@ -95,14 +101,12 @@ class mod_lti_mod_form extends moodleform_mod {
         $mform->addHelpButton('showdescriptionlaunch', 'display_description', 'lti');
 
         // Tool settings.
-        $attributes = array();
-        if ($update = optional_param('update', false, PARAM_INT)) {
-            $attributes['disabled'] = 'disabled';
-        }
-        $attributes['class'] = 'lti_contentitem';
-        $tooltypes = $mform->addElement('select', 'typeid', get_string('external_tool_type', 'lti'), array(), $attributes);
+        $tooltypes = $mform->addElement('select', 'typeid', get_string('external_tool_type', 'lti'));
+        // Type ID parameter being passed when adding an preconfigured tool from activity chooser.
         $typeid = optional_param('typeid', false, PARAM_INT);
-        $mform->getElement('typeid')->setValue($typeid);
+        if ($typeid) {
+            $mform->getElement('typeid')->setValue($typeid);
+        }
         $mform->addHelpButton('typeid', 'external_tool_type', 'lti');
         $toolproxy = array();
 
@@ -131,7 +135,8 @@ class mod_lti_mod_form extends moodleform_mod {
             } else {
                 $attributes = array();
             }
-            if (!$update && $id) {
+
+            if ($id) {
                 $config = lti_get_type_config($id);
                 if (!empty($config['contentitem'])) {
                     $attributes['data-contentitem'] = 1;
@@ -140,42 +145,20 @@ class mod_lti_mod_form extends moodleform_mod {
                     $noncontentitemtypes[] = $id;
                 }
             }
-
+            $this->typeids[] = $id;
             $tooltypes->addOption($type->name, $id, $attributes);
         }
-        // Add button that launches the content-item selection dialogue.
 
-        // Set contentitem URL.
-        $contentitemurl = new moodle_url('/mod/lti/contentitem.php');
-        $contentbuttonattributes['data-contentitemurl'] = $contentitemurl->out(false);
-        $mform->addElement('button', 'selectcontent', get_string('selectcontent', 'lti'), $contentbuttonattributes);
-        if ($update) {
-            $mform->disabledIf('selectcontent', 'typeid', 'neq', 0);
-        } else {
-            // Disable select content button if the selected tool doesn't support content item or it's set to Automatic.
-            $allnoncontentitemtypes = $noncontentitemtypes;
-            $allnoncontentitemtypes[] = '0'; // Add option value for "Automatic, based on tool URL".
-            $mform->disabledIf('selectcontent', 'typeid', 'in', $allnoncontentitemtypes);
-        }
+        $this->noncontentitemtypes = $noncontentitemtypes;
 
         $mform->addElement('text', 'toolurl', get_string('launch_url', 'lti'), array('size' => '64'));
         $mform->setType('toolurl', PARAM_URL);
         $mform->addHelpButton('toolurl', 'launch_url', 'lti');
-        if ($update) {
-            $mform->disabledIf('toolurl', 'typeid', 'neq', 0);
-        } else {
-            $mform->disabledIf('toolurl', 'typeid', 'in', $noncontentitemtypes);
-        }
 
         $mform->addElement('text', 'securetoolurl', get_string('secure_launch_url', 'lti'), array('size' => '64'));
         $mform->setType('securetoolurl', PARAM_URL);
         $mform->setAdvanced('securetoolurl');
         $mform->addHelpButton('securetoolurl', 'secure_launch_url', 'lti');
-        if ($update) {
-            $mform->disabledIf('securetoolurl', 'typeid', 'neq', 0);
-        } else {
-            $mform->disabledIf('securetoolurl', 'typeid', 'in', $noncontentitemtypes);
-        }
 
         $mform->addElement('hidden', 'urlmatchedtypeid', '', array( 'id' => 'id_urlmatchedtypeid' ));
         $mform->setType('urlmatchedtypeid', PARAM_INT);
@@ -196,22 +179,12 @@ class mod_lti_mod_form extends moodleform_mod {
         $mform->setType('resourcekey', PARAM_TEXT);
         $mform->setAdvanced('resourcekey');
         $mform->addHelpButton('resourcekey', 'resourcekey', 'lti');
-        if ($update) {
-            $mform->disabledIf('resourcekey', 'typeid', 'neq', 0);
-        } else {
-            $mform->disabledIf('resourcekey', 'typeid', 'in', $noncontentitemtypes);
-        }
         $mform->setForceLtr('resourcekey');
 
         $mform->addElement('passwordunmask', 'password', get_string('password', 'lti'));
         $mform->setType('password', PARAM_TEXT);
         $mform->setAdvanced('password');
         $mform->addHelpButton('password', 'password', 'lti');
-        if ($update) {
-            $mform->disabledIf('password', 'typeid', 'neq', 0);
-        } else {
-            $mform->disabledIf('password', 'typeid', 'in', $noncontentitemtypes);
-        }
 
         $mform->addElement('textarea', 'instructorcustomparameters', get_string('custom', 'lti'), array('rows' => 4, 'cols' => 60));
         $mform->setType('instructorcustomparameters', PARAM_TEXT);
@@ -223,21 +196,11 @@ class mod_lti_mod_form extends moodleform_mod {
         $mform->setType('icon', PARAM_URL);
         $mform->setAdvanced('icon');
         $mform->addHelpButton('icon', 'icon_url', 'lti');
-        if ($update) {
-            $mform->disabledIf('icon', 'typeid', 'neq', 0);
-        } else {
-            $mform->disabledIf('icon', 'typeid', 'in', $noncontentitemtypes);
-        }
 
         $mform->addElement('text', 'secureicon', get_string('secure_icon_url', 'lti'), array('size' => '64'));
         $mform->setType('secureicon', PARAM_URL);
         $mform->setAdvanced('secureicon');
         $mform->addHelpButton('secureicon', 'secure_icon_url', 'lti');
-        if ($update) {
-            $mform->disabledIf('secureicon', 'typeid', 'neq', 0);
-        } else {
-            $mform->disabledIf('secureicon', 'typeid', 'in', $noncontentitemtypes);
-        }
 
         // Add privacy preferences fieldset where users choose whether to send their data.
         $mform->addElement('header', 'privacy', get_string('privacy', 'lti'));
@@ -316,5 +279,81 @@ class mod_lti_mod_form extends moodleform_mod {
         $PAGE->requires->js_init_call('M.mod_lti.editor.init', array(json_encode($jsinfo)), true, $module);
     }
 
-}
+    /**
+     * Additional tweaks to the form depending on the form data being set.
+     */
+    public function definition_after_data() {
+        parent::definition_after_data();
 
+        // Freeze some of the inputs when in update mode.
+        $update = optional_param('update', false, PARAM_INT);
+        if ($update) {
+            $mform = $this->_form;
+            // Inputs to be frozen on update mode and when typeid is set.
+            // In other words, freeze inputs if this tool was created from a preconfigured tool.
+            $typeid = $mform->getElementValue('typeid');
+            $shouldfreeze = true;
+            if ($typeid) {
+                // Freeze items if this type ID still exists.
+                $shouldfreeze = in_array($typeid, $this->typeids);
+                if ($shouldfreeze) {
+                    // Freeze fields if type ID
+                    $frozeninputsonedit = [
+                        'toolurl',
+                        'securetoolurl',
+                        'resourcekey',
+                        'password',
+                        'icon',
+                        'secureicon',
+                    ];
+                    $mform->hardFreeze($frozeninputsonedit);
+                } else {
+                    // Otherwise, if this preconfigured tool no longer exists, allow the user to reconfigure this tool.
+                    $this->render_select_content_button();
+                    $this->conditionally_disable_fields();
+                }
+            }
+
+            // Freeze this Preconfigured tool field if this tool type still exists.
+            if ($shouldfreeze) {
+                $mform->freeze('typeid');
+            }
+        } else {
+            // On create mode, render the Select content button and conditionally disable fields.
+            $this->render_select_content_button();
+            $this->conditionally_disable_fields();
+        }
+    }
+
+    /**
+     * Method that sets disabledIf's to LTI tool configuration fields.
+     */
+    protected function conditionally_disable_fields() {
+        $mform = $this->_form;
+        $mform->disabledIf('toolurl', 'typeid', 'in', $this->noncontentitemtypes);
+        $mform->disabledIf('securetoolurl', 'typeid', 'in', $this->noncontentitemtypes);
+        $mform->disabledIf('resourcekey', 'typeid', 'in', $this->noncontentitemtypes);
+        $mform->disabledIf('password', 'typeid', 'in', $this->noncontentitemtypes);
+        $mform->disabledIf('icon', 'typeid', 'in', $this->noncontentitemtypes);
+        $mform->disabledIf('secureicon', 'typeid', 'in', $this->noncontentitemtypes);
+    }
+
+    /**
+     * Method that renders the content item selection button in the form.
+     */
+    protected function render_select_content_button() {
+        $mform = $this->_form;
+        // Set contentitem URL.
+        $contentitemurl = new moodle_url('/mod/lti/contentitem.php');
+        $contentbuttonattributes = [
+            'data-contentitemurl' => $contentitemurl->out(false)
+        ];
+        $contentbuttonlabel = get_string('selectcontent', 'lti');
+        $contentbutton = $mform->createElement('button', 'selectcontent', $contentbuttonlabel, $contentbuttonattributes);
+        $mform->insertElementBefore($contentbutton, 'toolurl');
+        // Disable select content button if the selected tool doesn't support content item or it's set to Automatic.
+        $allnoncontentitemtypes = $this->noncontentitemtypes;
+        $allnoncontentitemtypes[] = '0'; // Add option value for "Automatic, based on tool URL".
+        $mform->disabledIf('selectcontent', 'typeid', 'in', $allnoncontentitemtypes);
+    }
+}

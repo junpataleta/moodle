@@ -47,9 +47,9 @@ Feature: Content-Item support
     And I press "Save and return to course"
     And I open "Test tool activity 1" actions menu
     And I choose "Edit settings" in the open action menu
-    Then the field "Preconfigured tool" matches value "Teaching Tool 1"
-    # When editing settings, the Select content button should be disabled.
-    And the "Select content" "button" should be disabled
+    Then I should see "Teaching Tool 1" in the "//*[@data-fieldtype='select']" "xpath_element"
+    # When editing settings, the Select content button should not be displayed.
+    And "Select content" "button" should not be visible
 
   @javascript
   Scenario: Changing preconfigured tool selection
@@ -86,3 +86,20 @@ Feature: Content-Item support
     And I set the field "Activity name" to "Test tool activity 1"
     And the "Select content" "button" should be disabled
     And the "Tool URL" "field" should be enabled
+
+  @javascript
+  Scenario: Editing a manually configured external tool
+    Given I log in as "teacher1"
+    And I follow "Course 1"
+    And I turn editing mode on
+    And I add a "External tool" to section "1"
+    And the field "Preconfigured tool" matches value "Automatic, based on tool URL"
+    And I set the field "Activity name" to "Test tool activity 1"
+    And the "Select content" "button" should be disabled
+    And I set the field "Tool URL" to local url "/mod/lti/tests/fixtures/tool_provider.php"
+    And I press "Save and return to course"
+    When I open "Test tool activity 1" actions menu
+    And I choose "Edit settings" in the open action menu
+    Then I should see "Automatic, based on tool URL" in the "//*[@data-fieldtype='select']" "xpath_element"
+    # When editing settings, the Select content button should not be displayed.
+    And "Select content" "button" should not be visible

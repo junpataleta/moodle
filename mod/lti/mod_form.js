@@ -49,10 +49,8 @@
                 self.updateAutomaticToolMatch(Y.one('#id_securetoolurl'));
             };
 
-            var contentItemButton = Y.one('[name="selectcontent"]');
-            var contentItemUrl = contentItemButton.getAttribute('data-contentitemurl');
             var typeSelector = Y.one('#id_typeid');
-
+            var canSelectType = typeSelector.get('disabled') == false && typeSelector.get('type') != 'hidden';
             typeSelector.on('change', function(e){
                 updateToolMatches();
 
@@ -69,33 +67,42 @@
                     allowgrades.set('checked', !self.getSelectedToolTypeOption().getAttribute('nogrades'));
                     self.toggleGradeSection();
                 }
+
+                // Reset configuration fields when another preconfigured tool is selected.
+                self.resetToolFields();
             });
 
-            // Handle configure from link button click.
-            contentItemButton.on('click', function() {
-                var contentItemId = self.getContentItemId();
-                if (contentItemId) {
-                    // Get activity name and description values.
-                    var title = Y.one('#id_name').get('value').trim();
-                    var text = Y.one('#id_introeditor').get('value').trim();
+            var contentItemButton = Y.one('[name="selectcontent"]');
+            if (contentItemButton !== null) {
+                var contentItemUrl = contentItemButton.getAttribute('data-contentitemurl');
+                // Handle configure from link button click.
+                contentItemButton.on('click', function() {
+                    var contentItemId = self.getContentItemId();
+                    if (contentItemId) {
+                        // Get activity name and description values.
+                        var title = Y.one('#id_name').get('value').trim();
+                        var text = Y.one('#id_introeditor').get('value').trim();
 
-                    // Set data to be POSTed.
-                    var postData = {
-                        id: contentItemId,
-                        course: self.settings.courseId,
-                        title: title,
-                        text: text
-                    };
+                        // Set data to be POSTed.
+                        var postData = {
+                            id: contentItemId,
+                            course: self.settings.courseId,
+                            title: title,
+                            text: text
+                        };
 
-                    require(['mod_lti/contentitem'], function(contentitem) {
-                        contentitem.init(contentItemUrl, postData);
-                    });
-                }
-            });
+                        require(['mod_lti/contentitem'], function(contentitem) {
+                            contentitem.init(contentItemUrl, postData);
+                        });
+                    }
+                });
+            }
 
-            this.createTypeEditorButtons();
-
-            this.toggleEditButtons();
+            // Show preconfigured tool buttons if not on update mode.
+            if (canSelectType) {
+                this.createTypeEditorButtons();
+                this.toggleEditButtons();
+            }
 
             var textAreas = new Y.NodeList([
                 Y.one('#id_toolurl'),
@@ -529,6 +536,18 @@
                 return selected.getAttribute('data-id');
             }
             return false;
+        },
+
+        /**
+         * Resets the values of fields related to the LTI tool settings.
+         */
+        resetToolFields: function() {
+            // Reset values for all text fields.
+            var fields = Y.all('#id_toolurl, #id_securetoolurl, #id_instructorcustomparameters, #id_icon, #id_secureicon');
+            fields.set('value', null);
+
+            // Reset value for launch container select box.
+            Y.one('#id_launchcontainer').set('value', 1);
         }
     };
 })();

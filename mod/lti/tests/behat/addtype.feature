@@ -39,10 +39,7 @@ Feature: Add preconfigured tools via teacher interface
     When I log in as "teacher1"
     And I follow "Course 1"
     And I turn editing mode on
-    And I add a "External tool" to section "1" and I fill the form with:
-      | Activity name | Test tool activity 1 |
-    And I open "Test tool activity 1" actions menu
-    And I choose "Edit settings" in the open action menu
+    And I add a "External tool" to section "1"
     And I follow "Add preconfigured tool"
     And I switch to "add_tool" window
     And I set the field "Tool name" to "Placeholder"
