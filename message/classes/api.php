@@ -648,27 +648,47 @@ class api {
      * Note: This function will always return false if the sender has the
      * readallmessages capability at the system context level.
      *
-     * @param object $recipient User object.
-     * @param object $sender User object.
+     * @param \stdClass|int $recipientorid User object/ID of the recipient.
+     * @param \stdClass|int $senderorid User object/ID of the sender.
      * @return bool true if $sender is blocked, false otherwise.
      */
-    public static function is_user_blocked($recipient, $sender = null) {
+    public static function is_user_blocked($recipientorid, $senderorid = null) {
         global $USER, $DB;
 
-        if (is_null($sender)) {
+        if (is_null($senderorid)) {
             // The message is from the logged in user, unless otherwise specified.
-            $sender = $USER;
+            $senderorid = $USER;
+        }
+
+        // Get sender ID.
+        if (is_object($senderorid)) {
+            if (isset($senderorid->id)) {
+                $senderid = $senderorid->id;
+            } else {
+                $senderid = 0;
+            }
+        } else {
+            $senderid = (int) $senderorid;
+        }
+
+        // Get recipient ID.
+        if (is_object($recipientorid)) {
+            if (isset($recipientorid->id)) {
+                $recipientid = $recipientorid->id;
+            } else {
+                $recipientid = 0;
+            }
+        } else {
+            $recipientid = (int) $recipientorid;
         }
 
         $systemcontext = \context_system::instance();
-        if (has_capability('moodle/site:readallmessages', $systemcontext, $sender)) {
+        if (has_capability('moodle/site:readallmessages', $systemcontext, $senderorid)) {
             return false;
         }
 
-        if ($contact = $DB->get_record('message_contacts', array('userid' => $recipient->id, 'contactid' => $sender->id))) {
-            if ($contact->blocked) {
-                return true;
-            }
+        if ($DB->get_field('message_contacts', 'blocked', ['userid' => $recipientid, 'contactid' => $senderid])) {
+            return true;
         }
 
         return false;
