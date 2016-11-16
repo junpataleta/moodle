@@ -250,4 +250,15 @@ class format_topics_testcase extends advanced_testcase {
         $this->assertEquals($enddate, $weeksformat->get_default_course_enddate($courseform->get_quick_form()));
 
     }
+
+    /**
+     * Test for supports_news() with a topics course format.
+     */
+    public function test_supports_news() {
+        $this->resetAfterTest();
+        $params = array('format' => 'topics', 'numsections' => 5, 'startdate' => 1445644800);
+        $course = $this->getDataGenerator()->create_course($params);
+        $format = course_get_format($course);
+        $this->assertTrue($format->supports_news());
+    }
 }

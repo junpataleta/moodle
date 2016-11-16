@@ -1140,6 +1140,15 @@ abstract class format_base {
     }
 
     /**
+     * Indicates whether the course format supports the creation of a news forum.
+     *
+     * @return bool
+     */
+    public function supports_news() {
+        return false;
+    }
+
+    /**
      * Get the start date value from the course settings page form.
      *
      * @param moodleform $mform
