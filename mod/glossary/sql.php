@@ -27,7 +27,7 @@
  * string $sortkey The key to sort the records.
  * string $sortorder The order of the sorting.
  * int $offset The number of records to skip.
- * int $entriesbypage The number of entries per page.
+ * int $entriesbypage The number of entries per page, or 0 if unlimited.
  * string $mode The mode of browsing.
  * string $tab The tab selected.
  */

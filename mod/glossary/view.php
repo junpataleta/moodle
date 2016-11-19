@@ -64,13 +64,17 @@ if ($tab == GLOSSARY_ADDENTRY_VIEW ) {
 }
 
 /// setting the defaut number of entries per page if not set
-if ( !$entriesbypage = $glossary->entbypage ) {
-    $entriesbypage = $CFG->glossary_entbypage;
+if ( !$perpage = $glossary->entbypage ) {
+    $perpage = $CFG->glossary_entbypage;
 }
 
-/// If we have received a page, recalculate offset
-if ($page != 0 && $offset == 0) {
-    $offset = $page * $entriesbypage;
+/// If we have received a page, recalculate offset and page size
+$entriesbypage = $perpage;
+if ($page > 0 && $offset == 0) {
+    $offset = $page * $perpage;
+} else if ($page < 0) {
+    $offset = 0;
+    $entriesbypage = 0;
 }
 
 /// setting the default values for the display mode of the current glossary
@@ -343,7 +347,7 @@ if ($showcommonelements) {
 /// The print icon
     if ( $showcommonelements and $mode != 'search') {
         if (has_capability('mod/glossary:manageentries', $context) or $glossary->allowprintview) {
-            echo " <a class='printicon' title =\"". get_string("printerfriendly","glossary") ."\" href=\"print.php?id=$cm->id&amp;mode=$mode&amp;hook=".urlencode($hook)."&amp;sortkey=$sortkey&amp;sortorder=$sortorder&amp;offset=$offset\">" . get_string("printerfriendly","glossary")."</a>";
+            echo " <a class='printicon' title =\"". get_string("printerfriendly","glossary") ."\" href=\"print.php?id=$cm->id&amp;mode=$mode&amp;hook=".urlencode($hook)."&amp;sortkey=$sortkey&amp;sortorder=$sortorder&amp;offset=$offset&amp;pagelimit=$entriesbypage\">" . get_string("printerfriendly","glossary")."</a>";
         }
     }
 /// End glossary controls
@@ -414,7 +418,7 @@ if ($allentries) {
     }
 
     //Build paging bar
-    $paging = glossary_get_paging_bar($count, $page, $entriesbypage, "view.php?id=$id&amp;mode=$mode&amp;hook=".urlencode($hook)."&amp;sortkey=$sortkey&amp;sortorder=$sortorder&amp;fullsearch=$fullsearch&amp;",9999,10,'&nbsp;&nbsp;', $specialtext, -1);
+    $paging = glossary_get_paging_bar($count, $page, $perpage, "view.php?id=$id&amp;mode=$mode&amp;hook=".urlencode($hook)."&amp;sortkey=$sortkey&amp;sortorder=$sortorder&amp;fullsearch=$fullsearch&amp;",9999,10,'&nbsp;&nbsp;', $specialtext, -1);
 
     echo '<div class="paging">';
     echo $paging;
