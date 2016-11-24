@@ -447,6 +447,8 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
                 this._isSendingMessage = false;
             }.bind(this)).always(function() {
                 element.prop('disabled', false);
+                // Bring the focus back to the message input field.
+                element.focus();
             }).fail(Notification.exception);
         };
 
