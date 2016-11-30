@@ -2491,9 +2491,13 @@ h3.sectionname .inplaceeditable.inplaceeditingon .editinstructions {
   background-color: #fcf8e3;
   color: #8a6d3b;
 }
-.environmenttable .error,
+.environmenttable p.error {
+  background-color: #f2dede;
+  color: #b94a48;
+}
+.environmenttable span.error,
 .environmenttable span.warn,
-.environmenttable .ok {
+.environmenttable span.ok {
   display: inline-block;
   padding: 2px 4px;
   font-size: 11.844px;
@@ -2508,68 +2512,68 @@ h3.sectionname .inplaceeditable.inplaceeditingon .editinstructions {
   -moz-border-radius: 3px;
   border-radius: 3px;
 }
-.environmenttable .error:empty,
+.environmenttable span.error:empty,
 .environmenttable span.warn:empty,
-.environmenttable .ok:empty {
+.environmenttable span.ok:empty {
   display: none;
 }
-.environmenttable .error-important,
+.environmenttable span.error-important,
 .environmenttable span.warn-important,
-.environmenttable .ok-important {
+.environmenttable span.ok-important {
   background-color: #b94a48;
 }
-.environmenttable .error-important[href],
+.environmenttable span.error-important[href],
 .environmenttable span.warn-important[href],
-.environmenttable .ok-important[href] {
+.environmenttable span.ok-important[href] {
   background-color: #953b39;
 }
-.environmenttable .error-warning,
+.environmenttable span.error-warning,
 .environmenttable span.warn-warning,
-.environmenttable .ok-warning {
+.environmenttable span.ok-warning {
   background-color: #f89406;
 }
-.environmenttable .error-warning[href],
+.environmenttable span.error-warning[href],
 .environmenttable span.warn-warning[href],
-.environmenttable .ok-warning[href] {
+.environmenttable span.ok-warning[href] {
   background-color: #c67605;
 }
-.environmenttable .error-success,
+.environmenttable span.error-success,
 .environmenttable span.warn-success,
-.environmenttable .ok-success {
+.environmenttable span.ok-success {
   background-color: #468847;
 }
-.environmenttable .error-success[href],
+.environmenttable span.error-success[href],
 .environmenttable span.warn-success[href],
-.environmenttable .ok-success[href] {
+.environmenttable span.ok-success[href] {
   background-color: #356635;
 }
-.environmenttable .error-info,
+.environmenttable span.error-info,
 .environmenttable span.warn-info,
-.environmenttable .ok-info {
+.environmenttable span.ok-info {
   background-color: #3a87ad;
 }
-.environmenttable .error-info[href],
+.environmenttable span.error-info[href],
 .environmenttable span.warn-info[href],
-.environmenttable .ok-info[href] {
+.environmenttable span.ok-info[href] {
   background-color: #2d6987;
 }
-.environmenttable .error-inverse,
+.environmenttable span.error-inverse,
 .environmenttable span.warn-inverse,
-.environmenttable .ok-inverse {
+.environmenttable span.ok-inverse {
   background-color: #333;
 }
-.environmenttable .error-inverse[href],
+.environmenttable span.error-inverse[href],
 .environmenttable span.warn-inverse[href],
-.environmenttable .ok-inverse[href] {
+.environmenttable span.ok-inverse[href] {
   background-color: #1a1a1a;
 }
-.environmenttable .error {
+.environmenttable span.error {
   background-color: #b94a48;
 }
 .environmenttable span.warn {
   background-color: #f89406;
 }
-.environmenttable .ok {
+.environmenttable span.ok {
   background-color: #468847;
 }
 .path-admin .admintable.environmenttable .name,

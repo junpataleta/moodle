@@ -19,18 +19,22 @@
         background-color: @warningBackground;
         color: @warningText;
     }
-    .error,
+    p.error {
+        background-color: @errorBackground;
+        color: @errorText;
+    }
+    span.error,
     span.warn,
-    .ok {
+    span.ok {
         .label;
     }
-    .error {
+    span.error {
         background-color: @errorText;
     }
     span.warn {
         background-color: @orange;
     }
-    .ok {
+    span.ok {
         background-color: @successText;
     }
 }

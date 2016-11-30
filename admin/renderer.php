@@ -1899,6 +1899,8 @@ class core_admin_renderer extends plugin_renderer_base {
                 } else {
                     $report = $this->doc_link(join($linkparts, '/'), get_string($stringtouse, 'admin', $rec));
                 }
+                // Enclose report text in div so feedback text will be displayed underneath it.
+                $report = html_writer::div($report);
 
                 // Format error or warning line
                 if ($errorline || $warningline) {
@@ -1906,7 +1908,7 @@ class core_admin_renderer extends plugin_renderer_base {
                 } else {
                     $messagetype = 'ok';
                 }
-                $status = '<span class="'.$messagetype.'">'.$status.'</span>';
+                $status = html_writer::span($status, $messagetype);
                 // Here we'll store all the feedback found
                 $feedbacktext = '';
                 // Append the feedback if there is some

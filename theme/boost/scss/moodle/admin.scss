@@ -23,8 +23,19 @@
         background-color: $state-danger-bg;
     }
 
-    .ok {
-        background-color: $state-success-bg;
+    span.ok {
+        @extend .label;
+        @extend .label-success;
+    }
+
+    span.warn {
+        @extend .label;
+        @extend .label-warning;
+    }
+
+    span.error {
+        @extend .label;
+        @extend .label-important;
     }
 }
 
