@@ -2891,34 +2891,58 @@ class global_navigation extends navigation_node {
         $sortorder = $sortorder . ',' . $CFG->navsortmycoursessort . ' ASC';
         $courses = enrol_get_my_courses(null, $sortorder);
         if (count($courses) && $this->show_my_categories()) {
-            // OK Actually we are loading categories. We only want to load categories that have a parent of 0.
-            // In order to make sure we load everything required we must first find the categories that are not
-            // base categories and work out the bottom category in thier path.
+            // Generate an array containing unique values of all the courses' categories.
             $categoryids = array();
             foreach ($courses as $course) {
+                $category = $course->category;
+                if (in_array($category, $categoryids)) {
+                    continue;
+                }
                 $categoryids[] = $course->category;
             }
-            $categoryids = array_unique($categoryids);
-            list($sql, $params) = $DB->get_in_or_equal($categoryids);
-            $categories = $DB->get_recordset_select('course_categories', 'id '.$sql.' AND parent <> 0', $params, 'sortorder, id', 'id, path');
-            foreach ($categories as $category) {
-                $bits = explode('/', trim($category->path,'/'));
-                $categoryids[] = array_shift($bits);
-            }
-            $categoryids = array_unique($categoryids);
-            $categories->close();
 
-            // Now we load the base categories.
             list($sql, $params) = $DB->get_in_or_equal($categoryids);
-            $categories = $DB->get_recordset_select('course_categories', 'id '.$sql.' AND parent = 0', $params, 'sortorder, id');
+            // We will only use these fields.
+            $categoryfields = 'id, name, parent, visible, path';
+            // First we want to fetch the course_categories records listed in $categoryids.
+            $categories = $DB->get_recordset_select('course_categories', 'id ' . $sql, $params, 'sortorder, id', $categoryfields);
+            // Build the My courses node containing all the relevant categories of each of the user's course belong to.
             foreach ($categories as $category) {
-                $this->add_category($category, $this->rootnodes['mycourses'], self::TYPE_MY_CATEGORY);
+                if ($category->parent == 0) {
+                    // If this category has no parent, then we can assign it directly underneath the My courses node.
+                    $this->add_category($category, $this->rootnodes['mycourses'], self::TYPE_MY_CATEGORY);
+                } else {
+                    // Otherwise, let's get the path of this category and loop through each path component.
+                    $pathcomponents = explode('/', $category->path);
+                    foreach ($pathcomponents as $component) {
+                        if (empty($component)) {
+                            continue;
+                        }
+                        // Check if the path component has the same category ID as the category that's being evaluated.
+                        if ($component != $category->id) {
+                            // If they're not equal, then fetch this category from the DB.
+                            $coursecat = $DB->get_record('course_categories', ['id' => $component], $categoryfields);
+                        } else {
+                            // Otherwise, we'll use this category.
+                            $coursecat = $category;
+                        }
+
+                        // Get this category's parent node.
+                        $parent = $this->rootnodes['mycourses']->find($coursecat->parent, self::TYPE_MY_CATEGORY);
+                        if (!$parent) {
+                            // If we can't find a parent node for this category, then this category must be a parent category.
+                            $parent = $this->rootnodes['mycourses'];
+                        }
+
+                        // Append this course category into its parent node.
+                        $this->add_category($coursecat, $parent, self::TYPE_MY_CATEGORY);
+                    }
+                }
             }
             $categories->close();
-        } else {
-            foreach ($courses as $course) {
-                $this->add_course($course, false, self::COURSE_MY);
-            }
+        }
+        foreach ($courses as $course) {
+            $this->add_course($course, false, self::COURSE_MY);
         }
     }
 }
