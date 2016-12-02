@@ -3706,16 +3706,17 @@ class flat_navigation extends navigation_node_collection {
      *
      */
     public function initialise() {
-        global $PAGE, $USER, $OUTPUT, $CFG;
+        global $PAGE;
         if (during_initial_install()) {
             return;
         }
 
-        $current = false;
-
         $course = $PAGE->course;
 
         $this->page->navigation->initialise();
+
+        // Populate the My courses node, if necessary.
+        $this->populate_my_courses();
 
         // First walk the nav tree looking for "flat_navigation" nodes.
         if ($course->id > 1) {
@@ -3785,6 +3786,46 @@ class flat_navigation extends navigation_node_collection {
         }
     }
 
+    /**
+     * Loads the user's courses under the My courses node so that these can be displayed in the flat navigation.
+     * We only need to do this in the case where $CFG->navshowmycoursecategories is turned on.
+     */
+    protected function populate_my_courses() {
+        global $CFG, $DB;
+
+        // Check if $CFG->navshowmycoursecategories is turned on.
+        if (empty($CFG->navshowmycoursecategories) || $DB->count_records('course_categories') == 1) {
+            // There's no need to populate the My courses node if navshowmycoursecategories is turned off,
+            // or if there is only one category. Populating this should have been taken care of by the load_courses_enrolled()
+            // method of the navigation_node class.
+            return;
+        }
+
+        // Make sure we have the My courses node.
+        $mycoursesnode = $this->page->navigation->find('mycourses', navigation_node::TYPE_ROOTNODE);
+        if ($mycoursesnode) {
+            // Prepare the sort order of the user's courses.
+            $sortorder = 'visible DESC';
+            $navsort = 'sortorder';
+            if (!empty($CFG->navsortmycoursessort)) {
+                $navsort = $CFG->navsortmycoursessort;
+            }
+            // Append the chosen sortorder.
+            $sortorder = $sortorder . ',' . $navsort . ' ASC';
+
+            // Fetch the user's courses.
+            $mycourses = enrol_get_my_courses(null, $sortorder);
+
+            // Add each of the courses under the My courses node.
+            foreach ($mycourses as $mycourse) {
+                $url = new moodle_url('/course/view.php', ['id' => $mycourse->id]);
+                $shortname = $mycourse->shortname;
+                $coursename = empty($CFG->navshowfullcoursenames) ? $shortname : $mycourse->fullname;
+                $node = $mycoursesnode->add($coursename, $url, navigation_node::TYPE_COURSE, $shortname, $mycourse->id);
+                $node->showinflatnavigation = true;
+            }
+        }
+    }
 }
 
 /**
