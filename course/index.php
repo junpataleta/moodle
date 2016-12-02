@@ -30,6 +30,14 @@ require_once($CFG->libdir. '/coursecatlib.php');
 $categoryid = optional_param('categoryid', 0, PARAM_INT); // Category id
 $site = get_site();
 
+// If categoryid is not set, see if we only have a single category in the site.
+if (!$categoryid) {
+    // If so, then make this page link to this category.
+    if ($DB->count_records('course_categories') == 1) {
+        $categoryid = $DB->get_field('course_categories', 'id', []);
+    }
+}
+
 if ($categoryid) {
     $PAGE->set_category_by_id($categoryid);
     $PAGE->set_url(new moodle_url('/course/index.php', array('categoryid' => $categoryid)));
