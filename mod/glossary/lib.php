@@ -2618,7 +2618,11 @@ function glossary_get_paging_bar($totalcount, $page, $perpage, $baseurl, $maxpag
         $code .= "<div style=\"text-align:center\">";
         $code .= "<p>".get_string("page").":";
 
-        $maxpage = (int)(($totalcount-1)/$perpage);
+        if ($perpage > 0) {
+            $maxpage = (int)(($totalcount - 1) / $perpage);
+        } else {
+            $maxpage = 1;
+        }
 
         //Lower and upper limit of page
         if ($page < 0) {

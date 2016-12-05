@@ -9,6 +9,7 @@ $id            = required_param('id', PARAM_INT);                     // Course 
 $sortorder     = optional_param('sortorder', 'asc', PARAM_ALPHA);     // Sorting order
 $offset        = optional_param('offset', 0, PARAM_INT);              // number of entries to bypass
 $displayformat = optional_param('displayformat',-1, PARAM_INT);
+$entriesbypage = optional_param('entriesbypage', null, PARAM_INT);
 
 $mode    = required_param('mode', PARAM_ALPHA);             // mode to show the entries
 $hook    = optional_param('hook','ALL', PARAM_CLEAN);       // what to show
@@ -47,7 +48,8 @@ if (! $glossary = $DB->get_record("glossary", array("id"=>$cm->instance))) {
     print_error('invalidid', 'glossary');
 }
 
-if ( !$entriesbypage = $glossary->entbypage ) {
+// If entries by page has not been set, default to the glossary or global config.
+if ($entriesbypage === null && !$entriesbypage = $glossary->entbypage) {
     $entriesbypage = $CFG->glossary_entbypage;
 }
 
