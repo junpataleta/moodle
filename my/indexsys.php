@@ -46,7 +46,7 @@ require_login();
 $header = "$SITE->shortname: ".get_string('myhome')." (".get_string('mypage', 'admin').")";
 
 $PAGE->set_blocks_editing_capability('moodle/my:configsyspages');
-admin_externalpage_setup('mypage', '', null, '', array('pagelayout' => 'mydashboard'));
+admin_externalpage_setup('mypage', '', null, '', array('pagelayout' => 'standard'));
 
 if ($resetall && confirm_sesskey()) {
     my_reset_page_for_all_users(MY_PAGE_PRIVATE, 'my-index');
