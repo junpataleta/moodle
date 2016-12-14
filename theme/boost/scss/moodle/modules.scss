@@ -197,7 +197,9 @@ select {
 
     @include media-breakpoint-up('md') {
         &.nonavbar {
-            margin-top: -3rem;
+            position: absolute;
+            bottom: 1.25rem;
+            right: 1.25rem;
         }
     }
 }
