@@ -9,6 +9,7 @@ information provided here is intended especially for developers.
   should be switched to the searchableselector form element or other solutions.
 * Return value of the validate_email() is now proper boolean as documented. Previously the function could return 1, 0 or false.
 * core_course_external::get_activities_overview has been deprecated. Please do not call this function any more.
+* Class 'calendar_event' has been renamed and is now deprecated. Please use 'core_calendar\event' instead.
 
 === 3.2 ===
 
