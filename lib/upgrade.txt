@@ -25,6 +25,7 @@ information provided here is intended especially for developers.
   - file_storage::try_content_recovery  - See MDL-46375 for more information
   - file_storage::content_exists        - See MDL-46375 for more information
   - file_storage::deleted_file_cleanup  - See MDL-46375 for more information
+* New 'priority' column for the event table to determine which event to show in case of events with user and group overrides.
 
 === 3.2 ===
 
