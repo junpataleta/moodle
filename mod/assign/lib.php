@@ -267,6 +267,12 @@ function assign_update_events($assign, $override = null) {
         $event->timeduration = max($duedate - $allowsubmissionsfromdate, 0);
         $event->visible     = instance_is_visible('assign', $assign);
         $event->eventtype   = 'open';
+        if ($groupid && isset($current->sortorder)) {
+            $event->priority = $current->sortorder;
+        } else {
+            // Must be a user override.
+            $event->priority = CALENDAR_EVENT_USER_OVERRIDE_PRIORITY;
+        }
 
         // Determine the event name.
         if ($groupid) {
@@ -317,7 +323,7 @@ function assign_update_events($assign, $override = null) {
                     }
                     $event->name      = $eventname.' ('.get_string('duedate', 'assign').')';
                     $event->timestart = $duedate;
-                    $event->eventtype = 'close';
+                    $event->eventtype = 'due';
                     calendar_event::create($event);
                 }
             }
