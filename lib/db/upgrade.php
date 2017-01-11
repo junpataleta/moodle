@@ -2465,5 +2465,113 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2016122800.00);
     }
 
+    if ($oldversion < 2017011200.01) {
+
+        // Define field priority to be added to event.
+        $table = new xmldb_table('event');
+        $field = new xmldb_field('priority', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'subscriptionid');
+
+        // Conditionally launch add field priority.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Set priority for group overrides for existing assign events.
+        $where = 'groupid IS NOT NULL';
+        $assignoverridesrs = $DB->get_recordset_select('assign_overrides', $where, null, '', 'id, assignid, groupid, sortorder');
+        foreach ($assignoverridesrs as $record) {
+            $sql = "UPDATE {event}
+                       SET priority = :priority
+                     WHERE modulename = :modulename
+                           AND instance = :instance
+                           AND groupid = :groupid
+                           AND repeatid = 0";
+            $params = [
+                'modulename' => 'assign',
+                'instance' => $record->assignid,
+                'groupid' => $record->groupid,
+                'priority' => $record->sortorder
+            ];
+            $DB->execute($sql, $params);
+        }
+        $assignoverridesrs->close();
+
+        // Fix event types of assign events.
+        $sql = "UPDATE {event}
+                   SET eventtype = 'due'
+                 WHERE modulename = 'assign'
+                       AND eventtype = 'close'";
+        $DB->execute($sql);
+
+        // Set priority for group overrides for existing lesson events.
+        require_once($CFG->dirroot . '/mod/lesson/lib.php');
+        // Fetch lessons with group overrides.
+        $sql = "SELECT DISTINCT l.id
+                           FROM {lesson} l
+                     INNER JOIN {lesson_overrides} lo
+                             ON l.id = lo.lessonid
+                                AND lo.groupid IS NOT NULL";
+        $lessonswithoverride = $DB->get_records_sql($sql);
+        foreach ($lessonswithoverride as $record) {
+            $grouppriorities = lesson_get_group_override_priorities($record->id);
+            foreach ($grouppriorities as $key => $priorities) {
+                foreach ($priorities as $timestamp => $priority) {
+                    $sql = "UPDATE {event}
+                               SET priority = :priority
+                             WHERE modulename = :modulename AND
+                                   instance = :instance AND
+                                   eventtype = :eventtype AND
+                                   groupid <> 0 AND
+                                   timestart = :timestart AND
+                                   repeatid = 0";
+                    $params = [
+                        'modulename' => 'lesson',
+                        'instance' => $record->id,
+                        'eventtype' => $key,
+                        'timestart' => $timestamp,
+                        'priority' => $priority
+                    ];
+                    $DB->execute($sql, $params);
+                }
+            }
+        }
+
+        // Set priority for group overrides for existing quiz events.
+        require_once($CFG->dirroot . '/mod/quiz/lib.php');
+        // Fetch quizzes with group overrides.
+        $sql = "SELECT DISTINCT q.id
+                           FROM {quiz} q
+                     INNER JOIN {quiz_overrides} qo
+                             ON q.id = qo.quiz
+                                AND qo.groupid IS NOT NULL";
+        $quizzeswithoverride = $DB->get_records_sql($sql);
+        foreach ($quizzeswithoverride as $record) {
+            $grouppriorities = quiz_get_group_override_priorities($record->id);
+            foreach ($grouppriorities as $key => $priorities) {
+                foreach ($priorities as $timestamp => $priority) {
+                    $sql = "UPDATE {event}
+                               SET priority = :priority
+                             WHERE modulename = :modulename AND
+                                   instance = :instance AND
+                                   eventtype = :eventtype AND
+                                   groupid <> 0 AND
+                                   timestart = :timestart AND
+                                   repeatid = 0";
+                    $params = [
+                        'modulename' => 'quiz',
+                        'instance' => $record->id,
+                        'eventtype' => $key,
+                        'timestart' => $timestamp,
+                        'priority' => $priority
+                    ];
+                    $DB->execute($sql, $params);
+                }
+            }
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2017011200.01);
+    }
+
     return true;
 }
