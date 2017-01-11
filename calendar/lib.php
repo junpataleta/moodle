@@ -809,7 +809,50 @@ function calendar_get_events($tstart, $tend, $users, $groups, $courses, $withdur
     if ($events === false) {
         $events = array();
     }
-    return $events;
+
+    // Group calendar events based on module name, instance ID, event type and repeat ID.
+    $eventgroups = [];
+    foreach ($events as $event) {
+        $key = $event->modulename . '-' . $event->instance . '-' . $event->eventtype . '-' . $event->repeatid;
+        if (!array_key_exists($key, $eventgroups)) {
+            $eventgroups[$key] = [];
+        }
+        $eventgroups[$key][] = $event;
+    }
+
+    // For each event groups, show only a single event relevant to the user.
+    $filteredevents = [];
+    foreach ($eventgroups as $group) {
+        // If this group only contains one entry, add this immediately to the filtered events array.
+        if (count($group) == 1) {
+            $filteredevents[$group[0]->id] = $group[0];
+            continue;
+        }
+
+        $event = null;
+        foreach ($group as $tmpevent) {
+            if ($tmpevent->courseid == 0 && $tmpevent->groupid == 0) {
+                // This is a user override event, add this right away.
+                $event = $tmpevent;
+                break;
+
+            } else if ($tmpevent->repeatid) {
+                // Add all repeating events.
+                $filteredevents[$tmpevent->id] = $tmpevent;
+
+            } else {
+                // Group override event. Fetch the one with the highest priority, or with group vs course, group events win.
+                if ($event === null || $event->priority < $tmpevent->priority || ($event->groupid == 0 && $tmpevent->groupid > 0)) {
+                    $event = $tmpevent;
+                }
+            }
+        }
+        if ($event !== null) {
+            $filteredevents[$event->id] = $event;
+        }
+    }
+
+    return $filteredevents;
 }
 
 /** Get calendar events by id

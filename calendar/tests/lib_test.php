@@ -171,4 +171,154 @@ class core_calendar_lib_testcase extends advanced_testcase {
         $event = reset($events);
         $this->assertEquals('assign', $event->modulename);
     }
+
+    /**
+     * Test for calendar_get_events() when there are user and group overrides.
+     */
+    public function test_calendar_get_events_with_overrides() {
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_assign');
+        if (!isset($params['course'])) {
+            $params['course'] = $course->id;
+        }
+        $instance = $generator->create_instance($params);
+
+        $now = time();
+        // Events with the same module name, instance and event type.
+        $events = [
+            [
+                'name' => 'Assignment 1 due date',
+                'description' => '',
+                'format' => 0,
+                'courseid' => $course->id,
+                'groupid' => 0,
+                'userid' => 2,
+                'modulename' => 'assign',
+                'instance' => $instance->id,
+                'eventtype' => 'due',
+                'timestart' => $now,
+                'timeduration' => 0,
+                'visible' => 1
+            ],
+            [
+                'name' => 'Assignment 1 due date - User override',
+                'description' => '',
+                'format' => 1,
+                'courseid' => 0,
+                'groupid' => 0,
+                'userid' => 3,
+                'modulename' => 'assign',
+                'instance' => $instance->id,
+                'eventtype' => 'due',
+                'timestart' => $now + 86400,
+                'timeduration' => 0,
+                'visible' => 1
+            ],
+            [
+                'name' => 'Assignment 1 due date - Group A override',
+                'description' => '',
+                'format' => 1,
+                'courseid' => $course->id,
+                'groupid' => 1,
+                'userid' => 2,
+                'modulename' => 'assign',
+                'instance' => $instance->id,
+                'eventtype' => 'due',
+                'timestart' => $now + (2 * 86400),
+                'timeduration' => 0,
+                'visible' => 1,
+                'priority' => 1,
+            ],
+            [
+                'name' => 'Assignment 1 due date - Group B override',
+                'description' => '',
+                'format' => 1,
+                'courseid' => $course->id,
+                'groupid' => 2,
+                'userid' => 2,
+                'modulename' => 'assign',
+                'instance' => $instance->id,
+                'eventtype' => 'due',
+                'timestart' => $now + (3 * 86400),
+                'timeduration' => 0,
+                'visible' => 1,
+                'priority' => 2,
+            ],
+
+        ];
+
+        foreach ($events as $event) {
+            calendar_event::create($event, false);
+        }
+
+        $timestart = $now - 100;
+        $timeend = $now + (3 * 86400);
+
+        // Get user override events.
+        $events = calendar_get_events($timestart, $timeend, 3, [1, 2], $course->id);
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertEquals('Assignment 1 due date - User override', $event->name);
+
+        // Get events for user that does not belong to any group and has no user override events.
+        $events = calendar_get_events($timestart, $timeend, 10, false, $course->id, 1);
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertEquals('Assignment 1 due date', $event->name);
+
+        // Get events for user that belongs to groups A and B and has no user override events.
+        $events = calendar_get_events($timestart, $timeend, 4, [1, 2], $course->id);
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertEquals('Assignment 1 due date - Group B override', $event->name);
+
+        // Get events for user that belongs to group A and has no user override events.
+        $events = calendar_get_events($timestart, $timeend, 5, [1], $course->id);
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertEquals('Assignment 1 due date - Group A override', $event->name);
+
+        // Add repeating events.
+        $repeatingevents = [
+            [
+                'name' => 'Repeating site event',
+                'description' => '',
+                'format' => 1,
+                'courseid' => SITEID,
+                'groupid' => 0,
+                'userid' => 2,
+                'repeatid' => 1,
+                'modulename' => '0',
+                'instance' => 0,
+                'eventtype' => 'site',
+                'timestart' => $now + 86400,
+                'timeduration' => 0,
+                'visible' => 1,
+            ],
+            [
+                'name' => 'Repeating site event',
+                'description' => '',
+                'format' => 1,
+                'courseid' => SITEID,
+                'groupid' => 0,
+                'userid' => 2,
+                'repeatid' => 1,
+                'modulename' => '0',
+                'instance' => 0,
+                'eventtype' => 'site',
+                'timestart' => $now + (2 * 86400),
+                'timeduration' => 0,
+                'visible' => 1,
+            ],
+        ];
+        foreach ($repeatingevents as $event) {
+            calendar_event::create($event, false);
+        }
+
+        // Make sure repeating events are not filtered out.
+        $events = calendar_get_events($timestart, $timeend, true, true, true);
+        $this->assertCount(3, $events);
+    }
 }
