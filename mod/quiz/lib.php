@@ -1214,6 +1214,9 @@ function quiz_update_events($quiz, $override = null) {
         $overrides = array($override);
     }
 
+    // Get group override priorities.
+    $grouppriorities = quiz_get_group_override_priorities($quiz->id);
+
     foreach ($overrides as $current) {
         $groupid   = isset($current->groupid)?  $current->groupid : 0;
         $userid    = isset($current->userid)? $current->userid : 0;
@@ -1242,6 +1245,12 @@ function quiz_update_events($quiz, $override = null) {
         $event->timeduration = max($timeclose - $timeopen, 0);
         $event->visible     = instance_is_visible('quiz', $quiz);
         $event->eventtype   = 'open';
+        if ($groupid && $grouppriorities !== null) {
+            $openpriorities = $grouppriorities['open'];
+            if (isset($openpriorities[$timeopen])) {
+                $event->priority = $openpriorities[$timeopen];
+            }
+        }
 
         // Determine the event name.
         if ($groupid) {
@@ -1293,6 +1302,12 @@ function quiz_update_events($quiz, $override = null) {
                     $event->name      = $eventname.' ('.get_string('quizcloses', 'quiz').')';
                     $event->timestart = $timeclose;
                     $event->eventtype = 'close';
+                    if ($groupid && $grouppriorities !== null) {
+                        $closepriorities = $grouppriorities['close'];
+                        if (isset($closepriorities[$timeclose])) {
+                            $event->priority = $closepriorities[$timeclose];
+                        }
+                    }
                     calendar_event::create($event);
                 }
             }

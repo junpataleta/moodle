@@ -8783,6 +8783,20 @@ function reorder_group_overrides($assignid) {
             $f->id = $override->id;
             $f->sortorder = $i++;
             $DB->update_record('assign_overrides', $f);
+
+            // Update priorities of group overrides.
+            $eventsql = "UPDATE {event}
+                            SET priority = :priority
+                          WHERE modulename = :modulename AND
+                                instance = :instance AND
+                                groupid = :groupid";
+            $params = [
+                'modulename' => 'assign',
+                'instance' => $override->assignid,
+                'groupid' => $override->groupid,
+                'priority' => $f->sortorder
+            ];
+            $DB->execute($eventsql, $params);
         }
     }
 }

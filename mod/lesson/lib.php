@@ -135,6 +135,9 @@ function lesson_update_events($lesson, $override = null) {
         $overrides = array($override);
     }
 
+    // Get group override priorities.
+    $grouppriorities = lesson_get_group_override_priorities($lesson->id);
+
     foreach ($overrides as $current) {
         $groupid   = isset($current->groupid) ? $current->groupid : 0;
         $userid    = isset($current->userid) ? $current->userid : 0;
@@ -163,6 +166,12 @@ function lesson_update_events($lesson, $override = null) {
         $event->timeduration = max($deadline - $available, 0);
         $event->visible     = instance_is_visible('lesson', $lesson);
         $event->eventtype   = 'open';
+        if ($groupid && $grouppriorities !== null) {
+            $openpriorities = $grouppriorities['open'];
+            if (isset($openpriorities[$available])) {
+                $event->priority = $openpriorities[$available];
+            }
+        }
 
         // Determine the event name.
         if ($groupid) {
@@ -214,6 +223,12 @@ function lesson_update_events($lesson, $override = null) {
                     $event->name      = $eventname.' ('.get_string('lessoncloses', 'lesson').')';
                     $event->timestart = $deadline;
                     $event->eventtype = 'close';
+                    if ($groupid && $grouppriorities !== null) {
+                        $closepriorities = $grouppriorities['close'];
+                        if (isset($closepriorities[$deadline])) {
+                            $event->priority = $closepriorities[$deadline];
+                        }
+                    }
                     calendar_event::create($event);
                 }
             }
