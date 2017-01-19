@@ -199,6 +199,8 @@ class rrule_manager {
         foreach ($rules as $rule) {
             $this->parse_rrule_property($rule);
         }
+        // Validate the rules as a whole.
+        $this->validate_rules();
     }
 
     /**
@@ -214,40 +216,40 @@ class rrule_manager {
                 $this->set_frequency($value);
                 break;
             case 'UNTIL' :
-                $this->until = strtotime($value);
+                $this->set_until($value);
                 break;
             CASE 'COUNT' :
-                $this->count = intval($value);
+                $this->set_count($value);
                 break;
             CASE 'INTERVAL' :
-                $this->interval = intval($value);
+                $this->set_interval($value);
                 break;
             CASE 'BYSECOND' :
-                $this->bysecond = explode(',', $value);
+                $this->set_bysecond($value);
                 break;
             CASE 'BYMINUTE' :
-                $this->byminute = explode(',', $value);
+                $this->set_byminute($value);
                 break;
             CASE 'BYHOUR' :
-                $this->byhour = explode(',', $value);
+                $this->set_byhour($value);
                 break;
             CASE 'BYDAY' :
-                $this->byday = explode(',', $value);
+                $this->set_byday($value);
                 break;
             CASE 'BYMONTHDAY' :
-                $this->bymonthday = explode(',', $value);
+                $this->set_bymonthday($value);
                 break;
             CASE 'BYYEARDAY' :
-                $this->byyearday = explode(',', $value);
+                $this->set_byyearday($value);
                 break;
             CASE 'BYWEEKNO' :
-                $this->byweekno = explode(',', $value);
+                $this->set_byweekno($value);
                 break;
             CASE 'BYMONTH' :
-                $this->bymonth = explode(',', $value);
+                $this->set_bymonth($value);
                 break;
             CASE 'BYSETPOS' :
-                $this->bysetpos = explode(',', $value);
+                $this->set_bysetpos($value);
                 break;
             CASE 'WKST' :
                 $this->wkst = $this->get_day($value);
@@ -327,6 +329,270 @@ class rrule_manager {
             default:
                 // We should never get here, something is very wrong.
                 throw new \moodle_exception('errorrruleday', 'calendar');
+        }
+    }
+
+    /**
+     * Sets the UNTIL rule.
+     *
+     * @param string $until The date string representation of the UNTIL rule.
+     * @throws \moodle_exception
+     */
+    protected function set_until($until) {
+        $this->until = strtotime($until);
+    }
+
+    /**
+     * Sets the COUNT rule.
+     *
+     * @param string $count The count value.
+     * @throws \moodle_exception
+     */
+    protected function set_count($count) {
+        $this->count = intval($count);
+    }
+
+    /**
+     * Sets the INTERVAL rule.
+     *
+     * The INTERVAL rule part contains a positive integer representing how often the recurrence rule repeats.
+     * The default value is "1", meaning:
+     *  - every second for a SECONDLY rule, or
+     *  - every minute for a MINUTELY rule,
+     *  - every hour for an HOURLY rule,
+     *  - every day for a DAILY rule,
+     *  - every week for a WEEKLY rule,
+     *  - every month for a MONTHLY rule and
+     *  - every year for a YEARLY rule.
+     *
+     * @param string $intervalstr The value for the interval rule.
+     * @throws \moodle_exception
+     */
+    protected function set_interval($intervalstr) {
+        $interval = intval($intervalstr);
+        if ($interval < 1) {
+            throw new \moodle_exception('errorinvalidinterval', 'calendar');
+        }
+        $this->interval = $interval;
+    }
+
+    /**
+     * Sets the BYSECOND rule.
+     *
+     * The BYSECOND rule part specifies a comma-separated list of seconds within a minute.
+     * Valid values are 0 to 59.
+     *
+     * @param string $bysecond Comma-separated list of seconds within a minute.
+     * @throws \moodle_exception
+     */
+    protected function set_bysecond($bysecond) {
+        $seconds = explode(',', $bysecond);
+        foreach ($seconds as $second) {
+            if ($second < 0 || $second > 59) {
+                throw new \moodle_exception('errorinvalidbysecond', 'calendar');
+            }
+        }
+        $this->bysecond = $seconds;
+    }
+
+    /**
+     * Sets the BYMINUTE rule.
+     *
+     * The BYMINUTE rule part specifies a comma-separated list of seconds within an hour.
+     * Valid values are 0 to 59.
+     *
+     * @param string $byminute Comma-separated list of minutes within an hour.
+     * @throws \moodle_exception
+     */
+    protected function set_byminute($byminute) {
+        $minutes = explode(',', $byminute);
+        foreach ($minutes as $minute) {
+            if ($minute < 0 || $minute > 59) {
+                throw new \moodle_exception('errorinvalidbyminute', 'calendar');
+            }
+        }
+        $this->byminute = $minutes;
+    }
+
+    /**
+     * Sets the BYHOUR rule.
+     *
+     * The BYHOUR rule part specifies a comma-separated list of hours of the day.
+     * Valid values are 0 to 23.
+     *
+     * @param string $byhour Comma-separated list of hours of the day.
+     * @throws \moodle_exception
+     */
+    protected function set_byhour($byhour) {
+        $hours = explode(',', $byhour);
+        foreach ($hours as $hour) {
+            if ($hour < 0 || $hour > 23) {
+                throw new \moodle_exception('errorinvalidbyhour', 'calendar');
+            }
+        }
+        $this->byhour = $hours;
+    }
+
+    /**
+     * Sets the BYDAY rule.
+     *
+     * The BYDAY rule part specifies a comma-separated list of days of the week;
+     *  - MO indicates Monday;
+     *  - TU indicates Tuesday;
+     *  - WE indicates Wednesday;
+     *  - TH indicates Thursday;
+     *  - FR indicates Friday;
+     *  - SA indicates Saturday;
+     *  - SU indicates Sunday.
+     *
+     * Each BYDAY value can also be preceded by a positive (+n) or negative (-n) integer.
+     * If present, this indicates the nth occurrence of the specific day within the MONTHLY or YEARLY RRULE.
+     * For example, within a MONTHLY rule, +1MO (or simply 1MO) represents the first Monday within the month,
+     * whereas -1MO represents the last Monday of the month.
+     * If an integer modifier is not present, it means all days of this type within the specified frequency.
+     * For example, within a MONTHLY rule, MO represents all Mondays within the month.
+     *
+     * @param string $byday Comma-separated list of days of the week.
+     * @throws \moodle_exception
+     */
+    protected function set_byday($byday) {
+        $weekdays = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+        $days = explode(',', $byday);
+        foreach ($days as $day) {
+            $suffix = substr($day, -2);
+            if (!in_array($suffix, $weekdays)) {
+                throw new \moodle_exception('errorinvalidbydaysuffix', 'calendar');
+            }
+        }
+        $this->byday = $days;
+    }
+
+    /**
+     * Sets the BYMONTHDAY rule.
+     *
+     * The BYMONTHDAY rule part specifies a comma-separated list of days of the month.
+     * Valid values are 1 to 31 or -31 to -1. For example, -10 represents the tenth to the last day of the month.
+     *
+     * @param string $bymonthday Comma-separated list of days of the month.
+     * @throws \moodle_exception
+     */
+    protected function set_bymonthday($bymonthday) {
+        $monthdays = explode(',', $bymonthday);
+        foreach ($monthdays as $day) {
+            // Valid values are 1 to 31 or -31 to -1.
+            if ($day < -31 || $day > 31 || $day == 0) {
+                throw new \moodle_exception('errorinvalidbymonthday', 'calendar');
+            }
+        }
+        $this->bymonthday = $monthdays;
+    }
+
+    /**
+     * Sets the BYYEARDAY rule.
+     *
+     * The BYYEARDAY rule part specifies a comma-separated list of days of the year.
+     * Valid values are 1 to 366 or -366 to -1. For example, -1 represents the last day of the year (December 31st)
+     * and -306 represents the 306th to the last day of the year (March 1st).
+     *
+     * @param string $byyearday Comma-separated list of days of the year.
+     * @throws \moodle_exception
+     */
+    protected function set_byyearday($byyearday) {
+        $yeardays = explode(',', $byyearday);
+        foreach ($yeardays as $day) {
+            // Valid values are 1 to 366 or -366 to -1.
+            if ($day < -366 || $day > 366 || $day == 0) {
+                throw new \moodle_exception('errorinvalidbyyearday', 'calendar');
+            }
+        }
+        $this->byyearday = $yeardays;
+    }
+
+    /**
+     * Sets the BYWEEKNO rule.
+     *
+     * The BYWEEKNO rule part specifies a comma-separated list of ordinals specifying weeks of the year.
+     * Valid values are 1 to 53 or -53 to -1. This corresponds to weeks according to week numbering as defined in [ISO 8601].
+     * A week is defined as a seven day period, starting on the day of the week defined to be the week start (see WKST).
+     * Week number one of the calendar year is the first week which contains at least four (4) days in that calendar year.
+     * This rule part is only valid for YEARLY rules. For example, 3 represents the third week of the year.
+     *
+     * Note: Assuming a Monday week start, week 53 can only occur when Thursday is January 1 or if it is a leap year and Wednesday
+     * is January 1.
+     *
+     * @param string $byweekno Comma-separated list of number of weeks.
+     * @throws \moodle_exception
+     */
+    protected function set_byweekno($byweekno) {
+        $weeknumbers = explode(',', $byweekno);
+        foreach ($weeknumbers as $week) {
+            // Valid values are 1 to 53 or -53 to -1.
+            if ($week < -53 || $week > 53 || $week == 0) {
+                throw new \moodle_exception('errorinvalidbyweekno', 'calendar');
+            }
+        }
+        $this->byweekno = $weeknumbers;
+    }
+
+    /**
+     * Sets the BYMONTH rule.
+     *
+     * The BYMONTH rule part specifies a comma-separated list of months of the year.
+     * Valid values are 1 to 12.
+     *
+     * @param string $bymonth Comma-separated list of months of the year.
+     * @throws \moodle_exception
+     */
+    protected function set_bymonth($bymonth) {
+        $months = explode(',', $bymonth);
+        foreach ($months as $month) {
+            // Valid values are 1 to 12.
+            if ($month < 1 || $month > 12) {
+                throw new \moodle_exception('errorinvalidbymonth', 'calendar');
+            }
+        }
+        $this->bymonth = $months;
+    }
+
+    /**
+     * Sets the BYSETPOS rule.
+     *
+     * The BYSETPOS rule part specifies a comma-separated list of values which corresponds to the nth occurrence within the set of
+     * events specified by the rule. Valid values are 1 to 366 or -366 to -1.
+     * It MUST only be used in conjunction with another BYxxx rule part.
+     *
+     * For example "the last work day of the month" could be represented as: RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1
+     *
+     * @param string $bysetpos Comma-separated list of values.
+     * @throws \moodle_exception
+     */
+    protected function set_bysetpos($bysetpos) {
+        $setposes = explode(',', $bysetpos);
+        foreach ($setposes as $pos) {
+            // Valid values are 1 to 366 or -366 to -1.
+            if ($pos < -366 || $pos > 366 || $pos == 0) {
+                throw new \moodle_exception('errorinvalidbysetpos', 'calendar');
+            }
+        }
+        $this->bysetpos = $setposes;
+    }
+
+    /**
+     * Validate the rules as a whole.
+     *
+     * @throws \moodle_exception
+     */
+    protected function validate_rules() {
+        // UNTIL and COUNT cannot be in the same recurrence rule.
+        if (!empty($this->until) && !empty($this->count)) {
+            throw new \moodle_exception('errorhasuntilandcount', 'calendar');
+        }
+
+        // BYSETPOS only be used in conjunction with another BYxxx rule part.
+        if (!empty($this->bysetpos) && empty($this->bymonth) && empty($this->bymonthday) && empty($this->bysecond)
+            && empty($this->byday) && empty($this->byweekno) && empty($this->byhour) && empty($this->byminute)
+            && empty($this->byyearday)) {
+            throw new \moodle_exception('errormustbeusedwithotherbyrule', 'calendar');
         }
     }
 
@@ -509,7 +775,7 @@ class rrule_manager {
         } else {
             $moffset = 0;
             $yoffset = 0;
-            $event->timestart = strtotime($prefix, $event->timestart) + $secsoffset;
+            $event->timestart = strtotime($prefix, $start) + $secsoffset;
         }
         // Create events.
         if ($count > 0) {
