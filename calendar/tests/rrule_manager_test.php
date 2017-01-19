@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+use core_calendar\rrule_manager;
 
 /**
  * Defines test class to test manage rrule during ical imports.
@@ -24,14 +25,14 @@
  */
 class core_calendar_rrule_manager_testcase extends advanced_testcase {
 
-    /** @var stdClass a dummy event */
+    /** @var calendar_event a dummy event */
     protected $event;
 
     /**
      * Set up method.
      */
     protected function setUp() {
-        global $DB, $CFG;
+        global $DB;
         $this->resetAfterTest();
 
         $this->setTimezone('Australia/Perth');
@@ -48,7 +49,8 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $event = new stdClass();
         $event->name = 'Event name';
         $event->description = '';
-        $event->timestart = 1385913700; // A 2013-12-2 Monday event.
+        $currentmonthyear = date('F Y');
+        $event->timestart = strtotime("first Monday of $currentmonthyear"); // Get the first Monday of the current month.
         $event->timeduration = 3600;
         $event->uuid = 'uuid';
         $event->subscriptionid = $subid;
@@ -66,12 +68,23 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
      * Test parse_rrule() method.
      */
     public function test_parse_rrule() {
-
-        $rrule = "FREQ=DAILY;COUNT=3;INTERVAL=4;BYSECOND=20,40;BYMINUTE=2,30;BYHOUR=3,4;BYDAY=MO,TH;BYMONTHDAY=20,
-                30;BYYEARDAY=300,-20;BYWEEKNO=22,33;BYMONTH=3,4";
+        $rules = [
+            'FREQ=DAILY',
+            'COUNT=3',
+            'INTERVAL=4',
+            'BYSECOND=20,40',
+            'BYMINUTE=2,30',
+            'BYHOUR=3,4',
+            'BYDAY=MO,TH',
+            'BYMONTHDAY=20,30',
+            'BYYEARDAY=300,-20',
+            'BYWEEKNO=22,33',
+            'BYMONTH=3,4'
+        ];
+        $rrule = implode(';', $rules);
         $mang = new core_tests_calendar_rrule_manager($rrule);
         $mang->parse_rrule();
-        $this->assertEquals(\core_calendar\rrule_manager::FREQ_DAILY, $mang->freq);
+        $this->assertEquals(rrule_manager::FREQ_DAILY, $mang->freq);
         $this->assertEquals(3, $mang->count);
         $this->assertEquals(4, $mang->interval);
         $this->assertEquals(array(20, 40), $mang->bysecond);
@@ -92,7 +105,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
     public function test_parse_rrule_validation() {
 
         $rrule = "RANDOM=PROPERTY;";
-        $mang = new core_tests_calendar_rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
     }
 
@@ -104,7 +117,219 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
     public function test_freq_validation() {
 
         $rrule = "FREQ=RANDOMLY;";
-        $mang = new core_tests_calendar_rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of rules with both COUNT and UNTIL parameters.
+     */
+    public function test_until_count_validation() {
+        $until = $this->event->timestart + DAYSECS * 4;
+        $until = date('Y-m-d', $until);
+        $rrule = "FREQ=DAILY;COUNT=2;UNTIL=$until";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of INTERVAL rule.
+     */
+    public function test_interval_validation() {
+        $rrule = "INTERVAL=0";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYSECOND rule.
+     */
+    public function test_bysecond_validation() {
+        $rrule = "BYSECOND=30,45,60";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYMINUTE rule.
+     */
+    public function test_byminute_validation() {
+        $rrule = "BYMINUTE=30,45,60";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYMINUTE rule.
+     */
+    public function test_byhour_validation() {
+        $rrule = "BYHOUR=23,45";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYDAY rule.
+     */
+    public function test_byday_validation() {
+        $rrule = "BYDAY=MO,2SE";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYMONTHDAY rule.
+     */
+    public function test_bymonthday_upper_bound_validation() {
+        $rrule = "BYMONTHDAY=1,32";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYMONTHDAY rule.
+     */
+    public function test_bymonthday_0_validation() {
+        $rrule = "BYMONTHDAY=1,0";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYMONTHDAY rule.
+     */
+    public function test_bymonthday_lower_bound_validation() {
+        $rrule = "BYMONTHDAY=1,-31,-32";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYYEARDAY rule.
+     */
+    public function test_byyearday_upper_bound_validation() {
+        $rrule = "BYYEARDAY=1,366,367";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYYEARDAY rule.
+     */
+    public function test_byyearday_0_validation() {
+        $rrule = "BYYEARDAY=0";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYYEARDAY rule.
+     */
+    public function test_byyearday_lower_bound_validation() {
+        $rrule = "BYYEARDAY=-1,-366,-367";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYWEEKNO rule.
+     */
+    public function test_byweekno_upper_bound_validation() {
+        $rrule = "BYWEEKNO=1,53,54";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYWEEKNO rule.
+     */
+    public function test_byweekno_0_validation() {
+        $rrule = "BYWEEKNO=0";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYWEEKNO rule.
+     */
+    public function test_byweekno_lower_bound_validation() {
+        $rrule = "BYWEEKNO=-1,-53,-54";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYMONTH rule.
+     */
+    public function test_bymonth_upper_bound_validation() {
+        $rrule = "BYMONTH=1,12,13";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYMONTH rule.
+     */
+    public function test_bymonth_lower_bound_validation() {
+        $rrule = "BYMONTH=0";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYSETPOS rule.
+     */
+    public function test_bysetpos_without_other_byrules() {
+        $rrule = "BYSETPOS=1,366";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYSETPOS rule.
+     */
+    public function test_bysetpos_upper_bound_validation() {
+        $rrule = "BYSETPOS=1,366,367";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYSETPOS rule.
+     */
+    public function test_bysetpos_0_validation() {
+        $rrule = "BYSETPOS=0";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYSETPOS rule.
+     */
+    public function test_bysetpos_lower_bound_validation() {
+        $rrule = "BYSETPOS=-1,-366,-367";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
         $mang->parse_rrule();
     }
 
@@ -115,7 +340,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         global $DB;
 
         $rrule = 'FREQ=DAILY;COUNT=3'; // This should generate 2 child events + 1 parent.
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -130,7 +355,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $until = $this->event->timestart + DAYSECS * 2;
         $until = date('Y-m-d', $until);
         $rrule = "FREQ=DAILY;UNTIL=$until"; // This should generate 1 child event + 1 parent,since by then until bound would be hit.
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -140,7 +365,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $this->assertTrue($result);
 
         $rrule = 'FREQ=DAILY;COUNT=3;INTERVAL=3'; // This should generate 2 child events + 1 parent, every 3rd day.
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -154,7 +379,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
 
         // Forever event. This should generate events for time() + 10 year period, every 300th day.
         $rrule = 'FREQ=DAILY;INTERVAL=300';
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -172,7 +397,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         global $DB;
 
         $rrule = 'FREQ=WEEKLY;COUNT=1'; // This should generate 7 events in total, one for each day.
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -185,9 +410,9 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
 
         // This should generate 4 child event + 1 parent, since by then until bound would be hit.
         $until = $this->event->timestart + WEEKSECS * 4;
-        $until = date('YmdThis', $until);
+        $until = date('Ymd\This\Z', $until);
         $rrule = "FREQ=WEEKLY;BYDAY=MO;UNTIL=$until";
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -200,7 +425,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
 
         // This should generate 4 events in total every monday and Wednesday of every 3rd week.
         $rrule = 'FREQ=WEEKLY;INTERVAL=3;BYDAY=MO,WE;COUNT=2';
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -217,7 +442,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
 
         // Forever event. This should generate events over time() + 10 year period, every 50th monday.
         $rrule = 'FREQ=WEEKLY;BYDAY=MO;INTERVAL=50';
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -233,8 +458,10 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
      */
     public function test_monthly_events() {
         global $DB;
-        $rrule = 'FREQ=MONTHLY;COUNT=3;BYMONTHDAY=2'; // This should generate 3 events in total.
-        $mang = new \core_calendar\rrule_manager($rrule);
+
+        $monthday = date('j', $this->event->timestart);
+        $rrule = "FREQ=MONTHLY;COUNT=3;BYMONTHDAY=$monthday"; // This should generate 3 events in total.
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -251,7 +478,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $monthstart = mktime(0, 0, 0, date("n", $this->event->timestart), 1, date("Y", $this->event->timestart));
 
         $rrule = 'FREQ=MONTHLY;COUNT=3;BYDAY=1MO'; // This should generate 3 events in total, first monday of the month.
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -265,9 +492,9 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
 
         // This should generate 10 child event + 1 parent, since by then until bound would be hit.
         $until = strtotime('+1 day +10 months', $this->event->timestart);
-        $until = date('YmdThis', $until);
-        $rrule = "FREQ=MONTHLY;BYMONTHDAY=2;UNTIL=$until";
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $until = date('Ymd\This\Z', $until);
+        $rrule = "FREQ=MONTHLY;BYMONTHDAY=$monthday;UNTIL=$until";
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -278,15 +505,15 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $this->assertTrue($result);
         }
 
-        // This should generate 10 child event + 1 parent, since by then until bound would be hit.
+        // This should generate 10 child events + 1 parent, since by then until bound would be hit.
         $until = strtotime('+1 day +10 months', $this->event->timestart);
-        $until = date('YmdThis', $until);
+        $until = date('Ymd\This\Z', $until);
         $rrule = "FREQ=MONTHLY;BYDAY=1MO;UNTIL=$until";
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(10, $count);
+        $this->assertEquals(11, $count);
         for ($i = 0; $i < 10; $i++) {
             $time = strtotime('1 Monday', strtotime("+$i months", $monthstart)) + $offset;
             $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time));
@@ -294,10 +521,11 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         }
 
         // This should generate 11 child event + 1 parent, since by then until bound would be hit.
-        $until = strtotime('+10 day +10 months', $this->event->timestart); // 12 oct 2014.
-        $until = date('YmdThis', $until);
-        $rrule = "FREQ=MONTHLY;INTERVAL=2;BYMONTHDAY=2,5;UNTIL=$until";
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $until = strtotime('+10 day +10 months', $this->event->timestart);
+        $until = date('Ymd\This\Z', $until);
+        $monthdayplus3 = $monthday + 3;
+        $rrule = "FREQ=MONTHLY;INTERVAL=2;BYMONTHDAY=$monthday,$monthdayplus3;UNTIL=$until";
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -314,10 +542,10 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         }
 
         // This should generate 11 child event + 1 parent, since by then until bound would be hit.
-        $until = strtotime('+20 day +10 months', $this->event->timestart); // 22 oct 2014.
-        $until = date('YmdTHis', $until);
+        $until = strtotime('+20 day +10 months', $this->event->timestart);
+        $until = date('Ymd\THis\Z', $until);
         $rrule = "FREQ=MONTHLY;INTERVAL=2;BYDAY=1MO,3WE;UNTIL=$until";
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -326,17 +554,16 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $moffset = $i * 2;
             $time = strtotime("+$moffset month", $monthstart);
             $time2 = strtotime("+1 Monday", $time) + $offset;
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time2));
+            $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time2)); // 1st Monday.
             $this->assertTrue($result);
             $time2 = strtotime("+3 Wednesday", $time) + $offset;
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                    'timestart' => $time2)); // Event on the 5th of a month.
+            $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time2)); // 3rd Wednesday.
             $this->assertTrue($result);
         }
 
         // Forever event. This should generate events over 10 year period, on 2nd of every 12th month.
-        $rrule = 'FREQ=MONTHLY;INTERVAL=12;BYMONTHDAY=2';
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $rrule = "FREQ=MONTHLY;INTERVAL=12;BYMONTHDAY=$monthday";
+        $mang = new rrule_manager($rrule);
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -349,7 +576,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
 
         // Forever event. This should generate 10 child events + 1 parent over 10 year period, every 50th Monday.
         $rrule = 'FREQ=MONTHLY;BYDAY=1MO;INTERVAL=12';
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -369,8 +596,11 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
     public function test_yearly_events() {
         global $DB;
 
-        $rrule = 'FREQ=YEARLY;COUNT=3;BYMONTH=12'; // This should generate 3 events in total.
-        $mang = new \core_calendar\rrule_manager($rrule);
+        // Extract the event's month.
+        $bymonth = date('n', $this->event->timestart);
+
+        $rrule = "FREQ=YEARLY;COUNT=3;BYMONTH=$bymonth"; // This should generate 3 events in total.
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -380,12 +610,11 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $this->assertTrue($result);
         }
 
-        // Create an event every december, until the time limit is hit.
+        // Create a yearly event, until the time limit is hit.
         $until = strtotime('+20 day +10 years', $this->event->timestart);
-        $until = date('YmdTHis', $until);
-        $rrule = "FREQ=YEARLY;BYMONTH=12;UNTIL=$until"; // Forever event.
-        $mang = new \core_calendar\rrule_manager($rrule);
-        $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
+        $until = date('Ymd\THis\Z', $until);
+        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;UNTIL=$until"; // Forever event.
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -397,9 +626,9 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $this->assertTrue($result);
         }
 
-        // This should generate 5 events in total, every second year in the month of december.
-        $rrule = 'FREQ=YEARLY;BYMONTH=12;INTERVAL=2;COUNT=5';
-        $mang = new \core_calendar\rrule_manager($rrule);
+        // This should generate 5 events in total, every second year in the given month of the event.
+        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;INTERVAL=2;COUNT=5";
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -411,8 +640,8 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $this->assertTrue($result);
         }
 
-        $rrule = 'FREQ=YEARLY;BYMONTH=12;INTERVAL=2'; // Forever event.
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;INTERVAL=2"; // Forever event.
+        $mang = new rrule_manager($rrule);
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -425,30 +654,27 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $this->assertTrue($result);
         }
 
-        // This much seconds after the start of the day.
-        $offset = $this->event->timestart - mktime(0, 0, 0, date("n", $this->event->timestart), date("j", $this->event->timestart),
-                date("Y", $this->event->timestart));
-        $yearstart = mktime(0, 0, 0, 1, 1, date("Y", $this->event->timestart));
+        $eventmonth = date("F", $this->event->timestart);
+        $eventyear = date("Y", $this->event->timestart);
 
-        $rrule = 'FREQ=YEARLY;COUNT=3;BYMONTH=12;BYDAY=1MO'; // This should generate 3 events in total.
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $rrule = "FREQ=YEARLY;COUNT=3;BYMONTH=$bymonth;BYDAY=1MO"; // This should generate 3 events in total.
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
         $this->assertEquals(3, $count);
         for ($i = 0; $i < 3; $i++) {
-            $time = strtotime("+11 months +$i years", $yearstart);
-            $time = strtotime("+1 Monday", $time) + $offset;
+            $year = $eventyear + $i;
+            $time = strtotime("first Monday of $eventmonth $year");
             $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time));
             $this->assertTrue($result);
         }
 
-        // Create an event every december, until the time limit is hit.
+        // Create a yearly event on the specified month, until the time limit is hit.
         $until = strtotime('+20 day +10 years', $this->event->timestart);
-        $until = date('YmdTHis', $until);
-        $rrule = "FREQ=YEARLY;BYMONTH=12;UNTIL=$until;BYDAY=1MO";
-        $mang = new \core_calendar\rrule_manager($rrule);
-        $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
+        $until = date('Ymd\THis\Z', $until);
+        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;UNTIL=$until;BYDAY=1MO";
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -457,13 +683,13 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
                     'timestart' => ($time)));
             $this->assertTrue($result);
-            $time = strtotime("+11 months +$i years", $yearstart);
-            $time = strtotime("+1 Monday", $time) + $offset;
+            $year = $eventyear + $i;
+            $time = strtotime("first Monday of $eventmonth $year");
         }
 
         // This should generate 5 events in total, every second year in the month of december.
-        $rrule = 'FREQ=YEARLY;BYMONTH=12;INTERVAL=2;COUNT=5;BYDAY=1MO';
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;INTERVAL=2;COUNT=5;BYDAY=1MO";
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
@@ -472,12 +698,12 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
                     'timestart' => ($time)));
             $this->assertTrue($result);
-            $time = strtotime("+11 months +$yoffset years", $yearstart);
-            $time = strtotime("+1 Monday", $time) + $offset;
+            $year = $eventyear + $yoffset;
+            $time = strtotime("first Monday of $eventmonth $year");
         }
 
-        $rrule = 'FREQ=YEARLY;BYMONTH=12;INTERVAL=2;BYDAY=1MO'; // Forever event.
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;INTERVAL=2;BYDAY=1MO"; // Forever event.
+        $mang = new rrule_manager($rrule);
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -487,12 +713,12 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
                     'timestart' => ($time)));
             $this->assertTrue($result);
-            $time = strtotime("+11 months +$yoffset years", $yearstart);
-            $time = strtotime("+1 Monday", $time) + $offset;
+            $year = $eventyear + $yoffset;
+            $time = strtotime("first Monday of $eventmonth $year");
         }
 
         $rrule = 'FREQ=YEARLY;INTERVAL=2'; // Forever event.
-        $mang = new \core_calendar\rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -502,8 +728,8 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
                     'timestart' => ($time)));
             $this->assertTrue($result);
-            $time = strtotime("+11 months +$yoffset years", $yearstart);
-            $time = strtotime("+1 Monday", $time) + $offset;
+            $year = $eventyear + $yoffset;
+            $time = strtotime("first Monday of $eventmonth $year");
         }
     }
 }
@@ -518,7 +744,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
  * @copyright 2014 onwards Ankit Agarwal <ankit.agrr@gmail.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class core_tests_calendar_rrule_manager extends \core_calendar\rrule_manager{
+class core_tests_calendar_rrule_manager extends rrule_manager{
 
     /**
      * Magic method to get properties.
