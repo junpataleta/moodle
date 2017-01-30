@@ -83,7 +83,7 @@ define(['jquery',
             // Bind click event for the comments chooser button.
             $("#btn-question-bank").click(function (e) {
                 e.preventDefault();
-                new bank(threesixtyId);
+                bank.init(threesixtyId);
             });
 
             $(".delete-item-button").click(function (e) {

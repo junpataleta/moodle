@@ -26,8 +26,8 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
-require_once($CFG->dirroot.'/mod/threesixty/lib.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/mod/threesixty/lib.php');
 
 class mod_threesixty_mod_form extends moodleform_mod {
 
@@ -39,19 +39,30 @@ class mod_threesixty_mod_form extends moodleform_mod {
     function definition() {
         global $CFG, $DB, $OUTPUT;
 
-        $mform    =& $this->_form;
+        $mform =& $this->_form;
 
         // General.
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
         // Name.
-        $mform->addElement('text', 'name', get_string('name'), array('size'=>'64'));
+        $mform->addElement('text', 'name', get_string('name'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
         // Description.
         $this->standard_intro_elements();
+
+        // Anonymous.
+        $mform->addElement('advcheckbox', 'anonymous', get_string('anonymous', 'mod_threesixty'));
+
+        // 360-degree feedback participants.
+        $context = $this->get_context();
+        $roles = get_profile_roles($context);
+        $roleoptions = role_fix_names($roles, $context, ROLENAME_ALIAS, true);
+        $roleoptions[0] = get_string('allparticipants', 'mod_threesixty');
+        ksort($roleoptions);
+        $mform->addElement('select', 'participantrole', get_string('participants', 'mod_threesixty'), $roleoptions);
 
         // Availability.
         $mform->addElement('header', 'timinghdr', get_string('availability'));
@@ -60,8 +71,8 @@ class mod_threesixty_mod_form extends moodleform_mod {
         $mform->addElement('date_time_selector', 'timeclose', get_string('feedbackclose', 'feedback'),
             array('optional' => true));
 
-
         $this->standard_coursemodule_elements();
+
         $this->add_action_buttons();
     }
 }

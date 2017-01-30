@@ -35,24 +35,20 @@
     {
     }
 }}
-<div class="container question-bank">
-    <div class="row" id="question-edit-form-container">
+<div class="container-fluid">
+    <div class="row m-b-1" id="question-edit-form-container">
         <button class="btn btn-default" id="btn-question-bank-add">
             {{#pix }} t/add, core, {{#str}}addanewquestion, mod_threesixty{{/str}} {{/pix }}
         </button>
     </div>
-    <div class="row">
-        &nbsp;
-    </div>
     <div class="row" id="questionListWrapper">
         {{> mod_threesixty/question_list}}
     </div>
-    <div>
-        <button class="btn btn-default" id="btn-question-bank-done">
-            {{#str}}labeldone, mod_threesixty{{/str}}
-        </button>
-        <button class="btn btn-default" id="btn-question-bank-cancel">
-            {{#str}}labelcancel, mod_threesixty{{/str}}
-        </button>
-    </div>
 </div>
+{{#js}}
+    require(['jquery', 'mod_threesixty/question_bank'], function($, qb) {
+        $("#btn-question-bank-add").click(function () {
+            qb.displayInputDialogue();
+        });
+    });
+{{/js}}

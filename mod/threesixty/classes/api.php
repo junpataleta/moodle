@@ -2,6 +2,7 @@
 
 namespace mod_threesixty;
 
+use context_module;
 use stdClass;
 
 class api {
@@ -21,6 +22,8 @@ class api {
 
     const MOVE_UP = 1;
     const MOVE_DOWN = 2;
+
+    const PARTICIPANT_ROLE_ALL = 0;
 
     /**
      * @return array
@@ -78,19 +81,17 @@ class api {
     public static function get_items($threesixtyid) {
         global $DB;
 
-        $sql = "SELECT
-                    i.id,
-                    i.threesixty as threesixtyid,
-                    i.question as questionid,
-                    i.position,
-                    q.question,
-                    q.type
-                FROM {threesixty_item} i
-                INNER JOIN {threesixty_question} q
-                ON i.question = q.id
-                WHERE
-                    i.threesixty = :threesixtyid
-                ORDER BY i.position;";
+        $sql = "SELECT i.id,
+                       i.threesixty as threesixtyid,
+                       i.question as questionid,
+                       i.position,
+                       q.question,
+                       q.type
+                  FROM {threesixty_item} i
+            INNER JOIN {threesixty_question} q
+                    ON i.question = q.id
+                 WHERE i.threesixty = :threesixtyid
+              ORDER BY i.position;";
         $params = [
             'threesixtyid' => $threesixtyid
         ];
@@ -111,6 +112,21 @@ class api {
             $item->typetext = $qtype;
         }
         return $items;
+    }
+
+    /**
+     * Fetches the user's responses.
+     */
+    public static function get_responses($threesixtyid, $fromuser, $touser) {
+        global $DB;
+
+        $params = [
+            'threesixty' => $threesixtyid,
+            'fromuser' => $fromuser,
+            'touser' => $touser
+        ];
+
+        return $DB->get_records('threesixty_response', $params, 'item ASC', 'id, item, value');
     }
 
     public static function set_items($threesixtyid, $questionids) {
@@ -266,28 +282,53 @@ class api {
 
     public static function get_participants($threesixtyid, $userid) {
         global $DB;
-        $userssql = "SELECT
-                        u.id AS userid,
-                        u.firstname,
-                        u.lastname,
-                        u.firstnamephonetic,
-                        u.lastnamephonetic,
-                        u.middlename,
-                        u.alternatename,
-                        fs.id AS statusid,
-                        fs.status
-                    FROM {user} u
-                    INNER JOIN {user_enrolments} ue ON u.id = ue.userid
-                    INNER JOIN {enrol} e ON e.id = ue.enrolid
-                    INNER JOIN {threesixty} f 
-                    ON f.course = e.courseid AND
-                        f.id = :threesixtyid
-                    INNER JOIN {threesixty_submission} fs
-                    ON f.id = fs.threesixty AND
-                        fs.touser = u.id AND
-                        fs.fromuser = :userid
-                    WHERE u.id <> :userid2";
-        $userssqlparams = array("threesixtyid" => $threesixtyid, "userid" => $userid, "userid2" => $userid);
+
+        $role = $DB->get_field('threesixty', 'participantrole', ['id' => $threesixtyid]);
+        $rolecondition = '';
+        $userssqlparams = ['threesixtyid' => $threesixtyid, 'userid' => $userid, 'userid2' => $userid];
+        if ($role != 0) {
+            $rolecondition = "AND u.id IN (
+                                  SELECT ra.userid 
+                                    FROM {role_assignments} ra
+                              INNER JOIN {threesixty} ff
+                                      ON ra.roleid = ff.participantrole
+                                         AND ff.id = :threesixtyid2
+                              )
+                              AND :user3 IN (
+                                  SELECT ra.userid 
+                                    FROM {role_assignments} ra
+                              INNER JOIN {threesixty} ff
+                                      ON ra.roleid = ff.participantrole
+                                         AND ff.id = :threesixtyid3
+                              )";
+            $userssqlparams['threesixtyid2'] = $threesixtyid;
+            $userssqlparams['threesixtyid3'] = $threesixtyid;
+            $userssqlparams['user3'] = $userid;
+        }
+
+        $userssql = "SELECT u.id AS userid,
+                            u.firstname,
+                            u.lastname,
+                            u.firstnamephonetic,
+                            u.lastnamephonetic,
+                            u.middlename,
+                            u.alternatename,
+                            fs.id AS statusid,
+                            fs.status
+                       FROM {user} u
+                 INNER JOIN {user_enrolments} ue 
+                         ON u.id = ue.userid
+                 INNER JOIN {enrol} e 
+                         ON e.id = ue.enrolid
+                 INNER JOIN {threesixty} f 
+                         ON f.course = e.courseid 
+                            AND f.id = :threesixtyid
+                 INNER JOIN {threesixty_submission} fs
+                         ON f.id = fs.threesixty 
+                            AND fs.touser = u.id 
+                            AND fs.fromuser = :userid
+                      WHERE u.id <> :userid2 $rolecondition";
+
         return $DB->get_records_sql($userssql, $userssqlparams);
     }
 
@@ -296,23 +337,51 @@ class api {
      */
     public static function generate_360_feedback_statuses($threesixtyid, $userid) {
         global $DB;
+
+        $role = $DB->get_field('threesixty', 'participantrole', ['id' => $threesixtyid]);
+        $rolecondition = '';
+        $params = [
+            'threesixtyid' => $threesixtyid,
+            'fromuser' => $userid,
+            'fromuser2' => $userid
+        ];
+        if ($role != 0) {
+            $rolecondition = "AND u.id IN (
+                                  SELECT ra.userid 
+                                    FROM {role_assignments} ra
+                              INNER JOIN {threesixty} ff
+                                      ON ra.roleid = ff.participantrole
+                                         AND ff.id = :threesixtyid2
+                              )
+                              AND :fromuser3 IN (
+                                  SELECT ra.userid 
+                                    FROM {role_assignments} ra
+                              INNER JOIN {threesixty} ff
+                                      ON ra.roleid = ff.participantrole
+                                         AND ff.id = :threesixtyid3
+                              )";
+            $params['threesixtyid2'] = $threesixtyid;
+            $params['threesixtyid3'] = $threesixtyid;
+            $params['fromuser3'] = $userid;
+        }
+
         $usersql = "SELECT DISTINCT u.id
-                      FROM {user} u
-                      INNER JOIN {user_enrolments} ue
-                        ON u.id = ue.userid
-                      INNER JOIN {enrol} e
-                        ON e.id = ue.enrolid
-                      INNER JOIN {threesixty} f
-                        ON f.course = e.courseid AND f.id = :threesixtyid
-                      WHERE
-                        u.id <> :fromuser
-                        AND u.id NOT IN (
-                          SELECT
-                            fs.touser
-                          FROM {threesixty_submission} fs
-                          WHERE fs.threesixty = f.id AND fs.fromuser = :fromuser2
-                        )";
-        $params = array('threesixtyid' => $threesixtyid, 'fromuser' => $userid, 'fromuser2' => $userid);
+                               FROM {user} u
+                         INNER JOIN {user_enrolments} ue
+                                 ON u.id = ue.userid
+                         INNER JOIN {enrol} e
+                                 ON e.id = ue.enrolid
+                         INNER JOIN {threesixty} f
+                                 ON f.course = e.courseid AND f.id = :threesixtyid
+                              WHERE u.id <> :fromuser
+                                    AND u.id NOT IN (
+                                        SELECT fs.touser
+                                          FROM {threesixty_submission} fs
+                                         WHERE fs.threesixty = f.id 
+                                               AND fs.fromuser = :fromuser2
+                                    )
+                                    $rolecondition";
+
         if ($users = $DB->get_records_sql($usersql, $params)) {
             foreach ($users as $user) {
                 $status = new stdClass();
@@ -322,6 +391,57 @@ class api {
                 $DB->insert_record('threesixty_submission', $status);
             }
         }
+    }
+
+    /**
+     * Checks if the given user ID can participate in the given 360-degree feedback activity.
+     *
+     * @param stdClass|int $threesixtyorid The 360-degree feedback activity object or identifier.
+     * @param int $userid The user ID.
+     * @param context_module $context
+     * @return bool|string True if the user can participate. An error message if not.
+     */
+    public static function can_participate($threesixtyorid, $userid, context_module $context = null) {
+        global $DB;
+
+        // User can't participate if not enrolled in the course.
+        if ($context !== null && !is_enrolled($context)) {
+            return get_string('errornotenrolled', 'mod_threesixty');
+        }
+
+        // Get 360 ID and participant role.
+        if (is_object($threesixtyorid)) {
+            $threesixty = $threesixtyorid;
+            $threesixtyid = $threesixty->id;
+            $participantrole = $threesixty->participantrole;
+        } else {
+            $threesixtyid = $threesixtyorid;
+            $participantrole = $DB->get_field('threesixty', 'participantrole', ['id' => $threesixtyid]);
+        }
+
+        // The user is enrolled and the 360 activity is open to all course members, so return true.
+        if ($participantrole == self::PARTICIPANT_ROLE_ALL) {
+            return true;
+        }
+
+        // Check if user's role is the same as the activity's participant role setting.
+        $sql = "SELECT ra.userid 
+                  FROM {role_assignments} ra
+            INNER JOIN {threesixty} t
+                    ON ra.roleid = t.participantrole
+                       AND t.id = :threesixtyid
+                 WHERE ra.userid = :userid";
+
+        $params = [
+            'threesixtyid' => $threesixtyid,
+            'userid' => $userid
+        ];
+
+        if ($DB->record_exists_sql($sql, $params)) {
+            return true;
+        }
+
+        return get_string('errorcannotparticipate', 'mod_threesixty');
     }
 
     public static function get_submission($id) {
@@ -337,8 +457,9 @@ class api {
             'touser' => $touser,
         ]);
     }
+
     /**
-     * TODO: No hardcoding in real life.
+     * Get scales for rated questions.
      *
      * @return array
      */
@@ -347,37 +468,38 @@ class api {
         $s0 = new stdClass();
         $s0->scale = 0;
         $s0->scalelabel = 'N/A';
-        $s0->description = 'Not applicable';
+        $s0->description = get_string('scalenotapplicable', 'mod_threesixty');
 
         $s1 = new stdClass();
         $s1->scale = 1;
         $s1->scalelabel = '1';
-        $s1->description = 'Strongly disagree';
+        $s1->description = get_string('scalestronglydisagree', 'mod_threesixty');
 
         $s2 = new stdClass();
         $s2->scale = 2;
         $s2->scalelabel = '2';
-        $s2->description = 'Disagree';
+        $s2->description = get_string('scaledisagree', 'mod_threesixty');
 
         $s3 = new stdClass();
         $s3->scale = 3;
         $s3->scalelabel = '3';
-        $s3->description = 'Somewhat disagree';
+        $s3->description = get_string('scalesomewhatdisagree', 'mod_threesixty');
 
         $s4 = new stdClass();
         $s4->scale = 4;
         $s4->scalelabel = '4';
-        $s4->description = 'Somewhat agree';
+        $s4->description = get_string('scalesomewhatagree', 'mod_threesixty');
 
         $s5 = new stdClass();
         $s5->scale = 5;
         $s5->scalelabel = '5';
-        $s5->description = 'Agree';
+        $s5->description = get_string('scaleagree', 'mod_threesixty');
 
         $s6 = new stdClass();
         $s6->scale = 6;
         $s6->scalelabel = '6';
-        $s6->description = 'Strongly agree';
+        $s6->description = get_string('scalestronglyagree', 'mod_threesixty');
+
         return [$s1, $s2, $s3, $s4, $s5, $s6, $s0];
     }
 
@@ -392,14 +514,13 @@ class api {
         ]);
         
         $result = true;
-        
         foreach ($responses as $key => $value) {
             if ($key == 0) {
                 continue;
             }
             $response = new stdClass();
             foreach ($savedresponses as $savedresponse) {
-                if ($savedresponse->item != $key) {
+                if ($savedresponse->item == $key) {
                     $response = $savedresponse;
                     break;
                 }

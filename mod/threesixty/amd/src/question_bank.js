@@ -22,19 +22,25 @@
  * @copyright  2016 Jun Pataleta <jun@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery',
-    'core/templates',
-    'core/notification',
-    'core/ajax',
-    'core/str',
-    'core/yui'], function ($, templates, notification, ajax, str) {
+define(
+    [
+        'jquery',
+        'core/templates',
+        'core/notification',
+        'core/ajax',
+        'core/str',
+        'core/modal_factory',
+        'core/modal_events'
+    ], function ($, templates, notification, ajax, str, ModalFactory, ModalEvents) {
 
     // Private variables and functions.
     var selectedQuestionsOld,
         selectedQuestions,
         questions = [],
         threeSixtyId,
-        questionTypes;
+        questionTypes,
+        questionBankDialogue,
+        inputDialogue;
     
     function getQuestionTypeOptions(selectedId) {
         var questionTypeOptions = [];
@@ -84,10 +90,9 @@ define(['jquery',
         }).fail(notification.exception);
     }
 
-    function displayInputDialogue(questionId) {
+    var displayInputDialogue = function(questionId) {
         str.get_string('addanewquestion', 'mod_threesixty').done(function (title) {
             var data = {};
-            var titleLabel = $('<label/>').append(title);
 
             if (typeof questionId !== 'undefined') {
                 for (var i in questions) {
@@ -103,84 +108,83 @@ define(['jquery',
             }
 
             data.questionTypes = getQuestionTypeOptions(data.type);
-            console.log(questions);
-            templates.render('mod_threesixty/item_edit', data)
-                .done(function (compiledSource) {
-                    renderInputDialogue(titleLabel, compiledSource, questionId);
-                })
-                .fail(notification.exception);
+            var body = templates.render('mod_threesixty/item_edit', data);
+            renderInputDialogue(title, body, questionId);
         }).fail(notification.exception);
-    }
+    };
 
     /**
      * 
-     * @param dialogueTitleLabel
-     * @param compiledSource
+     * @param dialogueTitle
+     * @param bodyTemplate
      * @param questionId
      */
-    function renderInputDialogue(dialogueTitleLabel, compiledSource, questionId) {
+    function renderInputDialogue(dialogueTitle, bodyTemplate, questionId) {
         // Set dialog's body content.
-        var inputDialogue = new M.core.dialogue({
-            modal: true,
-            headerContent: dialogueTitleLabel,
-            bodyContent: '<div id="question-input-dialogue-container"/>',
-            draggable: true,
-            center: true
-        });
+        if (inputDialogue) {
+            // Set dialogue body.
+            inputDialogue.setBody(bodyTemplate);
+            // Display the dialogue.
+            inputDialogue.show();
 
-        inputDialogue.show();
+        } else {
+            ModalFactory.create({
+                type: ModalFactory.types.SAVE_CANCEL,
+                title: dialogueTitle,
+                body: bodyTemplate,
+                large: true
+            }).done(function(modal) {
+                inputDialogue = modal;
 
-        // Destroy after hiding.
-        inputDialogue.after('visibleChange', function(e) {
-            // Going from visible to hidden.
-            if (e.prevVal && !e.newVal) {
-                this.destroy();
-            }
-        }, inputDialogue);
+                // Display the dialogue.
+                inputDialogue.show();
 
-        $("#question-input-dialogue-container").html(compiledSource);
+                // On hide handler.
+                modal.getRoot().on(ModalEvents.shown, function() {
+                    // Empty modal contents when it's hidden.
+                    $("#question-input").focus();
+                });
 
-        // Bind event for question input dialogue cancel button.
-        $("#btn-cancel-question-input").click(function () {
-            inputDialogue.hide();
-        });
+                // On hide handler.
+                modal.getRoot().on(ModalEvents.hidden, function() {
+                    // Empty modal contents when it's hidden.
+                    modal.setBody('');
+                });
 
-        // Bind click event to save button.
-        $("#btn-save-question").click(function (e) {
-            e.preventDefault();
+                modal.getRoot().on(ModalEvents.save, function() {
+                    var question = $("#question-input").val().trim();
+                    if (!question) {
+                        str.get_string('requiredelement', 'form').done(function (errorMsg) {
+                            var errorMessage = $('<div/>').append(errorMsg)
+                                .attr('class', 'alert alert-error')
+                                .attr('role', 'alert');
+                            $('.error-container').html(errorMessage);
+                        }).fail(notification.exception);
+                        return;
+                    }
+                    var qtype = $("#question-type-select").val();
 
-            var question = $("#question-input").val().trim();
-            if (!question) {
-                str.get_string('requiredelement', 'form').done(function (errorMsg) {
-                    var errorMessage = $('<div/>').append(errorMsg)
-                        .attr('class', 'alert alert-error')
-                        .attr('role', 'alert');
-                    $('.error-container').html(errorMessage);
-                }).fail(notification.exception);
-                return;
-            }
-            var qtype = $("#question-type-select").val();
+                    var data = {
+                        question: question,
+                        type: qtype
+                    };
 
-            var data = {
-                question: question,
-                type: qtype
-            };
+                    var method = 'mod_threesixty_add_question';
+                    if (questionId !== false) {
+                        method = 'mod_threesixty_update_question';
+                        data.id = questionId;
+                    }
 
-            var method = 'mod_threesixty_add_question';
-            if (questionId !== false) {
-                method = 'mod_threesixty_update_question';
-                data.id = questionId;
-            }
-
-            // Refresh the list of questions thru AJAX.
-            var promises = ajax.call([
-                {methodname: method, args: data}
-            ]);
-            promises[0].done(function () {
-                inputDialogue.hide();
-                refreshQuestionsList();
-            }).fail(notification.exception);
-        });
+                    // Refresh the list of questions thru AJAX.
+                    var promises = ajax.call([
+                        {methodname: method, args: data}
+                    ]);
+                    promises[0].done(function () {
+                        refreshQuestionsList();
+                    }).fail(notification.exception);
+                });
+            });
+        }
     }
 
     /**
@@ -201,79 +205,81 @@ define(['jquery',
 
     /**
      * Displays the question bank dialogue.
-     * @param content
+     * @param title
+     * @param questionBankTemplate
      */
-    function displayQuestionBankDialogue(title, content) {
-        var titleLabel = $('<label/>').append(title);
+    function displayQuestionBankDialogue(title, questionBankTemplate) {
         // Set dialog's body content.
-        var dialogue = new M.core.dialogue({
-            modal: true,
-            headerContent: titleLabel,
-            bodyContent: content,
-            width: "95%",
-            center: true
-        });
+        if (questionBankDialogue) {
+            // Set dialogue body.
+            questionBankDialogue.setBody(questionBankTemplate);
+            // Display the dialogue.
+            questionBankDialogue.show();
 
-        // Show dialog.
-        dialogue.show();
+        } else {
+            ModalFactory.create({
+                type: ModalFactory.types.SAVE_CANCEL,
+                title: title,
+                body: questionBankTemplate,
+                large: true
+            }).done(function (modal) {
+                var modalRoot = modal.getRoot();
 
-        $("#btn-question-bank-cancel").click(function () {
-            dialogue.hide();
-            dialogue.destroy();
-        });
+                // On hide handler.
+                modalRoot.on(ModalEvents.hidden, function () {
+                    // Empty modal contents when it's hidden.
+                    modal.setBody('');
+                });
 
-        $("#btn-question-bank-add").click(function () {
-            displayInputDialogue();
-        });
+                modalRoot.on(ModalEvents.save, function () {
+                    var changed = false;
+                    // Check if the new selected questions exist in the old selected questions.
+                    $.each(selectedQuestionsOld, function(key, questionId) {
+                        if (selectedQuestions.indexOf(questionId) == -1) {
+                            changed = true;
+                        }
+                    });
+                    // Conversely, if the newly selected items seem to have not changed,
+                    // check if the old selected questions exist in the new selected questions.
+                    if (!changed) {
+                        $.each(selectedQuestions, function(key, questionId) {
+                            if (selectedQuestionsOld.indexOf(questionId) == -1) {
+                                changed = true;
+                            }
+                        });
+                    }
 
-        $("#btn-question-bank-done").click(function () {
-            var changed = false;
-            // Check if the new selected questions exist in the old selected questions.
-            $.each(selectedQuestionsOld, function(key, questionId) {
-                if (selectedQuestions.indexOf(questionId) == -1) {
-                    changed = true;
-                }
-            });
-            // Conversely, if the newly selected items seem to have not changed,
-            // check if the old selected questions exist in the new selected questions.
-            if (!changed) {
-                $.each(selectedQuestions, function(key, questionId) {
-                    if (selectedQuestionsOld.indexOf(questionId) == -1) {
-                        changed = true;
+                    if (changed) {
+                        var data = {
+                            threesixtyid: threeSixtyId,
+                            questionids: selectedQuestions
+                        };
+
+                        // Refresh the list of questions thru AJAX.
+                        var promises = ajax.call([
+                            {methodname: 'mod_threesixty_set_items', args: data}
+                        ]);
+                        promises[0].done(function () {
+                            // Refresh the items list if the selection has changed.
+                            require(['mod_threesixty/edit_items'], function(items) {
+                                items.refreshItemList();
+                            });
+                        }).fail(notification.exception);
                     }
                 });
-            }
 
-            if (changed) {
-                var data = {
-                    threesixtyid: threeSixtyId,
-                    questionids: selectedQuestions
-                };
+                questionBankDialogue = modal;
 
-                // Refresh the list of questions thru AJAX.
-                var promises = ajax.call([
-                    {methodname: 'mod_threesixty_set_items', args: data}
-                ]);
-                promises[0].done(function () {
-                    dialogue.hide();
-                    dialogue.destroy();
-                    // Refresh the items list if the selection has changed.
-                    require(['mod_threesixty/edit_items'], function(items) {
-                        items.refreshItemList();
-                    });
-                }).fail(notification.exception);
-            } else {
-                dialogue.hide();
-                dialogue.destroy();
-            }
-        });
-        bindItemActionEvents();
+                // Display the dialogue.
+                questionBankDialogue.show();
+            });
+        }
     }
 
     /**
      * Binds the event listeners to question items such as edit, delete, checking.
      */
-    function bindItemActionEvents() {
+    var bindItemActionEvents = function() {
         $(".question-checkbox").click(function () {
             var questionId = parseInt(this.getAttribute('data-questionid'));
 
@@ -293,22 +299,34 @@ define(['jquery',
         });
 
         $(".delete-question-button").click(function () {
-            var questionId = this.getAttribute('data-questionid');
+            var deleteButton = this;
+            str.get_string('deletequestion', 'mod_threesixty').done(function(title) {
+                ModalFactory.create({
+                    title: title,
+                    body: str.get_string('confirmquestiondeletion', 'mod_threesixty'),
+                    type: ModalFactory.types.CONFIRM
+                }).done(function(modal) {
+                    modal.getRoot().on(ModalEvents.yes, function() {
+                        var questionId = deleteButton.getAttribute('data-questionid');
 
-            // Get list of questions thru AJAX.
-            var promises = ajax.call([
-                {
-                    methodname: 'mod_threesixty_delete_question',
-                    args: {
-                        id: questionId
-                    }
-                }
-            ]);
-            promises[0].done(function () {
-                refreshQuestionsList();
-            }).fail(notification.exception);
+                        // Get list of questions thru AJAX.
+                        var promises = ajax.call([
+                            {
+                                methodname: 'mod_threesixty_delete_question',
+                                args: {
+                                    id: questionId
+                                }
+                            }
+                        ]);
+                        promises[0].done(function () {
+                            refreshQuestionsList();
+                        }).fail(notification.exception);
+                    });
+                    modal.show();
+                });
+            });
         });
-    }
+    };
 
     /**
      * Create the context and render the question  bank template.
@@ -329,19 +347,16 @@ define(['jquery',
             context.questions = checkQuestions(questions);
 
             // Render the template and display the comment chooser dialog.
-            templates.render('mod_threesixty/question_bank', context)
-                .done(function (compiledSource) {
-                    str.get_string('labelpickfromquestionbank', 'mod_threesixty')
-                        .done(function (title) {
-                            displayQuestionBankDialogue(title, compiledSource);
-                        })
-                        .fail(notification.exception);
+            var questionBankTemplate = templates.render('mod_threesixty/question_bank', context);
+            str.get_string('labelpickfromquestionbank', 'mod_threesixty')
+                .done(function (title) {
+                    displayQuestionBankDialogue(title, questionBankTemplate);
                 })
                 .fail(notification.exception);
         }).fail(notification.exception);
     }
 
-    var questionBank = function(id) {
+    var questionBankInit = function(id) {
         threeSixtyId = id;
 
         var methodCalls = [
@@ -381,6 +396,12 @@ define(['jquery',
                 renderQuestionBank();
             }
         }).fail(notification.exception);
+    };
+
+    var questionBank = {
+        init: questionBankInit,
+        displayInputDialogue: displayInputDialogue,
+        bindItemActionEvents: bindItemActionEvents
     };
 
     return questionBank; /** @alias module:mod_threesixty/question_bank */

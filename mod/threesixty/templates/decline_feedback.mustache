@@ -35,18 +35,15 @@
         "statusid" : 1
     }
 }}
-<div class="panel panel-default">
-    <div class="panel-body">
-        <div>
-            <h5>{{#str}}declineheading, mod_threesixty, {{name}} {{/str}}</h5>
-            <label for="decline-reason">
-                {{#str}}declinereason, mod_threesixty{{/str}}
-            </label>
-            <textarea class="form-control" id="decline-reason" placeholder="{{#str}}declinereasonplaceholdertext, mod_threesixty{{/str}}" cols="44" rows="5"></textarea>
-        </div>
-        <div>
-            <button id="btn-decline" class="btn btn-primary" data-statusid="{{statusid}}">{{#str}}decline, mod_threesixty{{/str}}</button>
-            <button id="btn-cancel-decline" class="btn btn-cancel">{{#str}}labelcancel, mod_threesixty{{/str}}</button>
-        </div>
+<div class="container">
+    <div>
+        <h5>{{#str}}declineheading, mod_threesixty, {{name}} {{/str}}</h5>
+    </div>
+    <div class="form-group">
+        <label for="decline-reason">
+            {{#str}}declinereason, mod_threesixty{{/str}}
+        </label>
+        <textarea class="form-control" id="decline-reason" placeholder="{{#str}}declinereasonplaceholdertext, mod_threesixty{{/str}}" cols="44" rows="5"></textarea>
+        <input type="hidden" value="{{statusid}}" id="decline-statusid">
     </div>
 </div>

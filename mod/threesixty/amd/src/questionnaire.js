@@ -26,8 +26,7 @@ define(['jquery',
     'core/templates',
     'core/notification',
     'core/ajax',
-    'core/str',
-    'core/yui'], function ($, templates, notification, ajax, str) {
+    'core/str'], function ($, templates, notification, ajax, str) {
 
     var responses = [];
     var questionnaire = function() {
@@ -36,34 +35,91 @@ define(['jquery',
         $('[data-region="question-row"]').each(function() {
             responses[$(this).data('itemid')] = null;
         });
+
+        var questionnaireTable = $('[data-region="questionnaire"]');
+        var fromUser = questionnaireTable.data('fromuserid');
+        var toUser = questionnaireTable.data('touserid');
+        var threesixtyId = questionnaireTable.data('threesixtyid');
+
+        var promises = ajax.call([
+            {
+                methodname: 'mod_threesixty_get_responses',
+                args: {
+                    threesixtyid: threesixtyId,
+                    fromuserid: fromUser,
+                    touserid: toUser
+                }
+            }
+        ]);
+
+        promises[0].done(function(result) {
+            $.each(result.responses, function() {
+                var response = this;
+                responses[response.item] = response.value;
+
+                $('[data-region="question-row"]').each(function() {
+                    if ($(this).data('itemid') == response.item) {
+                        var options = $(this).children('.scaleoption');
+                        if (options) {
+                            options.each(function() {
+                                // Mark selected option as selected.
+                                var selected = $(this).find('label');
+                                if (selected.data('value') == response.value) {
+                                    selected.removeClass('label-default');
+                                    selected.removeClass('label-info');
+                                    selected.addClass('label-success');
+                                }
+                            });
+                        }
+                        var comment = $(this).find('.comment');
+                        if (comment) {
+                            var commentTextArea = $(this).find('textarea');
+                            commentTextArea.val(response.value);
+                        }
+                    }
+                });
+            });
+            console.log(responses);
+        });
     };
 
     questionnaire.prototype.registerEvents = function() {
-        $('.scaleoption').click(function() {
+        $('.scaleoption').click(function(e) {
+            e.preventDefault();
+
             var row = $(this).parent('[data-region="question-row"]');
             var options = row.find('label');
+
+            // Deselect the option that has been selected.
             $.each(options, function() {
                 if ($(this).hasClass('label-success')) {
                     $(this).removeClass('label-success');
                     $(this).addClass('label-default');
 
-                    var optionRadio = $("#" + $(this).attr('for'));
+                    var forId = $(this).attr('for');
+                    var optionRadio = $("#" + forId);
                     optionRadio.removeAttr('checked');
                 }
             });
+
+            // Mark selected option as selected.
             var selected = $(this).find('label');
             selected.removeClass('label-default');
             selected.removeClass('label-info');
             selected.addClass('label-success');
 
+            // Mark hidden radio button as checked.
             var radio = $("#" + selected.attr('for'));
             radio.attr('checked', 'checked');
             var itemid = row.data('itemid');
-            //
+
+            // Add this selected value to the array of responses.
             responses[itemid] = selected.data('value');
         });
 
-        $('.scaleoptionlabel').hover(function() {
+        $('.scaleoptionlabel').hover(function(e) {
+            e.preventDefault();
+
             if (!$(this).hasClass('label-success')) {
                 if ($(this).hasClass('label-default')) {
                     $(this).removeClass('label-default');
@@ -75,35 +131,64 @@ define(['jquery',
             }
         });
 
-        $("#submit-feedback").click(function() {
-            $('.comment').each(function() {
-                responses[$(this).data('itemid')] = $(this).val().trim();
-            });
-            var complete = true;
-            $.each(responses, function(key, response) {
-                if (key > 0 && !response) {
-                    complete = false;
-                    return;
-                }
-            });
+        $("#save-feedback").click(function() {
+            saveResponses(false);
+        });
 
-            var toUser = $('[data-region="questionnaire"]').data('touserid');
-            var threesixtyId = $('[data-region="questionnaire"]').data('threesixtyid');
-            var promises = ajax.call([
-                {
-                    methodname: 'mod_threesixty_save_responses',
-                    args: {
-                        threesixtyid: threesixtyId,
-                        touserid: toUser,
-                        responses: responses
-                    }
-                }
-            ]);
-            promises[0].done(function (response) {
-                window.location = response.redirurl;
-            }).fail(notification.exception);
+        $("#submit-feedback").click(function() {
+            saveResponses(true);
         });
     };
+
+    function saveResponses(redirectAfter) {
+        $('.comment').each(function() {
+            responses[$(this).data('itemid')] = $(this).val().trim();
+        });
+        
+        var toUser = $('[data-region="questionnaire"]').data('touserid');
+        var threesixtyId = $('[data-region="questionnaire"]').data('threesixtyid');
+        console.log(responses);
+        var promises = ajax.call([
+            {
+                methodname: 'mod_threesixty_save_responses',
+                args: {
+                    threesixtyid: threesixtyId,
+                    touserid: toUser,
+                    responses: responses,
+                    complete: redirectAfter
+                }
+            }
+        ]);
+
+        promises[0].done(function(response) {
+            var messageStrings = [
+                {
+                    key: 'responsessaved',
+                    component: 'mod_threesixty'
+                },
+                {
+                    key: 'errorresponsesavefailed',
+                    component: 'mod_threesixty'
+                }
+            ];
+
+            str.get_strings(messageStrings, 'mod_threesixty').done(function(messages) {
+                var notificationData = {};
+                if (response.result) {
+                    notificationData.message = messages[0];
+                    notificationData.type = "success";
+                } else {
+                    notificationData.message = messages[1];
+                    notificationData.type = "error";
+                }
+                notification.addNotification(notificationData);
+            }).fail(notification.exception);
+
+            if (redirectAfter) {
+                window.location = response.redirurl;
+            }
+        }).fail(notification.exception);
+    }
 
     return questionnaire;
 });

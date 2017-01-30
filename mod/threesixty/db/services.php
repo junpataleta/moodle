@@ -147,4 +147,12 @@ $functions = [
         'ajax'        => true,
         'loginrequired' => false,
     ],
+    'mod_threesixty_get_responses' => [
+        'classname'   => 'mod_threesixty\external',
+        'methodname'  => 'get_responses',
+        'description' => 'Loads the responses of a user for the 360 degree feedback questionnaire.',
+        'type'        => 'read',
+        'ajax'        => true,
+        'loginrequired' => false,
+    ],
 ];

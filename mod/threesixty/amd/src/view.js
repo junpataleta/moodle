@@ -22,14 +22,20 @@
  * @copyright  2016 Jun Pataleta <jun@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery',
-    'core/templates',
-    'core/notification',
-    'core/ajax',
-    'core/str', 'mod_threesixty/question_bank',
-    'core/yui'], function ($, templates, notification, ajax, str, bank) {
+define(
+    [
+        'jquery',
+        'core/templates',
+        'core/notification',
+        'core/ajax',
+        'core/str',
+        'core/modal_factory',
+        'core/modal_events'
+    ], function ($, templates, notification, ajax, str, ModalFactory, ModalEvents) {
 
-    var threesixtyid;
+    var threesixtyid,
+        declineDialogue;
+
     function refreshParticipantsList() {
         // Refresh the list of questions thru AJAX.
         var promises = ajax.call([
@@ -52,60 +58,58 @@ define(['jquery',
             {methodname: method, args: data}
         ]);
     }
+
     /**
      *
-     * @param dialogueTitleLabel
-     * @param compiledSource
-     * @param questionId
+     * @param dialogueTitle
+     * @param declineTemplate
      */
-    function renderDeclineDialogue(dialogueTitleLabel, compiledSource) {
+    function renderDeclineDialogue(dialogueTitle, declineTemplate) {
         // Set dialog's body content.
-        var inputDialogue = new M.core.dialogue({
-            modal: true,
-            headerContent: dialogueTitleLabel,
-            bodyContent: '<div id="decline-dialogue-container"/>',
-            draggable: true,
-            center: true
-        });
+        if (declineDialogue) {
+            // Set dialogue body.
+            declineDialogue.setBody(declineTemplate);
+            // Display the dialogue.
+            declineDialogue.show();
 
-        inputDialogue.show();
+        } else {
+            ModalFactory.create({
+                title: dialogueTitle,
+                body: declineTemplate,
+                large: true,
+                type: ModalFactory.types.SAVE_CANCEL
+            }).done(function (modal) {
+                declineDialogue = modal;
 
-        // Destroy after hiding.
-        inputDialogue.after('visibleChange', function(e) {
-            // Going from visible to hidden.
-            if (e.prevVal && !e.newVal) {
-                this.destroy();
-            }
-        }, inputDialogue);
+                // Display the dialogue.
+                declineDialogue.show();
 
-        $("#decline-dialogue-container").html(compiledSource);
+                // On hide handler.
+                modal.getRoot().on(ModalEvents.hidden, function () {
+                    // Empty modal contents when it's hidden.
+                    modal.setBody('');
+                });
 
-        // Bind event for question input dialogue cancel button.
-        $("#btn-cancel-decline").click(function () {
-            inputDialogue.hide();
-        });
+                modal.getRoot().on(ModalEvents.save, function() {
+                    var statusid = $("#decline-statusid").val();
+                    var reason = $("#decline-reason").val().trim();
+                    var data = {
+                        statusid: statusid,
+                        declinereason: reason
+                    };
 
-        // Bind click event to save button.
-        $("#btn-decline").click(function (e) {
-            e.preventDefault();
-            var statusid = $(this).data('statusid');
-            var reason = $("#decline-reason").val().trim();
-            var data = {
-                statusid: statusid,
-                declinereason: reason
-            };
+                    var method = 'mod_threesixty_decline_feedback';
 
-            var method = 'mod_threesixty_decline_feedback';
-
-            // Refresh the list of questions thru AJAX.
-            var promises = ajax.call([
-                {methodname: method, args: data}
-            ]);
-            promises[0].done(function () {
-                inputDialogue.hide();
-                refreshParticipantsList();
-            }).fail(notification.exception);
-        });
+                    // Refresh the list of questions thru AJAX.
+                    var promises = ajax.call([
+                        {methodname: method, args: data}
+                    ]);
+                    promises[0].done(function () {
+                        refreshParticipantsList();
+                    }).fail(notification.exception);
+                });
+            });
+        }
     }
 
     var view = function(id) {
@@ -121,14 +125,10 @@ define(['jquery',
                 statusid : statusid,
                 name: name
             };
-            templates.render('mod_threesixty/decline_feedback', context)
-                .done(function (compiledSource) {
-                    str.get_string('declinefeedback', 'mod_threesixty')
-                        .done(function (title) {
-                            var titleLabel = $('<label/>').append(title);
-                            renderDeclineDialogue(titleLabel, compiledSource);
-                        })
-                        .fail(notification.exception);
+            var declineTemplate = templates.render('mod_threesixty/decline_feedback', context);
+            str.get_string('declinefeedback', 'mod_threesixty')
+                .done(function (title) {
+                    renderDeclineDialogue(title, declineTemplate);
                 })
                 .fail(notification.exception);
         });

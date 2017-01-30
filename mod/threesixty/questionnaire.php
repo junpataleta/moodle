@@ -32,7 +32,7 @@ require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
 $threesixty = $DB->get_record('threesixty', ['id' => $cm->instance], '*', MUST_EXIST);
-$submission = $DB->get_record('threesixty_submission', ['id' => $submissionid], '*', MUST_EXIST);
+$submission = $DB->get_record('threesixty_submission', ['id' => $submissionid], 'id, touser, status', MUST_EXIST);
 
 $PAGE->set_context($context);
 $PAGE->set_cm($cm, $course);

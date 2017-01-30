@@ -32,7 +32,7 @@ list ($course, $cm) = get_course_and_cm_from_cmid($id, 'threesixty');
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
-$threesixty = $DB->get_record('threesixty', array('id' => $cm->instance), '*', MUST_EXIST);
+$threesixty = $DB->get_record('threesixty', array('id' => $cm->instance), 'id, name, participantrole', MUST_EXIST);
 
 /// Print the page header
 $strfeedbacks = get_string("modulenameplural", "threesixty");
@@ -56,9 +56,13 @@ if (has_capability('mod/threesixty:edititems', $context)) {
     echo html_writer::link($edititemsurl, get_string('edititems', 'threesixty'), ['class' => 'btn btn-default']);
 }
 
-// 360-degree feedback To-do list.
-$memberslist = new mod_threesixty\output\list_participants($threesixty->id, $USER->id, true);
-$memberslistoutput = $PAGE->get_renderer('mod_threesixty');
-echo $memberslistoutput->render($memberslist);
+if (mod_threesixty\api::can_participate($threesixty, $USER->id, $context) === true) {
+    // 360-degree feedback To-do list.
+    $memberslist = new mod_threesixty\output\list_participants($threesixty->id, $USER->id, true);
+    $memberslistoutput = $PAGE->get_renderer('mod_threesixty');
+    echo $memberslistoutput->render($memberslist);
+} else {
+    \core\notification::error(get_string('errorcannotparticipate', 'mod_threesixty'));
+}
 
 echo $OUTPUT->footer();

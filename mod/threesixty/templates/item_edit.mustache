@@ -48,27 +48,26 @@
         ]
     }
 }}
-<div class="panel panel-default">
-    <div class="panel-body">
-        <div>
-            <label for="question-input">
-                {{#str}}questiontext, mod_threesixty{{/str}} {{#pix }} req, core, {{#str}}requiredelement, form{{/str}} {{/pix }}
-            </label>
-            <div class="error-container"></div>
-            <textarea class="form-control" id="question-input" placeholder="{{#str}}labelenterquestion, mod_threesixty{{/str}}" cols="44" rows="5">{{ question }}</textarea>
-        </div>
-        <div>
-            <select id="question-type-select">
-            {{# questionTypes }}
-                <option value="{{typeVal}}" {{# selected }}selected="selected"{{/selected}}>
-                    {{typeName}}
-                </option>
-            {{/ questionTypes }}
-            </select>
-        </div>
-        <div>
-            <button id="btn-save-question" class="btn btn-primary">{{#str}}labelsave, mod_threesixty{{/str}}</button>
-            <button id="btn-cancel-question-input" class="btn btn-cancel">{{#str}}labelcancel, mod_threesixty{{/str}}</button>
-        </div>
+<div class="container">
+    <div class="form-group">
+        <label for="question-input">
+            {{#str}}questiontext, mod_threesixty{{/str}} {{#pix }} req, core, {{#str}}requiredelement, form{{/str}} {{/pix }}
+        </label>
+        <div class="error-container"></div>
+        <textarea class="form-control" id="question-input" placeholder="{{#str}}labelenterquestion, mod_threesixty{{/str}}" cols="44" rows="5">{{ question }}</textarea>
+    </div>
+    <div class="form-group">
+        <select id="question-type-select" class="form-control">
+        {{# questionTypes }}
+            <option value="{{typeVal}}" {{# selected }}selected="selected"{{/selected}}>
+                {{typeName}}
+            </option>
+        {{/ questionTypes }}
+        </select>
     </div>
 </div>
+{{#js}}
+    require(['jquery'], function($) {
+        $('#question-input').focus();
+    });
+{{/js}}

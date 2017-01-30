@@ -61,15 +61,14 @@
         <span class="label {{statusclass}}">{{ status }}</span>
     </div>
 </div>
-<table class="table table-striped" data-region="questionnaire" data-threesixtyid="{{threesixtyid}}" data-touserid="{{touserid}}">
+<table class="table table-striped" data-region="questionnaire" data-threesixtyid="{{threesixtyid}}" data-fromuserid="{{fromuserid}}" data-touserid="{{touserid}}">
     <tr>
         <th>
             <div class="row-fluid rtl-compatible">
-                <div class="span5">
-                    &nbsp;
+                <div class="col-xs-5 span5">
                 </div>
                 {{#scales}}
-                    <div class="span1 hideoverflow">
+                    <div class="col-xs-1 span1 hideoverflow text-center">
                         <span>{{description}}</span>
                     </div>
                 {{/scales}}
@@ -80,12 +79,12 @@
         <tr>
             <td>
                 <div class="row-fluid rtl-compatible" data-region="question-row" data-itemid="{{id}}">
-                    <div class="span5">
+                    <div class="col-xs-5 span5">
                         {{question}}
                     </div>
                     {{#scales}}
-                        <div class="span1 scaleoption">
-                            <label class="label label-default badge scaleoptionlabel" data-value="{{scale}}" tabindex="0" for="option-{{questionid}}-{{scale}}">
+                        <div class="col-xs-1 span1 scaleoption text-center">
+                            <label class="scaleoptionlabel label label-default p-l-1 p-r-1" data-value="{{scale}}" tabindex="0" for="option-{{questionid}}-{{scale}}">
                                 {{scalelabel}}
                             </label>
                             <input type="radio" class="accesshide" name="question-{{questionid}}" value="{{scale}}" tabindex="-1" id="option-{{questionid}}-{{scale}}"/>
@@ -104,11 +103,11 @@
         <tr>
             <td>
                 <div class="row-fluid rtl-compatible" data-region="question-row" data-itemid="{{id}}">
-                    <div class="span5">
+                    <div class="col-xs-5 span5">
                         {{question}}
                     </div>
-                    <div class="span7">
-                        <textarea placeholder="{{#str}}entercomment, mod_threesixty{{/str}}" class="comment" cols="50" rows="5" data-itemid="{{id}}">{{response}}</textarea>
+                    <div class="col-xs-7 span7">
+                        <textarea placeholder="{{#str}}entercomment, mod_threesixty{{/str}}" class="form-control comment" cols="50" rows="5" data-itemid="{{id}}">{{value}}</textarea>
                     </div>
                 </div>
             </td>
@@ -118,7 +117,7 @@
 <div>
     <button class="btn btn-primary" id="submit-feedback">{{#str}}submit{{/str}}</button>
     <button class="btn btn-default" id="save-feedback">{{#str}}savechanges{{/str}}</button>
-    <button class="btn btn-default" id="cancel-feedback">{{#str}}cancel{{/str}}</button>
+    <a class="btn btn-default" id="cancel-feedback" href="{{returnurl}}">{{#str}}cancel{{/str}}</a>
 </div>
 {{#js}}
     require(['mod_threesixty/questionnaire'], function(mod) {

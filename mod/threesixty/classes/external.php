@@ -17,6 +17,7 @@ use external_single_structure;
 use external_value;
 use external_warnings;
 use mod_threesixty\output\list_participants;
+use moodle_url;
 use stdClass;
 
 /**
@@ -579,7 +580,7 @@ class external extends external_api {
                 'participants' => new external_multiple_structure(
                     new external_single_structure(
                         [
-                            'name' => new external_value(PARAM_TEXT, 'The taret participant name.'),
+                            'name' => new external_value(PARAM_TEXT, 'The target participant name.'),
                             'status' => new external_value(PARAM_TEXT, 'The current feedback status for the target participant.'),
                             'statusclass' => new external_value(PARAM_TEXT, 'The appropriate CSS class for the status.'),
                             'statusid' => new external_value(PARAM_INT, 'The completion status ID for the target participant'),
@@ -605,7 +606,8 @@ class external extends external_api {
                 'touserid' => new external_value(PARAM_INT, 'The user identifier for the feedback subject.'),
                 'responses' => new external_multiple_structure(
                     new external_value(PARAM_TEXT, 'The response value with the key as the item ID.')
-                )
+                ),
+                'complete' => new external_value(PARAM_BOOL, 'Whether to mark the submission as complete.'),
             ]
         );
     }
@@ -614,40 +616,43 @@ class external extends external_api {
      * The function itself
      * @return string welcome message
      */
-    public static function save_responses($threesixtyid, $touserid, $responses) {
+    public static function save_responses($threesixtyid, $touserid, $responses, $complete) {
         global $USER;
         $warnings = [];
 
-        $coursecm = get_course_and_cm_from_instance($threesixtyid, 'threesixty');
-        $cmid = $coursecm[1]->id;
+        list($course, $cm) = get_course_and_cm_from_instance($threesixtyid, 'threesixty');
+        $cmid = $cm->id;
         $context = context_module::instance($cmid);
         self::validate_context($context);
-        $redirecturl = new \moodle_url('/mod/threesixty/view.php');
+        $redirecturl = new moodle_url('/mod/threesixty/view.php');
         $redirecturl->param('id', $cmid);
 
         $params = external_api::validate_parameters(self::save_responses_parameters(), [
             'threesixtyid' => $threesixtyid,
             'touserid' => $touserid,
             'responses' => $responses,
+            'complete' => $complete
         ]);
 
         $threesixtyid = $params['threesixtyid'];
         $touserid = $params['touserid'];
         $responses = $params['responses'];
+        $complete = $params['complete'];
 
         $result = api::save_responses($threesixtyid, $touserid, $responses);
 
-        $complete = true;
-        $items = api::get_items($threesixtyid);
-        foreach ($items as $item) {
-            if ($responses[$item->id] === null) {
-                $complete = false;
-                break;
+        if ($complete) {
+            $items = api::get_items($threesixtyid);
+            foreach ($items as $item) {
+                if ($responses[$item->id] === null) {
+                    $complete = false;
+                    break;
+                }
             }
-        }
-        
-        if ($complete && $submission = api::get_submission_by_params($threesixtyid, $USER->id, $touserid)) {
-            $result &= api::set_completion($submission->id, api::STATUS_COMPLETE);
+
+            if ($complete && $submission = api::get_submission_by_params($threesixtyid, $USER->id, $touserid)) {
+                $result &= api::set_completion($submission->id, api::STATUS_COMPLETE);
+            }
         }
 
         return [
@@ -666,6 +671,74 @@ class external extends external_api {
             [
                 'result' => new external_value(PARAM_BOOL, 'The item deletion processing result.'),
                 'redirurl' => new external_value(PARAM_URL, 'The redirect URL.'),
+                'warnings' => new external_warnings()
+            ]
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     * @return external_function_parameters
+     */
+    public static function get_responses_parameters() {
+        return new external_function_parameters(
+            [
+                'threesixtyid' =>  new external_value(PARAM_INT, 'The 360-degree feedback identifier.'),
+                'fromuserid' => new external_value(PARAM_INT, 'The user identifier of the respondent.'),
+                'touserid' => new external_value(PARAM_INT, 'The user identifier for the feedback subject.'),
+            ]
+        );
+    }
+
+    /**
+     * The function itself
+     * @return string welcome message
+     */
+    public static function get_responses($threesixtyid, $fromuserid, $touserid) {
+        $warnings = [];
+
+        list($course, $cm) = get_course_and_cm_from_instance($threesixtyid, 'threesixty');
+        $cmid = $cm->id;
+        $context = context_module::instance($cmid);
+        self::validate_context($context);
+        $redirecturl = new moodle_url('/mod/threesixty/view.php');
+        $redirecturl->param('id', $cmid);
+
+        $params = external_api::validate_parameters(self::get_responses_parameters(), [
+            'threesixtyid' => $threesixtyid,
+            'fromuserid' => $fromuserid,
+            'touserid' => $touserid,
+        ]);
+
+        $threesixtyid = $params['threesixtyid'];
+        $fromuserid = $params['fromuserid'];
+        $touserid = $params['touserid'];
+
+        $responses = api::get_responses($threesixtyid, $fromuserid, $touserid);
+
+        return [
+            'responses' => $responses,
+            'redirurl' => $redirecturl->out(),
+            'warnings' => $warnings
+        ];
+    }
+
+    /**
+     * Returns description of method result value
+     * @return external_description
+     */
+    public static function get_responses_returns() {
+        return new external_single_structure(
+            [
+                'responses' => new external_multiple_structure(
+                    new external_single_structure(
+                        [
+                            'id' => new external_value(PARAM_INT, 'The response ID.'),
+                            'item' => new external_value(PARAM_TEXT, 'The item ID for the response.'),
+                            'value' => new external_value(PARAM_TEXT, 'The the value for the response.'),
+                        ]
+                    )
+                ),
                 'warnings' => new external_warnings()
             ]
         );

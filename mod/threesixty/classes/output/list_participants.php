@@ -26,10 +26,11 @@ namespace mod_threesixty\output;
 defined('MOODLE_INTERNAL') || die();
 
 use mod_threesixty\api;
+use moodle_url;
 use renderable;
 use renderer_base;
-use templatable;
 use stdClass;
+use templatable;
 
 /**
  * Class containing data for users that need to be given with 360 feedback.
@@ -37,7 +38,7 @@ use stdClass;
  * @copyright  2015 Jun Pataleta
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class list_participants implements \renderable, \templatable {
+class list_participants implements renderable, templatable {
     private $threesixtyid;
     private $userid;
 
@@ -67,40 +68,40 @@ class list_participants implements \renderable, \templatable {
             foreach ($enroledusers as $user) {
                 $member = new stdClass();
 
-                // Name column
+                // Name column.
                 $member->name = fullname($user);
 
-                // Status column
+                // Status column.
                 $viewonly = false;
                 $declined = false;
                 switch ($user->status) {
-                    case api::STATUS_IN_PROGRESS: // In Progress
+                    case api::STATUS_IN_PROGRESS: // In Progress.
                         $member->statusclass = 'label-info';
                         $member->status = get_string('statusinprogress', 'threesixty');
                         break;
-                    case api::STATUS_COMPLETE: // Completed
+                    case api::STATUS_COMPLETE: // Completed.
                         $member->statusclass = 'label-success';
                         $member->status = get_string('statuscompleted', 'threesixty');
                         $viewonly = true;
                         break;
-                    case api::STATUS_DECLINED: // Declined
+                    case api::STATUS_DECLINED: // Declined.
                         $member->statusclass = 'label-warning';
                         $member->status = get_string('statusdeclined', 'threesixty');
                         $declined = true;
                         break;
-                    default: // Pending
+                    default: // Pending.
                         $member->statusclass = 'label';
                         $member->status = get_string('statuspending', 'threesixty');
                         break;
                 }
 
                 $member->statusid = $user->statusid;
-                // Action buttons column
+                // Action buttons column.
                 // Show action buttons depending on status.
                 if ($viewonly) {
                     $member->viewlink = true;
                 } else if (!$declined) {
-                    $respondurl = new \moodle_url('/mod/threesixty/questionnaire.php');
+                    $respondurl = new moodle_url('/mod/threesixty/questionnaire.php');
                     $respondurl->params([
                         'threesixty' => $this->threesixtyid,
                         'submission' => $user->statusid,

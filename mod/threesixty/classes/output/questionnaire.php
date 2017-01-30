@@ -25,13 +25,11 @@ namespace mod_threesixty\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+use mod_threesixty\api;
 use renderable;
 use renderer_base;
-use templatable;
 use stdClass;
-use moodle_url;
-use html_writer;
-use \mod_threesixty\api;
+use templatable;
 
 /**
  * Class containing data for users that need to be given with 360 feedback.
@@ -39,7 +37,7 @@ use \mod_threesixty\api;
  * @copyright  2015 Jun Pataleta
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class questionnaire implements \renderable, \templatable {
+class questionnaire implements renderable, templatable {
     protected $submissionid;
 
     public function __construct($submissionid) {
@@ -56,6 +54,8 @@ class questionnaire implements \renderable, \templatable {
      * @return stdClass|array
      */
     public function export_for_template(renderer_base $output) {
+        global $PAGE;
+
         $data = new stdClass();
 
         $submission = api::get_submission($this->submissionid);
@@ -99,6 +99,8 @@ class questionnaire implements \renderable, \templatable {
         $data->commentquestions = $commentquestions;
         $data->touserid = $submission->touser;
         $data->threesixtyid = $submission->threesixty;
+        $data->returnurl = $PAGE->url;
+        $data->fromuserid = $submission->fromuser;
         return $data;
     }
 }

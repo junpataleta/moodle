@@ -58,6 +58,33 @@ function xmldb_threesixty_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2016021900.09, 'threesixty');
     }
 
+    if ($oldversion < 2017020200.00) {
+
+        // Changing nullability of field value on table threesixty_response to null.
+        $table = new xmldb_table('threesixty_response');
+        $field = new xmldb_field('value', XMLDB_TYPE_TEXT, null, null, null, null, null, 'salt');
+
+        // Launch change of nullability for field value.
+        $dbman->change_field_notnull($table, $field);
+
+        // Threesixty savepoint reached.
+        upgrade_mod_savepoint(true, 2017020200.00, 'threesixty');
+    }
+
+    if ($oldversion < 2017020200.01) {
+
+        // Define field participantrole to be added to threesixty.
+        $table = new xmldb_table('threesixty');
+        $field = new xmldb_field('participantrole', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'anonymous');
+
+        // Conditionally launch add field participantrole.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Threesixty savepoint reached.
+        upgrade_mod_savepoint(true, 2017020200.01, 'threesixty');
+    }
     return true;
 }
 
