@@ -404,6 +404,9 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
                     'timestart' => ($this->event->timestart + $i * DAYSECS)));
             $this->assertTrue($result);
         }
+        // This much seconds after the start of the day.
+        $offset = $this->event->timestart - mktime(0, 0, 0, date("n", $this->event->timestart), date("j", $this->event->timestart),
+                date("Y", $this->event->timestart));
 
         // This should generate 4 weekly Monday events.
         $until = $this->event->timestart + WEEKSECS * 4;
@@ -416,7 +419,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $this->assertEquals(4, $count);
         $timestart = $this->event->timestart;
         for ($i = 0; $i < $count; $i++) {
-            $timestart = strtotime('next Monday', $timestart);
+            $timestart = strtotime("+$offset seconds next Monday", $timestart);
             $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $timestart));
             $this->assertTrue($result);
         }
