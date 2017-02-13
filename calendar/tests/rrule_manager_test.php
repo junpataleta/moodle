@@ -35,7 +35,9 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         global $DB;
         $this->resetAfterTest();
 
-        $this->setTimezone('Australia/Perth');
+        $timezone = new DateTimeZone('US/Eastern');
+        $time = DateTime::createFromFormat('Ymd\THis', '19970902T090000', $timezone);
+        $timestart = $time->getTimestamp();
 
         $user = $this->getDataGenerator()->create_user();
         $sub = new stdClass();
@@ -49,8 +51,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $event = new stdClass();
         $event->name = 'Event name';
         $event->description = '';
-        $currentmonthyear = date('F Y');
-        $event->timestart = strtotime("first Monday of $currentmonthyear"); // Get the first Monday of the current month.
+        $event->timestart = $timestart;
         $event->timeduration = 3600;
         $event->uuid = 'uuid';
         $event->subscriptionid = $subid;
@@ -99,25 +100,21 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
 
     /**
      * Test exception is thrown for invalid property.
-     *
-     * @expectedException moodle_exception
      */
     public function test_parse_rrule_validation() {
-
         $rrule = "RANDOM=PROPERTY;";
         $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
         $mang->parse_rrule();
     }
 
     /**
      * Test exception is thrown for invalid frequency.
-     *
-     * @expectedException moodle_exception
      */
     public function test_freq_validation() {
-
         $rrule = "FREQ=RANDOMLY;";
         $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
         $mang->parse_rrule();
     }
 
@@ -396,19 +393,19 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
     public function test_weekly_events() {
         global $DB;
 
-        $rrule = 'FREQ=WEEKLY;COUNT=1'; // This should generate 7 events in total, one for each day.
+        $rrule = 'FREQ=WEEKLY;COUNT=1';
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(7, $count);
-        for ($i = 0; $i < 7; $i++) {
+        $this->assertEquals(1, $count);
+        for ($i = 0; $i < $count; $i++) {
             $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
                     'timestart' => ($this->event->timestart + $i * DAYSECS)));
             $this->assertTrue($result);
         }
 
-        // This should generate 4 child event + 1 parent, since by then until bound would be hit.
+        // This should generate 4 weekly Monday events.
         $until = $this->event->timestart + WEEKSECS * 4;
         $until = date('Ymd\This\Z', $until);
         $rrule = "FREQ=WEEKLY;BYDAY=MO;UNTIL=$until";
@@ -416,20 +413,25 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(5, $count);
-        for ($i = 0; $i < 5; $i++) {
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                    'timestart' => ($this->event->timestart + $i * WEEKSECS)));
+        $this->assertEquals(4, $count);
+        $timestart = $this->event->timestart;
+        for ($i = 0; $i < $count; $i++) {
+            $timestart = strtotime('next Monday', $timestart);
+            $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $timestart));
             $this->assertTrue($result);
         }
 
-        // This should generate 4 events in total every monday and Wednesday of every 3rd week.
+        // Every 3 weeks on Monday, Wednesday for 2 times.
         $rrule = 'FREQ=WEEKLY;INTERVAL=3;BYDAY=MO,WE;COUNT=2';
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(4, $count);
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+        foreach($records as $record) {
+            print_object(date('l, Y-m-d H:i:s', $record->timestart));
+        }
+        $this->assertEquals(2, $count);
         $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
                 'timestart' => ($this->event->timestart + 3 * WEEKSECS))); // Monday event.
         $this->assertTrue($result);
@@ -645,8 +647,6 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(6, $count);
         for ($i = 0, $time = $this->event->timestart; $time < $until; $i++, $yoffset = $i * 2,
             $time = strtotime("+$yoffset years", $this->event->timestart)) {
             $result = $DB->record_exists('event', array('repeatid' => $this->event->id,

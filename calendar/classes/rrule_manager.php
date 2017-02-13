@@ -815,13 +815,34 @@ class rrule_manager {
      * @param \stdClass $event Event properties to create event
      */
     protected function create_weekly_events($event) {
-        // If by day is not present, it means all days of the week.
+        $eventday = substr(date('D', $event->timestart), 0, 2);
+        $eventday = strtoupper($eventday);
+
+        // If by day is not present, derive the BYDAY rule from the event's day.
         if (empty($this->byday)) {
-            $this->byday = array('MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU');
+            $this->byday = [$eventday];
         }
         // This much seconds after the start of the day.
         $offset = $event->timestart - mktime(0, 0, 0, date("n", $event->timestart), date("j", $event->timestart), date("Y",
                 $event->timestart));
+
+        // If the parent event's day does not belong to any of the BYDAY rules,
+        // then we should adjust this parent event's timestart to match the first BYDAY rule.
+        if (!in_array($eventday, $this->byday)) {
+            $timestart = 0;
+            foreach ($this->byday as $byday) {
+                $daystring = $this->get_day($byday);
+                $tmpday = strtotime("next $daystring", $event->timestart);
+                if ($timestart == 0 || $tmpday < $timestart) {
+                    $timestart = $tmpday;
+                }
+            }
+            $calevent = new \calendar_event($event);
+            $updatedata = (object)['timestart' => $timestart];
+            $calevent->update($updatedata, false);
+            $event->timestart = $calevent->timestart;
+        }
+
         foreach ($this->byday as $daystring) {
             $day = $this->get_day($daystring);
             if (date('l', $event->timestart) == $day) {
