@@ -26,6 +26,7 @@ namespace core_calendar;
 
 use DateInterval;
 use DateTime;
+use NumberFormatter;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/calendar/lib.php');
@@ -739,6 +740,7 @@ class rrule_manager {
             }
             for (; $event->timestart < $until;) {
                 unset($event->id); // It is set during creation.
+                print_object('EVENT: ' . date('Y-m-d H:i:s', $event->timestart));
                 \calendar_event::create($event, false);
                 $event->timestart = strtotime("+$monthoffset months +$yearoffset years", $event->timestart);
 
@@ -974,16 +976,116 @@ class rrule_manager {
             return;
         }
         // This much seconds after the start of the day.
-        $offset = $event->timestart - mktime(0, 0, 0, date("n", $event->timestart), date("j", $event->timestart), date("Y",
+        $eventmonthday = date("j", $event->timestart);
+
+        // Extract first two letters of the event's day component.
+        $eventweekday = substr(date('D', $event->timestart), 0, 2);
+        $eventweekday = strtoupper($eventweekday);
+
+        $offset = $event->timestart - mktime(0, 0, 0, date("n", $event->timestart), $eventmonthday, date("Y",
                 $event->timestart));
         $monthstart = mktime(0, 0, 0, date("n", $event->timestart), 1, date("Y", $event->timestart));
+
+        $interval = new DateInterval('P' . $this->interval . 'M');
+        $monthstartdate = new DateTime(date('Y-m-d H:i:s', $monthstart));
+        $nextmonthstartdate = clone($monthstartdate);
+        $nextmonthstartdate->add(new DateInterval('P1M'));
+
+        $timestart = 0;
+        $startday = null;
+        if (!empty($this->bymonthday)) {
+            if (!in_array($eventmonthday, $this->bymonthday)) {
+                foreach ($this->bymonthday as $monthday) {
+                    $tmpstart = mktime(
+                        date("G", $event->timestart),
+                        (int)date("i", $event->timestart),
+                        (int)date("s", $event->timestart),
+                        date("n", $event->timestart),
+                        $monthday,
+                        date("Y", $event->timestart)
+                    );
+                    if ($timestart == 0 || $tmpstart < $timestart) {
+                        $timestart = $tmpstart;
+                    }
+                }
+            }
+        } else {
+            $bydaydaysonly = [];
+            foreach ($this->byday as $byday) {
+                // Extract the day parts.
+                $bydaydaysonly[$byday] = substr($byday, -2);
+            }
+            if (!in_array($eventweekday, $bydaydaysonly)) {
+                $formatter = new NumberFormatter('en_US', NumberFormatter::SPELLOUT);
+                $formatter->setTextAttribute(NumberFormatter::DEFAULT_RULESET, "%spellout-ordinal");
+                foreach ($this->byday as $byday) {
+                    $day = $bydaydaysonly[$byday];
+                    $daystring = $this->get_day($day);
+                    if ($monthstart < $event->timestart) {
+                        $monthstartdate->add($interval);
+                        $nextmonthstartdate->add($interval);
+                        $monthstart = $monthstartdate->getTimestamp();
+                    }
+                    if (date('l', $monthstart) === $daystring) {
+                        $tmpstart = strtotime("+$offset seconds", $monthstart);
+                    } else {
+                        // If present, this indicates the nth occurrence of the specific day within the MONTHLY or YEARLY RRULE. F
+                        // If an integer modifier is not present, it means all days of this type within the specified frequency.
+                        $modifier = str_replace($day, '', $byday);
+                        if (empty($modifier)) {
+                            $tmpstart = strtotime("+$offset seconds next $daystring", $monthstart);
+                        } else {
+                            if ($modifier > 0) {
+                                $monthyear = date('F Y', $monthstart);
+                                $ordinal = $formatter->format($modifier);
+                                $tmpstart = strtotime("+$offset seconds $ordinal $daystring of $monthyear");
+                            } else {
+                                $tmpstart = $nextmonthstartdate->getTimestamp();
+                                while ($modifier < 0) {
+                                    $tmpstart = strtotime("last $daystring", $tmpstart);
+                                    $modifier++;
+                                }
+                                $tmpstart = strtotime("+$offset seconds", $tmpstart);
+                            }
+                        }
+                    }
+
+                    if (($timestart == 0 || $tmpstart < $timestart) && $tmpstart > $event->timestart) {
+                        $timestart = $tmpstart;
+                        $startday = $daystring;
+                    }
+                }
+
+                // Check if time start is out of range of the current month period. If so, move on to the next month period.
+                if ($timestart >= $nextmonthstartdate->getTimestamp()) {
+                    $monthstartdate->add($interval);
+                    $nextmonthstartdate->add($interval);
+                    $monthstart = $monthstartdate->getTimestamp();
+                    if (date('l', $monthstart) === $startday) {
+                        $timestart = strtotime("+$offset seconds", $monthstart);
+                    } else {
+                        $timestart = strtotime("+$offset seconds next $startday", $monthstart);
+                    }
+                }
+
+                $calevent = new \calendar_event($event);
+                $updatedata = (object)['timestart' => $timestart, 'repeatid' => $event->id];
+                $calevent->update($updatedata, false);
+                $event->timestart = $calevent->timestart;
+            }
+        }
+
+        if ($timestart == 0) {
+            $timestart = $event->timestart;
+        }
+        print_object("START: " . date('l, Y-m-d H:i:s', $timestart));
+
         if (!empty($this->bymonthday)) {
             foreach ($this->bymonthday as $monthday) {
                 $dayoffset = $monthday - 1; // Number of days we want to add to the first day.
                 if ($monthday == date("j", $event->timestart)) {
                     // Parent event is a part of this day chain.
-                    $this->create_repeated_events_by_offsets($event, $offset, $dayoffset, $this->interval, 0, $monthstart,
-                        false);
+                    $this->create_repeated_events_by_offsets($event, $offset, $dayoffset, $this->interval, 0, $monthstart, false);
                 } else {
                     // Parent event is not a part of this day chain.
                     $this->create_repeated_events_by_offsets($event, $offset, $dayoffset, $this->interval, 0, $monthstart, true);

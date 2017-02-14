@@ -473,8 +473,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
     public function test_monthly_events() {
         global $DB;
 
-        $monthday = date('j', $this->event->timestart);
-        $rrule = "FREQ=MONTHLY;COUNT=3;BYMONTHDAY=$monthday"; // This should generate 3 events in total.
+        $rrule = "FREQ=MONTHLY;COUNT=3;BYMONTHDAY=2"; // This should generate 3 events in total.
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -507,15 +506,21 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         // This should generate 10 child event + 1 parent, since by then until bound would be hit.
         $until = strtotime('+1 day +10 months', $this->event->timestart);
         $until = date('Ymd\This\Z', $until);
-        $rrule = "FREQ=MONTHLY;BYMONTHDAY=$monthday;UNTIL=$until";
+        $rrule = "FREQ=MONTHLY;BYMONTHDAY=2;UNTIL=$until";
+        print_object($rrule);
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
+        $records = $DB->get_records('event', array('repeatid' => $this->event->id), 'timestart ASC', 'id, repeatid, timestart');
+        foreach ($records as $record) {
+            print_object(date('l, Y-m-d H:i:s', $record->timestart));
+        }
         $this->assertEquals(11, $count);
         for ($i = 0; $i < 11; $i++) {
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                    'timestart' => (strtotime("+$i month", $this->event->timestart))));
+            $time = strtotime("+$i month", $this->event->timestart);
+            print_object(date('Y-m-d H:i:s', $time));
+            $result = $DB->record_exists('event', ['repeatid' => $this->event->id, 'timestart' => $time]);
             $this->assertTrue($result);
         }
 
@@ -537,8 +542,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         // This should generate 11 child event + 1 parent, since by then until bound would be hit.
         $until = strtotime('+10 day +10 months', $this->event->timestart);
         $until = date('Ymd\This\Z', $until);
-        $monthdayplus3 = $monthday + 3;
-        $rrule = "FREQ=MONTHLY;INTERVAL=2;BYMONTHDAY=$monthday,$monthdayplus3;UNTIL=$until";
+        $rrule = "FREQ=MONTHLY;INTERVAL=2;BYMONTHDAY=2,5;UNTIL=$until";
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -576,7 +580,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         }
 
         // Forever event. This should generate events over 10 year period, on 2nd of every 12th month.
-        $rrule = "FREQ=MONTHLY;INTERVAL=12;BYMONTHDAY=$monthday";
+        $rrule = "FREQ=MONTHLY;INTERVAL=12;BYMONTHDAY=2";
         $mang = new rrule_manager($rrule);
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
