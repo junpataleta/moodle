@@ -23,9 +23,9 @@
  */
 
 namespace core_calendar;
+
 use DateInterval;
 use DateTime;
-use DateTimeZone;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/calendar/lib.php');
@@ -819,6 +819,7 @@ class rrule_manager {
      * @param \stdClass $event Event properties to create event
      */
     protected function create_weekly_events($event) {
+        // Extract first two letters of the event's day component.
         $eventday = substr(date('D', $event->timestart), 0, 2);
         $eventday = strtoupper($eventday);
 
@@ -826,59 +827,91 @@ class rrule_manager {
         if (empty($this->byday)) {
             $this->byday = [$eventday];
         }
+
         // This much seconds after the start of the day.
-        $offset = $event->timestart - mktime(0, 0, 0, date("n", $event->timestart), date("j", $event->timestart), date("Y",
-                $event->timestart));
+        $eventtimedaystart = mktime(0, 0, 0, date("n", $event->timestart), date("j", $event->timestart),
+            date("Y", $event->timestart));
+        $offset = $event->timestart - $eventtimedaystart;
 
         $interval = new DateInterval('P' . $this->interval . 'W');
-        $weekstarttime = strtotime('last ' . $this->wkst, $event->timestart);
-        $timezone = new DateTimeZone(\core_date::get_default_php_timezone());
-        $weekstart = new DateTime(date('Y-m-d H:i:s', $weekstarttime), $timezone);
+        if (date('l', $event->timestart) === $this->wkst) {
+            $weekstarttime = $eventtimedaystart;
+        } else {
+            $weekstarttime = strtotime('last ' . $this->wkst, $event->timestart);
+        }
+
+        $weekstart = new DateTime(date('Y-m-d H:i:s', $weekstarttime));
+        $nextweekstart = clone($weekstart);
+        $nextweekstart->add(new DateInterval('P1W'));
 
         // If the parent event's day does not belong to any of the BYDAY rules,
-        // then we should adjust this parent event's timestart to match the first BYDAY rule.
+        // then we should adjust this parent event's timestart to match the first applicable BYDAY rule.
         if (!in_array($eventday, $this->byday)) {
             $timestart = 0;
+            $startday = null;
             foreach ($this->byday as $byday) {
                 $daystring = $this->get_day($byday);
-                $tmpday = strtotime("+$offset seconds next $daystring", $event->timestart);
-                if ($timestart == 0 || $tmpday < $timestart) {
-                    $timestart = $tmpday;
+                if ($weekstarttime >= $event->timestart && date('l', $weekstarttime) === $daystring) {
+                    $tmpstart = strtotime("+$offset seconds", $weekstarttime);
+                } else {
+                    $tmpstart = strtotime("+$offset seconds next $daystring", $weekstarttime);
+                }
+                if ($timestart == 0 || $tmpstart < $timestart) {
+                    $timestart = $tmpstart;
+                    $startday = $daystring;
                 }
             }
+
+            // Check if time start is out of range of the current week period. If so, move on to the next week period.
+            if ($timestart >= $nextweekstart->getTimestamp()) {
+                $weekstart->add($interval);
+                $nextweekstart->add($interval);
+                $weekstarttime = $weekstart->getTimestamp();
+                if (date('l', $weekstarttime) === $startday) {
+                    $timestart = strtotime("+$offset seconds", $weekstarttime);
+                } else {
+                    $timestart = strtotime("+$offset seconds next $startday", $weekstarttime);
+                }
+            }
+
             $calevent = new \calendar_event($event);
             $updatedata = (object)['timestart' => $timestart, 'repeatid' => $event->id];
             $calevent->update($updatedata, false);
             $event->timestart = $calevent->timestart;
         }
 
-        $weekstart->add($interval);
-        $nextweekstart = clone($weekstart);
-        $nextweekstart->add($interval);
+        $eventtime = $event->timestart ;
+        $eventtimes = [];
 
         if ($this->count > 0) {
-            $eventtime = $event->timestart;
-            $count = $this->count - 1;
+            // Subtract the parent event from the count.
+            $count = $this->count;
+
             while ($count > 0) {
-                $weekstart->add($interval);
                 $weekstarttime = $weekstart->getTimestamp();
-                $nextweekstart->add($interval);
                 $nextweekstarttime = $nextweekstart->getTimestamp();
-                print_object("START: " . date('Y-m-d H:i:s', $weekstarttime));
-                print_object("  END: " . date('Y-m-d H:i:s', $nextweekstarttime));
                 foreach ($this->byday as $daystring) {
                     $day = $this->get_day($daystring);
-                    $eventtime = strtotime("+$offset seconds next $day", $eventtime);
-                    if ($count > 0 && $eventtime >= $weekstarttime && $eventtime < $nextweekstarttime) {
-                        $cloneevent = clone($event);
-                        $cloneevent->repeatid = $event->id;
-                        $cloneevent->timestart = $eventtime;
-                        unset($cloneevent->id);
-                        \calendar_event::create($cloneevent, false);
+                    if (date('l', $weekstarttime) === $day) {
+                        $eventtime = strtotime("+$offset seconds", $weekstarttime);
+                    } else {
+                        $eventtime = strtotime("+$offset seconds next $day", $weekstarttime);
+                    }
+                    if ($count <= 0) {
+                        break;
+                    }
+                    if ($eventtime < $event->timestart) {
+                        continue;
+                    }
+                    if ($eventtime >= $weekstarttime && $eventtime < $nextweekstarttime) {
+                        $eventtimes[] = $eventtime;
                         $count--;
                     }
                 }
-                $count--;
+
+                // Go to the next week period.
+                $weekstart->add($interval);
+                $nextweekstart->add($interval);
             }
 
         } else {
@@ -888,25 +921,44 @@ class rrule_manager {
                 // Forever event. We don't have any such concept in Moodle, hence we repeat it for a constant time.
                 $until = time() + (YEARSECS * self::TIME_UNLIMITED_YEARS);
             }
-            $eventtime = $event->timestart;
+
             while ($eventtime < $until) {
-                $weekstart->add($interval);
                 $weekstarttime = $weekstart->getTimestamp();
-                $nextweekstart->add($interval);
                 $nextweekstarttime = $nextweekstart->getTimestamp();
                 foreach ($this->byday as $daystring) {
                     $day = $this->get_day($daystring);
-                    $eventtime = strtotime("+$offset seconds next $day", $eventtime);
-                    if ($eventtime < $until && $eventtime >= $weekstarttime && $eventtime < $nextweekstarttime) {
-                        $cloneevent = clone($event);
-                        $cloneevent->repeatid = $event->id;
-                        $cloneevent->timestart = $eventtime;
-                        unset($cloneevent->id);
-                        \calendar_event::create($cloneevent, false);
+                    if (date('l', $weekstarttime) === $day) {
+                        $eventtime = strtotime("+$offset seconds", $weekstarttime);
+                    } else {
+                        $eventtime = strtotime("+$offset seconds next $day", $weekstarttime);
+                    }
+                    if ($eventtime > $until) {
+                        break;
+                    }
+                    if ($eventtime < $event->timestart) {
+                        continue;
+                    }
+                    if ($eventtime >= $weekstarttime && $eventtime < $nextweekstarttime) {
+                        $eventtimes[] = $eventtime;
                     }
                 }
 
+                // Go to the next week period.
+                $weekstart->add($interval);
+                $nextweekstart->add($interval);
             }
+        }
+
+        // Create the events.
+        foreach ($eventtimes as $time) {
+            if ($time == $event->timestart) {
+                continue;
+            }
+            $cloneevent = clone($event);
+            $cloneevent->repeatid = $event->id;
+            $cloneevent->timestart = $time;
+            unset($cloneevent->id);
+            \calendar_event::create($cloneevent, false);
         }
     }
 

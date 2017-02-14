@@ -430,31 +430,40 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $mang->parse_rrule();
         $mang->create_events($this->event);
         $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
-        foreach($records as $record) {
-            print_object(date('l, Y-m-d H:i:s', $record->timestart));
-        }
         $this->assertEquals(2, $count);
-        $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                'timestart' => ($this->event->timestart + 3 * WEEKSECS))); // Monday event.
-        $this->assertTrue($result);
-        $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                'timestart' => ($this->event->timestart + 2 * DAYSECS))); // Wednesday event.
-        $this->assertTrue($result);
-        $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                'timestart' => ($this->event->timestart + 3 * WEEKSECS + 2 * DAYSECS))); // Wednesday event.
+
+        $timezone = new DateTimeZone('US/Eastern');
+
+        // Wednesday event.
+        $wedevent = DateTime::createFromFormat('Ymd\THis', '19970903T090000', $timezone);
+        $result = $DB->record_exists('event', ['repeatid' => $this->event->id, 'timestart' => $wedevent->getTimestamp()]);
         $this->assertTrue($result);
 
-        // Forever event. This should generate events over time() + 10 year period, every 50th monday.
+        // Monday event, 22-09-1997.
+        $monevent = DateTime::createFromFormat('Ymd\THis', '19970922T090000', $timezone);
+        $result = $DB->record_exists('event', ['repeatid' => $this->event->id, 'timestart' => $monevent->getTimestamp()]);
+        $this->assertTrue($result);
+
+        // Forever event. This should generate events over time() + 10 year period, every 50th Monday.
         $rrule = 'FREQ=WEEKLY;BYDAY=MO;INTERVAL=50';
         $mang = new rrule_manager($rrule);
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        for ($i = 0, $time = $this->event->timestart; $time < $until; $i++, $time = $this->event->timestart + 50 * WEEKSECS * $i) {
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                    'timestart' => ($time)));
-            $this->assertTrue($result);
+
+        // First instance of this event: Monday, 17-08-1998.
+        $interval = new DateInterval('P50W');
+        $monevent = DateTime::createFromFormat('Ymd\THis', '19980817T090000', $timezone);
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+        $time = $monevent->getTimestamp();
+        foreach ($records as $record) {
+            // TODO: Currently only comparing the dates since there is a bug (MDL-17672) on DST shifts for recurring events.
+            $eventdateexpected = date('Y-m-d', $time);
+            $eventdateactual = date('Y-m-d', $record->timestart);
+            $this->assertEquals($eventdateexpected, $eventdateactual);
+            $this->assertLessThanOrEqual($until, $record->timestart);
+            $monevent->add($interval);
+            $time = $monevent->getTimestamp();
         }
     }
 
