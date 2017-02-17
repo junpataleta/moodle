@@ -24,9 +24,12 @@
 
 namespace core_calendar;
 
+use calendar_event;
 use DateInterval;
 use DateTime;
+use moodle_exception;
 use NumberFormatter;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/calendar/lib.php');
@@ -212,7 +215,7 @@ class rrule_manager {
      * Parse a property of the recurrence rule.
      *
      * @param string $prop property string with type-value pair
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function parse_rrule_property($prop) {
         list($property, $value) = explode('=', $prop);
@@ -261,7 +264,7 @@ class rrule_manager {
                 break;
             default:
                 // We should never get here, something is very wrong.
-                throw new \moodle_exception('errorrrule', 'calendar');
+                throw new moodle_exception('errorrrule', 'calendar');
         }
     }
 
@@ -269,7 +272,7 @@ class rrule_manager {
      * Sets Frequency property.
      *
      * @param string $freq Frequency of event
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_frequency($freq) {
         switch ($freq) {
@@ -296,7 +299,7 @@ class rrule_manager {
                 break;
             default:
                 // We should never get here, something is very wrong.
-                throw new \moodle_exception('errorrrulefreq', 'calendar');
+                throw new moodle_exception('errorrrulefreq', 'calendar');
         }
     }
 
@@ -304,7 +307,7 @@ class rrule_manager {
      * Gets the day from day string.
      *
      * @param string $daystring Day string (MO, TU, etc)
-     * @throws \moodle_exception
+     * @throws moodle_exception
      *
      * @return string Day represented by the parameter.
      */
@@ -333,7 +336,7 @@ class rrule_manager {
                 break;
             default:
                 // We should never get here, something is very wrong.
-                throw new \moodle_exception('errorrruleday', 'calendar');
+                throw new moodle_exception('errorrruleday', 'calendar');
         }
     }
 
@@ -341,7 +344,7 @@ class rrule_manager {
      * Sets the UNTIL rule.
      *
      * @param string $until The date string representation of the UNTIL rule.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_until($until) {
         $this->until = strtotime($until);
@@ -351,7 +354,7 @@ class rrule_manager {
      * Sets the COUNT rule.
      *
      * @param string $count The count value.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_count($count) {
         $this->count = intval($count);
@@ -371,12 +374,12 @@ class rrule_manager {
      *  - every year for a YEARLY rule.
      *
      * @param string $intervalstr The value for the interval rule.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_interval($intervalstr) {
         $interval = intval($intervalstr);
         if ($interval < 1) {
-            throw new \moodle_exception('errorinvalidinterval', 'calendar');
+            throw new moodle_exception('errorinvalidinterval', 'calendar');
         }
         $this->interval = $interval;
     }
@@ -388,13 +391,13 @@ class rrule_manager {
      * Valid values are 0 to 59.
      *
      * @param string $bysecond Comma-separated list of seconds within a minute.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_bysecond($bysecond) {
         $seconds = explode(',', $bysecond);
         foreach ($seconds as $second) {
             if ($second < 0 || $second > 59) {
-                throw new \moodle_exception('errorinvalidbysecond', 'calendar');
+                throw new moodle_exception('errorinvalidbysecond', 'calendar');
             }
         }
         $this->bysecond = $seconds;
@@ -407,13 +410,13 @@ class rrule_manager {
      * Valid values are 0 to 59.
      *
      * @param string $byminute Comma-separated list of minutes within an hour.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_byminute($byminute) {
         $minutes = explode(',', $byminute);
         foreach ($minutes as $minute) {
             if ($minute < 0 || $minute > 59) {
-                throw new \moodle_exception('errorinvalidbyminute', 'calendar');
+                throw new moodle_exception('errorinvalidbyminute', 'calendar');
             }
         }
         $this->byminute = $minutes;
@@ -426,13 +429,13 @@ class rrule_manager {
      * Valid values are 0 to 23.
      *
      * @param string $byhour Comma-separated list of hours of the day.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_byhour($byhour) {
         $hours = explode(',', $byhour);
         foreach ($hours as $hour) {
             if ($hour < 0 || $hour > 23) {
-                throw new \moodle_exception('errorinvalidbyhour', 'calendar');
+                throw new moodle_exception('errorinvalidbyhour', 'calendar');
             }
         }
         $this->byhour = $hours;
@@ -458,7 +461,7 @@ class rrule_manager {
      * For example, within a MONTHLY rule, MO represents all Mondays within the month.
      *
      * @param string $byday Comma-separated list of days of the week.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_byday($byday) {
         $weekdays = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
@@ -466,7 +469,7 @@ class rrule_manager {
         foreach ($days as $day) {
             $suffix = substr($day, -2);
             if (!in_array($suffix, $weekdays)) {
-                throw new \moodle_exception('errorinvalidbydaysuffix', 'calendar');
+                throw new moodle_exception('errorinvalidbydaysuffix', 'calendar');
             }
         }
         $this->byday = $days;
@@ -479,14 +482,14 @@ class rrule_manager {
      * Valid values are 1 to 31 or -31 to -1. For example, -10 represents the tenth to the last day of the month.
      *
      * @param string $bymonthday Comma-separated list of days of the month.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_bymonthday($bymonthday) {
         $monthdays = explode(',', $bymonthday);
         foreach ($monthdays as $day) {
             // Valid values are 1 to 31 or -31 to -1.
             if ($day < -31 || $day > 31 || $day == 0) {
-                throw new \moodle_exception('errorinvalidbymonthday', 'calendar');
+                throw new moodle_exception('errorinvalidbymonthday', 'calendar');
             }
         }
         $this->bymonthday = $monthdays;
@@ -500,14 +503,14 @@ class rrule_manager {
      * and -306 represents the 306th to the last day of the year (March 1st).
      *
      * @param string $byyearday Comma-separated list of days of the year.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_byyearday($byyearday) {
         $yeardays = explode(',', $byyearday);
         foreach ($yeardays as $day) {
             // Valid values are 1 to 366 or -366 to -1.
             if ($day < -366 || $day > 366 || $day == 0) {
-                throw new \moodle_exception('errorinvalidbyyearday', 'calendar');
+                throw new moodle_exception('errorinvalidbyyearday', 'calendar');
             }
         }
         $this->byyearday = $yeardays;
@@ -526,14 +529,14 @@ class rrule_manager {
      * is January 1.
      *
      * @param string $byweekno Comma-separated list of number of weeks.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_byweekno($byweekno) {
         $weeknumbers = explode(',', $byweekno);
         foreach ($weeknumbers as $week) {
             // Valid values are 1 to 53 or -53 to -1.
             if ($week < -53 || $week > 53 || $week == 0) {
-                throw new \moodle_exception('errorinvalidbyweekno', 'calendar');
+                throw new moodle_exception('errorinvalidbyweekno', 'calendar');
             }
         }
         $this->byweekno = $weeknumbers;
@@ -546,14 +549,14 @@ class rrule_manager {
      * Valid values are 1 to 12.
      *
      * @param string $bymonth Comma-separated list of months of the year.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_bymonth($bymonth) {
         $months = explode(',', $bymonth);
         foreach ($months as $month) {
             // Valid values are 1 to 12.
             if ($month < 1 || $month > 12) {
-                throw new \moodle_exception('errorinvalidbymonth', 'calendar');
+                throw new moodle_exception('errorinvalidbymonth', 'calendar');
             }
         }
         $this->bymonth = $months;
@@ -569,14 +572,14 @@ class rrule_manager {
      * For example "the last work day of the month" could be represented as: RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1
      *
      * @param string $bysetpos Comma-separated list of values.
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function set_bysetpos($bysetpos) {
         $setposes = explode(',', $bysetpos);
         foreach ($setposes as $pos) {
             // Valid values are 1 to 366 or -366 to -1.
             if ($pos < -366 || $pos > 366 || $pos == 0) {
-                throw new \moodle_exception('errorinvalidbysetpos', 'calendar');
+                throw new moodle_exception('errorinvalidbysetpos', 'calendar');
             }
         }
         $this->bysetpos = $setposes;
@@ -585,27 +588,27 @@ class rrule_manager {
     /**
      * Validate the rules as a whole.
      *
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function validate_rules() {
         // UNTIL and COUNT cannot be in the same recurrence rule.
         if (!empty($this->until) && !empty($this->count)) {
-            throw new \moodle_exception('errorhasuntilandcount', 'calendar');
+            throw new moodle_exception('errorhasuntilandcount', 'calendar');
         }
 
         // BYSETPOS only be used in conjunction with another BYxxx rule part.
         if (!empty($this->bysetpos) && empty($this->bymonth) && empty($this->bymonthday) && empty($this->bysecond)
             && empty($this->byday) && empty($this->byweekno) && empty($this->byhour) && empty($this->byminute)
             && empty($this->byyearday)) {
-            throw new \moodle_exception('errormustbeusedwithotherbyrule', 'calendar');
+            throw new moodle_exception('errormustbeusedwithotherbyrule', 'calendar');
         }
     }
 
     /**
      * Create events for specified rrule.
      *
-     * @param \calendar_event $passedevent Properties of event to create.
-     * @throws \moodle_exception
+     * @param calendar_event $passedevent Properties of event to create.
+     * @throws moodle_exception
      */
     public function create_events($passedevent) {
         global $DB;
@@ -636,7 +639,7 @@ class rrule_manager {
                 break;
             default :
                 // We should never get here, something is very wrong.
-                throw new \moodle_exception('errorrulefreq', 'calendar');
+                throw new moodle_exception('errorrulefreq', 'calendar');
 
         }
 
@@ -645,7 +648,7 @@ class rrule_manager {
     /**
      * Create repeated events.
      *
-     * @param \stdClass $event Event properties to create event
+     * @param stdClass $event Event properties to create event
      * @param int $timediff Time difference between events in seconds
      * @param bool $currenttime If set, the event timestart is used as the timestart for the first event,
      *                          else timestart + timediff used as the timestart for the first event. Set to true if
@@ -675,7 +678,7 @@ class rrule_manager {
             }
             for ($i = 0; $i < $count; $i++, $event->timestart += $timediff) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                calendar_event::create($event, false);
             }
         } else {
             // No count specified, use datetime constraints.
@@ -686,7 +689,7 @@ class rrule_manager {
             }
             for (; $event->timestart < $until; $event->timestart += $timediff) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                calendar_event::create($event, false);
             }
         }
     }
@@ -694,7 +697,7 @@ class rrule_manager {
     /**
      * Create repeated events based on offsets.
      *
-     * @param \stdClass $event
+     * @param stdClass $event
      * @param int $secsoffset Seconds since the start of the day that this event occurs
      * @param int $dayoffset Day offset.
      * @param int $monthoffset Months offset.
@@ -728,7 +731,7 @@ class rrule_manager {
             }
             for ($i = 0; $i < $count; $i++) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                calendar_event::create($event, false);
                 $event->timestart = strtotime("+$monthoffset months +$yearoffset years", $event->timestart);
             }
         } else {
@@ -740,10 +743,8 @@ class rrule_manager {
             }
             for (; $event->timestart < $until;) {
                 unset($event->id); // It is set during creation.
-                print_object('EVENT: ' . date('Y-m-d H:i:s', $event->timestart));
-                \calendar_event::create($event, false);
+                calendar_event::create($event, false);
                 $event->timestart = strtotime("+$monthoffset months +$yearoffset years", $event->timestart);
-
             }
         }
     }
@@ -751,7 +752,7 @@ class rrule_manager {
     /**
      * Create repeated events based on offsets from a fixed start date.
      *
-     * @param \stdClass $event
+     * @param stdClass $event
      * @param int $secsoffset Seconds since the start of the day that this event occurs
      * @param string $prefix Prefix string to add to strtotime while calculating next date for the event.
      * @param int $monthoffset Months offset.
@@ -791,7 +792,7 @@ class rrule_manager {
             }
             for ($i = 0; $i < $count; $i++) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                calendar_event::create($event, false);
                 $moffset += $monthoffset;
                 $yoffset += $yearoffset;
                 $event->timestart = strtotime("+$moffset months +$yoffset years", $start);
@@ -806,7 +807,7 @@ class rrule_manager {
             }
             for (; $event->timestart < $until;) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                calendar_event::create($event, false);
                 $moffset += $monthoffset;
                 $yoffset += $yearoffset;
                 $event->timestart = strtotime("+$moffset months +$yoffset years", $start);
@@ -818,7 +819,7 @@ class rrule_manager {
     /**
      * Create events for weekly frequency.
      *
-     * @param \stdClass $event Event properties to create event
+     * @param stdClass $event Event properties to create event
      */
     protected function create_weekly_events($event) {
         // Extract first two letters of the event's day component.
@@ -876,7 +877,7 @@ class rrule_manager {
                 }
             }
 
-            $calevent = new \calendar_event($event);
+            $calevent = new calendar_event($event);
             $updatedata = (object)['timestart' => $timestart, 'repeatid' => $event->id];
             $calevent->update($updatedata, false);
             $event->timestart = $calevent->timestart;
@@ -886,21 +887,20 @@ class rrule_manager {
         $eventtimes = [];
 
         if ($this->count > 0) {
-            // Subtract the parent event from the count.
             $count = $this->count;
 
             while ($count > 0) {
                 $weekstarttime = $weekstart->getTimestamp();
                 $nextweekstarttime = $nextweekstart->getTimestamp();
                 foreach ($this->byday as $daystring) {
+                    if ($count <= 0) {
+                        break;
+                    }
                     $day = $this->get_day($daystring);
                     if (date('l', $weekstarttime) === $day) {
                         $eventtime = strtotime("+$offset seconds", $weekstarttime);
                     } else {
                         $eventtime = strtotime("+$offset seconds next $day", $weekstarttime);
-                    }
-                    if ($count <= 0) {
-                        break;
                     }
                     if ($eventtime < $event->timestart) {
                         continue;
@@ -960,14 +960,15 @@ class rrule_manager {
             $cloneevent->repeatid = $event->id;
             $cloneevent->timestart = $time;
             unset($cloneevent->id);
-            \calendar_event::create($cloneevent, false);
+            calendar_event::create($cloneevent, false);
         }
     }
 
     /**
      * Create events for monthly frequency.
      *
-     * @param \stdClass $event Event properties to create event
+     * @param stdClass $event Event properties to create event
+     * @throws moodle_exception
      */
     protected function create_monthly_events($event) {
         // Either bymonthday or byday should be set.
@@ -975,15 +976,17 @@ class rrule_manager {
                 || !empty($this->bymonthday) && !empty($this->byday)) {
             return;
         }
-        // This much seconds after the start of the day.
+
         $eventmonthday = date("j", $event->timestart);
 
         // Extract first two letters of the event's day component.
         $eventweekday = substr(date('D', $event->timestart), 0, 2);
         $eventweekday = strtoupper($eventweekday);
 
+        // This much seconds after the start of the day.
         $offset = $event->timestart - mktime(0, 0, 0, date("n", $event->timestart), $eventmonthday, date("Y",
                 $event->timestart));
+        $offsetinterval = new DateInterval("PT{$offset}S");
         $monthstart = mktime(0, 0, 0, date("n", $event->timestart), 1, date("Y", $event->timestart));
 
         $interval = new DateInterval('P' . $this->interval . 'M');
@@ -993,130 +996,267 @@ class rrule_manager {
 
         $timestart = 0;
         $startday = null;
+        $bydaydaysonly = [];
+        $formatter = null;
+
         if (!empty($this->bymonthday)) {
             if (!in_array($eventmonthday, $this->bymonthday)) {
                 foreach ($this->bymonthday as $monthday) {
-                    $tmpstart = mktime(
-                        date("G", $event->timestart),
-                        (int)date("i", $event->timestart),
-                        (int)date("s", $event->timestart),
-                        date("n", $event->timestart),
-                        $monthday,
-                        date("Y", $event->timestart)
-                    );
-                    if ($timestart == 0 || $tmpstart < $timestart) {
+                    $absolutemonthday = abs($monthday) - 1;
+                    $tmpdate = clone($monthstartdate);
+                    if ($absolutemonthday > 0) {
+                        $dayinterval = new DateInterval("P{$absolutemonthday}D");
+                        if ($monthday > 0) {
+                            // Add the monthday value..
+                            $tmpdate->add($dayinterval);
+                        } else if ($monthday < 0) {
+                            // Go to last day of the month.
+                            $tmpdate->modify('last day of this month');
+                            // Then subtract the monthday value.
+                            $tmpdate->sub($dayinterval);
+                        }
+                    }
+
+                    // Add offset in seconds.
+                    $tmpdate->add($offsetinterval);
+                    $tmpstart = $tmpdate->getTimestamp();
+
+                    if ($tmpstart > $event->timestart && ($timestart = 0 || $tmpstart < $timestart)) {
                         $timestart = $tmpstart;
                     }
                 }
             }
+
         } else {
-            $bydaydaysonly = [];
             foreach ($this->byday as $byday) {
                 // Extract the day parts.
                 $bydaydaysonly[$byday] = substr($byday, -2);
             }
+            $formatter = new NumberFormatter('en_US', NumberFormatter::SPELLOUT);
+            $formatter->setTextAttribute(NumberFormatter::DEFAULT_RULESET, "%spellout-ordinal");
+
             if (!in_array($eventweekday, $bydaydaysonly)) {
-                $formatter = new NumberFormatter('en_US', NumberFormatter::SPELLOUT);
-                $formatter->setTextAttribute(NumberFormatter::DEFAULT_RULESET, "%spellout-ordinal");
                 foreach ($this->byday as $byday) {
                     $day = $bydaydaysonly[$byday];
                     $daystring = $this->get_day($day);
-                    if ($monthstart < $event->timestart) {
-                        $monthstartdate->add($interval);
-                        $nextmonthstartdate->add($interval);
-                        $monthstart = $monthstartdate->getTimestamp();
-                    }
-                    if (date('l', $monthstart) === $daystring) {
-                        $tmpstart = strtotime("+$offset seconds", $monthstart);
-                    } else {
-                        // If present, this indicates the nth occurrence of the specific day within the MONTHLY or YEARLY RRULE. F
+                    $tmpdate = clone($monthstartdate);
+                    $tmpnextmonth = clone($nextmonthstartdate);
+                    $tmpstart = 0;
+                    $modifier = str_replace($day, '', $byday);
+
+                    // Loop while we don't get a valid temporary start date.
+                    while ($tmpstart < $event->timestart) {
+                        // If present, this indicates the nth occurrence of the specific day within the MONTHLY or YEARLY RRULE.
                         // If an integer modifier is not present, it means all days of this type within the specified frequency.
-                        $modifier = str_replace($day, '', $byday);
-                        if (empty($modifier)) {
-                            $tmpstart = strtotime("+$offset seconds next $daystring", $monthstart);
+                        if (empty($modifier) && date('l', $monthstart) != $daystring) {
+                            $tmpdate->modify("next $daystring");
+                        } else if ($modifier > 0) {
+                            $monthyear = date('F Y', $tmpdate->getTimestamp());
+                            $ordinal = $formatter->format($modifier);
+                            $tmpdate->modify("$ordinal $daystring of $monthyear");
                         } else {
-                            if ($modifier > 0) {
-                                $monthyear = date('F Y', $monthstart);
-                                $ordinal = $formatter->format($modifier);
-                                $tmpstart = strtotime("+$offset seconds $ordinal $daystring of $monthyear");
-                            } else {
-                                $tmpstart = $nextmonthstartdate->getTimestamp();
-                                while ($modifier < 0) {
-                                    $tmpstart = strtotime("last $daystring", $tmpstart);
-                                    $modifier++;
-                                }
-                                $tmpstart = strtotime("+$offset seconds", $tmpstart);
+                            $tmpdate = clone($tmpnextmonth);
+                            while ($modifier < 0) {
+                                $tmpdate->modify("last $daystring");
+                                $modifier++;
                             }
+                        }
+
+                        $tmpdate->add($offsetinterval);
+                        $tmpstart = $tmpdate->getTimestamp();
+
+                        if ($tmpstart > $event->timestart) {
+                            if ($timestart == 0 || $tmpstart < $timestart) {
+                                $timestart = $tmpstart;
+                            }
+                        } else if ($tmpstart < $event->timestart) {
+                            // Go to next month.
+                            $tmpdate = clone($tmpnextmonth);
+                            // Increment the next month date.
+                            $tmpnextmonth->add($interval);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!empty($timestart)) {
+            // Check if time start is out of range of the current month period. If so, move on to the next month period.
+            if ($timestart >= $nextmonthstartdate->getTimestamp()) {
+                $monthstartdate->add($interval);
+                $nextmonthstartdate->add($interval);
+            }
+
+            $calevent = new calendar_event($event);
+            $updatedata = (object)['timestart' => $timestart, 'repeatid' => $event->id];
+            $calevent->update($updatedata, false);
+            $event->timestart = $calevent->timestart;
+        }
+
+        $eventtimes = [];
+        $eventtime = $event->timestart;
+
+        if (!empty($this->bymonthday)) {
+            if ($this->count > 0) {
+                $count = $this->count;
+
+                while ($count > 0) {
+                    $monthstarttime = $monthstartdate->getTimestamp();
+                    $nextmonthstarttime = $nextmonthstartdate->getTimestamp();
+                    foreach ($this->bymonthday as $monthday) {
+                        if ($count <= 0) {
+                            break;
+                        }
+                        $absolutemonthday = abs($monthday) - 1;
+                        $tmpdate = clone($monthstartdate);
+                        $dayinterval = new DateInterval("P{$absolutemonthday}D");
+                        if ($monthday > 0) {
+                            // Add the monthday value.
+                            $tmpdate->add($dayinterval);
+                        } else if ($monthday < 0) {
+                            // Go to last day of the month.
+                            $tmpdate->modify('last day of this month');
+                            // Then subtract the monthday value.
+                            $tmpdate->sub($dayinterval);
+                        }
+
+                        // Add offset in seconds.
+                        $tmpdate->add($offsetinterval);
+
+                        // Get timestamp.
+                        $eventtime = $tmpdate->getTimestamp();
+
+                        if ($eventtime < $event->timestart) {
+                            continue;
+                        }
+                        if ($eventtime >= $monthstarttime && $eventtime < $nextmonthstarttime) {
+                            $eventtimes[] = $eventtime;
+                            $count--;
                         }
                     }
 
-                    if (($timestart == 0 || $tmpstart < $timestart) && $tmpstart > $event->timestart) {
-                        $timestart = $tmpstart;
-                        $startday = $daystring;
-                    }
-                }
-
-                // Check if time start is out of range of the current month period. If so, move on to the next month period.
-                if ($timestart >= $nextmonthstartdate->getTimestamp()) {
+                    // Go to the next week period.
                     $monthstartdate->add($interval);
                     $nextmonthstartdate->add($interval);
-                    $monthstart = $monthstartdate->getTimestamp();
-                    if (date('l', $monthstart) === $startday) {
-                        $timestart = strtotime("+$offset seconds", $monthstart);
-                    } else {
-                        $timestart = strtotime("+$offset seconds next $startday", $monthstart);
-                    }
+                }
+            } else {
+                // No count specified, use datetime constraints.
+                $until = $this->until;
+                if (empty($until)) {
+                    // Forever event. We don't have any such concept in Moodle, hence we repeat it for a constant time.
+                    $until = time() + (YEARSECS * self::TIME_UNLIMITED_YEARS);
                 }
 
-                $calevent = new \calendar_event($event);
-                $updatedata = (object)['timestart' => $timestart, 'repeatid' => $event->id];
-                $calevent->update($updatedata, false);
-                $event->timestart = $calevent->timestart;
-            }
-        }
+                while ($eventtime < $until) {
+                    $monthstarttime = $monthstartdate->getTimestamp();
+                    $nextmonthstarttime = $nextmonthstartdate->getTimestamp();
+                    foreach ($this->byday as $daystring) {
+                        $day = $this->get_day($daystring);
+                        if (date('l', $monthstarttime) === $day) {
+                            $eventtime = strtotime("+$offset seconds", $monthstarttime);
+                        } else {
+                            $eventtime = strtotime("+$offset seconds next $day", $monthstarttime);
+                        }
+                        if ($eventtime > $until) {
+                            break;
+                        }
+                        if ($eventtime < $event->timestart) {
+                            continue;
+                        }
+                        if ($eventtime >= $monthstarttime && $eventtime < $nextmonthstarttime) {
+                            $eventtimes[] = $eventtime;
+                        }
+                    }
 
-        if ($timestart == 0) {
-            $timestart = $event->timestart;
-        }
-        print_object("START: " . date('l, Y-m-d H:i:s', $timestart));
-
-        if (!empty($this->bymonthday)) {
-            foreach ($this->bymonthday as $monthday) {
-                $dayoffset = $monthday - 1; // Number of days we want to add to the first day.
-                if ($monthday == date("j", $event->timestart)) {
-                    // Parent event is a part of this day chain.
-                    $this->create_repeated_events_by_offsets($event, $offset, $dayoffset, $this->interval, 0, $monthstart, false);
-                } else {
-                    // Parent event is not a part of this day chain.
-                    $this->create_repeated_events_by_offsets($event, $offset, $dayoffset, $this->interval, 0, $monthstart, true);
+                    // Go to the next week period.
+                    $monthstartdate->add($interval);
+                    $nextmonthstartdate->add($interval);
                 }
             }
         } else {
-            foreach ($this->byday as $dayrule) {
-                $day = substr($dayrule, strlen($dayrule) - 2); // Last two chars.
-                $prefix = str_replace($day, '', $dayrule);
-                if (empty($prefix) || !is_numeric($prefix)) {
-                    return;
+            if ($this->count > 0) {
+                $count = $this->count;
+                while ($count > 0) {
+                    $monthstarttime = $monthstartdate->getTimestamp();
+                    $nextmonthstarttime = $nextmonthstartdate->getTimestamp();
+                    foreach ($this->byday as $daystring) {
+                        if ($count <= 0) {
+                            break;
+                        }
+
+                        $day = $this->get_day($bydaydaysonly[$daystring]);
+                        if (date('l', $monthstarttime) === $day) {
+                            $eventtime = strtotime("+$offset seconds", $monthstarttime);
+                        } else {
+                            $eventtime = strtotime("+$offset seconds next $day", $monthstarttime);
+                        }
+
+                        if ($eventtime < $event->timestart) {
+                            continue;
+                        }
+                        if ($eventtime >= $monthstarttime && $eventtime < $nextmonthstarttime) {
+                            $eventtimes[] = $eventtime;
+                            $count--;
+                        }
+                    }
+
+                    // Go to the next week period.
+                    $monthstartdate->add($interval);
+                    $nextmonthstartdate->add($interval);
                 }
-                $day = $this->get_day($day);
-                if ($day == date('l', $event->timestart)) {
-                    // Parent event is a part of this day chain.
-                    $this->create_repeated_events_by_offsets_from_fixedstart($event, $offset, "$prefix $day", $this->interval, 0,
-                        $monthstart, false);
-                } else {
-                    // Parent event is not a part of this day chain.
-                    $this->create_repeated_events_by_offsets_from_fixedstart($event, $offset, "$prefix $day", $this->interval, 0,
-                        $monthstart, true);
+            } else {
+                // No count specified, use datetime constraints.
+                $until = $this->until;
+                if (empty($until)) {
+                    // Forever event. We don't have any such concept in Moodle, hence we repeat it for a constant time.
+                    $until = time() + (YEARSECS * self::TIME_UNLIMITED_YEARS);
                 }
 
+                while ($eventtime < $until) {
+                    $monthstarttime = $monthstartdate->getTimestamp();
+                    $nextmonthstarttime = $nextmonthstartdate->getTimestamp();
+                    foreach ($this->byday as $daystring) {
+                        $day = $this->get_day($daystring);
+                        if (date('l', $monthstarttime) === $day) {
+                            $eventtime = strtotime("+$offset seconds", $monthstarttime);
+                        } else {
+                            $eventtime = strtotime("+$offset seconds next $day", $monthstarttime);
+                        }
+                        if ($eventtime > $until) {
+                            break;
+                        }
+                        if ($eventtime < $event->timestart) {
+                            continue;
+                        }
+                        if ($eventtime >= $monthstarttime && $eventtime < $nextmonthstarttime) {
+                            $eventtimes[] = $eventtime;
+                        }
+                    }
+
+                    // Go to the next week period.
+                    $monthstartdate->add($interval);
+                    $nextmonthstartdate->add($interval);
+                }
             }
+        }
+
+        // Create the events.
+        foreach ($eventtimes as $time) {
+            if ($time == $event->timestart) {
+                continue;
+            }
+            $cloneevent = clone($event);
+            $cloneevent->repeatid = $event->id;
+            $cloneevent->timestart = $time;
+            unset($cloneevent->id);
+            calendar_event::create($cloneevent, false);
         }
     }
 
     /**
      * Create events for yearly frequency.
      *
-     * @param \stdClass $event Event properties to create event
+     * @param stdClass $event Event properties to create event
      */
     protected function create_yearly_events($event) {
 
