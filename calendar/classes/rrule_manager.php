@@ -492,6 +492,10 @@ class rrule_manager {
                 throw new moodle_exception('errorinvalidbymonthday', 'calendar');
             }
         }
+
+        // Sort these MONTHDAY rules in ascending order.
+        sort($monthdays);
+
         $this->bymonthday = $monthdays;
     }
 
@@ -632,7 +636,7 @@ class rrule_manager {
                 $this->create_weekly_events($eventrec);
                 break;
             case self::FREQ_MONTHLY :
-                $this->create_monthly_events($eventrec);
+                $this->get_events($eventrec);
                 break;
             case self::FREQ_YEARLY :
                 $this->create_yearly_events($eventrec);
@@ -640,9 +644,7 @@ class rrule_manager {
             default :
                 // We should never get here, something is very wrong.
                 throw new moodle_exception('errorrrulefreq', 'calendar');
-
         }
-
     }
 
     /**
@@ -965,16 +967,212 @@ class rrule_manager {
     }
 
     /**
+     * Generates a DateInterval object based on the FREQ and INTERVAL rules.
+     *
+     * @return DateInterval
+     * @throws moodle_exception
+     */
+    protected function get_interval() {
+        $intervalspec = null;
+        switch ($this->freq) {
+            case self::FREQ_YEARLY:
+                $intervalspec = 'P' . $this->interval . 'Y';
+                break;
+            case self::FREQ_MONTHLY:
+                $intervalspec = 'P' . $this->interval . 'M';
+                break;
+            case self::FREQ_WEEKLY:
+                $intervalspec = 'P' . $this->interval . 'W';
+                break;
+            case self::FREQ_DAILY:
+                $intervalspec = 'P' . $this->interval . 'D';
+                break;
+            case self::FREQ_HOURLY:
+                $intervalspec = 'PT' . $this->interval . 'H';
+                break;
+            case self::FREQ_MINUTELY:
+                $intervalspec = 'PT' . $this->interval . 'M';
+                break;
+            case self::FREQ_SECONDLY:
+                $intervalspec = 'PT' . $this->interval . 'S';
+                break;
+            default:
+                // We should never get here, something is very wrong.
+                throw new moodle_exception('errorrrulefreq', 'calendar');
+        }
+
+        return new DateInterval($intervalspec);
+    }
+
+    /**
+     * Generates a DateInterval object based on the FREQ and INTERVAL rules.
+     *
+     * @param int $eventtime Unix timestamp of the event time.
+     * @return DateTime[]
+     * @throws moodle_exception
+     */
+    protected function get_period_boundaries($eventtime) {
+        $nextintervalspec = null;
+
+        switch ($this->freq) {
+            case self::FREQ_YEARLY:
+                $nextintervalspec = 'P1Y';
+                $timestart = date('Y', $eventtime);
+                break;
+            case self::FREQ_MONTHLY:
+                $nextintervalspec = 'P1M';
+                $timestart = date('Y-m', $eventtime);
+                break;
+            case self::FREQ_WEEKLY:
+                $nextintervalspec = 'P1W';
+                if (date('l', $eventtime) === $this->wkst) {
+                    $weekstarttime = $eventtime;
+                } else {
+                    $weekstarttime = strtotime('last ' . $this->wkst, $eventtime);
+                }
+                $timestart = date('Y-m-d', $weekstarttime);
+                break;
+            case self::FREQ_DAILY:
+                $nextintervalspec = 'P1D';
+                $timestart = date('Y-m-d', $eventtime);
+                break;
+            case self::FREQ_HOURLY:
+                $nextintervalspec = 'PT1H';
+                $timestart = date('Y-m-d H:00:00', $eventtime);
+                break;
+            case self::FREQ_MINUTELY:
+                $nextintervalspec = 'PT1M';
+                $timestart = date('Y-m-d H:i:00', $eventtime);
+                break;
+            case self::FREQ_SECONDLY:
+                $nextintervalspec = 'PT1S';
+                $timestart = date('Y-m-d H:i:s', $eventtime);
+                break;
+            default:
+                // We should never get here, something is very wrong.
+                throw new moodle_exception('errorrrulefreq', 'calendar');
+        }
+
+        $eventstart = new DateTime($timestart);
+        $eventnext = clone($eventstart);
+        $nextinterval = new DateInterval($nextintervalspec);
+        $eventnext->add($nextinterval);
+
+        return [
+            'start' => $eventstart,
+            'next' => $eventnext
+        ];
+    }
+
+    protected function get_events($event) {
+        $interval = $this->get_interval();
+        print_object($interval);
+
+        // Candidate event times.
+        $prospectevents = [];
+
+        $eventdatetime = new DateTime(date('Y-m-d H:i:s', $event->timestart));
+        $eventdate = new DateTime(date('Y-m-d', $event->timestart));
+        $offset = $eventdatetime->diff($eventdate, true);
+
+        // If multiple BYxxx rule parts are specified, then after evaluating the specified FREQ and INTERVAL rule parts,
+        // the BYxxx rule parts are applied to the current set of evaluated occurrences in the following order:
+        // BYMONTH, BYWEEKNO, BYYEARDAY, BYMONTHDAY, BYDAY, BYHOUR, BYMINUTE, BYSECOND and BYSETPOS;
+        // then COUNT and UNTIL are evaluated.
+
+        $count = $this->count;
+        $until = null;
+        if (empty($count)) {
+            if ($this->until) {
+                $until = $this->until;
+            } else {
+                // Forever event. However, since there's no such thing as 'forever' (at least not in Moodle),
+                // we only repeat the events until 10 years from the current time.
+                $untildate = new DateTime();
+                $foreverinterval = new DateInterval('P' . self::TIME_UNLIMITED_YEARS . 'Y');
+                $untildate->add($foreverinterval);
+                $until = $untildate->getTimestamp();
+            }
+        } else {
+            // If count is defined, let's define a tentative until date. We'll just trim the number of events later.
+            $untildate = clone($eventdatetime);
+            $count = $this->count;
+            while ($count > 0) {
+                $untildate->add($interval);
+                $count--;
+            }
+            $until = $untildate->getTimestamp();
+        }
+
+        $boundaries = $this->get_period_boundaries($event->timestart);
+        $start = $boundaries['start'];
+        $nextstart = $boundaries['next'];
+
+        // Evaluate BYMONTHDAY rules.
+        foreach ($this->bymonthday as $monthday) {
+            $tmpdate = clone($start);
+            $tmpnext = clone($nextstart);
+            $tmpdate->add($offset);
+
+            // Days to add/subtract.
+            $daysoffset = abs($monthday) - 1;
+            $dayinterval = new DateInterval("P{$daysoffset}D");
+
+            while ($tmpdate->getTimestamp() <= $until) {
+                if ($monthday > 0) {
+                    // Add the monthday value..
+                    $tmpdate->add($dayinterval);
+                } else if ($monthday < 0) {
+                    // Go to last day of the month.
+                    $tmpdate->modify('last day of this month');
+                    // Then subtract the monthday value.
+                    $tmpdate->sub($dayinterval);
+                }
+
+                $tmpstart = $tmpdate->getTimestamp();
+                if ($tmpstart >= $event->timestart && $tmpstart < $tmpnext->getTimestamp()) {
+                    $prospectevents[] = $tmpstart;
+                }
+            }
+
+            $tmpdate->add($interval);
+            $tmpnext->add($interval);
+        }
+
+        sort($prospectevents);
+
+        if (count($prospectevents) > 0 && !in_array($event->timestart, $prospectevents)) {
+            $calevent = new calendar_event($event);
+            $updatedata = (object)['timestart' => $prospectevents[0], 'repeatid' => $event->id];
+            $calevent->update($updatedata, false);
+            $event->timestart = $calevent->timestart;
+        }
+
+        foreach ($prospectevents as $time) {
+            if ($time == $event->timestart) {
+                print_object("START: " . date('l, Y-m-d H:i:s', $time));
+                continue;
+            }
+            $cloneevent = clone($event);
+            $cloneevent->repeatid = $event->id;
+            $cloneevent->timestart = $time;
+            unset($cloneevent->id);
+            print_object("CREATING: " . date('l, Y-m-d H:i:s', $time));
+            calendar_event::create($cloneevent, false);
+        }
+    }
+
+
+    /**
      * Create events for monthly frequency.
      *
      * @param stdClass $event Event properties to create event
      * @throws moodle_exception
      */
     protected function create_monthly_events($event) {
-        // Either bymonthday or byday should be set.
-        if (empty($this->bymonthday) && empty($this->byday)
-                || !empty($this->bymonthday) && !empty($this->byday)) {
-            return;
+        // Default to BYMONTHDAY based on the DTSTART's day.
+        if (empty($this->bymonthday) && empty($this->byday)) {
+            $this->bymonthday = [date('j', $event->timestart)];
         }
 
         $eventmonthday = date("j", $event->timestart);
@@ -1030,8 +1228,10 @@ class rrule_manager {
                                 $timestart = $tmpstart;
                             }
                         } else if ($tmpstart < $event->timestart) {
-                            // Go to next month.
-                            $tmpdate = clone($tmpnextmonth);
+                            // Go to next month period.
+                            $tmpdate->add($interval);
+                            // Subtract the offset interval, it will be added again on the next iteration).
+                            $tmpdate->sub($offsetinterval);
                             // Increment the next month date.
                             $tmpnextmonth->add($interval);
                         }
@@ -1082,8 +1282,10 @@ class rrule_manager {
                                 $timestart = $tmpstart;
                             }
                         } else if ($tmpstart < $event->timestart) {
-                            // Go to next month.
-                            $tmpdate = clone($tmpnextmonth);
+                            // Go to next month period.
+                            $tmpdate->add($interval);
+                            // Subtract the offset interval, it will be added again on the next iteration).
+                            $tmpdate->sub($offsetinterval);
                             // Increment the next month date.
                             $tmpnextmonth->add($interval);
                         }
