@@ -1066,7 +1066,6 @@ class rrule_manager {
 
     protected function get_events($event) {
         $interval = $this->get_interval();
-        print_object($interval);
 
         // Candidate event times.
         $prospectevents = [];
@@ -1109,6 +1108,7 @@ class rrule_manager {
         $nextstart = $boundaries['next'];
 
         // Evaluate BYMONTHDAY rules.
+        $bymonthdayprospects = [];
         foreach ($this->bymonthday as $monthday) {
             $tmpdate = clone($start);
             $tmpnext = clone($nextstart);
@@ -1118,26 +1118,36 @@ class rrule_manager {
             $daysoffset = abs($monthday) - 1;
             $dayinterval = new DateInterval("P{$daysoffset}D");
 
-            while ($tmpdate->getTimestamp() <= $until) {
-                if ($monthday > 0) {
-                    // Add the monthday value..
-                    $tmpdate->add($dayinterval);
-                } else if ($monthday < 0) {
-                    // Go to last day of the month.
-                    $tmpdate->modify('last day of this month');
-                    // Then subtract the monthday value.
-                    $tmpdate->sub($dayinterval);
-                }
-
-                $tmpstart = $tmpdate->getTimestamp();
-                if ($tmpstart >= $event->timestart && $tmpstart < $tmpnext->getTimestamp()) {
-                    $prospectevents[] = $tmpstart;
-                }
+            if ($monthday > 0) {
+                // Add the monthday value.
+                $tmpdate->add($dayinterval);
+            } else if ($monthday < 0) {
+                // Go to last day of the month.
+                $tmpdate->modify('last day of this month');
+                // Then subtract the monthday value.
+                $tmpdate->sub($dayinterval);
             }
 
-            $tmpdate->add($interval);
-            $tmpnext->add($interval);
+            while ($tmpdate->getTimestamp() <= $until) {
+                $tmpstart = $tmpdate->getTimestamp();
+
+                if ($tmpstart >= $event->timestart && $tmpstart < $tmpnext->getTimestamp()) {
+                    $bymonthdayprospects[] = $tmpstart;
+                }
+
+                // Go to the next period.
+                $tmpdate->add($interval);
+                $tmpnext->add($interval);
+            }
         }
+        $prospectevents = $this->filter_prospect_events($prospectevents, $bymonthdayprospects);
+
+        // Evaluate BYDAY rules.
+        $bydayprospects = [];
+        foreach ($this->byday as $byday) {
+
+        }
+        $prospectevents = $this->filter_prospect_events($prospectevents, $bydayprospects);
 
         sort($prospectevents);
 
@@ -1148,20 +1158,51 @@ class rrule_manager {
             $event->timestart = $calevent->timestart;
         }
 
+        $count = false;
+        if ($this->count) {
+            $count = $this->count;
+        }
+
         foreach ($prospectevents as $time) {
             if ($time == $event->timestart) {
-                print_object("START: " . date('l, Y-m-d H:i:s', $time));
                 continue;
             }
+
+            if ($count !== false) {
+                $count--;
+                if ($count == 0) {
+                    break;
+                }
+            }
+
             $cloneevent = clone($event);
             $cloneevent->repeatid = $event->id;
             $cloneevent->timestart = $time;
             unset($cloneevent->id);
-            print_object("CREATING: " . date('l, Y-m-d H:i:s', $time));
             calendar_event::create($cloneevent, false);
         }
     }
 
+    protected function filter_prospect_events($prospectevents, $ruleprospects) {
+        // No prospect events. Prospects from rule can be directly assigned to the prospect events.
+        if (empty($prospectevents) && !empty($ruleprospects)) {
+            return $ruleprospects;
+        }
+
+        // Nothing to filter.
+        if (empty($ruleprospects)) {
+            return $prospectevents;
+        }
+
+        // Filter the events.
+        $filteredevents = [];
+        foreach ($prospectevents as $prospect) {
+            if (in_array($prospect, $ruleprospects)) {
+                $filteredevents[] = $prospect;
+            }
+        }
+        return $filteredevents;
+    }
 
     /**
      * Create events for monthly frequency.

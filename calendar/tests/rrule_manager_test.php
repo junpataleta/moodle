@@ -473,42 +473,24 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
     public function test_monthly_events_with_count_bymonthday() {
         global $DB;
 
+        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
+        $startdate = new DateTime(date('Y-m-d', $this->event->timestart));
+        $offsetinterval = $startdatetime->diff($startdate, true);
+        $interval = new DateInterval('P1M');
+
         $rrule = "FREQ=MONTHLY;COUNT=3;BYMONTHDAY=2"; // This should generate 3 events in total.
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(3, $count);
-        for ($i = 0; $i < 3; $i++) {
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                'timestart' => (strtotime("+$i month", $this->event->timestart))));
-            $this->assertTrue($result);
+        $records = $DB->get_records('event', array('repeatid' => $this->event->id));
+        $this->assertCount(3, $records);
+
+        $expecteddate = clone($startdatetime);
+        foreach ($records as $record) {
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+            // Go to next month.
+            $expecteddate->add($interval);
         }
-    }
-
-    /**
-     * Test recurrence rules for monthly frequency for RRULE with COUNT and BYDAY rules set.
-     */
-    public function test_monthly_events_with_count_byday() {
-        global $DB;
-
-        // This much seconds after the start of the day.
-        $offset = $this->event->timestart - mktime(0, 0, 0, date("n", $this->event->timestart), date("j", $this->event->timestart),
-                date("Y", $this->event->timestart));
-        $monthstart = mktime(0, 0, 0, date("n", $this->event->timestart), 1, date("Y", $this->event->timestart));
-
-        $rrule = 'FREQ=MONTHLY;COUNT=3;BYDAY=1MO'; // This should generate 3 events in total, first monday of the month.
-        $mang = new rrule_manager($rrule);
-        $mang->parse_rrule();
-        $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(3, $count);
-        $time = strtotime('1 Monday', strtotime("+1 months", $monthstart)) + $offset;
-        $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time));
-        $this->assertTrue($result);
-        $time = strtotime('1 Monday', strtotime("+2 months", $monthstart)) + $offset;
-        $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time));
-        $this->assertTrue($result);
     }
 
     /**
@@ -530,45 +512,6 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $time = strtotime("+$i month", $this->event->timestart);
             $result = $DB->record_exists('event', ['repeatid' => $this->event->id, 'timestart' => $time]);
             $this->assertTrue($result);
-        }
-    }
-
-    /**
-     * Test recurrence rules for monthly frequency for RRULE with BYDAY and UNTIL rules set.
-     */
-    public function test_monthly_events_with_until_byday() {
-        global $DB;
-
-        // This much seconds after the start of the day.
-        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
-        $startdate = new DateTime(date('Y-m-d', $this->event->timestart));
-        $offsetinterval = $startdatetime->diff($startdate, true);
-
-        $untildate = clone($startdatetime);
-        $untildate->add(new DateInterval('P10M1D'));
-        $until = $untildate->format('Ymd\This\Z');
-
-        // This rule should generate 9 events in total from first Monday of October 1997 to first Monday of June 1998.
-        $rrule = "FREQ=MONTHLY;BYDAY=1MO;UNTIL=$until";
-
-        $mang = new rrule_manager($rrule);
-        $mang->parse_rrule();
-        $mang->create_events($this->event);
-
-        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
-        $this->assertCount(9, $records);
-
-        $expecteddate = clone($startdate);
-        $expecteddate->modify('first Monday of October 1997');
-        foreach ($records as $record) {
-            $expecteddate->add($offsetinterval);
-
-            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
-
-            // Go to next month.
-            $expecteddate->modify('first day of next month');
-            // Go to the first Monday of the next month.
-            $expecteddate->modify('first Monday of this month');
         }
     }
 
@@ -616,6 +559,109 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
     }
 
     /**
+     * Test recurrence rules for monthly frequency for RRULE with BYMONTHDAY forever.
+     */
+    public function test_monthly_events_with_bymonthday_forever() {
+        global $DB;
+
+        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
+        $startdate = new DateTime(date('Y-m-d', $this->event->timestart));
+
+        $offsetinterval = $startdatetime->diff($startdate, true);
+        $interval = new DateInterval('P12M');
+
+        // Forever event. This should generate events over 10 year period, on 2nd day of every 12th month.
+        $rrule = "FREQ=MONTHLY;INTERVAL=12;BYMONTHDAY=2";
+
+        $mang = new rrule_manager($rrule);
+        $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
+
+        $mang->parse_rrule();
+        $mang->create_events($this->event);
+
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+
+        $expecteddate = clone($startdate);
+        $expecteddate->add($offsetinterval);
+        foreach ($records as $record) {
+            $this->assertLessThanOrEqual($until, $record->timestart);
+
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+
+            // Reset date to the first day of the month.
+            $expecteddate->modify('first day of this month');
+            // Go to next month period.
+            $expecteddate->add($interval);
+            // Go to the second day of the next month period.
+            $expecteddate->modify('+1 day');
+        }
+    }
+
+    /**
+     * Test recurrence rules for monthly frequency for RRULE with COUNT and BYDAY rules set.
+     */
+    public function test_monthly_events_with_count_byday() {
+        global $DB;
+
+        // This much seconds after the start of the day.
+        $offset = $this->event->timestart - mktime(0, 0, 0, date("n", $this->event->timestart), date("j", $this->event->timestart),
+                date("Y", $this->event->timestart));
+        $monthstart = mktime(0, 0, 0, date("n", $this->event->timestart), 1, date("Y", $this->event->timestart));
+
+        $rrule = 'FREQ=MONTHLY;COUNT=3;BYDAY=1MO'; // This should generate 3 events in total, first monday of the month.
+        $mang = new rrule_manager($rrule);
+        $mang->parse_rrule();
+        $mang->create_events($this->event);
+        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
+        $this->assertEquals(3, $count);
+        $time = strtotime('1 Monday', strtotime("+1 months", $monthstart)) + $offset;
+        $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time));
+        $this->assertTrue($result);
+        $time = strtotime('1 Monday', strtotime("+2 months", $monthstart)) + $offset;
+        $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time));
+        $this->assertTrue($result);
+    }
+
+    /**
+     * Test recurrence rules for monthly frequency for RRULE with BYDAY and UNTIL rules set.
+     */
+    public function test_monthly_events_with_until_byday() {
+        global $DB;
+
+        // This much seconds after the start of the day.
+        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
+        $startdate = new DateTime(date('Y-m-d', $this->event->timestart));
+        $offsetinterval = $startdatetime->diff($startdate, true);
+
+        $untildate = clone($startdatetime);
+        $untildate->add(new DateInterval('P10M1D'));
+        $until = $untildate->format('Ymd\This\Z');
+
+        // This rule should generate 9 events in total from first Monday of October 1997 to first Monday of June 1998.
+        $rrule = "FREQ=MONTHLY;BYDAY=1MO;UNTIL=$until";
+
+        $mang = new rrule_manager($rrule);
+        $mang->parse_rrule();
+        $mang->create_events($this->event);
+
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+        $this->assertCount(9, $records);
+
+        $expecteddate = clone($startdate);
+        $expecteddate->modify('first Monday of October 1997');
+        foreach ($records as $record) {
+            $expecteddate->add($offsetinterval);
+
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+
+            // Go to next month.
+            $expecteddate->modify('first day of next month');
+            // Go to the first Monday of the next month.
+            $expecteddate->modify('first Monday of this month');
+        }
+    }
+
+    /**
      * Test recurrence rules for monthly frequency for RRULE with BYMONTHDAY and UNTIL rules set.
      */
     public function test_monthly_events_with_until_byday_multi() {
@@ -655,45 +701,6 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
                 $expecteddate->add($interval);
                 $expecteddate->modify('first Monday of this month');
             }
-        }
-    }
-
-    /**
-     * Test recurrence rules for monthly frequency for RRULE with BYMONTHDAY forever.
-     */
-    public function test_monthly_events_with_bymonthday_forever() {
-        global $DB;
-
-        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
-        $startdate = new DateTime(date('Y-m-d', $this->event->timestart));
-
-        $offsetinterval = $startdatetime->diff($startdate, true);
-        $interval = new DateInterval('P12M');
-
-        // Forever event. This should generate events over 10 year period, on 2nd day of every 12th month.
-        $rrule = "FREQ=MONTHLY;INTERVAL=12;BYMONTHDAY=2";
-
-        $mang = new rrule_manager($rrule);
-        $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
-
-        $mang->parse_rrule();
-        $mang->create_events($this->event);
-
-        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
-
-        $expecteddate = clone($startdate);
-        $expecteddate->add($offsetinterval);
-        foreach ($records as $record) {
-            $this->assertLessThanOrEqual($until, $record->timestart);
-
-            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
-
-            // Reset date to the first day of the month.
-            $expecteddate->modify('first day of this month');
-            // Go to next month period.
-            $expecteddate->add($interval);
-            // Go to the second day of the next month period.
-            $expecteddate->modify('+1 day');
         }
     }
 
