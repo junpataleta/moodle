@@ -639,7 +639,7 @@ class rrule_manager {
                 break;
             default :
                 // We should never get here, something is very wrong.
-                throw new moodle_exception('errorrulefreq', 'calendar');
+                throw new moodle_exception('errorrrulefreq', 'calendar');
 
         }
 
@@ -1004,25 +1004,37 @@ class rrule_manager {
                 foreach ($this->bymonthday as $monthday) {
                     $absolutemonthday = abs($monthday) - 1;
                     $tmpdate = clone($monthstartdate);
-                    if ($absolutemonthday > 0) {
-                        $dayinterval = new DateInterval("P{$absolutemonthday}D");
-                        if ($monthday > 0) {
-                            // Add the monthday value..
-                            $tmpdate->add($dayinterval);
-                        } else if ($monthday < 0) {
-                            // Go to last day of the month.
-                            $tmpdate->modify('last day of this month');
-                            // Then subtract the monthday value.
-                            $tmpdate->sub($dayinterval);
+                    $tmpnextmonth = clone($nextmonthstartdate);
+                    $tmpstart = 0;
+
+                    while ($tmpstart < $event->timestart) {
+                        if ($absolutemonthday > 0) {
+                            $dayinterval = new DateInterval("P{$absolutemonthday}D");
+                            if ($monthday > 0) {
+                                // Add the monthday value..
+                                $tmpdate->add($dayinterval);
+                            } else if ($monthday < 0) {
+                                // Go to last day of the month.
+                                $tmpdate->modify('last day of this month');
+                                // Then subtract the monthday value.
+                                $tmpdate->sub($dayinterval);
+                            }
                         }
-                    }
 
-                    // Add offset in seconds.
-                    $tmpdate->add($offsetinterval);
-                    $tmpstart = $tmpdate->getTimestamp();
+                        // Add offset in seconds.
+                        $tmpdate->add($offsetinterval);
+                        $tmpstart = $tmpdate->getTimestamp();
 
-                    if ($tmpstart > $event->timestart && ($timestart = 0 || $tmpstart < $timestart)) {
-                        $timestart = $tmpstart;
+                        if ($tmpstart > $event->timestart) {
+                            if ($timestart == 0 || $tmpstart < $timestart) {
+                                $timestart = $tmpstart;
+                            }
+                        } else if ($tmpstart < $event->timestart) {
+                            // Go to next month.
+                            $tmpdate = clone($tmpnextmonth);
+                            // Increment the next month date.
+                            $tmpnextmonth->add($interval);
+                        }
                     }
                 }
             }
@@ -1147,19 +1159,33 @@ class rrule_manager {
                     $until = time() + (YEARSECS * self::TIME_UNLIMITED_YEARS);
                 }
 
-                while ($eventtime < $until) {
+                while ($eventtime <= $until) {
                     $monthstarttime = $monthstartdate->getTimestamp();
                     $nextmonthstarttime = $nextmonthstartdate->getTimestamp();
-                    foreach ($this->byday as $daystring) {
-                        $day = $this->get_day($daystring);
-                        if (date('l', $monthstarttime) === $day) {
-                            $eventtime = strtotime("+$offset seconds", $monthstarttime);
-                        } else {
-                            $eventtime = strtotime("+$offset seconds next $day", $monthstarttime);
+                    foreach ($this->bymonthday as $monthday) {
+                        $absolutemonthday = abs($monthday) - 1;
+                        $tmpdate = clone($monthstartdate);
+                        $dayinterval = new DateInterval("P{$absolutemonthday}D");
+                        if ($monthday > 0) {
+                            // Add the monthday value.
+                            $tmpdate->add($dayinterval);
+                        } else if ($monthday < 0) {
+                            // Go to last day of the month.
+                            $tmpdate->modify('last day of this month');
+                            // Then subtract the monthday value.
+                            $tmpdate->sub($dayinterval);
                         }
+
+                        // Add offset in seconds.
+                        $tmpdate->add($offsetinterval);
+
+                        // Get timestamp.
+                        $eventtime = $tmpdate->getTimestamp();
+
                         if ($eventtime > $until) {
                             break;
                         }
+                        // Skip this date if it falls before the parent event's time start.
                         if ($eventtime < $event->timestart) {
                             continue;
                         }
@@ -1168,7 +1194,7 @@ class rrule_manager {
                         }
                     }
 
-                    // Go to the next week period.
+                    // Go to the next month period.
                     $monthstartdate->add($interval);
                     $nextmonthstartdate->add($interval);
                 }
@@ -1179,18 +1205,59 @@ class rrule_manager {
                 while ($count > 0) {
                     $monthstarttime = $monthstartdate->getTimestamp();
                     $nextmonthstarttime = $nextmonthstartdate->getTimestamp();
-                    foreach ($this->byday as $daystring) {
+
+                    foreach ($this->byday as $byday) {
                         if ($count <= 0) {
                             break;
                         }
 
-                        $day = $this->get_day($bydaydaysonly[$daystring]);
-                        if (date('l', $monthstarttime) === $day) {
-                            $eventtime = strtotime("+$offset seconds", $monthstarttime);
+                        $day = $bydaydaysonly[$byday];
+                        $daystring = $this->get_day($day);
+                        $tmpdate = clone($monthstartdate);
+                        $tmpnextmonth = clone($nextmonthstartdate);
+                        $modifier = str_replace($day, '', $byday);
+
+                        // If present, this indicates the nth occurrence of the specific day within the MONTHLY or YEARLY RRULE.
+                        // If an integer modifier is not present, it means all days of this type within the specified frequency.
+                        if (strlen($modifier) == 0) {
+                            while ($eventtime < $nextmonthstarttime && $count > 0) {
+                                if ($tmpdate->getTimestamp() == $monthstarttime) {
+                                    if (date('l', $monthstart) !== $daystring) {
+                                        // No need to add the first day of the month if it does not match the BYDAY rule.
+                                        continue;
+                                    }
+                                } else {
+                                    $tmpdate->modify("next $daystring");
+                                }
+                                $tmpdate->add($offsetinterval);
+                                $eventtime = $tmpdate->getTimestamp();
+
+                                // Skip this date if it falls before the parent event's time start.
+                                if ($eventtime < $event->timestart) {
+                                    continue;
+                                }
+
+                                $eventtimes[] = $eventtime;
+                                $count--;
+                            }
+                            break;
+
+                        } else if ($modifier > 0) {
+                            $monthyear = date('F Y', $tmpdate->getTimestamp());
+                            $ordinal = $formatter->format($modifier);
+                            $tmpdate->modify("$ordinal $daystring of $monthyear");
+
                         } else {
-                            $eventtime = strtotime("+$offset seconds next $day", $monthstarttime);
+                            $tmpdate = clone($tmpnextmonth);
+                            while ($modifier < 0) {
+                                $tmpdate->modify("last $daystring");
+                                $modifier++;
+                            }
                         }
 
+                        $tmpdate->add($offsetinterval);
+                        $eventtime = $tmpdate->getTimestamp();
+                        // Skip this date if it falls before the parent event's time start.
                         if ($eventtime < $event->timestart) {
                             continue;
                         }
@@ -1212,19 +1279,60 @@ class rrule_manager {
                     $until = time() + (YEARSECS * self::TIME_UNLIMITED_YEARS);
                 }
 
-                while ($eventtime < $until) {
+                while ($eventtime <= $until) {
                     $monthstarttime = $monthstartdate->getTimestamp();
                     $nextmonthstarttime = $nextmonthstartdate->getTimestamp();
-                    foreach ($this->byday as $daystring) {
-                        $day = $this->get_day($daystring);
-                        if (date('l', $monthstarttime) === $day) {
-                            $eventtime = strtotime("+$offset seconds", $monthstarttime);
+                    foreach ($this->byday as $byday) {
+                        $day = $bydaydaysonly[$byday];
+                        $daystring = $this->get_day($day);
+                        $tmpdate = clone($monthstartdate);
+                        $tmpnextmonth = clone($nextmonthstartdate);
+                        $modifier = str_replace($day, '', $byday);
+
+                        // If present, this indicates the nth occurrence of the specific day within the MONTHLY or YEARLY RRULE.
+                        // If an integer modifier is not present, it means all days of this type within the specified frequency.
+                        if (strlen($modifier) == 0) {
+                            while ($eventtime < $nextmonthstarttime && $eventtime <= $until) {
+                                if ($tmpdate->getTimestamp() == $monthstarttime) {
+                                    if (date('l', $monthstart) !== $daystring) {
+                                        // No need to add the first day of the month if it does not match the BYDAY rule.
+                                        continue;
+                                    }
+                                } else {
+                                    $tmpdate->modify("next $daystring");
+                                }
+                                $tmpdate->add($offsetinterval);
+                                $eventtime = $tmpdate->getTimestamp();
+
+                                // Skip this date if it falls before the parent event's time start.
+                                if ($eventtime < $event->timestart) {
+                                    continue;
+                                }
+
+                                $eventtimes[] = $eventtime;
+                            }
+                            break;
+
+                        } else if ($modifier > 0) {
+                            $monthyear = date('F Y', $tmpdate->getTimestamp());
+                            $ordinal = $formatter->format($modifier);
+                            $tmpdate->modify("$ordinal $daystring of $monthyear");
+
                         } else {
-                            $eventtime = strtotime("+$offset seconds next $day", $monthstarttime);
+                            $tmpdate = clone($tmpnextmonth);
+                            while ($modifier < 0) {
+                                $tmpdate->modify("last $daystring");
+                                $modifier++;
+                            }
                         }
+
+                        $tmpdate->add($offsetinterval);
+                        $eventtime = $tmpdate->getTimestamp();
+
                         if ($eventtime > $until) {
                             break;
                         }
+                        // Skip this date if it falls before the parent event's time start.
                         if ($eventtime < $event->timestart) {
                             continue;
                         }
@@ -1243,12 +1351,14 @@ class rrule_manager {
         // Create the events.
         foreach ($eventtimes as $time) {
             if ($time == $event->timestart) {
+                print_object("START: " . date('l, Y-m-d H:i:s', $time));
                 continue;
             }
             $cloneevent = clone($event);
             $cloneevent->repeatid = $event->id;
             $cloneevent->timestart = $time;
             unset($cloneevent->id);
+            print_object("CREATING: " . date('l, Y-m-d H:i:s', $time));
             calendar_event::create($cloneevent, false);
         }
     }
