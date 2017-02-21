@@ -13,6 +13,12 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot . '/calendar/lib.php');
+
 use core_calendar\rrule_manager;
 
 /**
@@ -70,7 +76,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
      */
     public function test_parse_rrule() {
         $rules = [
-            'FREQ=DAILY',
+            'FREQ=YEARLY',
             'COUNT=3',
             'INTERVAL=4',
             'BYSECOND=20,40',
@@ -83,19 +89,40 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             'BYMONTH=3,4'
         ];
         $rrule = implode(';', $rules);
-        $mang = new core_tests_calendar_rrule_manager($rrule);
+        $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
-        $this->assertEquals(rrule_manager::FREQ_DAILY, $mang->freq);
-        $this->assertEquals(3, $mang->count);
-        $this->assertEquals(4, $mang->interval);
-        $this->assertEquals(array(20, 40), $mang->bysecond);
-        $this->assertEquals(array(2, 30), $mang->byminute);
-        $this->assertEquals(array(3, 4), $mang->byhour);
-        $this->assertEquals(array('MO', 'TH'), $mang->byday);
-        $this->assertEquals(array(20, 30), $mang->bymonthday);
-        $this->assertEquals(array(300, -20), $mang->byyearday);
-        $this->assertEquals(array(22, 33), $mang->byweekno);
-        $this->assertEquals(array(3, 4), $mang->bymonth);
+
+        $bydayrules = [
+            (object)[
+                'day' => 'MO',
+                'value' => ''
+            ],
+            (object)[
+                'day' => 'TH',
+                'value' => ''
+            ],
+        ];
+
+        $props = [
+            'freq' => rrule_manager::FREQ_YEARLY,
+            'count' => 3,
+            'interval' => 4,
+            'bysecond' => [20, 40],
+            'byminute' => [2, 30],
+            'byhour' => [3, 4],
+            'byday' => $bydayrules,
+            'bymonthday' => [20, 30],
+            'byyearday' => [300, -20],
+            'byweekno' => [22, 33],
+            'bymonth' => [3, 4],
+        ];
+
+        $reflectionclass = new ReflectionClass($mang);
+        foreach ($props as $prop => $expectedval) {
+            $rcprop = $reflectionclass->getProperty($prop);
+            $rcprop->setAccessible(true);
+            $this->assertEquals($expectedval, $rcprop->getValue($mang));
+        }
     }
 
     /**
@@ -181,6 +208,27 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
     }
 
     /**
+     * Test parsing of BYDAY rule with prefixes.
+     */
+    public function test_byday_with_prefix_validation() {
+        // This is acceptable.
+        $rrule = "FREQ=MONTHLY;BYDAY=-1MO,2SA";
+        $mang = new rrule_manager($rrule);
+        $mang->parse_rrule();
+
+        // This is also acceptable.
+        $rrule = "FREQ=YEARLY;BYDAY=MO,2SA";
+        $mang = new rrule_manager($rrule);
+        $mang->parse_rrule();
+
+        // This is invalid.
+        $rrule = "FREQ=WEEKLY;BYDAY=MO,2SA";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
      * Test parsing of BYMONTHDAY rule.
      */
     public function test_bymonthday_upper_bound_validation() {
@@ -243,8 +291,18 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
     /**
      * Test parsing of BYWEEKNO rule.
      */
+    public function test_non_yearly_freq_with_byweekno() {
+        $rrule = "BYWEEKNO=1,53";
+        $mang = new rrule_manager($rrule);
+        $this->expectException('moodle_exception');
+        $mang->parse_rrule();
+    }
+
+    /**
+     * Test parsing of BYWEEKNO rule.
+     */
     public function test_byweekno_upper_bound_validation() {
-        $rrule = "BYWEEKNO=1,53,54";
+        $rrule = "FREQ=YEARLY;BYWEEKNO=1,53,54";
         $mang = new rrule_manager($rrule);
         $this->expectException('moodle_exception');
         $mang->parse_rrule();
@@ -254,7 +312,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
      * Test parsing of BYWEEKNO rule.
      */
     public function test_byweekno_0_validation() {
-        $rrule = "BYWEEKNO=0";
+        $rrule = "FREQ=YEARLY;BYWEEKNO=0";
         $mang = new rrule_manager($rrule);
         $this->expectException('moodle_exception');
         $mang->parse_rrule();
@@ -264,7 +322,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
      * Test parsing of BYWEEKNO rule.
      */
     public function test_byweekno_lower_bound_validation() {
-        $rrule = "BYWEEKNO=-1,-53,-54";
+        $rrule = "FREQ=YEARLY;BYWEEKNO=-1,-53,-54";
         $mang = new rrule_manager($rrule);
         $this->expectException('moodle_exception');
         $mang->parse_rrule();
@@ -374,16 +432,26 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
                 'timestart' => ($this->event->timestart + 6 * DAYSECS)));
         $this->assertTrue($result);
 
+        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
+
+        $interval = new DateInterval('P300D');
+        $untildate = new DateTime();
+        $untildate->add(new DateInterval('P10Y'));
+        $until = $untildate->getTimestamp();
+
         // Forever event. This should generate events for time() + 10 year period, every 300th day.
         $rrule = 'FREQ=DAILY;INTERVAL=300';
         $mang = new rrule_manager($rrule);
-        $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        for ($i = 0, $time = $this->event->timestart; $time < $until; $i++, $time = $this->event->timestart + 300 * DAYSECS * $i) {
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                    'timestart' => ($time)));
-            $this->assertTrue($result);
+        $records = $DB->get_records('event', array('repeatid' => $this->event->id));
+
+        $expecteddate = clone($startdatetime);
+        foreach ($records as $record) {
+            $this->assertLessThanOrEqual($until, $record->timestart);
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+            // Go to next iteration.
+            $expecteddate->add($interval);
         }
     }
 
@@ -424,46 +492,63 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $this->assertTrue($result);
         }
 
+        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
+        $startdate = new DateTime(date('Y-m-d', $this->event->timestart));
+
+        $offsetinterval = $startdatetime->diff($startdate, true);
+        $interval = new DateInterval('P3W');
+
         // Every 3 weeks on Monday, Wednesday for 2 times.
         $rrule = 'FREQ=WEEKLY;INTERVAL=3;BYDAY=MO,WE;COUNT=2';
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(2, $count);
 
-        $timezone = new DateTimeZone('US/Eastern');
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+        $this->assertCount(2, $records);
 
-        // Wednesday event.
-        $wedevent = DateTime::createFromFormat('Ymd\THis', '19970903T090000', $timezone);
-        $result = $DB->record_exists('event', ['repeatid' => $this->event->id, 'timestart' => $wedevent->getTimestamp()]);
-        $this->assertTrue($result);
+        $expecteddate = clone($startdate);
+        $expecteddate->modify('1997-09-03');
+        foreach ($records as $record) {
+            $expecteddate->add($offsetinterval);
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
 
-        // Monday event, 22-09-1997.
-        $monevent = DateTime::createFromFormat('Ymd\THis', '19970922T090000', $timezone);
-        $result = $DB->record_exists('event', ['repeatid' => $this->event->id, 'timestart' => $monevent->getTimestamp()]);
-        $this->assertTrue($result);
+            if (date('D', $record->timestart) === 'Mon') {
+                // Go to the fifth day of this month.
+                $expecteddate->modify('next Wednesday');
+            } else {
+                // Reset to Monday.
+                $expecteddate->modify('last Monday');
+                // Go to next period.
+                $expecteddate->add($interval);
+            }
+        }
 
         // Forever event. This should generate events over time() + 10 year period, every 50th Monday.
         $rrule = 'FREQ=WEEKLY;BYDAY=MO;INTERVAL=50';
+
         $mang = new rrule_manager($rrule);
-        $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
 
-        // First instance of this event: Monday, 17-08-1998.
+        $untildate = new DateTime();
+        $untildate->add(new DateInterval('P10Y'));
+        $until = $untildate->getTimestamp();
+
         $interval = new DateInterval('P50W');
-        $monevent = DateTime::createFromFormat('Ymd\THis', '19980817T090000', $timezone);
         $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
-        $time = $monevent->getTimestamp();
+
+        // First instance of this set of recurring events: Monday, 17-08-1998.
+        $expecteddate = clone($startdate);
+        $expecteddate->modify('1998-08-17');
+        $expecteddate->add($offsetinterval);
         foreach ($records as $record) {
-            // TODO: Currently only comparing the dates since there is a bug (MDL-17672) on DST shifts for recurring events.
-            $eventdateexpected = date('Y-m-d', $time);
-            $eventdateactual = date('Y-m-d', $record->timestart);
+            $eventdateexpected = $expecteddate->format('Y-m-d H:i:s');
+            $eventdateactual = date('Y-m-d H:i:s', $record->timestart);
             $this->assertEquals($eventdateexpected, $eventdateactual);
+
+            $expecteddate->add($interval);
             $this->assertLessThanOrEqual($until, $record->timestart);
-            $monevent->add($interval);
-            $time = $monevent->getTimestamp();
         }
     }
 
@@ -474,8 +559,6 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         global $DB;
 
         $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
-        $startdate = new DateTime(date('Y-m-d', $this->event->timestart));
-        $offsetinterval = $startdatetime->diff($startdate, true);
         $interval = new DateInterval('P1M');
 
         $rrule = "FREQ=MONTHLY;COUNT=3;BYMONTHDAY=2"; // This should generate 3 events in total.
@@ -603,23 +686,31 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
     public function test_monthly_events_with_count_byday() {
         global $DB;
 
-        // This much seconds after the start of the day.
-        $offset = $this->event->timestart - mktime(0, 0, 0, date("n", $this->event->timestart), date("j", $this->event->timestart),
-                date("Y", $this->event->timestart));
-        $monthstart = mktime(0, 0, 0, date("n", $this->event->timestart), 1, date("Y", $this->event->timestart));
+        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
+        $startdate = new DateTime(date('Y-m-d', $this->event->timestart));
+
+        $offsetinterval = $startdatetime->diff($startdate, true);
+        $interval = new DateInterval('P1M');
 
         $rrule = 'FREQ=MONTHLY;COUNT=3;BYDAY=1MO'; // This should generate 3 events in total, first monday of the month.
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(3, $count);
-        $time = strtotime('1 Monday', strtotime("+1 months", $monthstart)) + $offset;
-        $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time));
-        $this->assertTrue($result);
-        $time = strtotime('1 Monday', strtotime("+2 months", $monthstart)) + $offset;
-        $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time));
-        $this->assertTrue($result);
+
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+
+        // First occurrence of this set of recurring events: 06-10-1997.
+        $expecteddate = clone($startdate);
+        $expecteddate->modify('1997-10-06');
+        $expecteddate->add($offsetinterval);
+        foreach ($records as $record) {
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+
+            // Go to next month period.
+            $expecteddate->add($interval);
+            $expecteddate->modify('first Monday of this month');
+            $expecteddate->add($offsetinterval);
+        }
     }
 
     /**
@@ -639,7 +730,6 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
 
         // This rule should generate 9 events in total from first Monday of October 1997 to first Monday of June 1998.
         $rrule = "FREQ=MONTHLY;BYDAY=1MO;UNTIL=$until";
-
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -679,7 +769,6 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
 
         // This should generate 11 events from 17 Sep 1997 to 15 Jul 1998.
         $rrule = "FREQ=MONTHLY;INTERVAL=2;BYDAY=1MO,3WE;UNTIL=$until";
-        print_object($rrule);
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -728,7 +817,6 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
 
         $expecteddate = new DateTime('first Monday of September 1998');
-
         foreach ($records as $record) {
             $expecteddate->add($offsetinterval);
             $this->assertLessThanOrEqual($until, $record->timestart);
@@ -742,31 +830,38 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         }
     }
 
-
     /**
      * Test recurrence rules for yearly frequency.
      */
     public function test_yearly_events() {
         global $DB;
 
-        // Extract the event's month.
-        $bymonth = date('n', $this->event->timestart);
+        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
+        $startdate = new DateTime(date('Y-m-d', $this->event->timestart));
 
-        $rrule = "FREQ=YEARLY;COUNT=3;BYMONTH=$bymonth"; // This should generate 3 events in total.
+        $offsetinterval = $startdatetime->diff($startdate, true);
+        $interval = new DateInterval('P1Y');
+
+        $rrule = "FREQ=YEARLY;COUNT=3;BYMONTH=9"; // This should generate 3 events in total.
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(3, $count);
-        for ($i = 0, $time = $this->event->timestart; $i < 3; $i++, $time = strtotime("+$i years", $this->event->timestart)) {
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time));
-            $this->assertTrue($result);
+
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+        $this->assertCount(3, $records);
+
+        $expecteddate = clone($startdatetime);
+        foreach ($records as $record) {
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+
+            // Go to next period.
+            $expecteddate->add($interval);
         }
 
         // Create a yearly event, until the time limit is hit.
         $until = strtotime('+20 day +10 years', $this->event->timestart);
         $until = date('Ymd\THis\Z', $until);
-        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;UNTIL=$until"; // Forever event.
+        $rrule = "FREQ=YEARLY;BYMONTH=9;UNTIL=$until"; // Forever event.
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -780,7 +875,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         }
 
         // This should generate 5 events in total, every second year in the given month of the event.
-        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;INTERVAL=2;COUNT=5";
+        $rrule = "FREQ=YEARLY;BYMONTH=9;INTERVAL=2;COUNT=5";
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
@@ -793,7 +888,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $this->assertTrue($result);
         }
 
-        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;INTERVAL=2"; // Forever event.
+        $rrule = "FREQ=YEARLY;BYMONTH=9;INTERVAL=2"; // Forever event.
         $mang = new rrule_manager($rrule);
         $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
@@ -805,110 +900,197 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
             $this->assertTrue($result);
         }
 
-        $eventmonth = date("F", $this->event->timestart);
-        $eventyear = date("Y", $this->event->timestart);
-
-        $rrule = "FREQ=YEARLY;COUNT=3;BYMONTH=$bymonth;BYDAY=1MO"; // This should generate 3 events in total.
+        $rrule = "FREQ=YEARLY;COUNT=3;BYMONTH=9;BYDAY=1MO"; // This should generate 3 events in total.
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(3, $count);
-        for ($i = 0; $i < 3; $i++) {
-            $year = $eventyear + $i;
-            $time = strtotime("first Monday of $eventmonth $year");
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id, 'timestart' => $time));
-            $this->assertTrue($result);
+
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+        $this->assertCount(3, $records);
+
+        $expecteddate = clone($startdatetime);
+        $expecteddate->modify('first Monday of September 1998');
+        $expecteddate->add($offsetinterval);
+        foreach ($records as $record) {
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+
+            // Go to next period.
+            $expecteddate->add($interval);
+            $monthyear = $expecteddate->format('F Y');
+            $expecteddate->modify('first Monday of ' . $monthyear);
+            $expecteddate->add($offsetinterval);
         }
 
         // Create a yearly event on the specified month, until the time limit is hit.
-        $until = strtotime('+20 day +10 years', $this->event->timestart);
-        $until = date('Ymd\THis\Z', $until);
-        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;UNTIL=$until;BYDAY=1MO";
+        $untildate = clone($startdatetime);
+        $untildate->add(new DateInterval('P10Y20D'));
+        $until = $untildate->format('Ymd\THis\Z');
+
+        $rrule = "FREQ=YEARLY;BYMONTH=9;UNTIL=$until;BYDAY=1MO";
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(11, $count);
-        for ($i = 0, $time = $this->event->timestart; $time < $until; $i++) {
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                    'timestart' => ($time)));
-            $this->assertTrue($result);
-            $year = $eventyear + $i;
-            $time = strtotime("first Monday of $eventmonth $year");
+
+        // 10 yearly records every first Monday of September 1998 to first Monday of September 2007.
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+        $this->assertCount(10, $records);
+
+        $expecteddate = clone($startdatetime);
+        $expecteddate->modify('first Monday of September 1998');
+        $expecteddate->add($offsetinterval);
+        foreach ($records as $record) {
+            $this->assertLessThanOrEqual($untildate->getTimestamp(), $record->timestart);
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+
+            // Go to next period.
+            $expecteddate->add($interval);
+            $monthyear = $expecteddate->format('F Y');
+            $expecteddate->modify('first Monday of ' . $monthyear);
+            $expecteddate->add($offsetinterval);
         }
 
-        // This should generate 5 events in total, every second year in the month of december.
-        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;INTERVAL=2;COUNT=5;BYDAY=1MO";
+        // This should generate 5 events in total, every second year in the month of September.
+        $rrule = "FREQ=YEARLY;BYMONTH=9;INTERVAL=2;COUNT=5;BYDAY=1MO";
         $mang = new rrule_manager($rrule);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(5, $count);
-        for ($i = $yoffset = 0, $time = $this->event->timestart; $i < 5; $i++, $yoffset = $i * 2) {
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                    'timestart' => ($time)));
-            $this->assertTrue($result);
-            $year = $eventyear + $yoffset;
-            $time = strtotime("first Monday of $eventmonth $year");
-        }
 
-        $rrule = "FREQ=YEARLY;BYMONTH=$bymonth;INTERVAL=2;BYDAY=1MO"; // Forever event.
+        // 5 bi-yearly records every first Monday of September 1998 to first Monday of September 2007.
+        $interval = new DateInterval('P2Y');
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+        $this->assertCount(5, $records);
+
+        $expecteddate = clone($startdatetime);
+        $expecteddate->modify('first Monday of September 1999');
+        $expecteddate->add($offsetinterval);
+        foreach ($records as $record) {
+            $this->assertLessThanOrEqual($untildate->getTimestamp(), $record->timestart);
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+
+            // Go to next period.
+            $expecteddate->add($interval);
+            $monthyear = $expecteddate->format('F Y');
+            $expecteddate->modify('first Monday of ' . $monthyear);
+            $expecteddate->add($offsetinterval);
+        }
+    }
+
+    /**
+     * Test for rrule with FREQ=YEARLY with BYMONTH and BYDAY rules set, recurring forever.
+     */
+    public function test_yearly_bymonth_byday_forever() {
+        global $DB;
+
+        // Every 2 years on the first Monday of September.
+        $rrule = "FREQ=YEARLY;BYMONTH=9;INTERVAL=2;BYDAY=1MO";
         $mang = new rrule_manager($rrule);
-        $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(6, $count);
-        for ($i = 0, $time = $this->event->timestart; $time < $until; $i++, $yoffset = $i * 2) {
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                    'timestart' => ($time)));
-            $this->assertTrue($result);
-            $year = $eventyear + $yoffset;
-            $time = strtotime("first Monday of $eventmonth $year");
+
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+
+        $untildate = new DateTime();
+        $untildate->add(new DateInterval('P' . $mang::TIME_UNLIMITED_YEARS . 'Y'));
+        $untiltimestamp = $untildate->getTimestamp();
+
+        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
+        $startdate = new DateTime(date('Y-m-d', $this->event->timestart));
+
+        $offsetinterval = $startdatetime->diff($startdate, true);
+        $interval = new DateInterval('P2Y');
+
+        // First occurrence of this set of events is on the first Monday of September 1999.
+        $expecteddate = clone($startdatetime);
+        $expecteddate->modify('first Monday of September 1999');
+        $expecteddate->add($offsetinterval);
+        foreach ($records as $record) {
+            $this->assertLessThanOrEqual($untiltimestamp, $record->timestart);
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+
+            // Go to next period.
+            $expecteddate->add($interval);
+            $monthyear = $expecteddate->format('F Y');
+            $expecteddate->modify('first Monday of ' . $monthyear);
+            $expecteddate->add($offsetinterval);
         }
+    }
+
+    /**
+     * Test for rrule with FREQ=YEARLY recurring forever.
+     */
+    public function test_yearly_forever() {
+        global $DB;
+
+        $startdatetime = new DateTime(date('Y-m-d H:i:s', $this->event->timestart));
+
+        $interval = new DateInterval('P2Y');
 
         $rrule = 'FREQ=YEARLY;INTERVAL=2'; // Forever event.
         $mang = new rrule_manager($rrule);
-        $until = time() + (YEARSECS * $mang::TIME_UNLIMITED_YEARS);
         $mang->parse_rrule();
         $mang->create_events($this->event);
-        $count = $DB->count_records('event', array('repeatid' => $this->event->id));
-        $this->assertEquals(6, $count);
-        for ($i = 0, $time = $this->event->timestart; $time < $until; $i++, $yoffset = $i * 2) {
-            $result = $DB->record_exists('event', array('repeatid' => $this->event->id,
-                    'timestart' => ($time)));
-            $this->assertTrue($result);
-            $year = $eventyear + $yoffset;
-            $time = strtotime("first Monday of $eventmonth $year");
+
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+
+        $untildate = new DateTime();
+        $untildate->add(new DateInterval('P' . $mang::TIME_UNLIMITED_YEARS . 'Y'));
+        $untiltimestamp = $untildate->getTimestamp();
+
+        $expecteddate = clone($startdatetime);
+        foreach ($records as $record) {
+            $this->assertLessThanOrEqual($untiltimestamp, $record->timestart);
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+
+            // Go to next period.
+            $expecteddate->add($interval);
         }
     }
-}
-
-/**
- * Class core_calendar_test_rrule_manager
- *
- * Wrapper to access protected vars for testing.
- *
- * @package core_calendar
- * @category test
- * @copyright 2014 onwards Ankit Agarwal <ankit.agrr@gmail.com>
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class core_tests_calendar_rrule_manager extends rrule_manager{
 
     /**
-     * Magic method to get properties.
-     *
-     * @param $prop string property
-     *
-     * @return mixed
-     * @throws coding_exception
+     * Test for rrule with FREQ=YEARLY with BYWEEKNO rule, recurring forever.
      */
-    public function __get($prop) {
-        if (property_exists($this, $prop)) {
-            return $this->$prop;
+    public function test_yearly_byweekno_forever() {
+        global $DB;
+
+        $timezone = new DateTimeZone('US/Eastern');
+        $startdatetime = new DateTime('1997-05-12 09:00:00', $timezone);
+
+        $startdate = clone($startdatetime);
+        $startdate->modify($startdate->format('Y-m-d'));
+
+        $offset = $startdatetime->diff($startdate, true);
+
+        // Update the start date of the parent event.
+        $calevent = calendar_event::load($this->event->id);
+        $updatedata = (object)[
+            'timestart' => $startdatetime->getTimestamp(),
+            'repeatid' => $this->event->id
+        ];
+        $calevent->update($updatedata, false);
+        $this->event->timestart = $calevent->timestart;
+
+        $interval = new DateInterval('P1Y');
+
+        $rrule = 'FREQ=YEARLY;BYWEEKNO=20;BYDAY=MO'; // Forever event.
+        $mang = new rrule_manager($rrule);
+        $mang->parse_rrule();
+        $mang->create_events($this->event);
+
+        $records = $DB->get_records('event', ['repeatid' => $this->event->id], 'timestart ASC', 'id, repeatid, timestart');
+
+        $untildate = new DateTime();
+        $untildate->add(new DateInterval('P' . $mang::TIME_UNLIMITED_YEARS . 'Y'));
+        $untiltimestamp = $untildate->getTimestamp();
+
+        $expecteddate = clone($startdatetime);
+        foreach ($records as $record) {
+            $this->assertLessThanOrEqual($untiltimestamp, $record->timestart);
+            $this->assertEquals($expecteddate->format('Y-m-d H:i:s'), date('Y-m-d H:i:s', $record->timestart));
+
+            // Go to next period.
+            $expecteddate->add($interval);
+            $expecteddate->setISODate($expecteddate->format('Y'), 20);
+            $expecteddate->add($offset);
         }
-        throw new coding_exception('invalidproperty');
     }
 }
