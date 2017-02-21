@@ -674,10 +674,7 @@ class rrule_manager {
         if ($this->count) {
             $count = $this->count;
         }
-        print_object($this->freq);
-        if (!empty($this->byweekno)) {
-            print_object("BYWEEKNO");
-        }
+
         foreach ($eventtimes as $time) {
             // Skip if time is the same time with the parent event's timestamp.
             if ($time == $event->timestart) {
@@ -698,7 +695,6 @@ class rrule_manager {
             $cloneevent->timestart = $time;
             unset($cloneevent->id);
             calendar_event::create($cloneevent, false);
-            print_object('CREATED: ' . date('Y-m-d H:i:s', $time));
         }
     }
 
@@ -779,16 +775,11 @@ class rrule_manager {
             $this->bymonthday = [$eventdatetime->format('j')];
         }
 
-        // Get initial reference dates for the first day of the event's month, and the first day of the next month.
-        $monthstart = new DateTime('first day of ' . $eventdatetime->format('F Y'));
-        $monthnext = clone($monthstart);
-        $monthnext->modify('first day of next month');
-
         // Evaluate BYMONTHDAY rules.
-        $eventtimes = $this->filter_by_monthday($event, $eventtimes, $until, $monthstart, $monthnext, $interval, $offset);
+        $eventtimes = $this->filter_by_monthday($event, $eventtimes, $until, $interval, $offset);
 
         // Evaluate BYDAY rules.
-        $eventtimes = $this->filter_by_day($event, $eventtimes, $until, $monthstart, $monthnext, $interval, $offset);
+        $eventtimes = $this->filter_by_day($event, $eventtimes, $until, $interval, $offset);
 
         // Sort event times in ascending order.
         sort($eventtimes);
@@ -952,22 +943,22 @@ class rrule_manager {
      * @param stdClass $event The parent event.
      * @param int[] $eventtimes The event times to be filtered.
      * @param int $until Event times generation limit date.
-     * @param DateTime $monthstart Initial reference date of the first day of the parent event's month.
-     * @param DateTime $monthnext Initial reference date of the first day of the next month of the parent event.
      * @param DateInterval $interval Date interval between the recurring dates.
      * @param DateInterval $offset Amount of time to add to the calculated date in order to match the parent event's time.
      * @return int[] Array of filtered timestamps.
      */
-    protected function filter_by_monthday($event, $eventtimes, $until, DateTime $monthstart, DateTime $monthnext,
-                                          DateInterval $interval, DateInterval $offset) {
+    protected function filter_by_monthday($event, $eventtimes, $until, DateInterval $interval, DateInterval $offset) {
         if (empty($this->bymonthday)) {
             return $eventtimes;
         }
 
         $bymonthdayprospects = [];
+
+        $periodbounds = $this->get_period_boundaries($event->timestart);
+
         foreach ($this->bymonthday as $monthday) {
-            $tmpdate = clone($monthstart);
-            $tmpnext = clone($monthnext);
+            $tmpdate = clone($periodbounds['start']);
+            $tmpnext = clone($periodbounds['next']);
             $tmpdate->add($offset);
 
             // Days to add/subtract.
@@ -1006,14 +997,11 @@ class rrule_manager {
      * @param stdClass $event The parent event.
      * @param int[] $eventtimes The event times to be filtered.
      * @param int $until Event times generation limit date.
-     * @param DateTime $monthstart Initial reference date of the first day of the parent event's month.
-     * @param DateTime $monthnext Initial reference date of the first day of the next month of the parent event.
      * @param DateInterval $interval Date interval between the recurring dates.
      * @param DateInterval $offset Amount of time to add to the calculated date in order to match the parent event's time.
      * @return int[] Array of filtered timestamps.
      */
-    protected function filter_by_day($event, $eventtimes, $until, DateTime $monthstart, DateTime $monthnext,
-                                          DateInterval $interval, DateInterval $offset) {
+    protected function filter_by_day($event, $eventtimes, $until, DateInterval $interval, DateInterval $offset) {
         if (empty($this->byday)) {
             return $eventtimes;
         }
@@ -1021,9 +1009,13 @@ class rrule_manager {
         $bydayprospects = [];
         $formatter = new NumberFormatter('en_utf8', NumberFormatter::SPELLOUT);
         $formatter->setTextAttribute(NumberFormatter::DEFAULT_RULESET, "%spellout-ordinal");
+
+        $periodbounds = $this->get_period_boundaries($event->timestart);
+
         foreach ($this->byday as $bydayrule) {
-            $tmpdate = clone($monthstart);
-            $tmpnext = clone($monthnext);
+            $tmpdate = clone($periodbounds['start']);
+            $tmpstart = clone($periodbounds['start']);
+            $tmpnext = clone($periodbounds['next']);
             $tmpdate->add($offset);
             $daystring = $this->get_day($bydayrule->day);
 
@@ -1045,25 +1037,44 @@ class rrule_manager {
                         }
                         $tmpdate->add($offset);
                     }
+                    $tmptimestamp = $tmpdate->getTimestamp();
+                    if ($tmptimestamp <= $until && $tmptimestamp >= $event->timestart && $tmptimestamp < $tmpnext->getTimestamp()) {
+                        $bydayprospects[] = $tmptimestamp;
+                    }
                 } else {
                     // No modifier value. Applies to all weekdays of the given period.
                     if ($tmpdate->format('l') !== $daystring) {
                         $tmpdate->modify("next $daystring");
                         $tmpdate->add($offset);
                     }
+
+                    if ($this->freq == self::FREQ_WEEKLY) {
+                        $tmptimestamp = $tmpdate->getTimestamp();
+                        if ($tmptimestamp <= $until && $tmptimestamp >= $event->timestart) {
+                            $bydayprospects[] = $tmptimestamp;
+                        }
+                    } else {
+                        while ($tmpdate->getTimestamp() < $tmpnext->getTimestamp()) {
+                            $tmptimestamp = $tmpdate->getTimestamp();
+                            if ($tmptimestamp <= $until && $tmptimestamp >= $event->timestart) {
+                                $bydayprospects[] = $tmptimestamp;
+                            }
+                            $tmpdate->modify("next $daystring");
+                            $tmpdate->add($offset);
+                        }
+                    }
                 }
 
-                $tmpstart = $tmpdate->getTimestamp();
-
-                if ($tmpstart <= $until && $tmpstart >= $event->timestart && $tmpstart < $tmpnext->getTimestamp()) {
-                    $bydayprospects[] = $tmpstart;
+                // Reset tmpdate to the month start and go to the next period.
+                if ($this->freq != self::FREQ_WEEKLY) {
+                    $tmpdate = clone($tmpstart);
+                    $tmpstart->add($interval);
                 }
-
-                // Go to the next period.
                 $tmpdate->add($interval);
                 $tmpnext->add($interval);
             }
         }
+
         $eventtimes = $this->filter_prospect_events($eventtimes, $bydayprospects);
         return $eventtimes;
     }
@@ -1094,5 +1105,63 @@ class rrule_manager {
             }
         }
         return $filteredevents;
+    }
+
+    /**
+     * Determines the start and end DateTime objects that serve as references to determine whether a calculated event timestamp
+     * falls on the period defined by these DateTimes objects. Particularly used for the BYMONTHDAY and BYDAY rules.
+     *
+     * @param int $eventtime Unix timestamp of the event time.
+     * @return DateTime[]
+     * @throws moodle_exception
+     */
+    protected function get_period_boundaries($eventtime) {
+        $nextintervalspec = null;
+
+        switch ($this->freq) {
+            case self::FREQ_YEARLY:
+            case self::FREQ_MONTHLY:
+                $nextintervalspec = 'P1M';
+                $timestart = date('Y-m', $eventtime);
+                break;
+            case self::FREQ_WEEKLY:
+                $nextintervalspec = 'P1W';
+                if (date('l', $eventtime) === $this->wkst) {
+                    $weekstarttime = $eventtime;
+                } else {
+                    $weekstarttime = strtotime('last ' . $this->wkst, $eventtime);
+                }
+                $timestart = date('Y-m-d', $weekstarttime);
+                break;
+            case self::FREQ_DAILY:
+                $nextintervalspec = 'P1D';
+                $timestart = date('Y-m-d', $eventtime);
+                break;
+            case self::FREQ_HOURLY:
+                $nextintervalspec = 'PT1H';
+                $timestart = date('Y-m-d H:00:00', $eventtime);
+                break;
+            case self::FREQ_MINUTELY:
+                $nextintervalspec = 'PT1M';
+                $timestart = date('Y-m-d H:i:00', $eventtime);
+                break;
+            case self::FREQ_SECONDLY:
+                $nextintervalspec = 'PT1S';
+                $timestart = date('Y-m-d H:i:s', $eventtime);
+                break;
+            default:
+                // We should never get here, something is very wrong.
+                throw new moodle_exception('errorrrulefreq', 'calendar');
+        }
+
+        $eventstart = new DateTime($timestart);
+        $eventnext = clone($eventstart);
+        $nextinterval = new DateInterval($nextintervalspec);
+        $eventnext->add($nextinterval);
+
+        return [
+            'start' => $eventstart,
+            'next' => $eventnext
+        ];
     }
 }
