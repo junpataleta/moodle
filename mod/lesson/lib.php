@@ -130,15 +130,8 @@ function lesson_update_events($lesson, $override = null) {
         // As well as the original lesson (empty override).
         $overrides[] = new stdClass();
     } else {
-        if (isset($override->userid)) {
-            // Just do the one override.
-            $overrides = array($override);
-        } else {
-            // Priorities may have shifted, so we need to update all of the group overrides.
-            $where = 'lessonid = :lessonid AND groupid IS NOT NULL';
-            $params = ['lessonid' => $lesson->id];
-            $overrides = $DB->get_records_select('lesson_overrides', $where, $params);
-        }
+        // Just do the one override.
+        $overrides = array($override);
     }
 
     // Get group override priorities.
@@ -172,20 +165,10 @@ function lesson_update_events($lesson, $override = null) {
         $event->timeduration = max($deadline - $available, 0);
         $event->visible     = instance_is_visible('lesson', $lesson);
         $event->eventtype   = 'open';
-        // Set event priority.
-        if ($groupid && $grouppriorities !== null) {
-            // For group override.
-            $openpriorities = $grouppriorities['open'];
-            if (isset($openpriorities[$available])) {
-                $event->priority = $openpriorities[$available];
-            }
-        } else if ($userid) {
-            // For user override.
-            $event->priority = CALENDAR_EVENT_USER_OVERRIDE_PRIORITY;
-        }
 
-        // Determine the event name.
+        // Determine the event name and priority.
         if ($groupid) {
+            // Group override event.
             $params = new stdClass();
             $params->lesson = $lesson->name;
             $params->group = groups_get_group_name($groupid);
@@ -194,13 +177,25 @@ function lesson_update_events($lesson, $override = null) {
                 continue;
             }
             $eventname = get_string('overridegroupeventname', 'lesson', $params);
+            // Set group override priority.
+            if ($grouppriorities !== null) {
+                $openpriorities = $grouppriorities['open'];
+                if (isset($openpriorities[$available])) {
+                    $event->priority = $openpriorities[$available];
+                }
+            }
         } else if ($userid) {
+            // User override event.
             $params = new stdClass();
             $params->lesson = $lesson->name;
             $eventname = get_string('overrideusereventname', 'lesson', $params);
+            // Set user override priority.
+            $event->priority = CALENDAR_EVENT_USER_OVERRIDE_PRIORITY;
         } else {
+            // The parent event.
             $eventname = $lesson->name;
         }
+
         if ($addopen or $addclose) {
             if ($deadline and $available and $event->timeduration <= LESSON_MAX_EVENT_LENGTH) {
                 // Single event for the whole lesson.

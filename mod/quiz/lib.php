@@ -1202,10 +1202,16 @@ function quiz_update_events($quiz, $override = null) {
     }
     $oldevents = $DB->get_records('event', $conds);
 
-    // Priorities may have shifted, so we need to update all of the overrides.
-    $overrides = $DB->get_records('quiz_overrides', array('quiz' => $quiz->id));
-    // As well as the original quiz (empty override).
-    $overrides[] = new stdClass();
+    // Now make a to-do list of all that needs to be updated.
+    if (empty($override)) {
+        // We are updating the primary settings for the lesson, so we need to add all the overrides.
+        $overrides = $DB->get_records('quiz_overrides', array('quiz' => $quiz->id));
+        // As well as the original lesson (empty override).
+        $overrides[] = new stdClass();
+    } else {
+        // Just do the one override.
+        $overrides = array($override);
+    }
 
     // Get group override priorities.
     $grouppriorities = quiz_get_group_override_priorities($quiz->id);
@@ -1238,20 +1244,10 @@ function quiz_update_events($quiz, $override = null) {
         $event->timeduration = max($timeclose - $timeopen, 0);
         $event->visible     = instance_is_visible('quiz', $quiz);
         $event->eventtype   = 'open';
-        // Set event priority.
-        if ($groupid && $grouppriorities !== null) {
-            // Group override.
-            $openpriorities = $grouppriorities['open'];
-            if (isset($openpriorities[$timeopen])) {
-                $event->priority = $openpriorities[$timeopen];
-            }
-        } else if ($userid) {
-            // User override.
-            $event->priority = CALENDAR_EVENT_USER_OVERRIDE_PRIORITY;
-        }
 
-        // Determine the event name.
+        // Determine the event name and priority.
         if ($groupid) {
+            // Group override event.
             $params = new stdClass();
             $params->quiz = $quiz->name;
             $params->group = groups_get_group_name($groupid);
@@ -1260,13 +1256,25 @@ function quiz_update_events($quiz, $override = null) {
                 continue;
             }
             $eventname = get_string('overridegroupeventname', 'quiz', $params);
+            // Set group override priority.
+            if ($grouppriorities !== null) {
+                $openpriorities = $grouppriorities['open'];
+                if (isset($openpriorities[$timeopen])) {
+                    $event->priority = $openpriorities[$timeopen];
+                }
+            }
         } else if ($userid) {
+            // User override event.
             $params = new stdClass();
             $params->quiz = $quiz->name;
             $eventname = get_string('overrideusereventname', 'quiz', $params);
+            // Set user override priority.
+            $event->priority = CALENDAR_EVENT_USER_OVERRIDE_PRIORITY;
         } else {
+            // The parent event.
             $eventname = $quiz->name;
         }
+
         if ($addopen or $addclose) {
             if ($timeclose and $timeopen and $event->timeduration <= QUIZ_MAX_EVENT_LENGTH) {
                 // Single event for the whole quiz.
