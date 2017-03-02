@@ -123,16 +123,22 @@ function lesson_update_events($lesson, $override = null) {
     }
     $oldevents = $DB->get_records('event', $conds);
 
-    // Now make a todo list of all that needs to be updated.
+    // Now make a to-do list of all that needs to be updated.
     if (empty($override)) {
-        // We are updating the primary settings for the lesson, so we
-        // need to add all the overrides.
+        // We are updating the primary settings for the lesson, so we need to add all the overrides.
         $overrides = $DB->get_records('lesson_overrides', array('lessonid' => $lesson->id));
         // As well as the original lesson (empty override).
         $overrides[] = new stdClass();
     } else {
-        // Just do the one override.
-        $overrides = array($override);
+        if (isset($override->userid)) {
+            // Just do the one override.
+            $overrides = array($override);
+        } else {
+            // Priorities may have shifted, so we need to update all of the group overrides.
+            $where = 'lessonid = :lessonid AND groupid IS NOT NULL';
+            $params = ['lessonid' => $lesson->id];
+            $overrides = $DB->get_records_select('lesson_overrides', $where, $params);
+        }
     }
 
     // Get group override priorities.
@@ -166,13 +172,15 @@ function lesson_update_events($lesson, $override = null) {
         $event->timeduration = max($deadline - $available, 0);
         $event->visible     = instance_is_visible('lesson', $lesson);
         $event->eventtype   = 'open';
+        // Set event priority.
         if ($groupid && $grouppriorities !== null) {
+            // For group override.
             $openpriorities = $grouppriorities['open'];
             if (isset($openpriorities[$available])) {
                 $event->priority = $openpriorities[$available];
             }
-        } else {
-            // Must be a user override.
+        } else if ($userid) {
+            // For user override.
             $event->priority = CALENDAR_EVENT_USER_OVERRIDE_PRIORITY;
         }
 

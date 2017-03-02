@@ -1202,17 +1202,10 @@ function quiz_update_events($quiz, $override = null) {
     }
     $oldevents = $DB->get_records('event', $conds);
 
-    // Now make a todo list of all that needs to be updated.
-    if (empty($override)) {
-        // We are updating the primary settings for the quiz, so we
-        // need to add all the overrides.
-        $overrides = $DB->get_records('quiz_overrides', array('quiz' => $quiz->id));
-        // As well as the original quiz (empty override).
-        $overrides[] = new stdClass();
-    } else {
-        // Just do the one override.
-        $overrides = array($override);
-    }
+    // Priorities may have shifted, so we need to update all of the overrides.
+    $overrides = $DB->get_records('quiz_overrides', array('quiz' => $quiz->id));
+    // As well as the original quiz (empty override).
+    $overrides[] = new stdClass();
 
     // Get group override priorities.
     $grouppriorities = quiz_get_group_override_priorities($quiz->id);
@@ -1245,13 +1238,15 @@ function quiz_update_events($quiz, $override = null) {
         $event->timeduration = max($timeclose - $timeopen, 0);
         $event->visible     = instance_is_visible('quiz', $quiz);
         $event->eventtype   = 'open';
+        // Set event priority.
         if ($groupid && $grouppriorities !== null) {
+            // Group override.
             $openpriorities = $grouppriorities['open'];
             if (isset($openpriorities[$timeopen])) {
                 $event->priority = $openpriorities[$timeopen];
             }
-        } else {
-            // Must be a user override.
+        } else if ($userid) {
+            // User override.
             $event->priority = CALENDAR_EVENT_USER_OVERRIDE_PRIORITY;
         }
 

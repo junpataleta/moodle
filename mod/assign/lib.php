@@ -267,10 +267,12 @@ function assign_update_events($assign, $override = null) {
         $event->timeduration = max($duedate - $allowsubmissionsfromdate, 0);
         $event->visible     = instance_is_visible('assign', $assign);
         $event->eventtype   = 'open';
+        // Set event priority.
         if ($groupid && isset($current->sortorder)) {
+            // Group override.
             $event->priority = $current->sortorder;
-        } else {
-            // Must be a user override.
+        } else if ($userid) {
+            // User override.
             $event->priority = CALENDAR_EVENT_USER_OVERRIDE_PRIORITY;
         }
 
