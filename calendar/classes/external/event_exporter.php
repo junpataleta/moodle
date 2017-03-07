@@ -189,8 +189,7 @@ class event_exporter extends exporter {
         $values['icon'] = $iconexporter->export($output);
 
         if ($event instanceof action_event_interface) {
-            $actionexporter = new event_action_exporter($event->get_action(),
-                ['context' => $context]);
+            $actionexporter = new event_action_exporter($event->get_action(), ['context' => $context, 'modulename' => $modulename]);
             $values['action'] = $actionexporter->export($output);
         }
 
