@@ -60,4 +60,11 @@ interface action_interface {
      * @return bool
      */
     public function is_actionable();
+
+    /**
+     * Checks whether the action should show the item count.
+     *
+     * @return bool
+     */
+    public function should_show_item_count();
 }

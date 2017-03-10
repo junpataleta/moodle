@@ -49,6 +49,7 @@ class event_action_exporter extends exporter {
         $data->url = $action->get_url()->out(true);
         $data->itemcount = $action->get_item_count();
         $data->actionable = $action->is_actionable();
+        $data->shouldshowitemcount = $action->should_show_item_count();
 
         parent::__construct($data, $related);
     }

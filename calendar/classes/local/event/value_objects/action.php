@@ -27,6 +27,7 @@ namespace core_calendar\local\event\value_objects;
 defined('MOODLE_INTERNAL') || die();
 
 use core_calendar\local\interfaces\action_interface;
+use moodle_url;
 
 /**
  * Class representing an action a user should take
@@ -41,7 +42,7 @@ class action implements action_interface {
     protected $name;
 
     /**
-     * @var \moodle_url $url The action's URL.
+     * @var moodle_url $url The action's URL.
      */
     protected $url;
 
@@ -56,38 +57,74 @@ class action implements action_interface {
     protected $actionable;
 
     /**
+     * @var bool $shouldshowitemcount Whether or not the event should show the item count.
+     */
+    protected $shouldshowitemcount;
+
+    /**
      * Constructor.
      *
      * @param string      $name       The action's name.
-     * @param \moodle_url $url        The action's URL.
+     * @param moodle_url $url        The action's URL.
      * @param int         $itemcount  How many items there are to action.
      * @param bool        $actionable Whether or not the event is currently actionable.
+     * @param bool        $shouldshowitemcount Whether or not the event should show the item count.
      */
     public function __construct(
         $name,
-        \moodle_url $url,
+        moodle_url $url,
         $itemcount,
-        $actionable
+        $actionable,
+        $shouldshowitemcount = false
     ) {
         $this->name = $name;
         $this->url = $url;
         $this->itemcount = $itemcount;
         $this->actionable = $actionable;
+        $this->shouldshowitemcount = $shouldshowitemcount;
     }
 
+    /**
+     * Action event name getter.
+     *
+     * @return string
+     */
     public function get_name() {
         return $this->name;
     }
 
+    /**
+     * Action event URL getter.
+     * @return moodle_url
+     */
     public function get_url() {
         return $this->url;
     }
 
+    /**
+     * Action event item count getter.
+     *
+     * @return int
+     */
     public function get_item_count() {
         return $this->itemcount;
     }
 
+    /**
+     * Action event actionable flag getter.
+     *
+     * @return bool
+     */
     public function is_actionable() {
         return $this->actionable;
+    }
+
+    /**
+     * Action event should show item count flag getter.
+     *
+     * @return bool
+     */
+    public function should_show_item_count() {
+        return $this->shouldshowitemcount;
     }
 }
