@@ -1778,6 +1778,7 @@ function mod_assign_core_calendar_provide_event_action(\core_calendar\event $eve
         ]);
         $itemcount = $assign->count_submissions_need_grading();
         $actionable = $assign->can_grade() && (time() >= $assign->get_instance()->allowsubmissionsfromdate);
+        $shouldshowitemcount = true;
     } else {
         $name = get_string('addsubmission', 'assign');
         $url = new \moodle_url('/mod/assign/view.php', [
@@ -1786,12 +1787,14 @@ function mod_assign_core_calendar_provide_event_action(\core_calendar\event $eve
         ]);
         $itemcount = 1;
         $actionable = $assign->is_any_submission_plugin_enabled() && $assign->can_edit_submission($USER->id);
+        $shouldshowitemcount = false;
     }
 
     return $factory->create_instance(
         $name,
         $url,
         $itemcount,
-        $actionable
+        $actionable,
+        $shouldshowitemcount
     );
 }
