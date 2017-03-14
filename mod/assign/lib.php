@@ -128,9 +128,22 @@ function assign_refresh_events($courseid = 0) {
         if (!$cm = get_coursemodule_from_instance('assign', $assign->id, $courseid, false)) {
             continue;
         }
+        // Refresh the assignment's calendar events.
         $context = context_module::instance($cm->id);
         $assignment = new assign($context, $cm, $course);
         $assignment->update_calendar($cm->id);
+
+        // Refresh the calendar events also for the assignment overrides.
+        $overrides = $DB->get_records('assign_overrides', ['assignid' => $assign->id], '', 'id, groupid, userid');
+        foreach ($overrides as $override) {
+            if (empty($override->userid)) {
+                unset($override->userid);
+            }
+            if (empty($override->groupid)) {
+                unset($override->groupid);
+            }
+            assign_update_events($assignment, $override);
+        }
     }
 
     return true;
