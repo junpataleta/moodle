@@ -86,7 +86,7 @@ class courses_view implements renderable, templatable {
                 $exportedcourse->progress = $courseprogress;
             }
 
-            if ($startdate < $today && $enddate < $today) {
+            if ($startdate < $today && !empty($enddate) && $enddate < $today) {
 
                 $pastpages = floor($coursesbystatus['past'] / $this::COURSES_PER_PAGE);
 
@@ -95,7 +95,7 @@ class courses_view implements renderable, templatable {
                 $coursesview['past']['pages'][$pastpages]['page'] = $pastpages + 1;
                 $coursesbystatus['past']++;
 
-            } elseif ($startdate <= $today && $enddate >= $today) {
+            } elseif ($startdate <= $today && (empty($enddate) || $enddate >= $today)) {
                 $inprogresspages = floor($coursesbystatus['inprogress'] / $this::COURSES_PER_PAGE);
 
                 $coursesview['inprogress']['pages'][$inprogresspages]['courses'][] = $exportedcourse;
