@@ -39,7 +39,7 @@ use core_calendar\local\event\exceptions\no_repeat_parent_exception;
  */
 class repeat_event_collection implements event_collection_interface {
     /**
-     * @var DB_QUERY_LIMIT How many records to pull from the DB at once.
+     * @var int DB_QUERY_LIMIT How many records to pull from the DB at once.
      */
     const DB_QUERY_LIMIT = 100;
 
@@ -80,10 +80,20 @@ class repeat_event_collection implements event_collection_interface {
         }
     }
 
+    /**
+     * Retrieve's the repeat ID.
+     *
+     * @return int
+     */
     public function get_id() {
         return $this->parentid;
     }
 
+    /**
+     * Retrieves the number of repeating events.
+     *
+     * @return mixed
+     */
     public function get_num() {
         global $DB;
         // Subtract one because the original event has repeatid = its own id.
@@ -93,6 +103,11 @@ class repeat_event_collection implements event_collection_interface {
         );
     }
 
+    /**
+     * Retrieves the iterator.
+     *
+     * @return \Generator
+     */
     public function getIterator() {
         $parentrecord = $this->get_parent_record();
         foreach ($this->load_event_records() as $eventrecords) {

@@ -107,6 +107,9 @@ class core_calendar_event_mapper_testcase extends advanced_testcase {
         $this->assertEquals($arr['timestart'], $event->get_times()->get_start_time()->getTimestamp());
     }
 
+    /**
+     * Test for from_event_to_legacy_event().
+     */
     public function test_from_action_event_to_legacy_event() {
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -157,6 +160,12 @@ class core_calendar_event_mapper_testcase extends advanced_testcase {
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class event_mapper_test_event_factory implements event_factory_interface {
+    /**
+     * Create test event instance.
+     *
+     * @param stdClass $dbrow
+     * @return event_mapper_test_event
+     */
     public function create_instance(\stdClass $dbrow) {
         return new event_mapper_test_event();
     }
@@ -174,58 +183,127 @@ class event_mapper_test_action_event implements action_event_interface {
      */
     protected $event;
 
+    /**
+     * event_mapper_test_action_event constructor.
+     * @param event_interface $event
+     */
     public function __construct(event_interface $event) {
         $this->event = $event;
     }
 
+    /**
+     * Event ID getter.
+     *
+     * @return int
+     */
     public function get_id() {
         return $this->event->get_id();
     }
 
+    /**
+     * Event name getter.
+     *
+     * @return string
+     */
     public function get_name() {
         return $this->event->get_name();
     }
 
+    /**
+     * Event description getter.
+     *
+     * @return \core_calendar\local\interfaces\description_interface
+     */
     public function get_description() {
         return $this->event->get_description();
     }
 
+    /**
+     * Course getter.
+     *
+     * @return proxy_interface
+     */
     public function get_course() {
         return $this->event->get_course();
     }
 
+    /**
+     * Course module getter.
+     *
+     * @return proxy_interface
+     */
     public function get_course_module() {
         return $this->event->get_course_module();
     }
 
+    /**
+     * Group getter.
+     *
+     * @return proxy_interface
+     */
     public function get_group() {
         return $this->event->get_group();
     }
 
+    /**
+     * User getter.
+     *
+     * @return proxy_interface
+     */
     public function get_user() {
         return $this->event->get_user();
     }
 
+    /**
+     * Event type getter.
+     *
+     * @return string
+     */
     public function get_type() {
         return $this->event->get_type();
     }
 
+    /**
+     * Event times getter.
+     *
+     * @return event_times
+     */
     public function get_times() {
         return $this->event->get_times();
     }
 
+    /**
+     * Repeats getter.
+     *
+     * @return event_collection_interface
+     */
     public function get_repeats() {
         return $this->event->get_repeats();
     }
 
+    /**
+     * Subscription getter.
+     *
+     * @return proxy_interface
+     */
     public function get_subscription() {
         return $this->event->get_subscription();
     }
 
+    /**
+     * Visibility getter.
+     *
+     * @return bool
+     */
     public function is_visible() {
         return $this->event->is_visible();
     }
 
+    /**
+     * Action getter.
+     *
+     * @return action
+     */
     public function get_action() {
         return new action(
             'test action',
@@ -269,7 +347,7 @@ class event_mapper_test_event implements event_interface {
     protected $subscriptionproxy;
 
     /**
-     *  Constructor.
+     * Constructor.
      *
      * @param \core_calendar\event $legacyevent Legacy event to exctract IDs etc from.
      */
@@ -288,38 +366,83 @@ class event_mapper_test_event implements event_interface {
         }
     }
 
+    /**
+     * Event ID getter.
+     *
+     * @return int
+     */
     public function get_id() {
         return 1729;
     }
 
+    /**
+     * Event name getter.
+     *
+     * @return string
+     */
     public function get_name() {
         return 'Jeff';
     }
 
+    /**
+     * Event description getter.
+     *
+     * @return event_description
+     */
     public function get_description() {
         return new event_description('asdf', 1);
     }
 
+    /**
+     * Course getter.
+     *
+     * @return proxy_interface|event_mapper_test_proxy
+     */
     public function get_course() {
         return $this->courseproxy;
     }
 
+    /**
+     * Course module getter.
+     *
+     * @return proxy_interface|event_mapper_test_proxy
+     */
     public function get_course_module() {
         return $this->cmproxy;
     }
 
+    /**
+     * Group getter.
+     *
+     * @return proxy_interface|event_mapper_test_proxy
+     */
     public function get_group() {
         return $this->groupproxy;
     }
 
+    /**
+     * User getter.
+     *
+     * @return proxy_interface|event_mapper_test_proxy
+     */
     public function get_user() {
         return $this->userproxy;
     }
 
+    /**
+     * Event type getter.
+     *
+     * @return string
+     */
     public function get_type() {
         return 'asdf';
     }
 
+    /**
+     * Event times getter.
+     *
+     * @return event_times
+     */
     public function get_times() {
         return new event_times(
             (new \DateTimeImmutable())->setTimestamp('-2461276800'),
@@ -329,14 +452,29 @@ class event_mapper_test_event implements event_interface {
         );
     }
 
+    /**
+     * Repeats getter.
+     *
+     * @return core_calendar_event_mapper_test_event_collection
+     */
     public function get_repeats() {
         return new core_calendar_event_mapper_test_event_collection();
     }
 
+    /**
+     * Subscription getter.
+     *
+     * @return proxy_interface|event_mapper_test_proxy
+     */
     public function get_subscription() {
         return $this->subscriptionproxy;
     }
 
+    /**
+     * Visibility getter.
+     *
+     * @return bool
+     */
     public function is_visible() {
         return true;
     }
@@ -370,17 +508,37 @@ class event_mapper_test_proxy implements proxy_interface {
         $this->params = $params;
     }
 
+    /**
+     * Property getter.
+     *
+     * @param string $member
+     * @return null
+     */
     public function get($member) {
         return isset($params[$member]) ? $params[$member] : null;
     }
 
+    /**
+     * ID getter.
+     *
+     * @return int
+     */
     public function get_id() {
         return $this->id;
     }
 
+    /**
+     * Property setter.
+     *
+     * @param string $member
+     * @param mixed $value
+     */
     public function set($member, $value) {
     }
 
+    /**
+     * Proxied instance getter.
+     */
     public function get_proxied_instance() {
     }
 }
@@ -407,14 +565,29 @@ class core_calendar_event_mapper_test_event_collection implements event_collecti
         ];
     }
 
+    /**
+     * ID getter.
+     *
+     * @return int
+     */
     public function get_id() {
         return 1729;
     }
 
+    /**
+     * Num getter.
+     *
+     * @return int
+     */
     public function get_num() {
         return 2;
     }
 
+    /**
+     * Iterator getter.
+     *
+     * @return Generator
+     */
     public function getIterator() {
         foreach ($this->events as $event) {
             yield $event;

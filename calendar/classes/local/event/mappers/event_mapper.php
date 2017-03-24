@@ -53,6 +53,12 @@ class event_mapper implements event_mapper_interface {
         $this->factory = $factory;
     }
 
+    /**
+     * Map a legacy event to an event.
+     *
+     * @param event $legacyevent
+     * @return event_interface
+     */
     public function from_legacy_event_to_event(event $legacyevent) {
         $coalesce = function($property) use ($legacyevent) {
             return property_exists($legacyevent, $property) ? $legacyevent->{$property} : null;
@@ -81,6 +87,12 @@ class event_mapper implements event_mapper_interface {
         );
     }
 
+    /**
+     * Map an event to a legacy event.
+     *
+     * @param event_interface $event
+     * @return event
+     */
     public function from_event_to_legacy_event(event_interface $event) {
         $action = ($event instanceof action_event_interface) ? $event->get_action() : null;
         $timeduration = $event->get_times()->get_end_time()->getTimestamp() - $event->get_times()->get_start_time()->getTimestamp();
@@ -88,6 +100,12 @@ class event_mapper implements event_mapper_interface {
         return new event($this->from_event_to_stdclass($event));
     }
 
+    /**
+     * Map an event to a stdClass.
+     *
+     * @param event_interface $event
+     * @return object
+     */
     public function from_event_to_stdclass(event_interface $event) {
         $action = ($event instanceof action_event_interface) ? $event->get_action() : null;
         $timeduration = $event->get_times()->get_end_time()->getTimestamp() - $event->get_times()->get_start_time()->getTimestamp();
@@ -95,6 +113,12 @@ class event_mapper implements event_mapper_interface {
         return (object)$this->from_event_to_assoc_array($event);
     }
 
+    /**
+     * Map an event to an associative array.
+     *
+     * @param event_interface $event
+     * @return array
+     */
     public function from_event_to_assoc_array(event_interface $event) {
         $action = ($event instanceof action_event_interface) ? $event->get_action() : null;
         $timeduration = $event->get_times()->get_end_time()->getTimestamp() - $event->get_times()->get_start_time()->getTimestamp();

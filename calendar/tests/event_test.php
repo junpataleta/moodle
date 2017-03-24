@@ -124,14 +124,29 @@ class core_calendar_event_test_event_collection implements event_collection_inte
         ];
     }
 
+    /**
+     * ID getter.
+     *
+     * @return int
+     */
     public function get_id() {
         return 1729;
     }
 
+    /**
+     * Num getter.
+     *
+     * @return int
+     */
     public function get_num() {
         return 2;
     }
 
+    /**
+     * Iterator getter.
+     *
+     * @return Generator
+     */
     public function getIterator() {
         foreach ($this->events as $event) {
             yield $event;

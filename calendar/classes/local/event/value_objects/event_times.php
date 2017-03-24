@@ -75,22 +75,47 @@ class event_times implements times_interface {
         $this->modified = $modified;
     }
 
+    /**
+     * Get the start time.
+     *
+     * @return \DateTimeImmutable
+     */
     public function get_start_time() {
         return $this->start;
     }
 
+    /**
+     * Get the end time.
+     *
+     * @return \DateTimeImmutable
+     */
     public function get_end_time() {
         return $this->end;
     }
 
+    /**
+     * Get the event duration.
+     *
+     * @return \DateInterval
+     */
     public function get_duration() {
         return $this->end->diff($this->start);
     }
 
+    /**
+     * Get the time the event was last modified.
+     *
+     * @return \DateTimeImmutable
+     */
     public function get_modified_time() {
         return $this->modified;
     }
 
+    /**
+     * Get the time used to sort events.
+     *
+     * @return \DateTimeImmutable
+     */
     public function get_sort_time() {
         return $this->sort;
     }

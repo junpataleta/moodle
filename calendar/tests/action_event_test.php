@@ -95,38 +95,83 @@ class core_calendar_action_event_testcase extends advanced_testcase {
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class core_calendar_action_event_test_event implements event_interface {
+    /**
+     * Event ID getter.
+     *
+     * @return int
+     */
     public function get_id() {
         return 1729;
     }
 
+    /**
+     * Event name getter.
+     *
+     * @return string
+     */
     public function get_name() {
         return 'Jeff';
     }
 
+    /**
+     * Event description getter.
+     *
+     * @return event_description
+     */
     public function get_description() {
         return new event_description('asdf', 1);
     }
 
+    /**
+     * Course getter.
+     *
+     * @return stdClass
+     */
     public function get_course() {
         return new \stdClass();
     }
 
+    /**
+     * Course module getter.
+     *
+     * @return stdClass
+     */
     public function get_course_module() {
         return new \stdClass();
     }
 
+    /**
+     * Group getter.
+     *
+     * @return stdClass
+     */
     public function get_group() {
         return new \stdClass();
     }
 
+    /**
+     * User getter.
+     *
+     * @return stdClass
+     */
     public function get_user() {
         return new \stdClass();
     }
 
+    /**
+     * Event type getter.
+     *
+     * @return string
+     */
     public function get_type() {
         return 'asdf';
     }
 
+    /**
+     * Event times getter.
+     *
+     * @return event_times
+     */
     public function get_times() {
         return new event_times(
             (new \DateTimeImmutable())->setTimestamp('-2461276800'),
@@ -136,14 +181,29 @@ class core_calendar_action_event_test_event implements event_interface {
         );
     }
 
+    /**
+     * Repeats getter.
+     *
+     * @return core_calendar_action_event_test_event_collection
+     */
     public function get_repeats() {
         return new core_calendar_action_event_test_event_collection();
     }
 
+    /**
+     * Subscription getter.
+     *
+     * @return stdClass
+     */
     public function get_subscription() {
         return new \stdClass();
     }
 
+    /**
+     * Visibility getter.
+     *
+     * @return bool
+     */
     public function is_visible() {
         return true;
     }
@@ -156,8 +216,14 @@ class core_calendar_action_event_test_event implements event_interface {
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class core_calendar_action_event_test_event_collection implements event_collection_interface {
+    /**
+     * @var array
+     */
     protected $events;
 
+    /**
+     * core_calendar_action_event_test_event_collection constructor.
+     */
     public function __construct() {
         $this->events = [
             'not really an event hahaha',
@@ -165,14 +231,29 @@ class core_calendar_action_event_test_event_collection implements event_collecti
         ];
     }
 
+    /**
+     * ID getter.
+     *
+     * @return int
+     */
     public function get_id() {
         return 1729;
     }
 
+    /**
+     * Num getter.
+     *
+     * @return int
+     */
     public function get_num() {
         return 2;
     }
 
+    /**
+     * Iterator getter.
+     *
+     * @return Generator
+     */
     public function getIterator() {
         foreach ($this->events as $event) {
             yield $event;

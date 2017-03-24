@@ -79,10 +79,22 @@ class std_proxy implements proxy_interface {
         $this->base = $base;
     }
 
+    /**
+     * ID getter.
+     *
+     * @return int
+     */
     public function get_id() {
         return $this->id;
     }
 
+    /**
+     * Property getter.
+     *
+     * @param string $member The property to be retrieved.
+     * @return int
+     * @throws member_does_not_exist_exception
+     */
     public function get($member) {
         if ($member === 'id') {
             return $this->get_id();
@@ -99,6 +111,13 @@ class std_proxy implements proxy_interface {
         return $this->get_proxied_instance()->{$member};
     }
 
+    /**
+     * Property setter.
+     *
+     * @param string $member The property to be set.
+     * @param mixed $value The property's value.
+     * @throws member_does_not_exist_exception
+     */
     public function set($member, $value) {
         if (!property_exists($this->get_proxied_instance(), $member)) {
             throw new member_does_not_exist_exception(sprintf('Member %s does not exist', $member));
@@ -107,6 +126,11 @@ class std_proxy implements proxy_interface {
         $this->get_proxied_instance()->{$member} = $value;
     }
 
+    /**
+     * Retrieves the proxied instance.
+     *
+     * @return \stdClass
+     */
     public function get_proxied_instance() {
         $callback = $this->callback;
         return $this->class = $this->class ? $this->class : $callback(...$this->callbackargs);

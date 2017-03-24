@@ -25,6 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 use core_calendar\local\event\factories\action_event_factory;
+use core_calendar\local\event\value_objects\event_description;
+use core_calendar\local\event\value_objects\event_times;
 use core_calendar\local\interfaces\action_event_interface;
 use core_calendar\local\interfaces\event_interface;
 use core_calendar\local\event\value_objects\action;
@@ -62,38 +64,83 @@ class core_calendar_action_event_factory_testcase extends advanced_testcase {
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class action_event_factory_test_event implements event_interface {
+    /**
+     * ID getter.
+     *
+     * @return int
+     */
     public function get_id() {
         return 1729;
     }
 
+    /**
+     * Name getter.
+     *
+     * @return string
+     */
     public function get_name() {
         return 'Jeff';
     }
 
+    /**
+     * Description getter.
+     *
+     * @return event_description
+     */
     public function get_description() {
         return new event_description('asdf', 1);
     }
 
+    /**
+     * Course getter.
+     *
+     * @return stdClass
+     */
     public function get_course() {
         return new \stdClass();
     }
 
+    /**
+     * Course module getter.
+     *
+     * @return stdClass
+     */
     public function get_course_module() {
         return new \stdClass();
     }
 
+    /**
+     * Group getter.
+     *
+     * @return stdClass
+     */
     public function get_group() {
         return new \stdClass();
     }
 
+    /**
+     * User getter.
+     *
+     * @return stdClass
+     */
     public function get_user() {
         return new \stdClass();
     }
 
+    /**
+     * Event type getter.
+     *
+     * @return string
+     */
     public function get_type() {
         return 'asdf';
     }
 
+    /**
+     * Event times getter.
+     *
+     * @return event_times
+     */
     public function get_times() {
         return new event_times(
             (new \DateTimeImmutable())->setTimestamp('-2461276800'),
@@ -103,14 +150,29 @@ class action_event_factory_test_event implements event_interface {
         );
     }
 
+    /**
+     * Test event collection getter.
+     *
+     * @return test_event_collection
+     */
     public function get_repeats() {
         return new test_event_collection();
     }
 
+    /**
+     * Subscription getter.
+     *
+     * @return stdClass
+     */
     public function get_subscription() {
         return new \stdClass();
     }
 
+    /**
+     * Visibility getter.
+     *
+     * @return bool
+     */
     public function is_visible() {
         return true;
     }

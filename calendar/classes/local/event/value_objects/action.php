@@ -75,18 +75,38 @@ class action implements action_interface {
         $this->actionable = $actionable;
     }
 
+    /**
+     * Action name getter.
+     *
+     * @return string
+     */
     public function get_name() {
         return $this->name;
     }
 
+    /**
+     * Action URL getter.
+     *
+     * @return \moodle_url
+     */
     public function get_url() {
         return $this->url;
     }
 
+    /**
+     * Action item count getter.
+     *
+     * @return int
+     */
     public function get_item_count() {
         return $this->itemcount;
     }
 
+    /**
+     * Actionable flag getter.
+     *
+     * @return bool
+     */
     public function is_actionable() {
         return $this->actionable;
     }

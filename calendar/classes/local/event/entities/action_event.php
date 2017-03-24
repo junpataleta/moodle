@@ -26,9 +26,13 @@ namespace core_calendar\local\event\entities;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_calendar\local\event\value_objects\event_times;
 use core_calendar\local\interfaces\action_event_interface;
 use core_calendar\local\interfaces\action_interface;
+use core_calendar\local\interfaces\description_interface;
+use core_calendar\local\interfaces\event_collection_interface;
 use core_calendar\local\interfaces\event_interface;
+use core_calendar\local\interfaces\proxy_interface;
 
 /**
  * Class representing an actionable event.
@@ -63,54 +67,119 @@ class action_event implements action_event_interface {
         $this->action = $action;
     }
 
+    /**
+     * Get the action event's ID.
+     *
+     * @return int
+     */
     public function get_id() {
         return $this->event->get_id();
     }
 
+    /**
+     * Get the action event's name.
+     *
+     * @return string
+     */
     public function get_name() {
         return $this->event->get_name();
     }
 
+    /**
+     * Get the action event's description.
+     *
+     * @return description_interface
+     */
     public function get_description() {
         return $this->event->get_description();
     }
 
+    /**
+     * Get the course object associated with the action event.
+     *
+     * @return proxy_interface
+     */
     public function get_course() {
         return $this->event->get_course();
     }
 
+    /**
+     * Get the course module object created the action event.
+     *
+     * @return proxy_interface
+     */
     public function get_course_module() {
         return $this->event->get_course_module();
     }
 
+    /**
+     * Get the group object associated with the action event.
+     *
+     * @return proxy_interface
+     */
     public function get_group() {
         return $this->event->get_group();
     }
 
+    /**
+     * Get the user object associated with the action event.
+     *
+     * @return proxy_interface
+     */
     public function get_user() {
         return $this->event->get_user();
     }
 
+    /**
+     * Get the action event's type.
+     *
+     * @return string
+     */
     public function get_type() {
         return $this->event->get_type();
     }
 
+    /**
+     * Get the times associated with the action event.
+     *
+     * @return event_times
+     */
     public function get_times() {
         return $this->event->get_times();
     }
 
+    /**
+     * Get repeats of this action event.
+     *
+     * @return event_collection_interface
+     */
     public function get_repeats() {
         return $this->event->get_repeats();
     }
 
+    /**
+     * Get the action event's subscription.
+     *
+     * @return proxy_interface
+     */
     public function get_subscription() {
         return $this->event->get_subscription();
     }
 
+    /**
+     * Get the event's visibility.
+     *
+     * @return bool
+     */
     public function is_visible() {
         return $this->event->is_visible();
     }
 
+    /**
+     * Get the action associated with this event.
+     *
+     * @return action_interface
+     */
     public function get_action() {
         return $this->action;
     }

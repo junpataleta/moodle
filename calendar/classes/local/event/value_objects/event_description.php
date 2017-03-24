@@ -48,7 +48,7 @@ class event_description implements description_interface {
     /**
      * Constructor.
      *
-     * @param stirng $value  The description's value.
+     * @param string $value  The description's value.
      * @param int    $format The description's format.
      */
     public function __construct($value, $format) {
@@ -56,10 +56,20 @@ class event_description implements description_interface {
         $this->format = $format;
     }
 
+    /**
+     * Get the description's value.
+     *
+     * @return string
+     */
     public function get_value() {
         return $this->value;
     }
 
+    /**
+     * Get the description's format.
+     *
+     * @return int
+     */
     public function get_format() {
         return $this->format;
     }

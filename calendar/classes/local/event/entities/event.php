@@ -143,50 +143,110 @@ class event implements event_interface {
         $this->subscription = $subscription;
     }
 
+    /**
+     * Get the event's ID.
+     *
+     * @return int
+     */
     public function get_id() {
         return $this->id;
     }
 
+    /**
+     * Get the event's name.
+     *
+     * @return string
+     */
     public function get_name() {
         return $this->name;
     }
 
+    /**
+     * Get the event's description.
+     *
+     * @return description_interface
+     */
     public function get_description() {
         return $this->description;
     }
 
+    /**
+     * Get the course object associated with the event.
+     *
+     * @return proxy_interface
+     */
     public function get_course() {
         return $this->course;
     }
 
+    /**
+     * Get the course module object that created the event.
+     *
+     * @return proxy_interface
+     */
     public function get_course_module() {
         return $this->coursemodule;
     }
 
+    /**
+     * Get the group object associated with the event.
+     *
+     * @return proxy_interface
+     */
     public function get_group() {
         return $this->group;
     }
 
+    /**
+     * Get the user object associated with the event.
+     *
+     * @return proxy_interface
+     */
     public function get_user() {
         return $this->user;
     }
 
+    /**
+     * Get the event's type.
+     *
+     * @return string
+     */
     public function get_type() {
         return $this->type;
     }
 
+    /**
+     * Get the times associated with the event.
+     *
+     * @return times_interface
+     */
     public function get_times() {
         return $this->times;
     }
 
+    /**
+     * Get repeats of this event.
+     *
+     * @return event_collection_interface
+     */
     public function get_repeats() {
         return $this->repeats;
     }
 
+    /**
+     * Get the event's subscription.
+     *
+     * @return proxy_interface
+     */
     public function get_subscription() {
         return $this->subscription;
     }
 
+    /**
+     * Get the event's visibility.
+     *
+     * @return bool
+     */
     public function is_visible() {
         return $this->visible;
     }

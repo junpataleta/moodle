@@ -37,6 +37,14 @@ use core_calendar\local\interfaces\event_interface;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class event_factory extends event_abstract_factory {
+
+    /**
+     * Applies component actions to the event.
+     *
+     * @param event_interface $event
+     * @return mixed
+     * @throws invalid_callback_exception
+     */
     protected function apply_component_action(event_interface $event) {
         $callbackapplier = $this->actioncallbackapplier;
         $callbackresult = $callbackapplier($event);
@@ -49,6 +57,13 @@ class event_factory extends event_abstract_factory {
         return $callbackresult;
     }
 
+    /**
+     * Exposes the event (or not).
+     *
+     * @param event_interface $event
+     * @return event_interface|null
+     * @throws invalid_callback_exception
+     */
     protected function expose_event(event_interface $event) {
         $callbackapplier = $this->visibilitycallbackapplier;
         $callbackresult = $callbackapplier($event);

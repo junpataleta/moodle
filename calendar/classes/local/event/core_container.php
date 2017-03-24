@@ -38,6 +38,7 @@ use core_calendar\local\event\mappers\event_mapper;
 use core_calendar\local\event\strategies\raw_event_retrieval_strategy;
 use core_calendar\local\interfaces\action_event_interface;
 use core_calendar\local\interfaces\event_interface;
+use stdClass;
 
 /**
  * Core container.
