@@ -23,6 +23,8 @@
  * @package calendar
  */
 
+use core_calendar\local\api as local_api;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
@@ -371,8 +373,9 @@ class core_calendar_renderer extends plugin_renderer_base {
         }
 
         // Get events from database
-        $events = \core_calendar\local\api::get_legacy_events($display->tstart, $display->tend, $calendar->users, $calendar->groups,
-            $calendar->courses);
+        list($users, $groups, $courses) =
+                local_api::normalise_parameters_for_get_legacy_events($calendar->users, $calendar->groups, $calendar->courses);
+        $events = local_api::get_legacy_events($display->tstart, $display->tend, $users, $groups, $courses);
         if (!empty($events)) {
             foreach($events as $eventid => $event) {
                 $event = new calendar_event($event);

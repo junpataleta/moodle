@@ -109,9 +109,9 @@ class api {
      *
      * @param int $tstart Start time of time range for events
      * @param int $tend End time of time range for events
-     * @param array|int|boolean $users array of users, user id or boolean for all/no user events
-     * @param array|int|boolean $groups array of groups, group id or boolean for all/no group events
-     * @param array|int|boolean $courses array of courses, course id or boolean for all/no course events
+     * @param array|null $users array of users, user id or boolean for all/no user events
+     * @param array|null $groups array of groups, group id or boolean for all/no group events
+     * @param array|null $courses array of courses, course id or boolean for all/no course events
      * @param boolean $withduration whether only events starting within time range selected
      *                              or events in progress/already started selected as well
      * @param boolean $ignorehidden whether to select only visible events or all events
@@ -120,24 +120,12 @@ class api {
     public static function get_legacy_events(
         $tstart,
         $tend,
-        $users,
-        $groups,
-        $courses,
+        array $users = null,
+        array $groups = null,
+        array $courses = null,
         $withduration = true,
         $ignorehidden = true
     ) {
-        $fixedparams = array_map(function($param) {
-            if ($param === true) {
-                return null;
-            }
-
-            if (!is_array($param)) {
-                return [$param];
-            }
-
-            return $param;
-        }, [$users, $groups, $courses]);
-
         $mapper = \core_calendar\local\event\container::get_event_mapper();
         $events = self::get_events(
             $tstart,
@@ -148,9 +136,9 @@ class api {
             null,
             40,
             null,
-            $fixedparams[0],
-            $fixedparams[1],
-            $fixedparams[2],
+            $users,
+            $groups,
+            $courses,
             $withduration,
             $ignorehidden
         );
@@ -267,5 +255,33 @@ class api {
         }
 
         return $return;
+    }
+
+    /**
+     * Fixes the parameters to be passed for \core_calendar\local\api::_get_legacy_events().
+     *
+     * @param array|int|bool|null $users The users parameter.
+     * @param array|int|bool|null $groups The groups parameter.
+     * @param array|int|bool|null $courses The courses parameter.
+     * @return array
+     */
+    public static function normalise_parameters_for_get_legacy_events($users = null, $groups = null, $courses = null) {
+        $fixedparams = array_map(function($param) {
+            if ($param === true) {
+                return null;
+            }
+
+            if ($param === false) {
+                return [];
+            }
+
+            if (!is_array($param)) {
+                return [$param];
+            }
+
+            return $param;
+        }, [$users, $groups, $courses]);
+
+        return $fixedparams;
     }
 }

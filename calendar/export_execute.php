@@ -180,7 +180,10 @@ if(!empty($what) && !empty($time)) {
         die();
     }
 }
-$events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, $users, $groups, array_keys($paramcourses), false);
+
+$courses = array_keys($paramcourses);
+list($users, $groups, $courses) = \core_calendar\local\api::normalise_parameters_for_get_legacy_events($users, $groups, $courses);
+$events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, $users, $groups, $courses, false);
 
 $ical = new iCalendar;
 $ical->add_property('method', 'PUBLISH');

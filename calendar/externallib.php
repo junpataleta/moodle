@@ -233,8 +233,11 @@ class core_calendar_external extends external_api {
         }
 
         // Event list does not check visibility and permissions, we'll check that later.
-        $eventlist = \core_calendar\local\api::get_legacy_events($params['options']['timestart'], $params['options']['timeend'],
-            $funcparam['users'], $funcparam['groups'], $funcparam['courses'], true, $params['options']['ignorehidden']);
+        list($paramusers, $paramgroups, $paramcourses) = \core_calendar\local\api::normalise_parameters_for_get_legacy_events(
+                $funcparam['users'], $funcparam['groups'], $funcparam['courses']
+            );
+        $eventlist = local_api::get_legacy_events($params['options']['timestart'], $params['options']['timeend'],
+            $paramusers, $paramgroups, $paramcourses, true, $params['options']['ignorehidden']);
 
         // WS expects arrays.
         $events = array();

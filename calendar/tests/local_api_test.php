@@ -661,7 +661,7 @@ class core_calendar_local_api_testcase extends advanced_testcase {
         $timeend = time() + 60;
 
         // Get all events.
-        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, true, 0, true);
+        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, null, [], null);
         $this->assertCount(2, $events);
 
         // Disable the lesson module.
@@ -670,7 +670,7 @@ class core_calendar_local_api_testcase extends advanced_testcase {
         $DB->update_record('modules', $modulerecord);
 
         // Check that we only return the assign event.
-        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, true, 0, true);
+        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, null, [], null);
         $this->assertCount(1, $events);
         $event = reset($events);
         $this->assertEquals('assign', $event->modulename);
@@ -786,32 +786,33 @@ class core_calendar_local_api_testcase extends advanced_testcase {
 
         // Get user override events.
         $this->setUser($useroverridestudent);
-        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, $useroverridestudent->id, $groups, $course->id);
+        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, [$useroverridestudent->id], $groups,
+            [$course->id]);
         $this->assertCount(1, $events);
         $event = reset($events);
         $this->assertEquals('Assignment 1 due date - User override', $event->name);
 
         // Get event for user with override but with the timestart and timeend parameters only covering the original event.
-        $events = \core_calendar\local\api::get_legacy_events($timestart, $now, $useroverridestudent->id, $groups, $course->id);
+        $events = \core_calendar\local\api::get_legacy_events($timestart, $now, [$useroverridestudent->id], $groups, [$course->id]);
         $this->assertCount(0, $events);
 
         // Get events for user that does not belong to any group and has no user override events.
         $this->setUser($nogroupstudent);
-        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, $nogroupstudent->id, $groups, $course->id);
+        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, [$nogroupstudent->id], $groups, [$course->id]);
         $this->assertCount(1, $events);
         $event = reset($events);
         $this->assertEquals('Assignment 1 due date', $event->name);
 
         // Get events for user that belongs to groups A and B and has no user override events.
         $this->setUser($group12student);
-        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, $group12student->id, $groups, $course->id);
+        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, [$group12student->id], $groups, [$course->id]);
         $this->assertCount(1, $events);
         $event = reset($events);
         $this->assertEquals('Assignment 1 due date - Group B override', $event->name);
 
         // Get events for user that belongs to group A and has no user override events.
         $this->setUser($group1student);
-        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, $group1student->id, $groups, $course->id);
+        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, [$group1student->id], $groups, [$course->id]);
         $this->assertCount(1, $events);
         $event = reset($events);
         $this->assertEquals('Assignment 1 due date - Group A override', $event->name);
@@ -855,7 +856,7 @@ class core_calendar_local_api_testcase extends advanced_testcase {
         }
 
         // Make sure repeating events are not filtered out.
-        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend, true, true, true);
+        $events = \core_calendar\local\api::get_legacy_events($timestart, $timeend);
         $this->assertCount(3, $events);
     }
 }
