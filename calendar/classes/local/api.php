@@ -131,6 +131,10 @@ class api {
                 return null;
             }
 
+            if ($param === false) {
+                return [];
+            }
+
             if (!is_array($param)) {
                 return [$param];
             }
