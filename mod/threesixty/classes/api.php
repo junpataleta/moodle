@@ -3,6 +3,7 @@
 namespace mod_threesixty;
 
 use context_module;
+use moodle_exception;
 use stdClass;
 
 class api {
@@ -129,6 +130,13 @@ class api {
         return $DB->get_records('threesixty_response', $params, 'item ASC', 'id, item, value');
     }
 
+    /**
+     * Sets the questions for the 360 activity.
+     *
+     * @param int $threesixtyid The 360 ID.
+     * @param int[] $questionids The array of question IDs.
+     * @return bool True on success. False, otherwise.
+     */
     public static function set_items($threesixtyid, $questionids) {
         global $DB;
 
@@ -193,10 +201,34 @@ class api {
         ];
     }
 
+    /**
+     * Moves the item up.
+     *
+     * @param int $itemid The item ID.
+     * @return bool
+     */
     public static function move_item_up($itemid) {
         return self::move_item($itemid, self::MOVE_UP);
     }
 
+    /**
+     * Moves the item down.
+     *
+     * @param int $itemid The item ID.
+     * @return bool
+     */
+    public static function move_item_down($itemid) {
+        return self::move_item($itemid, self::MOVE_DOWN);
+    }
+
+    /**
+     * Moves an item depending on the direction provided.
+     *
+     * @param int $itemid The item ID.
+     * @param int $direction The move direction. 1 for up, 2 for down.
+     * @return bool
+     * @throws moodle_exception
+     */
     protected static function move_item($itemid, $direction) {
         global $DB;
         $result = false;
@@ -234,10 +266,12 @@ class api {
         return $result;
     }
 
-    public static function move_item_down($itemid) {
-        return self::move_item($itemid, self::MOVE_DOWN);
-    }
-
+    /**
+     * Deletes a question item from the 360 feedback activity.
+     *
+     * @param int $itemid The item ID.
+     * @return bool
+     */
     public static function delete_item($itemid) {
         global $DB;
         if ($itemtobedeleted = $DB->get_record('threesixty_item', ['id' => $itemid])) {

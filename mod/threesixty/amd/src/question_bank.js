@@ -14,7 +14,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * AMD code for the frequently used comments chooser for the marking guide grading form.
+ * AMD code for the Question Bank.
+ *
+ * The question bank dialogue contains all the questions that can be added to the 360 feedback activity.
+ * It also serves as the interface where questions can be added, edited, or even removed permanently from the question bank.
  *
  * @module     mod_threesixty/question_bank
  * @class      question_bank
@@ -95,6 +98,7 @@ define(
             var data = {};
 
             if (typeof questionId !== 'undefined') {
+                data.questionid = questionId;
                 for (var i in questions) {
                     var question = questions[i];
                     if (question.id == questionId) {
@@ -103,23 +107,21 @@ define(
                         break;
                     }
                 }
-            } else {
-                questionId = false;
             }
 
             data.questionTypes = getQuestionTypeOptions(data.type);
             var body = templates.render('mod_threesixty/item_edit', data);
-            renderInputDialogue(title, body, questionId);
+            renderInputDialogue(title, body);
         }).fail(notification.exception);
     };
 
     /**
-     * 
-     * @param dialogueTitle
-     * @param bodyTemplate
-     * @param questionId
+     * Renders the question input dialogue.
+     *
+     * @param {String} dialogueTitle
+     * @param {Object} bodyTemplate
      */
-    function renderInputDialogue(dialogueTitle, bodyTemplate, questionId) {
+    function renderInputDialogue(dialogueTitle, bodyTemplate) {
         // Set dialog's body content.
         if (inputDialogue) {
             // Set dialogue body.
@@ -139,9 +141,9 @@ define(
                 // Display the dialogue.
                 inputDialogue.show();
 
-                // On hide handler.
+                // On show handler.
                 modal.getRoot().on(ModalEvents.shown, function() {
-                    // Empty modal contents when it's hidden.
+                    // Focus on the question text area.
                     $("#question-input").focus();
                 });
 
@@ -151,6 +153,7 @@ define(
                     modal.setBody('');
                 });
 
+                // On save handler.
                 modal.getRoot().on(ModalEvents.save, function() {
                     var question = $("#question-input").val().trim();
                     if (!question) {
@@ -170,7 +173,8 @@ define(
                     };
 
                     var method = 'mod_threesixty_add_question';
-                    if (questionId !== false) {
+                    var questionId = $("#question-id").val();
+                    if (questionId) {
                         method = 'mod_threesixty_update_question';
                         data.id = questionId;
                     }
