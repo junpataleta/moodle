@@ -31,8 +31,7 @@ list ($course, $cm) = get_course_and_cm_from_instance($id, 'threesixty');
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
-$threesixty = $DB->get_record('threesixty', ['id' => $cm->instance], '*', MUST_EXIST);
-$submission = $DB->get_record('threesixty_submission', ['id' => $submissionid], 'id, touser, status', MUST_EXIST);
+$submission = \mod_threesixty\api::get_submission($submissionid);
 
 $PAGE->set_context($context);
 $PAGE->set_cm($cm, $course);
@@ -62,9 +61,9 @@ if ($submission->status == \mod_threesixty\api::STATUS_PENDING) {
     \mod_threesixty\api::set_completion($submission->id, \mod_threesixty\api::STATUS_IN_PROGRESS);
 } 
 
-// 360-degree feedback To-do list.
-$memberslist = new mod_threesixty\output\questionnaire($submissionid);
-$memberslistoutput = $PAGE->get_renderer('mod_threesixty');
-echo $memberslistoutput->render($memberslist);
+// 360-degree feedback question list.
+$questionslist = new mod_threesixty\output\questionnaire($submission);
+$questionslistoutput = $PAGE->get_renderer('mod_threesixty');
+echo $questionslistoutput->render($questionslist);
 
 echo $OUTPUT->footer();

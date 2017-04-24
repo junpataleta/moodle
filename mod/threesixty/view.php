@@ -35,8 +35,8 @@ $context = context_module::instance($cm->id);
 $threesixty = $DB->get_record('threesixty', array('id' => $cm->instance), 'id, name, participantrole', MUST_EXIST);
 
 /// Print the page header
-$strfeedbacks = get_string("modulenameplural", "threesixty");
-$strfeedback = get_string("modulename", "threesixty");
+$strfeedbacks = get_string('modulenameplural', 'threesixty');
+$strfeedback = get_string('modulename', 'threesixty');
 
 $PAGE->set_context($context);
 $PAGE->set_cm($cm, $course);

@@ -25,6 +25,7 @@ namespace mod_threesixty\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_user;
 use mod_threesixty\api;
 use renderable;
 use renderer_base;
@@ -38,10 +39,10 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class questionnaire implements renderable, templatable {
-    protected $submissionid;
+    protected $submission;
 
-    public function __construct($submissionid) {
-        $this->submissionid = $submissionid;
+    public function __construct($submission) {
+        $this->submission = $submission;
     }
 
     /**
@@ -58,7 +59,8 @@ class questionnaire implements renderable, templatable {
 
         $data = new stdClass();
 
-        $submission = api::get_submission($this->submissionid);
+        $submission = $this->submission;
+        $threesixty = api::get_instance($submission->threesixty);
         switch ($submission->status) {
             case api::STATUS_IN_PROGRESS: // In Progress.
                 $data->statusclass = 'label-info';
@@ -98,9 +100,13 @@ class questionnaire implements renderable, templatable {
         $data->ratedquestions = $ratedquestions;
         $data->commentquestions = $commentquestions;
         $data->touserid = $submission->touser;
+        $touser = core_user::get_user($submission->touser, get_all_user_name_fields(true));
+        $data->tousername = fullname($touser);
         $data->threesixtyid = $submission->threesixty;
+        $data->anonymous = $threesixty->anonymous;
         $data->returnurl = $PAGE->url;
         $data->fromuserid = $submission->fromuser;
+
         return $data;
     }
 }

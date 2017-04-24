@@ -27,6 +27,18 @@ class api {
     const PARTICIPANT_ROLE_ALL = 0;
 
     /**
+     * Fetches the 360-degree feedback instance.
+     *
+     * @param int $threesixtyid The 360-degree feedback ID.
+     * @return mixed
+     */
+    public static function get_instance($threesixtyid) {
+        global $DB;
+
+        return $DB->get_record('threesixty', ['id' => $threesixtyid], '*', MUST_EXIST);
+    }
+
+    /**
      * @return array
      */
     public static function get_questions() {
@@ -478,9 +490,20 @@ class api {
         return get_string('errorcannotparticipate', 'mod_threesixty');
     }
 
-    public static function get_submission($id) {
-        global $DB;
-        return $DB->get_record('threesixty_submission', ['id' => $id]);
+    /**
+     * Retrieves the submission record of a respondent's feedback to another user.
+     *
+     * @param int $id The submission ID.
+     * @param int $fromuser The respondent's ID.
+     * @param string $fields The fields to be retrieved for the submission.
+     * @return mixed
+     */
+    public static function get_submission($id, $fromuser = 0, $fields = '*') {
+        global $DB, $USER;
+        if (empty($fromuser)) {
+            $fromuser = $USER->id;
+        }
+        return $DB->get_record('threesixty_submission', ['id' => $id, 'fromuser' => $fromuser], $fields, MUST_EXIST);
     }
 
     public static function get_submission_by_params($threesixtyid, $fromuser, $touser) {

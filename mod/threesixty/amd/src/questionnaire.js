@@ -26,7 +26,10 @@ define(['jquery',
     'core/templates',
     'core/notification',
     'core/ajax',
-    'core/str'], function ($, templates, notification, ajax, str) {
+    'core/str',
+    'core/modal_factory',
+    'core/modal_events'
+], function ($, templates, notification, ajax, str, ModalFactory, ModalEvents) {
 
     var responses = [];
     var questionnaire = function() {
@@ -140,14 +143,45 @@ define(['jquery',
         });
     };
 
-    function saveResponses(redirectAfter) {
+    function saveResponses(finalise) {
         $('.comment').each(function() {
             responses[$(this).data('itemid')] = $(this).val().trim();
         });
-        
-        var toUser = $('[data-region="questionnaire"]').data('touserid');
-        var threesixtyId = $('[data-region="questionnaire"]').data('threesixtyid');
-        console.log(responses);
+        console.log(anonymous);
+        console.log(finalise);
+
+        var questionnaireTable =  $('[data-region="questionnaire"]');
+        var toUser = questionnaireTable.data('touserid');
+        var toUserFullname = questionnaireTable.data('tousername');
+        var threesixtyId = questionnaireTable.data('threesixtyid');
+        var anonymous =  questionnaireTable.data('anonymous');
+
+        if (anonymous && finalise) {
+            // Show confirmation dialogue to anonymise the feedback responses.
+            var messageStrings = [
+                {
+                    key: 'finaliseanonymousfeedback',
+                    component: 'mod_threesixty'
+                },
+                {
+                    key: 'confirmfinaliseanonymousfeedback',
+                    component: 'mod_threesixty',
+                    param: {
+                        'name': toUserFullname
+                    }
+                }
+            ];
+
+            str.get_strings(messageStrings, 'mod_threesixty').done(function(messages) {
+                showConfirmationDialogue(messages[0], messages[1], threesixtyId, toUser, responses, finalise);
+            }).fail(notification.exception);
+        } else {
+            // Just save the responses.
+            submitResponses(threesixtyId, toUser, responses, finalise);
+        }
+    }
+
+    function submitResponses(threesixtyId, toUser, responses, finalise) {
         var promises = ajax.call([
             {
                 methodname: 'mod_threesixty_save_responses',
@@ -155,7 +189,7 @@ define(['jquery',
                     threesixtyid: threesixtyId,
                     touserid: toUser,
                     responses: responses,
-                    complete: redirectAfter
+                    complete: finalise
                 }
             }
         ]);
@@ -184,10 +218,32 @@ define(['jquery',
                 notification.addNotification(notificationData);
             }).fail(notification.exception);
 
-            if (redirectAfter) {
+            if (finalise) {
                 window.location = response.redirurl;
             }
         }).fail(notification.exception);
+    }
+
+    function showConfirmationDialogue(title, confirmationMessage, threesixtyId, toUser, responses, finalise) {
+        ModalFactory.create({
+            title: title,
+            body: confirmationMessage,
+            large: true,
+            type: ModalFactory.types.CONFIRM
+        }).done(function (modal) {
+            // Display the dialogue.
+            modal.show();
+
+            // On hide handler.
+            modal.getRoot().on(ModalEvents.hidden, function () {
+                // Empty modal contents when it's hidden.
+                modal.setBody('');
+            });
+
+            modal.getRoot().on(ModalEvents.yes, function() {
+                submitResponses(threesixtyId, toUser, responses, finalise);
+            });
+        });
     }
 
     return questionnaire;
