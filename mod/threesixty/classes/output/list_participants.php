@@ -39,8 +39,8 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class list_participants implements renderable, templatable {
-    private $threesixtyid;
-    private $userid;
+    protected $threesixtyid;
+    protected $userid;
 
     public function __construct($threesixtyid, $userid, $init = false) {
         $this->threesixtyid = $threesixtyid;
@@ -63,6 +63,8 @@ class list_participants implements renderable, templatable {
         $data = new stdClass();
         $data->threesixtyid = $this->threesixtyid;
         $data->participants = [];
+        $threesixty = api::get_instance($this->threesixtyid);
+        $anonymous = $threesixty->anonymous;
 
         if ($enroledusers = api::get_participants($this->threesixtyid, $this->userid)) {
             foreach ($enroledusers as $user) {
@@ -82,7 +84,9 @@ class list_participants implements renderable, templatable {
                     case api::STATUS_COMPLETE: // Completed.
                         $member->statusclass = 'label-success';
                         $member->status = get_string('statuscompleted', 'threesixty');
-                        $viewonly = true;
+                        if (!$anonymous) {
+                            $viewonly = true;
+                        }
                         break;
                     case api::STATUS_DECLINED: // Declined.
                         $member->statusclass = 'label-warning';
@@ -100,7 +104,8 @@ class list_participants implements renderable, templatable {
                 // Show action buttons depending on status.
                 if ($viewonly) {
                     $member->viewlink = true;
-                } else if (!$declined) {
+                }
+                if (!$declined) {
                     $respondurl = new moodle_url('/mod/threesixty/questionnaire.php');
                     $respondurl->params([
                         'threesixty' => $this->threesixtyid,

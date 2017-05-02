@@ -599,4 +599,32 @@ class api {
         }
         return $result;
     }
+
+    /**
+     * Anonymises the responses for a feedback submission. This is simply done by setting the fromuser field to 0.
+     *
+     * @param $threesixtyid
+     * @param $fromuser
+     * @param $touser
+     * @return bool
+     */
+    public static function anonymise_responses($threesixtyid, $fromuser, $touser) {
+        global $DB;
+        $threesixty = self::get_instance($threesixtyid);
+        if (!$threesixty->anonymous) {
+            // Nothing to do.
+            return true;
+        }
+        $params = [
+            'threesixty' => $threesixtyid,
+            'fromuser' => $fromuser,
+            'touser' => $touser
+        ];
+        $updatesql = "UPDATE {threesixty_response}
+                         SET fromuser = 0
+                       WHERE threesixty = :threesixty
+                             AND fromuser = :fromuser
+                             AND touser = :touser";
+        return $DB->execute($updatesql, $params);
+    }
 }

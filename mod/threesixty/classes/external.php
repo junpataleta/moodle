@@ -651,6 +651,9 @@ class external extends external_api {
             }
 
             if ($complete && $submission = api::get_submission_by_params($threesixtyid, $USER->id, $touserid)) {
+                // Anonymise responses, if necessary.
+                $result &= api::anonymise_responses($threesixtyid, $USER->id, $touserid);
+                // Mark the submission of this feedback to the target user as completed.
                 $result &= api::set_completion($submission->id, api::STATUS_COMPLETE);
             }
         }

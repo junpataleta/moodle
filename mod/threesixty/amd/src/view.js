@@ -52,11 +52,6 @@ define(
                 })
                 .fail(notification.exception);
         }).fail(notification.exception);
-
-        // Refresh the list of questions thru AJAX.
-        var promises = ajax.call([
-            {methodname: method, args: data}
-        ]);
     }
 
     /**

@@ -82,7 +82,6 @@ define(['jquery',
                     }
                 });
             });
-            console.log(responses);
         });
     };
 
@@ -147,8 +146,6 @@ define(['jquery',
         $('.comment').each(function() {
             responses[$(this).data('itemid')] = $(this).val().trim();
         });
-        console.log(anonymous);
-        console.log(finalise);
 
         var questionnaireTable =  $('[data-region="questionnaire"]');
         var toUser = questionnaireTable.data('touserid');
