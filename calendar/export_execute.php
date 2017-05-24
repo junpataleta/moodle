@@ -183,6 +183,7 @@ $events = calendar_get_events($timestart, $timeend, $users, $groups, array_keys(
 
 $ical = new iCalendar;
 $ical->add_property('method', 'PUBLISH');
+$ical->add_property('prodid', '-//' . $SITE->fullname . '//NONSGML Moodle Version ' . $CFG->version . '//EN');
 foreach($events as $event) {
    if (!empty($event->modulename)) {
         $cm = get_coursemodule_from_instance($event->modulename, $event->instance);
