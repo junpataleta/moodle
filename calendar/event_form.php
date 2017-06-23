@@ -141,10 +141,22 @@ class event_form extends moodleform {
 
             $mform->addElement('header', 'repeatevents', get_string('repeatedevents', 'calendar'));
             $mform->addElement('checkbox', 'repeat', get_string('repeatevent', 'calendar'), null);
-            $mform->addElement('text', 'repeats', get_string('repeatweeksl', 'calendar'), 'maxlength="10" size="10"');
+            $mform->addElement('text', 'repeats', get_string('repeatcount', 'calendar'), 'maxlength="10" size="10"');
             $mform->setType('repeats', PARAM_INT);
             $mform->setDefault('repeats', 1);
             $mform->disabledIf('repeats','repeat','notchecked');
+            $mform->addHelpButton('repeats', 'repeatcount', 'calendar');
+
+            // Array of recurrence frequencies. The keys are essentially strings that comply with with PHP's DateInterval specs.
+            $freqoptions = [
+                'P1D' => get_string('freqdaily', 'calendar'),
+                'P1W' => get_string('freqweekly', 'calendar'),
+                'P2W' => get_string('freqfortnightly', 'calendar'),
+                'P1M' => get_string('freqmonthly', 'calendar'),
+                'P1Y' => get_string('freqyearly', 'calendar'),
+            ];
+            $mform->addElement('select', 'repeatfreq', get_string('repeatfreq', 'calendar'), $freqoptions);
+            $mform->disabledIf('repeatfreq', 'repeat', 'notchecked');
 
         } else if ($repeatedevents) {
 

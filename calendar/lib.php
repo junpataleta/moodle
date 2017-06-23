@@ -519,7 +519,7 @@ class calendar_event {
 
                 for ($i = 1; $i < $eventcopy->repeats; $i++) {
 
-                    $timestart->add(new \DateInterval('P7D'));
+                    $timestart->add(new \DateInterval($eventcopy->repeatfreq));
                     $eventcopy->timestart = $timestart->getTimestamp();
 
                     // Get the event id for the log record.

@@ -122,6 +122,11 @@ $string['exporthelp'] = 'How do I subscribe to this calendar from a calendar app
 $string['exportbutton'] = 'Export';
 $string['exportcalendar'] = 'Export calendar';
 $string['forcecalendartype'] = 'Force calendar';
+$string['freqdaily'] = 'Daily';
+$string['freqweekly'] = 'Weekly';
+$string['freqfortnightly'] = 'Fortnightly';
+$string['freqmonthly'] = 'Monthly';
+$string['freqyearly'] = 'Yearly';
 $string['fri'] = 'Fri';
 $string['friday'] = 'Friday';
 $string['generateurlbutton'] = 'Get calendar URL';
@@ -182,10 +187,11 @@ $string['recentupcoming'] = 'Recent and next 60 days';
 $string['repeatedevents'] = 'Repeated events';
 $string['repeateditall'] = 'Also apply changes to the other {$a} events in this repeat series';
 $string['repeateditthis'] = 'Apply changes to this event only';
+$string['repeatcount'] = 'Count';
+$string['repeatcount_help'] = 'The number of times this event will be repeated.';
 $string['repeatevent'] = 'Repeat this event';
+$string['repeatfreq'] = 'Frequency';
 $string['repeatnone'] = 'No repeats';
-$string['repeatweeksl'] = 'Repeat weekly, creating altogether';
-$string['repeatweeksr'] = 'events';
 $string['sat'] = 'Sat';
 $string['saturday'] = 'Saturday';
 $string['showcourseevents'] = 'Show course events';
@@ -238,6 +244,10 @@ $string['weeknext'] = 'Next week';
 $string['weekthis'] = 'This week';
 $string['yesterday'] = 'Yesterday';
 $string['youcandeleteallrepeats'] = 'This event is part of a repeating event series. You can delete this event only, or all {$a} events in the series at once.';
+
+// Deprecated since Moodle 3.3.
+$string['repeatweeksl'] = 'Repeat weekly, creating altogether';
+$string['repeatweeksr'] = 'events';
 
 // Deprecated since Moodle 3.2.
 $string['for'] = 'for';
