@@ -24,11 +24,17 @@
 
 require_once('../config.php');
 require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot.'/user/filters_form.php');
 require_once($CFG->libdir.'/tablelib.php');
 require_once($CFG->libdir.'/filelib.php');
 
 define('DEFAULT_PAGE_SIZE', 20);
 define('SHOW_ALL_PAGE_SIZE', 5000);
+define('USER_FILTER_ENROLMENT', 1);
+define('USER_FILTER_GROUP', 2);
+define('USER_FILTER_LAST_ACCESS', 3);
+define('USER_FILTER_ROLE', 4);
+define('USER_FILTER_STATUS', 5);
 
 $page         = optional_param('page', 0, PARAM_INT); // Which page to show.
 $perpage      = optional_param('perpage', DEFAULT_PAGE_SIZE, PARAM_INT); // How many per page.
@@ -158,6 +164,15 @@ if ($course->id == SITEID) {
     $filterselect = $currentgroup;
 }
 
+$haslastaccess = !isset($hiddenfields['lastaccess']);
+$filterscustomdata = [
+    'page' => $PAGE,
+    'haslastaccess' => $haslastaccess,
+    'baseurl' => $baseurl
+];
+$filtersform = new user_filters_form($baseurl, $filterscustomdata);
+$filtersform->display();
+
 // Print settings and things in a table across the top.
 $controlstable = new html_table();
 $controlstable->attributes['class'] = 'controls';
@@ -166,72 +181,6 @@ $controlstable->data[] = new html_table_row();
 
 if ($groupmenu = groups_print_course_menu($course, $baseurl->out(), true)) {
     $controlstable->data[0]->cells[] = $groupmenu;
-}
-
-// Get the list of fields we have to hide.
-$hiddenfields = array();
-if (!has_capability('moodle/course:viewhiddenuserfields', $context)) {
-    $hiddenfields = array_flip(explode(',', $CFG->hiddenuserfields));
-}
-
-// If lastaccess is in the hidden fields access do not allow filtering.
-if (isset($hiddenfields['lastaccess'])) {
-    $accesssince = 0;
-} else { // The user is allowed to filter by last access.
-    // Get minimum lastaccess for this course and display a dropbox to filter by lastaccess going back this far.
-    // We need to make it diferently for normal courses and site course.
-    if (!$isfrontpage) {
-        $minlastaccess = $DB->get_field_sql('SELECT min(timeaccess)
-                                               FROM {user_lastaccess}
-                                              WHERE courseid = ?
-                                                    AND timeaccess != 0', array($course->id));
-        $lastaccess0exists = $DB->record_exists('user_lastaccess', array('courseid' => $course->id, 'timeaccess' => 0));
-    } else {
-        $minlastaccess = $DB->get_field_sql('SELECT min(lastaccess)
-                                               FROM {user}
-                                              WHERE lastaccess != 0');
-        $lastaccess0exists = $DB->record_exists('user', array('lastaccess' => 0));
-    }
-
-    $now = usergetmidnight(time());
-    $timeaccess = array();
-    $baseurl->remove_params('accesssince');
-
-    // Makes sense for this to go first.
-    $timeoptions[0] = get_string('selectperiod');
-
-    // Days.
-    for ($i = 1; $i < 7; $i++) {
-        if (strtotime('-'.$i.' days', $now) >= $minlastaccess) {
-            $timeoptions[strtotime('-'.$i.' days', $now)] = get_string('numdays', 'moodle', $i);
-        }
-    }
-    // Weeks.
-    for ($i = 1; $i < 10; $i++) {
-        if (strtotime('-'.$i.' weeks', $now) >= $minlastaccess) {
-            $timeoptions[strtotime('-'.$i.' weeks', $now)] = get_string('numweeks', 'moodle', $i);
-        }
-    }
-    // Months.
-    for ($i = 2; $i < 12; $i++) {
-        if (strtotime('-'.$i.' months', $now) >= $minlastaccess) {
-            $timeoptions[strtotime('-'.$i.' months', $now)] = get_string('nummonths', 'moodle', $i);
-        }
-    }
-    // Try a year.
-    if (strtotime('-1 year', $now) >= $minlastaccess) {
-        $timeoptions[strtotime('-1 year', $now)] = get_string('lastyear');
-    }
-
-    if (!empty($lastaccess0exists)) {
-        $timeoptions[-1] = get_string('never');
-    }
-
-    if (count($timeoptions) > 1) {
-        $select = new single_select($baseurl, 'accesssince', $timeoptions, $accesssince, null, 'timeoptions');
-        $select->set_label(get_string('usersnoaccesssince'));
-        $controlstable->data[0]->cells[] = $OUTPUT->render($select);
-    }
 }
 
 echo html_writer::table($controlstable);
