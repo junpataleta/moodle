@@ -1231,10 +1231,13 @@ function user_get_participants_sql($courseid, $groupid = 0, $accesssince = 0, $r
 
     // Get the context.
     $context = \context_course::instance($courseid, MUST_EXIST);
+    $canreviewenrol = has_capability('moodle/course:enrolreview', $context);
+    // Show active users only if the user doesn't have the 'moodle/course:enrolreview' capability.
+    $onlyactive = !$canreviewenrol;
 
     $isfrontpage = ($courseid == SITEID);
 
-    list($esql, $params) = get_enrolled_sql($context, null, $groupid, true);
+    list($esql, $params) = get_enrolled_sql($context, null, $groupid, $onlyactive);
 
     $joins = array('FROM {user} u');
     $wheres = array();
@@ -1258,6 +1261,19 @@ function user_get_participants_sql($courseid, $groupid = 0, $accesssince = 0, $r
         if ($accesssince) {
             $wheres[] = user_get_course_lastaccess_sql($accesssince);
         }
+    }
+
+    // Add info for enrolment status if user has the 'moodle/course:enrolreview' capability.
+    if ($canreviewenrol) {
+        $joins[] = "LEFT JOIN (
+                                SELECT ue.* 
+                                  FROM {user_enrolments} ue 
+                            INNER JOIN {enrol} ee 
+                                    ON ue.enrolid = ee.id 
+                                       AND ee.courseid = :courseid2
+                              ) uuee ON uuee.userid = e.id";
+        $select .= ", uuee.status, uuee.timestart, uuee.timeend";
+        $params['courseid2'] = $courseid;
     }
 
     // Performance hacks - we preload user contexts together with accounts.

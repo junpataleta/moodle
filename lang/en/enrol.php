@@ -43,6 +43,7 @@ $string['deleteinstancenousersconfirm'] = 'You are about to delete the enrolment
 $string['disableinstanceconfirmself'] = 'Are you really sure you want to disable instance "{$a->name}" that gives you access to this course? It is possible that you will not be able to access this course if you continue.';
 $string['durationdays'] = '{$a} days';
 $string['editenrolment'] = 'Edit enrolment';
+$string['editenrolmentstatus'] = 'Edit enrolment status';
 $string['enrol'] = 'Enrol';
 $string['enrolcandidates'] = 'Not enrolled users';
 $string['enrolcandidatesmatching'] = 'Matching not enrolled users';

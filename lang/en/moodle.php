@@ -1362,6 +1362,7 @@ $string['nostudentsyet'] = 'No students enrolled in this course yet';
 $string['nosuchemail'] = 'No such email address';
 $string['notavailable'] = 'Not available';
 $string['notavailablecourse'] = '{$a} is not available';
+$string['notcurrent'] = 'Not current';
 $string['noteachersyet'] = 'No teachers in this course yet';
 $string['notenrolled'] = '{$a} is not enrolled in this course.';
 $string['notenrolledprofile'] = 'This profile is not available because this user is not enrolled in this course.';

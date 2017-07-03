@@ -24,6 +24,9 @@
 
 namespace core_user;
 
+use context;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die;
 
 global $CFG;
@@ -81,6 +84,16 @@ class participants_table extends \table_sql {
     protected $extrafields;
 
     /**
+     * @var stdClass The course details.
+     */
+    protected $course;
+
+    /**
+     * @var  context $context The course context.
+     */
+    protected $context;
+
+    /**
      * Sets up the table.
      *
      * @param int $courseid
@@ -93,12 +106,14 @@ class participants_table extends \table_sql {
      */
     public function __construct($courseid, $currentgroup, $accesssince, $roleid, $search,
             $bulkoperations, $selectall) {
-        global $CFG;
+        global $CFG, $DB;
 
         parent::__construct('user-index-participants-' . $courseid);
 
         // Get the context.
+        $this->course = get_course($courseid);
         $context = \context_course::instance($courseid, MUST_EXIST);
+        $this->context = $context;
 
         // Define the headers and columns.
         $headers = [];
@@ -142,6 +157,13 @@ class participants_table extends \table_sql {
             $columns[] = 'lastaccess';
         }
 
+        $canreviewenrol = has_capability('moodle/course:enrolreview', $context);
+        if ($canreviewenrol) {
+            $columns[] = 'status';
+            $headers[] = get_string('status');
+            $this->no_sorting('status');
+        };
+
         $this->define_columns($columns);
         $this->define_headers($headers);
 
@@ -163,7 +185,7 @@ class participants_table extends \table_sql {
     /**
      * Generate the select column.
      *
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function col_select($data) {
@@ -178,7 +200,7 @@ class participants_table extends \table_sql {
     /**
      * Generate the fullname column.
      *
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function col_fullname($data) {
@@ -190,7 +212,7 @@ class participants_table extends \table_sql {
     /**
      * Generate the city column.
      *
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function col_city($data) {
@@ -200,7 +222,7 @@ class participants_table extends \table_sql {
     /**
      * Generate the country column.
      *
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function col_country($data) {
@@ -213,7 +235,7 @@ class participants_table extends \table_sql {
     /**
      * Generate the last access column.
      *
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function col_lastaccess($data) {
@@ -225,6 +247,24 @@ class participants_table extends \table_sql {
     }
 
     /**
+     * Generate the status column.
+     *
+     * @param stdClass $data The data object.
+     * @return string
+     */
+    public function col_status($data) {
+        global $OUTPUT;
+
+        $canreviewenrol = has_capability('moodle/course:enrolreview', $this->context);
+        if ($canreviewenrol) {
+            $userstatus = new \core_user\output\status_field($data);
+            $userstatusdata = $userstatus->export_for_template($OUTPUT);
+            return $OUTPUT->render_from_template('core_user/status_field', $userstatusdata);
+        }
+        return '';
+    }
+
+    /**
      * This function is used for the extra user fields.
      *
      * These are being dynamically added to the table so there are no functions 'col_<userfieldname>' as
@@ -232,7 +272,7 @@ class participants_table extends \table_sql {
      * a new method to this class. We also don't want to pollute this class with unnecessary methods.
      *
      * @param string $colname The column name
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function other_cols($colname, $data) {
