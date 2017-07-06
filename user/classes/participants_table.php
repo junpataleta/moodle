@@ -106,7 +106,7 @@ class participants_table extends \table_sql {
      */
     public function __construct($courseid, $currentgroup, $accesssince, $roleid, $search,
             $bulkoperations, $selectall) {
-        global $CFG, $DB;
+        global $CFG, $PAGE;
 
         parent::__construct('user-index-participants-' . $courseid);
 
