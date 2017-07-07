@@ -1421,12 +1421,19 @@ function enrol_send_welcome_email_options() {
  * @return string
  */
 function enrol_output_fragment_user_enrolment_form($args) {
+    global $CFG, $DB;
+
     $args = (object) $args;
     $context = $args->context;
+    $ueid = $args->ueid;
     $o = '';
+    $customdata['ue'] = $DB->get_record('user_enrolments', array('id' => $ueid), '*', MUST_EXIST);
+    unset ($args->ueid);
 
+
+    require_once("$CFG->dirroot/enrol/editenrolment_form.php"); // Forms for this page.
     require_capability('moodle/course:enrolreview', $context);
-    $mform = new \enrol_user_enrolment_form(null, $args);
+    $mform = new \enrol_user_enrolment_form(null, $customdata);
 
     ob_start();
     $mform->display();

@@ -28,12 +28,8 @@ require_once("$CFG->libdir/formslib.php");
 
 class enrol_user_enrolment_form extends moodleform {
     function definition() {
-        global $CFG, $DB;
-
         $mform = $this->_form;
 
-        $user   = $this->_customdata['user'];
-        $course = $this->_customdata['course'];
         $ue     = $this->_customdata['ue'];
 
         $mform->addElement('header','general', '');

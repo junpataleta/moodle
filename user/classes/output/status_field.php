@@ -38,16 +38,20 @@ use templatable;
  */
 class status_field implements renderable, templatable {
 
-    /** @var $userenrolment */
+    /** @var stdClass $userenrolment The user enrolment instance. */
     protected $userenrolment = null;
+
+    /** @var array $enrolactions The actions available for the given enrolment instance. */
+    protected $enrolactions = [];
 
     /**
      * Constructor.
      *
      * @param stdClass $userenrolment The user enrolment information.
      */
-    public function __construct($userenrolment) {
+    public function __construct($userenrolment, $enrolactions) {
         $this->userenrolment = $userenrolment;
+        $this->enrolactions = $enrolactions;
     }
 
     /**
@@ -58,6 +62,7 @@ class status_field implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         $data = new stdClass();
+
         $timestart = $this->userenrolment->timestart;
         $timeend = $this->userenrolment->timeend;
 
@@ -75,6 +80,9 @@ class status_field implements renderable, templatable {
                 $data->status = get_string('suspended');
                 break;
         }
+
+        $data->enrolactions = $this->enrolactions;
+
         return $data;
     }
 }

@@ -25,6 +25,8 @@
 namespace core_user;
 
 use context;
+use DateTime;
+use html_writer;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die;
@@ -253,15 +255,45 @@ class participants_table extends \table_sql {
      * @return string
      */
     public function col_status($data) {
-        global $OUTPUT;
+        global $CFG, $OUTPUT, $PAGE;
 
+        $enrolstatusoutput = '';
         $canreviewenrol = has_capability('moodle/course:enrolreview', $this->context);
         if ($canreviewenrol) {
-            $userstatus = new \core_user\output\status_field($data);
-            $userstatusdata = $userstatus->export_for_template($OUTPUT);
-            return $OUTPUT->render_from_template('core_user/status_field', $userstatusdata);
+            require_once($CFG->dirroot . '/enrol/locallib.php');
+            $manager = new \course_enrolment_manager($PAGE, $this->course);
+            $userenrolments = $manager->get_user_enrolments($data->id);
+            foreach ($userenrolments as $ue) {
+                $enrolactions = $ue->enrolmentplugin->get_user_enrolment_actions($manager, $ue);
+                $timestart = $ue->timestart;
+                $timeend = $ue->timeend;
+                $status = '';
+                $dimmed = '';
+                switch ($ue->status) {
+                    case ENROL_USER_ACTIVE:
+                        $currentdate = new DateTime();
+                        $now = $currentdate->getTimestamp();
+                        if ($timestart <= $now && ($timeend == 0 || $timeend >= $now)) {
+                            $status = get_string('active');
+                        } else {
+                            $status = get_string('notcurrent');
+                            $dimmed = 'dimmed_text';
+                        }
+                        break;
+                    case ENROL_USER_SUSPENDED:
+                        $status = get_string('suspended');
+                        $dimmed = 'dimmed_text';
+                        break;
+                }
+                $statusout = html_writer::span($status, $dimmed, ['title' => "{$ue->enrolmentinstancename}: {$status}"]);
+                $enrolactionsout = '';
+                foreach ($enrolactions as $action) {
+                    $enrolactionsout .= html_writer::link($action->get_url(), $OUTPUT->render($action->get_icon()), $action->get_attributes());
+                }
+                $enrolstatusoutput .= html_writer::div($statusout . $enrolactionsout);
+            }
         }
-        return '';
+        return $enrolstatusoutput;
     }
 
     /**

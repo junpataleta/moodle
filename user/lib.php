@@ -1263,19 +1263,6 @@ function user_get_participants_sql($courseid, $groupid = 0, $accesssince = 0, $r
         }
     }
 
-    // Add info for enrolment status if user has the 'moodle/course:enrolreview' capability.
-    if ($canreviewenrol) {
-        $joins[] = "LEFT JOIN (
-                                SELECT ue.* 
-                                  FROM {user_enrolments} ue 
-                            INNER JOIN {enrol} ee 
-                                    ON ue.enrolid = ee.id 
-                                       AND ee.courseid = :courseid2
-                              ) uuee ON uuee.userid = e.id";
-        $select .= ", uuee.status, uuee.timestart, uuee.timeend";
-        $params['courseid2'] = $courseid;
-    }
-
     // Performance hacks - we preload user contexts together with accounts.
     $ccselect = ', ' . context_helper::get_preload_record_columns_sql('ctx');
     $ccjoin = 'LEFT JOIN {context} ctx ON (ctx.instanceid = u.id AND ctx.contextlevel = :contextlevel)';
