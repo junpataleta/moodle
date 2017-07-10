@@ -173,18 +173,6 @@ $filterscustomdata = [
 $filtersform = new user_filters_form($baseurl, $filterscustomdata);
 $filtersform->display();
 
-// Print settings and things in a table across the top.
-$controlstable = new html_table();
-$controlstable->attributes['class'] = 'controls';
-$controlstable->cellspacing = 0;
-$controlstable->data[] = new html_table_row();
-
-if ($groupmenu = groups_print_course_menu($course, $baseurl->out(), true)) {
-    $controlstable->data[0]->cells[] = $groupmenu;
-}
-
-echo html_writer::table($controlstable);
-
 $participanttable = new \core_user\participants_table($course->id, $currentgroup, $accesssince, $roleid, $search,
     $bulkoperations, $selectall);
 $participanttable->define_baseurl($baseurl);
@@ -194,22 +182,6 @@ ob_start();
 $participanttable->out($perpage, true);
 $participanttablehtml = ob_get_contents();
 ob_end_clean();
-
-// If there are multiple Roles in the course, then show a drop down menu for switching.
-if (count($rolenames) > 1) {
-    echo '<div class="rolesform">';
-    echo $OUTPUT->single_select($rolenamesurl, 'roleid', $rolenames, $roleid, null,
-        'rolesform', array('label' => get_string('currentrole', 'role')));
-    echo '</div>';
-
-} else if (count($rolenames) == 1) {
-    // When all users with the same role - print its name.
-    echo '<div class="rolesform">';
-    echo get_string('role').get_string('labelsep', 'langconfig');
-    $rolename = reset($rolenames);
-    echo $rolename;
-    echo '</div>';
-}
 
 if ($roleid > 0) {
     $a = new stdClass();
