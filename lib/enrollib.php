@@ -1415,6 +1415,32 @@ function enrol_send_welcome_email_options() {
 }
 
 /**
+ * Serve the user enrolment form as a fragment.
+ *
+ * @param array $args List of named arguments for the fragment loader.
+ * @return string
+ */
+function enrol_output_fragment_user_enrolment_form($args) {
+    global $CFG, $DB;
+
+    $args = (object) $args;
+    $context = $args->context;
+    require_capability('moodle/course:enrolreview', $context);
+
+    $ueid = $args->ueid;
+    $userenrolment = $DB->get_record('user_enrolments', ['id' => $ueid], '*', MUST_EXIST);
+    $customdata = [
+        'ue' => $userenrolment,
+        'modal' => true,
+    ];
+
+    require_once("$CFG->dirroot/enrol/editenrolment_form.php");
+    $mform = new \enrol_user_enrolment_form(null, $customdata);
+
+    return $mform->render();
+}
+
+/**
  * All enrol plugins should be based on this class,
  * this is also the main source of documentation.
  */
