@@ -315,7 +315,7 @@ if ($bulkoperations) {
 echo $participanttablehtml;
 
 if (has_capability('moodle/course:enrolreview', $context)) {
-    $PAGE->requires->js_call_amd('core_user/editenrolment', 'init', [['contextid' => $context->id, 'courseid' => $course->id]]);
+    $PAGE->requires->js_call_amd('core_user/status_field', 'init', [['contextid' => $context->id, 'courseid' => $course->id]]);
 }
 
 $perpageurl = clone($baseurl);

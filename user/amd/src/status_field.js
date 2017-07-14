@@ -14,9 +14,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * User enrolment AMD module.
+ * AMD module for the user enrolment status field in the course participants page.
  *
- * @module     core_user/editenrolment
+ * @module     core_user/status_field
  * @copyright  2017 Jun Pataleta
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -47,6 +47,9 @@ define(['core/templates',
 
             // Bind click event to unenrol buttons.
             this.bindUnenrol();
+
+            // Bind click event to status details buttons.
+            this.bindStatusDetails();
         };
         // Class variables and functions.
 
@@ -85,8 +88,9 @@ define(['core/templates',
                 editEnrolTrigger.click(function() {
                     // 1. Allow us to determine which edit button was clicked.
                     var clickedEditTrigger = $(this);
+                    var parentContainer = clickedEditTrigger.parent();
                     // 2. Get the name of the user whose enrolment status is being edited.
-                    var fullname = clickedEditTrigger.data('fullname');
+                    var fullname = parentContainer.data('fullname');
                     // 3. Get the user enrolment ID.
                     var ueid = clickedEditTrigger.attr('rel');
 
@@ -110,6 +114,7 @@ define(['core/templates',
             $('a.unenrollink').click(function(e) {
                 e.preventDefault();
                 var unenrolLink = $(this);
+                var parentContainer = unenrolLink.parent();
                 var strings = [
                     {
                         key: 'unenrol',
@@ -119,8 +124,8 @@ define(['core/templates',
                         key: 'unenrolconfirm',
                         component: 'enrol',
                         param: {
-                            user: unenrolLink.data('fullname'),
-                            course: unenrolLink.data('coursename')
+                            user: parentContainer.data('fullname'),
+                            course: parentContainer.data('coursename')
                         }
                     }
                 ];
@@ -145,7 +150,39 @@ define(['core/templates',
                         });
                         // Display the delete confirmation modal.
                         modal.show();
-                    })
+                    });
+                }).fail(Notification.exception);
+            });
+        };
+
+        /**
+         * Private method
+         *
+         * @method bindStatusDetails
+         * @private
+         */
+        EditEnrolment.prototype.bindStatusDetails = function() {
+            $('a.enroldetails').click(function(e) {
+                e.preventDefault();
+
+                var detailsButton = $(this);
+                var parentContainer = detailsButton.parent();
+                var context = {
+                    "fullname": parentContainer.data('fullname'),
+                    "coursename": parentContainer.data('coursename'),
+                    "enrolinstancename": parentContainer.data('enrolinstancename'),
+                    "status": parentContainer.data('status'),
+                    "timestart": parentContainer.data('timestart'),
+                    "timeend": parentContainer.data('timeend')
+                };
+
+                var modalTitlePromise = Str.get_string('enroldetails', 'enrol');
+                var modalPromise = ModalFactory.create({large: true, type: ModalFactory.types.CANCEL});
+                $.when(modalTitlePromise, modalPromise).done(function(modalTitle, modal) {
+                    var modalBodyPromise = Template.render('core_user/status_details', context);
+                    modal.setTitle(modalTitle);
+                    modal.setBody(modalBodyPromise);
+                    modal.show();
                 }).fail(Notification.exception);
             });
         };
