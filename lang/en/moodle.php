@@ -922,6 +922,7 @@ $string['guestuserinfo'] = 'This user is a special user that allows read-only ac
 $string['help'] = 'Help';
 $string['helpprefix2'] = 'Help with {$a}';
 $string['helpwiththis'] = 'Help with this';
+$string['hidden'] = 'Hidden';
 $string['hiddenassign'] = 'Hidden assignment';
 $string['hiddenfromstudents'] = 'Hidden from students';
 $string['hiddenoncoursepage'] = 'Available but not shown on course page';

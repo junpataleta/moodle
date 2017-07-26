@@ -814,6 +814,23 @@ class core_renderer extends renderer_base {
     }
 
     /**
+     * Returns standard navigation between activities in a course.
+     *
+     * @return string the navigation HTML.
+     */
+    public function activity_navigation() {
+        // First we should check if we want to add navigation.
+        $context = $this->page->context;
+        if ($this->page->pagelayout !== 'incourse' || $context->contextlevel != CONTEXT_MODULE) {
+            return '';
+        }
+
+        $activitynav = new \core_course\output\activity_navigation($this->page->cm);
+        $renderer = $this->page->get_renderer('core', 'course');
+        return $renderer->render($activitynav);
+    }
+
+    /**
      * The standard tags (typically script tags that are not needed earlier) that
      * should be output after everything else. Designed to be called in theme layout.php files.
      *

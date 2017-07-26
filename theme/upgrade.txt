@@ -1,6 +1,11 @@
 This files describes API changes in /theme/* themes,
 information provided here is intended especially for theme designer.
 
+=== 3.4 ===
+
+* Navigation between activities via a previous and next link was added to boost, clean and bootstrapbase. This
+  is made possible by a new function core_renderer->activity_navigation().
+
 === 3.3 ===
 
 * As boost-based themes no longer use the moodle-core-popuphelp help popups, the javascript
