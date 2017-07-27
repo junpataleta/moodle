@@ -22,20 +22,27 @@
     Context variables required for this template:
     * prevlink - The link to the previous module the user can see
     * nextlink - The link to the next module the user can see
+    * activitylist - A url_select element consisting of the list of activities.
 
     Example context (json):
     {
         "prevlink": "<a href='http://example.com/moodle/mod/assign/view.php?id=1'>The origins of Moodle</a>",
-        "nextlink": "<a href='http://example.com/moodle/mod/assign/view.php?id=3'>Moodlers - are they contagious?</a>"
+        "nextlink": "<a href='http://example.com/moodle/mod/assign/view.php?id=3'>Moodlers - are they contagious?</a>",
+        "activitylist": "<select><option>Activity 1</option><option selected>Activity 2</option><option>Activity 3</option></select>"
     }
 }}
-<div>
+<div class="m-t-2 m-b-1">
 {{< core/columns-1to1to1}}
     {{$column1}}
         <div class="pull-left">
             {{{prevlink}}}
         </div>
     {{/column1}}
+    {{$column2}}
+        <div class="mdl-align">
+            {{{activitylist}}}
+        </div>
+    {{/column2}}
     {{$column3}}
         <div class="pull-right">
             {{{nextlink}}}
