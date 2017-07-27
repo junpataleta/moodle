@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use renderable;
 use templatable;
+use url_select;
 
 /**
  * The class activity navigation renderable.
@@ -48,9 +49,14 @@ class activity_navigation implements renderable, templatable {
     public $nextlink = '';
 
     /**
+     * @var string The html for the activity selector menu.
+     */
+    public $activitylist = '';
+
+    /**
      * Constructor.
      *
-     * @param \cm_info $cm
+     * @param \cm_info $cm The course module information of the activity that we're creating the navigation for.
      */
     public function __construct(\cm_info $cm) {
         global $OUTPUT;
@@ -65,50 +71,62 @@ class activity_navigation implements renderable, templatable {
         $modules = get_fast_modinfo($course->id)->get_cms();
 
         // Put the modules into an array in order by the position they are shown in the course.
-        $mods = [];
+        $activitylist = [];
+        $prevmod = null;
+        $nextmod = null;
+        $isprevset = false;
+        $isnextset = false;
         foreach ($modules as $module) {
             // Only add activities the user can access and aren't in stealth mode.
             if (!$module->uservisible || $module->is_stealth()) {
                 continue;
             }
-            $mods[$module->id] = $module;
-        }
 
-        $nummods = count($mods);
+            // Check if this module is the one in which the activity navigation is being rendered for.
+            if ($module->id == $cm->id) {
+                // This is the current module, so the last 'previous' module that was set is the real 'previous' module.
+                $isprevset = true;
 
-        // If there is only one mod then do nothing.
-        if ($nummods == 1) {
-            return;
-        }
-
-        // Get an array of just the course module ids used to get the cmid value based on their position in the course.
-        $modids = array_keys($mods);
-
-        // Get the position in the array of the course module we are viewing.
-        $position = array_search($cm->id, $modids);
-
-        // If the modules has a greater position than 0 in the array then we want to show a previous link.
-        if ($position > 0) {
-            $prevmod = $mods[$modids[$position - 1]];
-            $linkname = $prevmod->name;
-            // Display the hidden text if necessary.
-            if (!$prevmod->visible) {
-                $linkname .= ' (' . strtolower(get_string('hidden')) . ')';
+            } else {
+                // If this module is not the one in which the activity navigation is being rendered for,
+                // then we set this module as either the previous or the next module.
+                if ($isprevset) {
+                    // If the previous module has been determined and we haven't found the 'next' module yet,
+                    // then this should be the next module.
+                    if (!$isnextset) {
+                        $nextmod = $module;
+                        // Set this flag as true to indicate that the 'next' module has already been determined.
+                        $isnextset = true;
+                    }
+                } else {
+                    // We set this module as the tentative 'previous' module.
+                    $prevmod = $module;
+                }
             }
 
+            // Display the hidden text if necessary.
+            $linkname = $module->name;
+            if (!$module->visible) {
+                $linkname = get_string('hiddenactivityname', 'moodle', $module->name);
+            }
+            $activitylist[$module->url->out(false)] = $linkname;
+        }
+
+        // Render the activity list dropdown menu.
+        $select = new url_select($activitylist, $cm->url, '');
+        $select->attributes['id'] = 'jumptomod';
+        $this->activitylist = $OUTPUT->render($select);
+
+        // Render the previous module link if available.
+        if ($prevmod) {
+            $linkname = $activitylist[$prevmod->url->out(false)];
             $link = new \action_link($prevmod->url, $OUTPUT->larrow() . ' ' . $linkname);
             $this->prevlink = $OUTPUT->render($link);
         }
 
-        // If the modules has a lesser position than the total number of modules in the array minus 1 then show a next link.
-        if ($position < ($nummods - 1)) {
-            $nextmod = $mods[$modids[$position + 1]];
-            $linkname = $nextmod->name;
-            // Display the hidden text if necessary.
-            if (!$nextmod->visible) {
-                $linkname .= ' (' . strtolower(get_string('hidden')) . ')';
-            }
-
+        // Render the next module link if available.
+        if ($nextmod) {
+            $linkname = $activitylist[$nextmod->url->out(false)];
             $link = new \action_link($nextmod->url, $linkname . ' ' . $OUTPUT->rarrow());
             $this->nextlink = $OUTPUT->render($link);
         }
@@ -124,6 +142,7 @@ class activity_navigation implements renderable, templatable {
         $data = new \stdClass();
         $data->prevlink = $this->prevlink;
         $data->nextlink = $this->nextlink;
+        $data->activitylist = $this->activitylist;
 
         return $data;
     }
