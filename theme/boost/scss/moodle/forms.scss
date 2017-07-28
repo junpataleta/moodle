@@ -297,6 +297,12 @@ fieldset.coursesearchbox label {
 .form-autocomplete-selection + .form-control {
     width: auto;
     display: inline-block;
+    min-width: 200px;
+    max-width: 90%;
+}
+
+.form-autocomplete-selection + input[placeholder] {
+    text-overflow: ellipsis;
 }
 
 .form-autocomplete-selection [data-active-selection=true] {
