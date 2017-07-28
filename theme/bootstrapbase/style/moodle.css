@@ -14258,6 +14258,13 @@ input[size] {
   padding: 0.5em;
   font-size: large;
 }
+.form-autocomplete-selection + input {
+  min-width: 200px;
+  max-width: 90%;
+}
+.form-autocomplete-selection + input[placeholder] {
+  text-overflow: ellipsis;
+}
 textarea[data-auto-rows] {
   overflow-x: hidden;
 }
