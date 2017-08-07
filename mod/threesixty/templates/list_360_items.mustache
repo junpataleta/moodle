@@ -83,17 +83,17 @@
                     </td>
                     <td>
                         {{#deletebutton}}
-                            <button class="btn btn-link delete-item-button" id="delete-item-{{id}}" data-itemid="{{id}}" title="{{#str}}deletequestion, mod_threesixty{{/str}}">
+                            <button class="btn btn-link" data-action="delete-item" id="delete-item-{{id}}" data-itemid="{{id}}" title="{{#str}}deletequestion, mod_threesixty{{/str}}">
                                 {{#pix }} t/delete, core, {{#str}}deletequestion, mod_threesixty{{/str}} {{/pix }}
                             </button>
                         {{/deletebutton}}
                         {{#moveupbutton}}
-                            <button class="btn btn-link move-item-up-button" id="move-item-up-{{id}}" data-itemid="{{id}}" title="{{#str}}moveitemup, mod_threesixty{{/str}}">
+                            <button class="btn btn-link" data-action="move-item-up" id="move-item-up-{{id}}" data-itemid="{{id}}" title="{{#str}}moveitemup, mod_threesixty{{/str}}">
                                 {{#pix }} t/up, core, {{#str}}moveitemup, mod_threesixty{{/str}} {{/pix }}
                             </button>
                         {{/moveupbutton}}
                         {{#movedownbutton}}
-                            <button class="btn btn-link move-item-down-button" id="move-item-down-{{id}}" data-itemid="{{id}}" title="{{#str}}moveitemdown, mod_threesixty{{/str}}">
+                            <button class="btn btn-link" data-action="move-item-down" id="move-item-down-{{id}}" data-itemid="{{id}}" title="{{#str}}moveitemdown, mod_threesixty{{/str}}">
                                 {{#pix }} t/down, core, {{#str}}moveitemdown, mod_threesixty{{/str}} {{/pix }}
                             </button>
                         {{/movedownbutton}}

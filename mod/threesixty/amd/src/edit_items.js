@@ -22,122 +22,125 @@
  * @copyright  2016 Jun Pataleta <jun@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery',
-        'core/templates',
-        'core/notification',
-        'core/ajax',
-        'core/str', 'mod_threesixty/question_bank',
-        'core/yui'], function ($, templates, notification, ajax, str, bank) {
+define([
+    'jquery',
+    'core/templates',
+    'core/notification',
+    'core/ajax',
+    'core/str',
+    'mod_threesixty/question_bank',
+    'core/yui'
+], function($, Templates, Notification, Ajax, Str, Bank) {
 
-        var threesixtyId;
-        var editItems = function (threesixtyid) {
-            threesixtyId = threesixtyid;
-            this.registerEvents();
-        };
+    /**
+     * List of action selectors.
+     *
+     * @type {{DELETE: string, MOVE_UP: string, MOVE_DOWN: string}}
+     */
+    var ACTIONS = {
+        DELETE: '[data-action="delete-item"]',
+        MOVE_UP: '[data-action="move-item-up"]',
+        MOVE_DOWN: '[data-action="move-item-down"]'
+    };
 
-        editItems.refreshItemList = function () {
-            var promises = ajax.call([
-                {
-                    methodname: 'mod_threesixty_get_items',
-                    args: {
-                        threesixtyid: threesixtyId
+    var threesixtyId;
+    var editItems = function(threesixtyid) {
+        threesixtyId = threesixtyid;
+        this.registerEvents();
+    };
+
+    editItems.refreshItemList = function() {
+        var promises = Ajax.call([
+            {
+                methodname: 'mod_threesixty_get_items',
+                args: {
+                    threesixtyid: threesixtyId
+                }
+            }
+        ]);
+        $.when(promises[0]).then(function(response) {
+            var context = {
+                threesixtyid: threesixtyId
+            };
+
+            var items = [];
+            var itemCount = response.items.length;
+            $.each(response.items, function(key, value) {
+                var item = value;
+                item.deletebutton = true;
+                item.moveupbutton = false;
+                item.movedownbutton = false;
+                item.type = value.typetext;
+                if (itemCount > 1) {
+                    if (value.position == 1) {
+                        item.movedownbutton = true;
+                    } else if (value.position == itemCount) {
+                        item.moveupbutton = true;
+                    } else if (value.position > 1 && value.position < itemCount) {
+                        item.moveupbutton = true;
+                        item.movedownbutton = true;
                     }
                 }
-            ]);
-            promises[0].done(function (response) {
-                var context = {
-                    threesixtyid: threesixtyId
-                };
-
-                var items = [];
-                var itemCount = response.items.length;
-                $.each(response.items, function (key, value) {
-                    var item = value;
-                    item.deletebutton = true;
-                    item.moveupbutton = false;
-                    item.movedownbutton = false;
-                    item.type = value.typetext;
-                    if (itemCount > 1) {
-                        if (value.position == 1) {
-                            item.movedownbutton = true;
-                        } else if (value.position == itemCount) {
-                            item.moveupbutton = true;
-                        } else if (value.position > 1 && value.position < itemCount) {
-                            item.moveupbutton = true;
-                            item.movedownbutton = true;
-                        }
-                    }
-                    items.push(item);
-                });
-                context.allitems = items;
-                templates.render('mod_threesixty/list_360_items', context)
-                    .done(function (compiledSource, js) {
-                        $('[data-region="itemlist"]').replaceWith(compiledSource);
-                        templates.runTemplateJS(js);
-                    })
-                    .fail(notification.exception);
-            }).fail(notification.exception);
-        };
-
-        editItems.prototype.registerEvents = function () {
-            // Bind click event for the comments chooser button.
-            $("#btn-question-bank").click(function (e) {
-                e.preventDefault();
-                bank.init(threesixtyId);
+                items.push(item);
             });
+            context.allitems = items;
 
-            $(".delete-item-button").click(function (e) {
-                e.preventDefault();
+            return Templates.render('mod_threesixty/list_360_items', context);
 
-                var itemId = $(this).data('itemid');
-                var promises = ajax.call([
-                    {
-                        methodname: 'mod_threesixty_delete_item',
-                        args: {
-                            itemid: itemId
-                        }
-                    }
-                ]);
-                promises[0].done(function (response) {
-                    editItems.refreshItemList();
-                }).fail(notification.exception);
-            });
+        }).done(function(compiledSource, js) {
+            $('[data-region="itemlist"]').replaceWith(compiledSource);
+            Templates.runTemplateJS(js);
 
-            $(".move-item-up-button").click(function (e) {
-                e.preventDefault();
+        }).fail(Notification.exception);
+    };
 
-                var itemId = $(this).data('itemid');
-                var promises = ajax.call([
-                    {
-                        methodname: 'mod_threesixty_move_item_up',
-                        args: {
-                            itemid: itemId
-                        }
-                    }
-                ]);
-                promises[0].done(function (response) {
-                    editItems.refreshItemList();
-                }).fail(notification.exception);
-            });
+    editItems.callItemAction = function(action, itemId) {
+        var promises = Ajax.call([
+            {
+                methodname: action,
+                args: {
+                    itemid: itemId
+                }
+            }
+        ]);
+        promises[0].done(function(response) {
+            if (response.result) {
+                editItems.refreshItemList();
+                return true;
+            }
+            var warnings = response.warnings.join($('<br/>'));
+            throw new Error(warnings);
+        }).fail(Notification.exception);
+    };
 
-            $(".move-item-down-button").click(function (e) {
-                e.preventDefault();
+    editItems.prototype.registerEvents = function() {
+        // Bind click event for the comments chooser button.
+        $("#btn-question-bank").click(function(e) {
+            e.preventDefault();
+            Bank.init(threesixtyId);
+        });
 
-                var itemId = $(this).data('itemid');
-                var promises = ajax.call([
-                    {
-                        methodname: 'mod_threesixty_move_item_down',
-                        args: {
-                            itemid: itemId
-                        }
-                    }
-                ]);
-                promises[0].done(function (response) {
-                    editItems.refreshItemList();
-                }).fail(notification.exception);
-            });
-        };
+        $(ACTIONS.DELETE).click(function(e) {
+            e.preventDefault();
 
-        return editItems;
-    }
-);
+            var itemId = $(this).data('itemid');
+            editItems.callItemAction('mod_threesixty_delete_item', itemId);
+        });
+
+        $(ACTIONS.MOVE_UP).click(function(e) {
+            e.preventDefault();
+
+            var itemId = $(this).data('itemid');
+            editItems.callItemAction('mod_threesixty_move_item_up', itemId);
+        });
+
+        $(ACTIONS.MOVE_DOWN).click(function(e) {
+            e.preventDefault();
+
+            var itemId = $(this).data('itemid');
+            editItems.callItemAction('mod_threesixty_move_item_down', itemId);
+        });
+    };
+
+    return editItems;
+});

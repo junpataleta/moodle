@@ -396,8 +396,9 @@ class external extends external_api {
     }
 
     /**
-     * The function itself
-     * @return string welcome message
+     * Move an item up.
+     *
+     * @return array
      */
     public static function move_item_up($id) {
         $warnings = [];
@@ -407,6 +408,9 @@ class external extends external_api {
         $id = $params['itemid'];
 
         $result = api::move_item_up($id);
+        if (!$result) {
+            $warnings[] = 'An error was encountered while trying to move the item up.';
+        }
 
         return [
             'result' => $result,
@@ -440,8 +444,9 @@ class external extends external_api {
     }
 
     /**
-     * The function itself
-     * @return string welcome message
+     * Move an item down.
+     *
+     * @return array
      */
     public static function move_item_down($id) {
         $warnings = [];
@@ -451,6 +456,9 @@ class external extends external_api {
         $id = $params['itemid'];
 
         $result = api::move_item_down($id);
+        if (!$result) {
+            $warnings[] = 'An error was encountered while trying to move the item down.';
+        }
 
         return [
             'result' => $result,
@@ -484,8 +492,9 @@ class external extends external_api {
     }
 
     /**
-     * The function itself
-     * @return string welcome message
+     * Decline a feedback.
+     *
+     * @return array
      */
     public static function decline_feedback($statusid, $reason) {
         $warnings = [];

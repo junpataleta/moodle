@@ -22,42 +22,52 @@
  * @copyright  2016 Jun Pataleta <jun@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(
-    [
-        'jquery',
-        'core/templates',
-        'core/notification',
-        'core/ajax',
-        'core/str',
-        'core/modal_factory',
-        'core/modal_events'
-    ], function ($, templates, notification, ajax, str, ModalFactory, ModalEvents) {
+define([
+    'jquery',
+    'core/templates',
+    'core/notification',
+    'core/ajax',
+    'core/str',
+    'core/modal_factory',
+    'core/modal_events'
+], function($, templates, notification, ajax, str, ModalFactory, ModalEvents) {
+
+    /**
+     * List of action selectors.
+     *
+     * @type {{VIEW_FEEDBACK: string, DECLINE_FEEDBACK: string}}
+     */
+    var ACTIONS = {
+        VIEW_FEEDBACK: '[data-action="view-feedback"]',
+        DECLINE_FEEDBACK: '[data-action="decline-feedback"]'
+    };
 
     var threesixtyid,
         declineDialogue;
 
+    /**
+     * Refresh the list of participants.
+     */
     function refreshParticipantsList() {
-        // Refresh the list of questions thru AJAX.
+        // Refresh the list of participants thru AJAX.
         var promises = ajax.call([
             {methodname: 'mod_threesixty_data_for_participant_list', args: {threesixtyid: threesixtyid}}
         ]);
-        promises[0].done(function (response) {
-            // var context = {
-            //     participants: response.participants
-            // };
-            templates.render('mod_threesixty/list_participants', response)
-                .done(function (compiledSource, js) {
-                    $('[data-region="participantlist"]').replaceWith(compiledSource);
-                    templates.runTemplateJS(js);
-                })
-                .fail(notification.exception);
+        $.when(promises[0]).then(function(response) {
+            return templates.render('mod_threesixty/list_participants', response);
+
+        }).done(function(compiledSource, js) {
+            $('[data-region="participantlist"]').replaceWith(compiledSource);
+            templates.runTemplateJS(js);
+
         }).fail(notification.exception);
     }
 
     /**
+     * Renders the feedback decline dialogue.
      *
-     * @param dialogueTitle
-     * @param declineTemplate
+     * @param {string} dialogueTitle
+     * @param {string} declineTemplate
      */
     function renderDeclineDialogue(dialogueTitle, declineTemplate) {
         // Set dialog's body content.
@@ -73,14 +83,14 @@ define(
                 body: declineTemplate,
                 large: true,
                 type: ModalFactory.types.SAVE_CANCEL
-            }).done(function (modal) {
+            }).done(function(modal) {
                 declineDialogue = modal;
 
                 // Display the dialogue.
                 declineDialogue.show();
 
                 // On hide handler.
-                modal.getRoot().on(ModalEvents.hidden, function () {
+                modal.getRoot().on(ModalEvents.hidden, function() {
                     // Empty modal contents when it's hidden.
                     modal.setBody('');
                 });
@@ -99,7 +109,7 @@ define(
                     var promises = ajax.call([
                         {methodname: method, args: data}
                     ]);
-                    promises[0].done(function () {
+                    promises[0].done(function() {
                         refreshParticipantsList();
                     }).fail(notification.exception);
                 });
@@ -113,16 +123,16 @@ define(
     };
 
     view.prototype.registerEvents = function() {
-        $('.decline-feedback-button').click(function() {
+        $(ACTIONS.DECLINE_FEEDBACK).click(function() {
             var statusid = $(this).data('statusid');
             var name = $(this).data('name');
             var context = {
-                statusid : statusid,
+                statusid: statusid,
                 name: name
             };
             var declineTemplate = templates.render('mod_threesixty/decline_feedback', context);
             str.get_string('declinefeedback', 'mod_threesixty')
-                .done(function (title) {
+                .done(function(title) {
                     renderDeclineDialogue(title, declineTemplate);
                 })
                 .fail(notification.exception);

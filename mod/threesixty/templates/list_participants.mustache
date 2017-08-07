@@ -72,12 +72,12 @@
                             </a>
                         {{/respondlink}}
                         {{#viewlink}}
-                            <button class="btn btn-link view-feedback-button" data-id="{{id}}" data-userid="{{userid}}" title="{{#str}}view, mod_threesixty{{/str}}">
+                            <button class="btn btn-link" data-action="view-feedback" data-id="{{id}}" data-userid="{{userid}}" title="{{#str}}view, mod_threesixty{{/str}}">
                                 {{#pix}} t/preview, core, {{#str}}view, mod_threesixty{{/str}} {{/pix}}
                             </button>
                         {{/viewlink}}
                         {{#declinelink}}
-                            <button class="btn btn-link decline-feedback-button" data-statusid="{{statusid}}" data-userid="{{userid}}" data-name="{{name}}" title="{{#str}}decline, mod_threesixty{{/str}}">
+                            <button class="btn btn-link" data-action="decline-feedback" data-statusid="{{statusid}}" data-userid="{{userid}}" data-name="{{name}}" title="{{#str}}decline, mod_threesixty{{/str}}">
                                 {{#pix}} t/delete, core, {{#str}}decline, mod_threesixty{{/str}} {{/pix}}
                             </button>
                         {{/declinelink}}
