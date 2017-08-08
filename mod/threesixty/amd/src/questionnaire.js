@@ -29,7 +29,7 @@ define(['jquery',
     'core/str',
     'core/modal_factory',
     'core/modal_events'
-], function ($, templates, notification, ajax, str, ModalFactory, ModalEvents) {
+], function($, templates, notification, ajax, str, ModalFactory, ModalEvents) {
 
     var responses = [];
     var questionnaire = function() {
@@ -147,11 +147,11 @@ define(['jquery',
             responses[$(this).data('itemid')] = $(this).val().trim();
         });
 
-        var questionnaireTable =  $('[data-region="questionnaire"]');
+        var questionnaireTable = $('[data-region="questionnaire"]');
         var toUser = questionnaireTable.data('touserid');
         var toUserFullname = questionnaireTable.data('tousername');
         var threesixtyId = questionnaireTable.data('threesixtyid');
-        var anonymous =  questionnaireTable.data('anonymous');
+        var anonymous = questionnaireTable.data('anonymous');
 
         if (anonymous && finalise) {
             // Show confirmation dialogue to anonymise the feedback responses.
@@ -227,12 +227,12 @@ define(['jquery',
             body: confirmationMessage,
             large: true,
             type: ModalFactory.types.CONFIRM
-        }).done(function (modal) {
+        }).done(function(modal) {
             // Display the dialogue.
             modal.show();
 
             // On hide handler.
-            modal.getRoot().on(ModalEvents.hidden, function () {
+            modal.getRoot().on(ModalEvents.hidden, function() {
                 // Empty modal contents when it's hidden.
                 modal.setBody('');
             });

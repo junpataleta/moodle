@@ -30,7 +30,7 @@ define([
     'core/str',
     'core/modal_factory',
     'core/modal_events'
-], function($, templates, notification, ajax, str, ModalFactory, ModalEvents) {
+], function($, Templates, notification, ajax, Str, ModalFactory, ModalEvents) {
 
     /**
      * List of action selectors.
@@ -42,8 +42,7 @@ define([
         DECLINE_FEEDBACK: '[data-action="decline-feedback"]'
     };
 
-    var threesixtyid,
-        declineDialogue;
+    var threesixtyid;
 
     /**
      * Refresh the list of participants.
@@ -54,45 +53,46 @@ define([
             {methodname: 'mod_threesixty_data_for_participant_list', args: {threesixtyid: threesixtyid}}
         ]);
         $.when(promises[0]).then(function(response) {
-            return templates.render('mod_threesixty/list_participants', response);
+            return Templates.render('mod_threesixty/list_participants', response);
 
         }).done(function(compiledSource, js) {
             $('[data-region="participantlist"]').replaceWith(compiledSource);
-            templates.runTemplateJS(js);
+            Templates.runTemplateJS(js);
 
         }).fail(notification.exception);
     }
 
-    /**
-     * Renders the feedback decline dialogue.
-     *
-     * @param {string} dialogueTitle
-     * @param {string} declineTemplate
-     */
-    function renderDeclineDialogue(dialogueTitle, declineTemplate) {
-        // Set dialog's body content.
-        if (declineDialogue) {
-            // Set dialogue body.
-            declineDialogue.setBody(declineTemplate);
-            // Display the dialogue.
-            declineDialogue.show();
+    var view = function(id) {
+        threesixtyid = id;
+        this.registerEvents();
+    };
 
-        } else {
-            ModalFactory.create({
-                title: dialogueTitle,
-                body: declineTemplate,
-                large: true,
-                type: ModalFactory.types.SAVE_CANCEL
+    view.prototype.registerEvents = function() {
+        $(ACTIONS.DECLINE_FEEDBACK).click(function() {
+            var statusid = $(this).data('statusid');
+            var name = $(this).data('name');
+            var context = {
+                statusid: statusid,
+                name: name
+            };
+            var declineTemplatePromise = Templates.render('mod_threesixty/decline_feedback', context);
+            var titlePromise = Str.get_string('declinefeedback', 'mod_threesixty');
+
+            $.when(titlePromise).then(function(title) {
+                return ModalFactory.create({
+                    title: title,
+                    body: declineTemplatePromise,
+                    large: true,
+                    type: ModalFactory.types.SAVE_CANCEL
+                });
             }).done(function(modal) {
-                declineDialogue = modal;
-
                 // Display the dialogue.
-                declineDialogue.show();
+                modal.show();
 
                 // On hide handler.
                 modal.getRoot().on(ModalEvents.hidden, function() {
-                    // Empty modal contents when it's hidden.
-                    modal.setBody('');
+                    // Destroy modal when hidden.
+                    modal.destroy();
                 });
 
                 modal.getRoot().on(ModalEvents.save, function() {
@@ -113,29 +113,7 @@ define([
                         refreshParticipantsList();
                     }).fail(notification.exception);
                 });
-            });
-        }
-    }
-
-    var view = function(id) {
-        threesixtyid = id;
-        this.registerEvents();
-    };
-
-    view.prototype.registerEvents = function() {
-        $(ACTIONS.DECLINE_FEEDBACK).click(function() {
-            var statusid = $(this).data('statusid');
-            var name = $(this).data('name');
-            var context = {
-                statusid: statusid,
-                name: name
-            };
-            var declineTemplate = templates.render('mod_threesixty/decline_feedback', context);
-            str.get_string('declinefeedback', 'mod_threesixty')
-                .done(function(title) {
-                    renderDeclineDialogue(title, declineTemplate);
-                })
-                .fail(notification.exception);
+            }).fail(notification.exception);
         });
     };
 

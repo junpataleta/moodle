@@ -75,7 +75,7 @@ class list_participants implements renderable, templatable {
 
                 // Status column.
                 $viewonly = false;
-                $declined = false;
+                $canrespond = true;
                 switch ($user->status) {
                     case api::STATUS_IN_PROGRESS: // In Progress.
                         $member->statusclass = 'label-info';
@@ -86,12 +86,16 @@ class list_participants implements renderable, templatable {
                         $member->status = get_string('statuscompleted', 'threesixty');
                         if (!$anonymous) {
                             $viewonly = true;
+                        } else {
+                            // If anonymous mode and completed, user won't be able to respond anymore.
+                            $canrespond = false;
                         }
                         break;
                     case api::STATUS_DECLINED: // Declined.
                         $member->statusclass = 'label-warning';
                         $member->status = get_string('statusdeclined', 'threesixty');
-                        $declined = true;
+                        // If declined, user won't be able to respond anymore.
+                        $canrespond = false;
                         break;
                     default: // Pending.
                         $member->statusclass = 'label';
@@ -105,7 +109,7 @@ class list_participants implements renderable, templatable {
                 if ($viewonly) {
                     $member->viewlink = true;
                 }
-                if (!$declined) {
+                if ($canrespond) {
                     $respondurl = new moodle_url('/mod/threesixty/questionnaire.php');
                     $respondurl->params([
                         'threesixty' => $this->threesixtyid,

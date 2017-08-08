@@ -37,7 +37,6 @@ class mod_threesixty_mod_form extends moodleform_mod {
      * @throws coding_exception
      */
     function definition() {
-        global $CFG, $DB, $OUTPUT;
 
         $mform =& $this->_form;
 

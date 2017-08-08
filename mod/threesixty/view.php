@@ -56,13 +56,14 @@ if (has_capability('mod/threesixty:edititems', $context)) {
     echo html_writer::link($edititemsurl, get_string('edititems', 'threesixty'), ['class' => 'btn btn-default']);
 }
 
-if (mod_threesixty\api::can_participate($threesixty, $USER->id, $context) === true) {
+$canparticipate = mod_threesixty\api::can_participate($threesixty, $USER->id, $context);
+if ($canparticipate === true) {
     // 360-degree feedback To-do list.
     $memberslist = new mod_threesixty\output\list_participants($threesixty->id, $USER->id, true);
     $memberslistoutput = $PAGE->get_renderer('mod_threesixty');
     echo $memberslistoutput->render($memberslist);
 } else {
-    \core\notification::error(get_string('errorcannotparticipate', 'mod_threesixty'));
+    \core\notification::error($canparticipate);
 }
 
 echo $OUTPUT->footer();

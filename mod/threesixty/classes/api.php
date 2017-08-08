@@ -300,22 +300,35 @@ class api {
         return false;
     }
 
-    public static function decline_feedback($statusid, $reason) {
-        return self::set_completion($statusid, self::STATUS_DECLINED, $reason);
+    public static function decline_feedback($submissionid, $reason) {
+        global $DB;
+
+        // Delete responses, if necessary.
+        $submission = self::get_submission($submissionid);
+        $params = [
+            'threesixty' => $submission->threesixty,
+            'fromuser' => $submission->fromuser,
+            'touser' => $submission->touser
+        ];
+        $result = $DB->delete_records('threesixty_response', $params);
+
+        // Set declined status.
+        $result &= self::set_completion($submissionid, self::STATUS_DECLINED, $reason);
+        return $result;
     }
 
     /**
      * Sets the current completion status of a 360-feedback status record.
      *
-     * @param int $statusid
+     * @param int $submissionid
      * @param int $status
      * @param string $remarks
      * @return bool True if status record was successfully updated. False, otherwise.
      */
-    public static function set_completion($statusid, $status, $remarks = null) {
+    public static function set_completion($submissionid, $status, $remarks = null) {
         global $DB;
 
-        if ($statusrecord = $DB->get_record('threesixty_submission', array('id' => $statusid))) {
+        if ($statusrecord = $DB->get_record('threesixty_submission', array('id' => $submissionid))) {
             $statusrecord->status = $status;
             if (!empty($remarks)) {
                 $statusrecord->remarks = $remarks;
@@ -352,6 +365,21 @@ class api {
             $userssqlparams['user3'] = $userid;
         }
 
+        $cm = get_coursemodule_from_instance('threesixty', $threesixtyid);
+        $groupmode = groups_get_activity_groupmode($cm);
+        $groupcondition = '';
+        $context = context_module::instance($cm->id);
+        if ($groupmode != NOGROUPS && !has_capability('moodle/site:accessallgroups', $context)) {
+            $usergroups = groups_get_user_groups($cm->course)['0'];
+            list($sql, $params) = $DB->get_in_or_equal($usergroups, SQL_PARAMS_NAMED);
+            $groupcondition = "AND u.id IN (
+                SELECT gm.userid 
+                  FROM {groups_members} gm
+                 WHERE gm.groupid $sql 
+            )";
+            $userssqlparams = array_merge($userssqlparams, $params);
+        }
+
         $userssql = "SELECT u.id AS userid,
                             u.firstname,
                             u.lastname,
@@ -373,7 +401,9 @@ class api {
                          ON f.id = fs.threesixty 
                             AND fs.touser = u.id 
                             AND fs.fromuser = :userid
-                      WHERE u.id <> :userid2 $rolecondition";
+                      WHERE u.id <> :userid2 $rolecondition $groupcondition
+                   ORDER BY fs.status ASC, 
+                            u.lastname ASC";
 
         return $DB->get_records_sql($userssql, $userssqlparams);
     }
@@ -595,7 +625,6 @@ class api {
                 $response->value = $value;
                 $result &= $DB->update_record('threesixty_response', $response);
             }
-            
         }
         return $result;
     }
