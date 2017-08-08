@@ -152,11 +152,14 @@ define(['core/templates',
                         body: confirmMessage,
                         large: true,
                         title: title,
-                        type: ModalFactory.types.CONFIRM
+                        type: ModalFactory.types.SAVE_CANCEL
+                    }).then(function(modal) {
+                        modal.setSaveButtonText(title);
+                        return modal;
                     });
                 }).done(function(modal) {
                     // Handle confirm event.
-                    modal.getRoot().on(ModalEvents.yes, function() {
+                    modal.getRoot().on(ModalEvents.save, function() {
                         // Build params.
                         var unenrolParams = {
                             confirm: 1,
