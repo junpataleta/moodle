@@ -533,17 +533,21 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
 
             Str.get_strings([
                 {key: 'confirm'},
-                {key: 'deleteallconfirm', component: 'message'}
+                {key: 'deleteallconfirm', component: 'message'},
+                {key: 'delete'}
             ]).then(function(s) {
                 return ModalFactory.create({
                     title: s[0],
-                    type: ModalFactory.types.CONFIRM,
+                    type: ModalFactory.types.SAVE_CANCEL,
                     body: s[1]
-                }, this.messageArea.find(SELECTORS.DELETEALLMESSAGES));
+                }, this.messageArea.find(SELECTORS.DELETEALLMESSAGES)).then(function(modal) {
+                    modal.setSaveButtonText(s[2]);
+                    return modal;
+                });
             }.bind(this)).then(function(modal) {
                 this._confirmationModal = modal;
                 // Only delete the conversation if the user agreed in the confirmation modal.
-                modal.getRoot().on(ModalEvents.yes, function() {
+                modal.getRoot().on(ModalEvents.save, function() {
                     var otherUserId = this._getUserId();
                     var request = {
                         methodname: 'core_message_delete_conversation',
