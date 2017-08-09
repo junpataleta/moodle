@@ -117,14 +117,17 @@ define(['jquery', 'core/str', 'core/notification', 'core/custom_interaction_even
     ModalEventSummary.prototype.registerEventListeners = function() {
         // Apply parent event listeners.
         Modal.prototype.registerEventListeners.call(this);
-
+        var confirmStrPromise = Str.get_string('deleteevent', 'calendar');
         var confirmPromise = ModalFactory.create(
             {
-                type: ModalFactory.types.CONFIRM
+                type: ModalFactory.types.SAVE_CANCEL
             },
             this.getDeleteButton()
-        ).then(function(modal) {
-            modal.getRoot().on(ModalEvents.yes, function() {
+        );
+
+        $.when(confirmStrPromise, confirmPromise).then(function(confirmStr, confirmModal) {
+            confirmModal.setSaveButtonText(confirmStr);
+            confirmModal.getRoot().on(ModalEvents.save, function() {
                 var eventId = this.getEventId();
 
                 CalendarRepository.deleteEvent(eventId)
@@ -135,16 +138,16 @@ define(['jquery', 'core/str', 'core/notification', 'core/custom_interaction_even
                     .catch(Notification.exception);
             }.bind(this));
 
-            return modal;
-        }.bind(this));
+            return confirmModal;
+        }.bind(this)).fail(Notification.exception);
 
         // We have to wait for the modal to finish rendering in order to ensure that
         // the data-event-title property is available to use as the modal title.
         this.getRoot().on(ModalEvents.bodyRendered, function() {
             var eventTitle = this.getBody().find(SELECTORS.ROOT).attr('data-event-title');
-            confirmPromise.then(function(modal) {
+            confirmPromise.done(function(modal) {
                 modal.setBody(Str.get_string('confirmeventdelete', 'core_calendar', eventTitle));
-            });
+            }).fail(Notification.exception);
         }.bind(this));
 
         CustomEvents.define(this.getEditButton(), [
