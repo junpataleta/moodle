@@ -65,4 +65,14 @@ class renderer extends plugin_renderer_base {
         $data = $page->export_for_template($this);
         return parent::render_from_template('mod_threesixty/list_360_items', $data);
     }
+
+    /**
+     * @param report $page
+     * @return bool|string html for the page.
+     * @throws \moodle_exception
+     */
+    public function render_report($page) {
+        $data = $page->export_for_template($this);
+        return parent::render_from_template('mod_threesixty/report', $data);
+    }
 }

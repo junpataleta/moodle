@@ -68,7 +68,9 @@ define([
     };
 
     view.prototype.registerEvents = function() {
-        $(ACTIONS.DECLINE_FEEDBACK).click(function() {
+        $(ACTIONS.DECLINE_FEEDBACK).click(function(e) {
+            e.preventDefault();
+
             var statusid = $(this).data('statusid');
             var name = $(this).data('name');
             var context = {

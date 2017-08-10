@@ -39,15 +39,29 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class list_participants implements renderable, templatable {
-    protected $threesixtyid;
+
+    /** @var stdClass The 360 instance.  */
+    protected $threesixty;
+
+    /** @var int The user ID of the respondent. */
     protected $userid;
 
-    public function __construct($threesixtyid, $userid, $init = false) {
-        $this->threesixtyid = $threesixtyid;
+    /** @var array The array of participants for the 360 feedback, excluding the respondent. */
+    protected $participants = [];
+
+    protected $canviewreports = false;
+
+    /**
+     * list_participants constructor.
+     * @param stdClass $threesixty The 360 instance.
+     * @param int $userid The respondent's user ID.
+     * @param bool $init
+     */
+    public function __construct($threesixty, $userid, $participants, $canviewreports = false) {
         $this->userid = $userid;
-        if ($init) {
-            api::generate_360_feedback_statuses($threesixtyid, $userid);
-        }
+        $this->threesixty = $threesixty;
+        $this->participants = $participants;
+        $this->canviewreports = $canviewreports;
     }
 
     /**
@@ -61,21 +75,20 @@ class list_participants implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         $data = new stdClass();
-        $data->threesixtyid = $this->threesixtyid;
+        $data->threesixtyid = $this->threesixty->id;
         $data->participants = [];
-        $threesixty = api::get_instance($this->threesixtyid);
-        $anonymous = $threesixty->anonymous;
+        $anonymous = $this->threesixty->anonymous;
 
-        if ($enroledusers = api::get_participants($this->threesixtyid, $this->userid)) {
-            foreach ($enroledusers as $user) {
-                $member = new stdClass();
+        foreach ($this->participants as $user) {
+            $member = new stdClass();
 
-                // Name column.
-                $member->name = fullname($user);
+            // Name column.
+            $member->name = fullname($user);
 
-                // Status column.
-                $viewonly = false;
-                $canrespond = true;
+            // Status column.
+            // By default the user viewing the participants page can respond if there's a submission record.
+            $canrespond = !empty($user->statusid);
+            if ($canrespond) {
                 switch ($user->status) {
                     case api::STATUS_IN_PROGRESS: // In Progress.
                         $member->statusclass = 'label-info';
@@ -97,30 +110,43 @@ class list_participants implements renderable, templatable {
                         // If declined, user won't be able to respond anymore.
                         $canrespond = false;
                         break;
-                    default: // Pending.
-                        $member->statusclass = 'label';
+                    default:
                         $member->status = get_string('statuspending', 'threesixty');
                         break;
                 }
 
                 $member->statusid = $user->statusid;
-                // Action buttons column.
-                // Show action buttons depending on status.
-                if ($viewonly) {
-                    $member->viewlink = true;
-                }
-                if ($canrespond) {
-                    $respondurl = new moodle_url('/mod/threesixty/questionnaire.php');
-                    $respondurl->params([
-                        'threesixty' => $this->threesixtyid,
-                        'submission' => $user->statusid,
-                    ]);
-                    $member->respondlink = $respondurl->out();
-                    $member->declinelink = true;
-                }
-
-                $data->participants[] = $member;
             }
+
+            // Action buttons column.
+            // View action.
+            $member->reportslink = false;
+            if ($this->canviewreports) {
+                // When the user can't provide feedback to the participants but can view reports.
+                if (empty($user->statusid)) {
+                    $member->statusclass = 'label-info';
+                    $member->status = get_string('statusviewonly', 'threesixty');
+                }
+                $reportslink = new moodle_url('/mod/threesixty/report.php');
+                $reportslink->params([
+                    'threesixty' => $this->threesixty->id,
+                    'touser' => $user->userid,
+                ]);
+                $member->reportslink = $reportslink->out();
+            }
+
+            // Show action buttons depending on status.
+            if ($canrespond) {
+                $respondurl = new moodle_url('/mod/threesixty/questionnaire.php');
+                $respondurl->params([
+                    'threesixty' => $this->threesixty->id,
+                    'submission' => $user->statusid,
+                ]);
+                $member->respondlink = $respondurl->out();
+                $member->declinelink = true;
+            }
+
+            $data->participants[] = $member;
         }
 
         return $data;

@@ -557,8 +557,10 @@ class external extends external_api {
         $context = context_module::instance($coursecm[1]->id);
         self::validate_context($context);
         $renderer = $PAGE->get_renderer('mod_threesixty');
-        $participantsexporter = new list_participants($threesixtyid, $USER->id);
-        $data = $participantsexporter->export_for_template($renderer);
+        $threesixty = api::get_instance($threesixtyid);
+        $participants = api::get_participants($threesixty, $USER->id);
+        $listparticipants = new list_participants($threesixty, $USER->id, $participants);
+        $data = $listparticipants->export_for_template($renderer);
         return [
             'threesixtyid' => $data->threesixtyid,
             'participants' => $data->participants,

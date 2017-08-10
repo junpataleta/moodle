@@ -339,14 +339,24 @@ class api {
         return false;
     }
 
+    /**
+     * @param $threesixtyid
+     * @param $userid
+     * @return array
+     */
     public static function get_participants($threesixtyid, $userid) {
         global $DB;
 
-        $role = $DB->get_field('threesixty', 'participantrole', ['id' => $threesixtyid]);
         $rolecondition = '';
         $userssqlparams = ['threesixtyid' => $threesixtyid, 'userid' => $userid, 'userid2' => $userid];
-        if ($role != 0) {
-            $rolecondition = "AND u.id IN (
+
+        $cm = get_coursemodule_from_instance('threesixty', $threesixtyid);
+        $context = context_module::instance($cm->id);
+        $canviewreports = self::can_view_reports($context);
+        if (!$canviewreports) {
+            $role = $DB->get_field('threesixty', 'participantrole', ['id' => $threesixtyid]);
+            if ($role != 0) {
+                $rolecondition = "AND u.id IN (
                                   SELECT ra.userid 
                                     FROM {role_assignments} ra
                               INNER JOIN {threesixty} ff
@@ -360,15 +370,15 @@ class api {
                                       ON ra.roleid = ff.participantrole
                                          AND ff.id = :threesixtyid3
                               )";
-            $userssqlparams['threesixtyid2'] = $threesixtyid;
-            $userssqlparams['threesixtyid3'] = $threesixtyid;
-            $userssqlparams['user3'] = $userid;
+                $userssqlparams['threesixtyid2'] = $threesixtyid;
+                $userssqlparams['threesixtyid3'] = $threesixtyid;
+                $userssqlparams['user3'] = $userid;
+            }
         }
 
-        $cm = get_coursemodule_from_instance('threesixty', $threesixtyid);
         $groupmode = groups_get_activity_groupmode($cm);
         $groupcondition = '';
-        $context = context_module::instance($cm->id);
+
         if ($groupmode != NOGROUPS && !has_capability('moodle/site:accessallgroups', $context)) {
             $usergroups = groups_get_user_groups($cm->course)['0'];
             list($sql, $params) = $DB->get_in_or_equal($usergroups, SQL_PARAMS_NAMED);
@@ -397,19 +407,25 @@ class api {
                  INNER JOIN {threesixty} f 
                          ON f.course = e.courseid 
                             AND f.id = :threesixtyid
-                 INNER JOIN {threesixty_submission} fs
+                  LEFT JOIN {threesixty_submission} fs
                          ON f.id = fs.threesixty 
                             AND fs.touser = u.id 
                             AND fs.fromuser = :userid
-                      WHERE u.id <> :userid2 $rolecondition $groupcondition
-                   ORDER BY fs.status ASC, 
+                      WHERE u.id <> :userid2 
+                            $rolecondition
+                            $groupcondition
+                   ORDER BY fs.status ASC,
                             u.lastname ASC";
+        $participants = $DB->get_records_sql($userssql, $userssqlparams);
 
-        return $DB->get_records_sql($userssql, $userssqlparams);
+        return $participants;
     }
 
     /**
      * Generate default records for the table threesixty_submission.
+     *
+     * @param int $threesixtyid The 360 instance ID.
+     * @param int $userid The user ID of the respondent.
      */
     public static function generate_360_feedback_statuses($threesixtyid, $userid) {
         global $DB;
@@ -441,6 +457,22 @@ class api {
             $params['fromuser3'] = $userid;
         }
 
+        $cm = get_coursemodule_from_instance('threesixty', $threesixtyid);
+        $groupmode = groups_get_activity_groupmode($cm);
+        $groupcondition = '';
+        if ($groupmode != NOGROUPS) {
+            $usergroups = groups_get_user_groups($cm->course)['0'];
+            if (!empty($usergroups)) {
+                list($sql, $groupparams) = $DB->get_in_or_equal($usergroups, SQL_PARAMS_NAMED);
+                $groupcondition = "AND u.id IN (
+                            SELECT gm.userid 
+                              FROM {groups_members} gm
+                             WHERE gm.groupid $sql 
+                        )";
+                $params = array_merge($params, $groupparams);
+            }
+        }
+
         $usersql = "SELECT DISTINCT u.id
                                FROM {user} u
                          INNER JOIN {user_enrolments} ue
@@ -456,7 +488,8 @@ class api {
                                          WHERE fs.threesixty = f.id 
                                                AND fs.fromuser = :fromuser2
                                     )
-                                    $rolecondition";
+                                    $rolecondition
+                                    $groupcondition";
 
         if ($users = $DB->get_records_sql($usersql, $params)) {
             foreach ($users as $user) {
@@ -501,7 +534,7 @@ class api {
         }
 
         // Check if user's role is the same as the activity's participant role setting.
-        $sql = "SELECT ra.userid 
+        $sql = "SELECT ra.userid
                   FROM {role_assignments} ra
             INNER JOIN {threesixty} t
                     ON ra.roleid = t.participantrole
@@ -521,6 +554,16 @@ class api {
     }
 
     /**
+     * Whether the current user can view the reports regarding the feedback responses.
+     *
+     * @param context_module $context
+     * @return bool
+     */
+    public static function can_view_reports(context_module $context) {
+        return has_capability('mod/threesixty:viewreports', $context);
+    }
+
+    /**
      * Retrieves the submission record of a respondent's feedback to another user.
      *
      * @param int $id The submission ID.
@@ -529,11 +572,14 @@ class api {
      * @return mixed
      */
     public static function get_submission($id, $fromuser = 0, $fields = '*') {
-        global $DB, $USER;
-        if (empty($fromuser)) {
-            $fromuser = $USER->id;
+        global $DB;
+        $params = [
+            'id' => $id
+        ];
+        if (!empty($fromuser)) {
+            $params['fromuser'] = $fromuser;
         }
-        return $DB->get_record('threesixty_submission', ['id' => $id, 'fromuser' => $fromuser], $fields, MUST_EXIST);
+        return $DB->get_record('threesixty_submission', $params, $fields, MUST_EXIST);
     }
 
     public static function get_submission_by_params($threesixtyid, $fromuser, $touser) {
@@ -655,5 +701,58 @@ class api {
                              AND fromuser = :fromuser
                              AND touser = :touser";
         return $DB->execute($updatesql, $params);
+    }
+
+    public static function get_feedback_for_user($threesixtyid, $touser) {
+        global $DB;
+
+        $params = [
+            'threesixty' => $threesixtyid,
+            'touser' => $touser
+        ];
+        $responses = $DB->get_records('threesixty_response', $params, 'item ASC', 'id, item, fromuser, value');
+
+        $items = api::get_items($threesixtyid);
+        foreach ($items as $item) {
+            if ($item->type == self::QTYPE_RATED) {
+                $ratings = [];
+                foreach ($responses as $response) {
+                    // Skip empty responses or those who are not matching the item ID.
+                    if ($item->id != $response->item || empty(trim($response->value))) {
+                        continue;
+                    }
+                    $ratings[] = (float)$response->value;
+                }
+                $responsecount = count($ratings);
+                if ($responsecount) {
+                    $averagerating = array_sum($ratings) / $responsecount;
+                    $item->averagerating = number_format($averagerating, 2);
+                }
+                $item->responsecount = $responsecount;
+            } else {
+                $comments = [];
+                foreach ($responses as $response) {
+                    // Skip empty responses or those who are not matching the item ID.
+                    $comment = trim($response->value);
+                    if ($item->id != $response->item || empty($comment)) {
+                        continue;
+                    }
+                    if ($response->fromuser) {
+                        $fromuser = \core_user::get_user($response->fromuser);
+                        $fromusername = fullname($fromuser);
+                    } else {
+                        $fromusername = get_string('anonymous', 'mod_threesixty');
+                    }
+                    $comments[] = (object)[
+                        'fromuser' => $fromusername,
+                        'comment' => $comment
+                    ];
+
+                }
+                $item->comments = $comments;
+            }
+        }
+
+        return $items;
     }
 }

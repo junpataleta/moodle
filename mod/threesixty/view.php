@@ -17,14 +17,12 @@
 /**
  * The first page to view the 360-degree feedback.
  *
- * @author Jun Pataleta
+ * @copyright 2015 Jun Pataleta
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_threesixty
  */
 require_once('../../config.php');
 require_once('lib.php');
-
-global $CFG, $DB, $PAGE, $OUTPUT;
 
 $id = required_param('id', PARAM_INT);
 list ($course, $cm) = get_course_and_cm_from_cmid($id, 'threesixty');
@@ -32,7 +30,7 @@ list ($course, $cm) = get_course_and_cm_from_cmid($id, 'threesixty');
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
-$threesixty = $DB->get_record('threesixty', array('id' => $cm->instance), 'id, name, participantrole', MUST_EXIST);
+$threesixty = mod_threesixty\api::get_instance($cm->instance);
 
 /// Print the page header
 $strfeedbacks = get_string('modulenameplural', 'threesixty');
@@ -57,13 +55,17 @@ if (has_capability('mod/threesixty:edititems', $context)) {
 }
 
 $canparticipate = mod_threesixty\api::can_participate($threesixty, $USER->id, $context);
-if ($canparticipate === true) {
-    // 360-degree feedback To-do list.
-    $memberslist = new mod_threesixty\output\list_participants($threesixty->id, $USER->id, true);
-    $memberslistoutput = $PAGE->get_renderer('mod_threesixty');
-    echo $memberslistoutput->render($memberslist);
-} else {
-    \core\notification::error($canparticipate);
+if ($canparticipate !== true) {
+   \core\notification::warning($canparticipate);
 }
+
+mod_threesixty\api::generate_360_feedback_statuses($threesixty->id, $USER->id);
+$participants = mod_threesixty\api::get_participants($threesixty->id, $USER->id);
+$canviewreports = mod_threesixty\api::can_view_reports($context);
+
+// 360-degree feedback To-do list.
+$memberslist = new mod_threesixty\output\list_participants($threesixty, $USER->id, $participants, $canviewreports);
+$memberslistoutput = $PAGE->get_renderer('mod_threesixty');
+echo $memberslistoutput->render($memberslist);
 
 echo $OUTPUT->footer();

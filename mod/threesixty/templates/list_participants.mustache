@@ -51,14 +51,14 @@
         <table class="flexible generaltable generalbox">
             <thead>
                 <tr>
-                    <th class="span4">{{#str}}name, mod_threesixty{{/str}}</th>
-                    <th class="span4">{{#str}}status, mod_threesixty{{/str}}</th>
-                    <th class="span4">{{#str}}labelactions, mod_threesixty{{/str}}</th>
+                    <th>{{#str}}name, mod_threesixty{{/str}}</th>
+                    <th>{{#str}}status, mod_threesixty{{/str}}</th>
+                    <th>{{#str}}labelactions, mod_threesixty{{/str}}</th>
                 </tr>
             </thead>
             <tbody>
             {{# participants }}
-                <tr class="user3 unselectedrow">
+                <tr class="user unselectedrow">
                     <td>
                         {{ name }}
                     </td>
@@ -67,19 +67,19 @@
                     </td>
                     <td>
                         {{#respondlink}}
-                            <a href="{{{respondlink}}}" title="{{#str}}providefeedback, mod_threesixty{{/str}}">
+                            <a class="btn btn-link" href="{{{respondlink}}}" title="{{#str}}providefeedback, mod_threesixty{{/str}}">
                                 {{#pix}} t/editstring, core, {{#str}}providefeedback, mod_threesixty{{/str}} {{/pix}}
                             </a>
                         {{/respondlink}}
-                        {{#viewlink}}
-                            <button class="btn btn-link" data-action="view-report" data-id="{{id}}" data-userid="{{userid}}" title="{{#str}}view, mod_threesixty{{/str}}">
+                        {{#reportslink}}
+                            <a class="btn btn-link" href="{{{reportslink}}}" data-action="view-report" data-id="{{id}}" data-userid="{{userid}}" title="{{#str}}view, mod_threesixty{{/str}}">
                                 {{#pix}} t/preview, core, {{#str}}view, mod_threesixty{{/str}} {{/pix}}
-                            </button>
-                        {{/viewlink}}
+                            </a>
+                        {{/reportslink}}
                         {{#declinelink}}
-                            <button class="btn btn-link" data-action="decline-feedback" data-statusid="{{statusid}}" data-userid="{{userid}}" data-name="{{name}}" title="{{#str}}decline, mod_threesixty{{/str}}">
+                            <a class="btn btn-link" href="#" data-action="decline-feedback" data-statusid="{{statusid}}" data-userid="{{userid}}" data-name="{{name}}" title="{{#str}}decline, mod_threesixty{{/str}}">
                                 {{#pix}} t/delete, core, {{#str}}decline, mod_threesixty{{/str}} {{/pix}}
-                            </button>
+                            </a>
                         {{/declinelink}}
                     </td>
                 </tr>
