@@ -72,11 +72,10 @@
         </div>
         <div class="col-md-8">
             {{#averagerating}}
-                <div class="progress">
-                    <div class="progress-bar" role="progressbar" aria-valuenow="{{progresspercentage}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progresspercentage}}%;">
-                        {{averagerating}}
-                    </div>
+                <div id="progress-{{itemid}}">
+                    {{averagerating}}
                 </div>
+                <progress class="progress" aria-describedby="progress-{{itemid}}" value="{{progresspercentage}}" max="100"></progress>
             {{/averagerating}}
             {{^averagerating}}
                 {{#str}}notapplicableabbr, mod_threesixty{{/str}}
