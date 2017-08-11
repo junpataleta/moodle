@@ -58,6 +58,11 @@ NS.init = function() {
     doc.delegate('click', this.toggle_coursebox_expansion, SELECTORS.COURSEBOXLISTENLINK, this);
     doc.delegate('click', this.collapse_expand_all, SELECTORS.COLLAPSEEXPAND, this);
 
+    // Make sure the collapsible actions reflect the correct state.
+    Y.all(SELECTORS.COURSECATEGORYTREE).each(function(ancestor) {
+        this.update_collapsible_actions(ancestor);
+    }, this);
+
     // Only set up they keybaord listeners when tab is first pressed - it
     // may never happen and modifying the DOM on a large number of nodes
     // can be very expensive.
