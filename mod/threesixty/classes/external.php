@@ -558,7 +558,7 @@ class external extends external_api {
         self::validate_context($context);
         $renderer = $PAGE->get_renderer('mod_threesixty');
         $threesixty = api::get_instance($threesixtyid);
-        $participants = api::get_participants($threesixty, $USER->id);
+        $participants = api::get_participants($threesixty->id, $USER->id);
         $listparticipants = new list_participants($threesixty, $USER->id, $participants);
         $data = $listparticipants->export_for_template($renderer);
         return [
@@ -593,8 +593,11 @@ class external extends external_api {
                         [
                             'name' => new external_value(PARAM_TEXT, 'The target participant name.'),
                             'status' => new external_value(PARAM_TEXT, 'The current feedback status for the target participant.'),
-                            'statusclass' => new external_value(PARAM_TEXT, 'The appropriate CSS class for the status.'),
-                            'statusid' => new external_value(PARAM_INT, 'The completion status ID for the target participant'),
+                            'statuspending' => new external_value(PARAM_BOOL, 'Pending status', VALUE_DEFAULT, false),
+                            'statusinprogress' => new external_value(PARAM_BOOL, 'In progress status', VALUE_DEFAULT, false),
+                            'statusdeclined' => new external_value(PARAM_BOOL, 'Declined status', VALUE_DEFAULT, false),
+                            'statuscompleted' => new external_value(PARAM_BOOL, 'Completed status', VALUE_DEFAULT, false),
+                            'statusviewonly' => new external_value(PARAM_BOOL, 'View only status', VALUE_DEFAULT, false),
                             'viewlink' => new external_value(PARAM_RAW, 'Flag for view button.', VALUE_OPTIONAL, false),
                             'respondlink' => new external_value(PARAM_URL, 'Questionnaire URL.', VALUE_OPTIONAL),
                             'declinelink' => new external_value(PARAM_BOOL, 'Flag for decline button.', VALUE_OPTIONAL, false)

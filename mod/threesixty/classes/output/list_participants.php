@@ -91,26 +91,22 @@ class list_participants implements renderable, templatable {
             if ($canrespond) {
                 switch ($user->status) {
                     case api::STATUS_IN_PROGRESS: // In Progress.
-                        $member->statusclass = 'label-info';
-                        $member->status = get_string('statusinprogress', 'threesixty');
+                        $member->statusinprogress = true;
                         break;
                     case api::STATUS_COMPLETE: // Completed.
-                        $member->statusclass = 'label-success';
-                        $member->status = get_string('statuscompleted', 'threesixty');
-                        if (!$anonymous) {
-                            $viewonly = true;
-                        } else {
-                            // If anonymous mode and completed, user won't be able to respond anymore.
+                        $member->statuscompleted = true;
+                        // If anonymous mode and completed, user won't be able to respond anymore.
+                        if ($anonymous) {
                             $canrespond = false;
                         }
                         break;
                     case api::STATUS_DECLINED: // Declined.
-                        $member->statusclass = 'label-warning';
-                        $member->status = get_string('statusdeclined', 'threesixty');
+                        $member->statusdeclined = true;
                         // If declined, user won't be able to respond anymore.
                         $canrespond = false;
                         break;
                     default:
+                        $member->statuspending = true;
                         $member->status = get_string('statuspending', 'threesixty');
                         break;
                 }
@@ -124,8 +120,7 @@ class list_participants implements renderable, templatable {
             if ($this->canviewreports) {
                 // When the user can't provide feedback to the participants but can view reports.
                 if (empty($user->statusid)) {
-                    $member->statusclass = 'label-info';
-                    $member->status = get_string('statusviewonly', 'threesixty');
+                    $member->statusviewonly = true;
                 }
                 $reportslink = new moodle_url('/mod/threesixty/report.php');
                 $reportslink->params([

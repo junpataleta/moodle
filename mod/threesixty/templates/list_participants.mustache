@@ -63,7 +63,18 @@
                         {{ name }}
                     </td>
                     <td>
-                        <span class="label {{statusclass}}">{{ status }}</span>
+                        <span class="label
+                            {{#statuspending}}label-default{{/statuspending}}
+                            {{#statusinprogress}}label-info{{/statusinprogress}}
+                            {{#statusviewonly}}label-info{{/statusviewonly}}
+                            {{#statuscompleted}}label-success{{/statuscompleted}}
+                            {{#statusdeclined}}label-warning{{/statusdeclined}}">
+                            {{#statuspending}}{{#str}}statuspending, mod_threesixty{{/str}}{{/statuspending}}
+                            {{#statusinprogress}}{{#str}}statusinprogress, mod_threesixty{{/str}}{{/statusinprogress}}
+                            {{#statuscompleted}}{{#str}}statuscompleted, mod_threesixty{{/str}}{{/statuscompleted}}
+                            {{#statusdeclined}}{{#str}}statusdeclined, mod_threesixty{{/str}}{{/statusdeclined}}
+                            {{#statusviewonly}}{{#str}}statusviewonly, mod_threesixty{{/str}}{{/statusviewonly}}
+                        </span>
                     </td>
                     <td>
                         {{#respondlink}}

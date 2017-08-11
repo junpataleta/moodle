@@ -56,57 +56,69 @@
         ]
     }
 }}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-4">
-            <h4>{{#str}}question{{/str}}</h4>
+<div class="card">
+    <div class="card-block">
+        <div class="pull-left">
+            {{#userselect}}{{> core/url_select }}{{/userselect}}
         </div>
-        <div class="col-md-8">
-            <h4>{{#str}}averagerating, mod_threesixty{{/str}}</h4>
-        </div>
-    </div>
-    {{#ratings}}
-    <div class="row">
-        <div class="col-md-4">
-            {{question}}
-        </div>
-        <div class="col-md-8">
-            {{#averagerating}}
-                <div id="progress-{{itemid}}">
-                    {{averagerating}}
-                </div>
-                <progress class="progress" aria-describedby="progress-{{itemid}}" value="{{progresspercentage}}" max="100"></progress>
-            {{/averagerating}}
-            {{^averagerating}}
-                {{#str}}notapplicableabbr, mod_threesixty{{/str}}
-            {{/averagerating}}
+        <div class="pull-right m-t-1">
+            {{#activitylink}}{{> core/action_link }}{{/activitylink}}
         </div>
     </div>
-    {{/ratings}}
-    <div class="row">
-        <div class="col-md-4">
-        </div>
-        <div class="col-md-8">
-            <h4>{{#str}}comments, mod_threesixty{{/str}}</h4>
-        </div>
+</div>
+<div class="card">
+    <div class="card-header">
+        <h4>{{#str}}ratings, mod_threesixty{{/str}}</h4>
     </div>
-    {{#commentitems}}
-    <div class="row">
-        <div class="col-md-4">
-            {{question}}
-        </div>
-        <div class="col-md-8">
-            <ul>
-                {{#comments}}
-                    <li>
+    <div class="card-block">
+        <ul class="list-group list-group-flush">
+            {{#ratings}}
+                <li class="list-group-item">
+                    <p class="card-text">
+                        <strong>{{question}}</strong>
+                    </p>
+                    {{#averagerating}}
+                        <div class="row">
+                            <div class="col-md-3" id="item-{{id}}">
+                                <p class="text-right">
+                                    {{#str}}averagerating, mod_threesixty, <strong>{{averagerating}}</strong>{{/str}}
+                                </p>
+                            </div>
+                            <div class="col-md-9">
+                                <progress class="progress" aria-describedby="item-{{id}}" value="{{progresspercentage}}" max="100"></progress>
+                            </div>
+                        </div>
+                    {{/averagerating}}
+                    {{^averagerating}}
+                        <p class="font-italic">{{#str}}notapplicableabbr, mod_threesixty{{/str}}</p>
+                    {{/averagerating}}
+                </li>
+            {{/ratings}}
+        </ul>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header">
+        <h4>{{#str}}comments, mod_threesixty{{/str}}</h4>
+    </div>
+    <div class="card-block">
+        {{#commentitems}}
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <p class="card-text">
+                        <strong>{{question}}</strong>
+                    </p>
+                    {{#comments}}
                         <blockquote class="blockquote">
                             <p>{{comment}}</p>
-                            <footer class="blockquote-footer">{{fromuser}}</footer>
+                            <footer class="blockquote-footer"><cite title="{{fromuser}}">{{fromuser}}</cite></footer>
                         </blockquote>
-                    </li>
-                {{/comments}}
+                    {{/comments}}
+                    {{^comments}}
+                        <p class="font-italic">{{#str}}notapplicableabbr, mod_threesixty{{/str}}</p>
+                    {{/comments}}
+                </li>
             </ul>
-        </div>
+        {{/commentitems}}
     </div>
-    {{/commentitems}}
 </div>

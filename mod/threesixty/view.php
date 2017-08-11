@@ -54,7 +54,7 @@ if (has_capability('mod/threesixty:edititems', $context)) {
     echo html_writer::link($edititemsurl, get_string('edititems', 'threesixty'), ['class' => 'btn btn-default']);
 }
 
-$canparticipate = mod_threesixty\api::can_participate($threesixty, $USER->id, $context);
+$canparticipate = mod_threesixty\api::can_respond($threesixty, $USER->id, $context);
 if ($canparticipate !== true) {
    \core\notification::warning($canparticipate);
 }

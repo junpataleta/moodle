@@ -57,8 +57,11 @@ if ($touserid > 0) {
     echo $OUTPUT->context_header($userheading, 3);
 }
 
+$includeself = \mod_threesixty\api::can_respond($threesixtyid, $USER->id, $context) === true;
+$participants = \mod_threesixty\api::get_participants($threesixtyid, $USER->id, $includeself);
+
 $responses = mod_threesixty\api::get_feedback_for_user($threesixtyid, $touserid);
-$responselist = new mod_threesixty\output\report($responses);
+$responselist = new mod_threesixty\output\report($cm->id, $threesixtyid, $responses, $participants);
 $renderer = $PAGE->get_renderer('mod_threesixty');
 echo $renderer->render($responselist);
 

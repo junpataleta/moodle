@@ -340,15 +340,24 @@ class api {
     }
 
     /**
-     * @param $threesixtyid
-     * @param $userid
+     * Function that retrieves the participants for the 360 feedback activity.
+     *
+     * @param int $threesixtyid The 360 instance ID.
+     * @param int $userid The respondent's user ID.
+     * @param bool $includeself Whether to include the respondent in the list.
      * @return array
      */
-    public static function get_participants($threesixtyid, $userid) {
+    public static function get_participants($threesixtyid, $userid, $includeself = false) {
         global $DB;
 
-        $rolecondition = '';
-        $userssqlparams = ['threesixtyid' => $threesixtyid, 'userid' => $userid, 'userid2' => $userid];
+        $userssqlparams = ['threesixtyid' => $threesixtyid, 'userid' => $userid];
+
+        $wheres = [];
+
+        if (!$includeself) {
+            $wheres[] = 'u.id <> :userid2';
+            $userssqlparams['userid2'] = $userid;
+        }
 
         $cm = get_coursemodule_from_instance('threesixty', $threesixtyid);
         $context = context_module::instance($cm->id);
@@ -356,7 +365,7 @@ class api {
         if (!$canviewreports) {
             $role = $DB->get_field('threesixty', 'participantrole', ['id' => $threesixtyid]);
             if ($role != 0) {
-                $rolecondition = "AND u.id IN (
+                $rolecondition = "u.id IN (
                                   SELECT ra.userid 
                                     FROM {role_assignments} ra
                               INNER JOIN {threesixty} ff
@@ -373,21 +382,30 @@ class api {
                 $userssqlparams['threesixtyid2'] = $threesixtyid;
                 $userssqlparams['threesixtyid3'] = $threesixtyid;
                 $userssqlparams['user3'] = $userid;
+
+                $wheres[] = $rolecondition;
             }
         }
 
         $groupmode = groups_get_activity_groupmode($cm);
-        $groupcondition = '';
-
         if ($groupmode != NOGROUPS && !has_capability('moodle/site:accessallgroups', $context)) {
             $usergroups = groups_get_user_groups($cm->course)['0'];
             list($sql, $params) = $DB->get_in_or_equal($usergroups, SQL_PARAMS_NAMED);
-            $groupcondition = "AND u.id IN (
+            $groupcondition = "u.id IN (
                 SELECT gm.userid 
                   FROM {groups_members} gm
                  WHERE gm.groupid $sql 
             )";
             $userssqlparams = array_merge($userssqlparams, $params);
+            $wheres[] = $groupcondition;
+        }
+
+        $wherecondition = '';
+        if (!empty($wheres)) {
+            $wherecondition = implode(' AND ', $wheres);
+            if (trim($wherecondition)) {
+                $wherecondition = 'WHERE ' . $wherecondition;
+            }
         }
 
         $userssql = "SELECT u.id AS userid,
@@ -411,9 +429,7 @@ class api {
                          ON f.id = fs.threesixty 
                             AND fs.touser = u.id 
                             AND fs.fromuser = :userid
-                      WHERE u.id <> :userid2 
-                            $rolecondition
-                            $groupcondition
+                      $wherecondition
                    ORDER BY fs.status ASC,
                             u.lastname ASC";
         $participants = $DB->get_records_sql($userssql, $userssqlparams);
@@ -503,14 +519,14 @@ class api {
     }
 
     /**
-     * Checks if the given user ID can participate in the given 360-degree feedback activity.
+     * Checks if the given user ID can give feedback to other participants in the given 360-degree feedback activity.
      *
      * @param stdClass|int $threesixtyorid The 360-degree feedback activity object or identifier.
      * @param int $userid The user ID.
      * @param context_module $context
      * @return bool|string True if the user can participate. An error message if not.
      */
-    public static function can_participate($threesixtyorid, $userid, context_module $context = null) {
+    public static function can_respond($threesixtyorid, $userid, context_module $context = null) {
         global $DB;
 
         // User can't participate if not enrolled in the course.
