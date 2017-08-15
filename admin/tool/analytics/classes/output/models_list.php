@@ -66,6 +66,18 @@ class models_list implements \renderable, \templatable {
         foreach ($this->models as $model) {
             $modeldata = $model->export();
 
+            // Check if there is a help icon to show.
+            $identifier = $modeldata->target->get_identifier();
+            $component = $modeldata->target->get_component();
+            if (get_string_manager()->string_exists($identifier . '_help', $component)) {
+                $helpicon = new \help_icon($identifier, $component);
+                $modeldata->targethelp = $helpicon->export_for_template($output);
+            } else {
+                // We really want to encourage developers to add help to their targets.
+                debugging("The target '{$modeldata->target}' should include a '" . $identifier . '_help' . "' string to
+                    describe its purpose.", DEBUG_DEVELOPER);
+            }
+
             // Model predictions list.
             if ($model->uses_insights()) {
                 $predictioncontexts = $model->get_predictions_contexts();
