@@ -85,6 +85,64 @@ function xmldb_threesixty_upgrade($oldversion) {
         // Threesixty savepoint reached.
         upgrade_mod_savepoint(true, 2017020200.01, 'threesixty');
     }
+
+    if ($oldversion < 2017081600) {
+
+        // Define field publish_responses to be added to threesixty.
+        $table = new xmldb_table('threesixty');
+
+        // Conditionally launch drop field status.
+        $field = new xmldb_field('status', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'email_notification');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Conditionally launch add field publish_responses.
+        $field = new xmldb_field('publish_responses', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'completionsubmit');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Conditionally launch drop field multiple_submit.
+        $field = new xmldb_field('multiple_submit');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Conditionally launch drop field autonumbering.
+        $field = new xmldb_field('autonumbering');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Conditionally launch drop field site_after_submit.
+        $field = new xmldb_field('site_after_submit');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Conditionally launch drop field page_after_submit.
+        $field = new xmldb_field('page_after_submit');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Conditionally launch drop field page_after_submitformat.
+        $field = new xmldb_field('page_after_submitformat');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Conditionally launch drop field publish_stats.
+        $field = new xmldb_field('publish_stats');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Threesixty savepoint reached.
+        upgrade_mod_savepoint(true, 2017081600, 'threesixty');
+    }
+
     return true;
 }
 

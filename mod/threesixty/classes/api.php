@@ -213,6 +213,11 @@ class api {
         ];
     }
 
+    public static function get_item_by_id($itemid) {
+        global $DB;
+        return $DB->get_record('threesixty_item', ['id' => $itemid], '*', MUST_EXIST);
+    }
+
     /**
      * Moves the item up.
      *

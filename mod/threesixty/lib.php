@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library of functions and constants for module feedback
- * includes the main-part of feedback-functions
+ * Library of functions and constants for module threesixty
+ * includes the main-part of threesixty-functions
  *
  * @package mod_threesixty
- * @copyright Andreas Grabs
+ * @copyright 2017 Jun Pataleta
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
@@ -40,27 +40,19 @@ function threesixty_add_instance($threesixty) {
 
     $threesixty->timemodified = time();
 
-    if (empty($threesixty->site_after_submit)) {
-        $threesixty->site_after_submit = '';
-    }
-
-    if (empty($threesixty->page_after_submit)) {
-        $threesixty->page_after_submit = '';
-    }
-
     // Insert the 360-degree feedback into the DB.
-    if ($feedbackid = $DB->insert_record("threesixty", $threesixty)) {
-        $threesixty->id = $feedbackid;
+    if ($threesixtyid = $DB->insert_record("threesixty", $threesixty)) {
+        $threesixty->id = $threesixtyid;
 
         if (!isset($threesixty->coursemodule)) {
-            $cm = get_coursemodule_from_id('feedback', $threesixty->id);
+            $cm = get_coursemodule_from_id('threesixty', $threesixty->id);
             $threesixty->coursemodule = $cm->id;
         }
 
-        $DB->update_record('feedback', $threesixty);
+        $DB->update_record('threesixty', $threesixty);
     }
 
-    return $feedbackid;
+    return $threesixtyid;
 }
 
 /**
@@ -106,76 +98,4 @@ function threesixty_delete_instance($id) {
 
     // Finally, delete the 360-degree feedback.
     return $DB->delete_records("threesixty", array("id"=>$id));
-}
-
-/**
- * this saves the temporary saved values permanently
- *
- * @global object
- * @param object $feedbackcompletedtmp the temporary completed
- * @param object $feedbackcompleted the target completed
- * @param int $userid
- * @return int the id of the completed
- */
-function threesixty_save_values($feedbackcompletedtmp, $statusid) {
-    global $DB, $USER;
-
-    $statusrecord = $DB->get_record('threesixty_submission', array('id' => $statusid), '*', MUST_EXIST);
-
-    $tmpcplid = $feedbackcompletedtmp->id;
-
-    //save all the new values from feedback_valuetmp
-    //get all values of tmp-completed
-    $params = array('completed'=>$tmpcplid);
-    if (!$values = $DB->get_records('feedback_valuetmp', $params)) {
-        return false;
-    }
-
-    $feedbackid = $feedbackcompletedtmp->feedback;
-    $feedback = $DB->get_record('feedback', array('id' => $feedbackid));
-
-    $fromuser = 0;
-    if ($feedback->anonymous == FEEDBACK_ANONYMOUS_NO) {
-        $fromuser = $statusrecord->fromuser;
-    }
-
-    foreach ($values as $value) {
-        $response = new stdClass();
-        $response->feedback = $feedbackid;
-        $response->item = $value->item;
-        $response->fromuser = $fromuser;
-        $response->touser = $statusrecord->touser;
-        $response->value = $value->value;
-
-        $DB->insert_record('feedback_360_responses', $response);
-    }
-
-    //drop all the tmpvalues
-    $DB->delete_records('feedback_valuetmp', array('completed'=>$tmpcplid));
-    $DB->delete_records('feedback_completedtmp', array('id'=>$tmpcplid));
-
-    if ($statusrecord) {
-        $statusrecord->status = \mod_threesixty\constants::STATUS_COMPLETE;
-        $DB->update_record('threesixty_submission', $statusrecord);
-    }
-
-    // TODO Event
-    // Trigger event for the delete action we performed.
-//    $cm = get_coursemodule_from_instance('feedback', $feedbackcompletedtmp->feedback);
-//    $event = \mod_threesixty\event\response_submitted::create(array(
-//        'relateduserid' => $USER->id,
-//        'objectid' => $feedbackcompletedtmp->id,
-//        'context' => context_module::instance($cm->id),
-//        'anonymous' => ($feedbackcompletedtmp->anonymous_response == FEEDBACK_ANONYMOUS_YES),
-//        'other' => array(
-//            'cmid' => $cm->id,
-//            'instanceid' => $feedbackcompletedtmp->feedback,
-//            'anonymous' => $feedbackcompletedtmp->anonymous_response // Deprecated.
-//        )
-//    ));
-//
-//    $event->add_record_snapshot('threesixty_submission', $statusrecord);
-//    $event->trigger();
-
-    return $statusrecord->id;
 }

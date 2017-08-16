@@ -107,7 +107,6 @@ class list_participants implements renderable, templatable {
                         break;
                     default:
                         $member->statuspending = true;
-                        $member->status = get_string('statuspending', 'threesixty');
                         break;
                 }
 

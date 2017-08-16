@@ -78,9 +78,17 @@ class external extends external_api {
      * @return string welcome message
      */
     public static function add_question($question, $type) {
+        global $USER;
+
         $warnings = [];
 
         $params = external_api::validate_parameters(self::add_question_parameters(), ['question' => $question, 'type' => $type]);
+
+        // Validate context and capability.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+
+        require_capability('mod/threesixty:editquestions', $context);
 
         $dataobj = new stdClass();
         $dataobj->question = $params['question'];
@@ -122,6 +130,8 @@ class external extends external_api {
      * @return string welcome message
      */
     public static function update_question($id, $question, $type) {
+        global $USER;
+
         $warnings = [];
 
         $params = external_api::validate_parameters(self::update_question_parameters(), [
@@ -130,6 +140,12 @@ class external extends external_api {
                 'type' => $type
             ]
         );
+
+        // Validate context and capability.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+
+        require_capability('mod/threesixty:editquestions', $context);
 
         $dataobj = new stdClass();
         $dataobj->id = $params['id'];
@@ -170,15 +186,25 @@ class external extends external_api {
     }
 
     /**
-     * The function itself
-     * @return string welcome message
+     * Delete a question from the question bank.
+     *
+     * @param int $id The question ID.
+     * @return array
      */
     public static function delete_question($id) {
+        global $USER;
+
         $warnings = [];
 
         $params = external_api::validate_parameters(self::delete_question_parameters(), ['id' => $id]);
 
         $id = $params['id'];
+
+        // Validate context and capability.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+
+        require_capability('mod/threesixty:editquestions', $context);
 
         $result = api::delete_question($id);
 
@@ -277,6 +303,14 @@ class external extends external_api {
             'questionids' => $questionids
         ]);
 
+        // Validate context and capability.
+        list($course, $cm) = get_course_and_cm_from_instance($threesixtyid, 'threesixty');
+        $cmid = $cm->id;
+        $context = context_module::instance($cmid);
+        self::validate_context($context);
+
+        require_capability('mod/threesixty:edititems', $context);
+
         $result = api::set_items($params['threesixtyid'], $params['questionids']);
 
         return [
@@ -362,6 +396,15 @@ class external extends external_api {
 
         $id = $params['itemid'];
 
+        // Validate context and capability.
+        $item = api::get_item_by_id($id);
+        list($course, $cm) = get_course_and_cm_from_instance($item->threesixty, 'threesixty');
+        $cmid = $cm->id;
+        $context = context_module::instance($cmid);
+        self::validate_context($context);
+
+        require_capability('mod/threesixty:edititems', $context);
+
         $result = api::delete_item($id);
 
         return [
@@ -406,6 +449,15 @@ class external extends external_api {
         $params = external_api::validate_parameters(self::move_item_up_parameters(), ['itemid' => $id]);
 
         $id = $params['itemid'];
+
+        // Validate context and capability.
+        $item = api::get_item_by_id($id);
+        list($course, $cm) = get_course_and_cm_from_instance($item->threesixty, 'threesixty');
+        $cmid = $cm->id;
+        $context = context_module::instance($cmid);
+        self::validate_context($context);
+
+        require_capability('mod/threesixty:edititems', $context);
 
         $result = api::move_item_up($id);
         if (!$result) {
@@ -454,6 +506,15 @@ class external extends external_api {
         $params = external_api::validate_parameters(self::move_item_down_parameters(), ['itemid' => $id]);
 
         $id = $params['itemid'];
+
+        // Validate context and capability.
+        $item = api::get_item_by_id($id);
+        list($course, $cm) = get_course_and_cm_from_instance($item->threesixty, 'threesixty');
+        $cmid = $cm->id;
+        $context = context_module::instance($cmid);
+        self::validate_context($context);
+
+        require_capability('mod/threesixty:edititems', $context);
 
         $result = api::move_item_down($id);
         if (!$result) {
@@ -507,6 +568,13 @@ class external extends external_api {
         $statusid = $params['statusid'];
         $reason = $params['declinereason'];
 
+        // Validate context.
+        $submission = api::get_submission($statusid);
+        list($course, $cm) = get_course_and_cm_from_instance($submission->threesixty, 'threesixty');
+        $cmid = $cm->id;
+        $context = context_module::instance($cmid);
+        self::validate_context($context);
+
         $result = api::decline_feedback($statusid, $reason);
         return [
             'result' => $result,
@@ -522,7 +590,7 @@ class external extends external_api {
         return new external_function_parameters(
             [
                 'statusid' => new external_value(PARAM_INT, 'The item ID.'),
-                'declinereason' => new external_value(PARAM_TEXT, 'The reason for declining the feedback request.', VALUE_OPTIONAL)
+                'declinereason' => new external_value(PARAM_TEXT, 'The reason for declining the feedback request.', VALUE_DEFAULT)
             ]
         );
     }
@@ -592,7 +660,6 @@ class external extends external_api {
                     new external_single_structure(
                         [
                             'name' => new external_value(PARAM_TEXT, 'The target participant name.'),
-                            'status' => new external_value(PARAM_TEXT, 'The current feedback status for the target participant.'),
                             'statuspending' => new external_value(PARAM_BOOL, 'Pending status', VALUE_DEFAULT, false),
                             'statusinprogress' => new external_value(PARAM_BOOL, 'In progress status', VALUE_DEFAULT, false),
                             'statusdeclined' => new external_value(PARAM_BOOL, 'Declined status', VALUE_DEFAULT, false),

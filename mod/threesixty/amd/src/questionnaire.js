@@ -29,7 +29,7 @@ define(['jquery',
     'core/str',
     'core/modal_factory',
     'core/modal_events'
-], function($, templates, notification, ajax, str, ModalFactory, ModalEvents) {
+], function($, Templates, Notification, Ajax, Str, ModalFactory, ModalEvents) {
 
     var responses = [];
     var questionnaire = function() {
@@ -44,7 +44,7 @@ define(['jquery',
         var toUser = questionnaireTable.data('touserid');
         var threesixtyId = questionnaireTable.data('threesixtyid');
 
-        var promises = ajax.call([
+        var promises = Ajax.call([
             {
                 methodname: 'mod_threesixty_get_responses',
                 args: {
@@ -169,9 +169,9 @@ define(['jquery',
                 }
             ];
 
-            str.get_strings(messageStrings, 'mod_threesixty').done(function(messages) {
+            Str.get_strings(messageStrings, 'mod_threesixty').done(function(messages) {
                 showConfirmationDialogue(messages[0], messages[1], threesixtyId, toUser, responses, finalise);
-            }).fail(notification.exception);
+            }).fail(Notification.exception);
         } else {
             // Just save the responses.
             submitResponses(threesixtyId, toUser, responses, finalise);
@@ -179,7 +179,7 @@ define(['jquery',
     }
 
     function submitResponses(threesixtyId, toUser, responses, finalise) {
-        var promises = ajax.call([
+        var promises = Ajax.call([
             {
                 methodname: 'mod_threesixty_save_responses',
                 args: {
@@ -203,7 +203,7 @@ define(['jquery',
                 }
             ];
 
-            str.get_strings(messageStrings, 'mod_threesixty').done(function(messages) {
+            Str.get_strings(messageStrings).done(function(messages) {
                 var notificationData = {};
                 if (response.result) {
                     notificationData.message = messages[0];
@@ -212,22 +212,26 @@ define(['jquery',
                     notificationData.message = messages[1];
                     notificationData.type = "error";
                 }
-                notification.addNotification(notificationData);
-            }).fail(notification.exception);
+                Notification.addNotification(notificationData);
+            }).fail(Notification.exception);
 
             if (finalise) {
                 window.location = response.redirurl;
             }
-        }).fail(notification.exception);
+        }).fail(Notification.exception);
     }
 
     function showConfirmationDialogue(title, confirmationMessage, threesixtyId, toUser, responses, finalise) {
-        ModalFactory.create({
+        var confirmButtonTextPromise = Str.get_string('finalise', 'mod_threesixty');
+        var confirmModalPromise = ModalFactory.create({
             title: title,
             body: confirmationMessage,
             large: true,
-            type: ModalFactory.types.CONFIRM
-        }).done(function(modal) {
+            type: ModalFactory.types.SAVE_CANCEL
+        });
+        $.when(confirmButtonTextPromise, confirmModalPromise).done(function(confirmButtonText, modal) {
+            modal.setSaveButtonText(confirmButtonText);
+
             // Display the dialogue.
             modal.show();
 
@@ -237,10 +241,11 @@ define(['jquery',
                 modal.setBody('');
             });
 
-            modal.getRoot().on(ModalEvents.yes, function() {
+            modal.getRoot().on(ModalEvents.save, function() {
                 submitResponses(threesixtyId, toUser, responses, finalise);
             });
         });
+
     }
 
     return questionnaire;

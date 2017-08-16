@@ -53,6 +53,7 @@ $string['errornotenrolled'] = 'You need to be enrolled in this course in order t
 $string['errornothingtodecline'] = 'There is no feedback to decline to.';
 $string['errorresponsesavefailed'] = 'An error has occured while the responses are being saved. Please try again later.';
 $string['feedbacksurvey'] = 'Feedback survey for {$a}';
+$string['finalise'] = 'Finalise';
 $string['finaliseanonymousfeedback'] = 'Finalise anonymous feedback';
 $string['gotoquestionbank'] = 'Go to the 360° question bank';
 $string['labelactions'] = 'Actions';

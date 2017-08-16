@@ -69,34 +69,6 @@ $capabilities = array(
         )
     ),
 
-    'mod/threesixty:complete' => array(
-        'riskbitmask' => RISK_SPAM,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'student' => CAP_ALLOW
-        )
-    ),
-
-    'mod/threesixty:viewanalysepage' => array(
-        'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'student' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-
-    'mod/threesixty:mapcourse' => array(
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'manager' => CAP_ALLOW
-        )
-    ),
-
     'mod/threesixty:viewreports' => array(
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
