@@ -53,7 +53,7 @@
 }}
 <form method="post" action="{{action}}" class="form-inline m-b-2" role="search">
     <label for="unified-filters" class="sr-only">{{#str}}filters{{/str}}</label>
-    <select name="unified-filters[]" id="unified-filters" multiple="multiple" data-originaloptionsjson="{{originaloptionsjson}}">
+    <select name="unified-filters[]" id="unified-filters" multiple="multiple" data-originaloptionsjson="{{originaloptionsjson}}" hidden>
         {{#filteroptions}}
             <option value="{{value}}" {{#selected}}selected="selected"{{/selected}}>{{{label}}}</option>
         {{/filteroptions}}
