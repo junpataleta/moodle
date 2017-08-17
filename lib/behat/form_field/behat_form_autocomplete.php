@@ -50,7 +50,7 @@ class behat_form_autocomplete extends behat_form_text {
         $this->field->setValue($value);
         // After the value is set, there is a 400ms throttle and then search. So adding 2 sec. delay to ensure both
         // throttle + search finishes.
-        sleep(2);
+        $this->session->wait(behat_base::REDUCED_TIMEOUT * 1000);
         $id = $this->field->getAttribute('id');
         $js = ' require(["jquery"], function($) { $(document.getElementById("'.$id.'")).trigger("behat:set-value"); }); ';
         $this->session->executeScript($js);
