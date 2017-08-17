@@ -32,6 +32,7 @@ require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
 $submission = \mod_threesixty\api::get_submission($submissionid);
+$threesixty = \mod_threesixty\api::get_instance($submission->threesixty);
 
 $PAGE->set_context($context);
 $PAGE->set_cm($cm, $course);
@@ -39,31 +40,41 @@ $PAGE->set_pagelayout('incourse');
 
 $PAGE->set_url('/mod/threesixty/view.php', ['id' => $cm->id]);
 $PAGE->set_heading($course->fullname);
-$title = get_string('modulename', 'mod_threesixty');
+$title = format_string($threesixty->name);
 $PAGE->set_title($title);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($title));
+echo $OUTPUT->heading(get_string('providefeedback', 'mod_threesixty'), 3);
 
-// Render user heading.
-if ($submission->touser > 0) {
-    $touser = core_user::get_user($submission->touser);
-    $userheading = [
-        'heading' => fullname($touser),
-        'user' => $touser,
-        'usercontext' => context_user::instance($submission->touser)
-    ];
-    echo $OUTPUT->context_header($userheading, 3);
+if (\mod_threesixty\api::is_ready($threesixty)) {
+    // Render user heading.
+    if ($submission->touser > 0) {
+        $touser = core_user::get_user($submission->touser);
+        $userheading = [
+            'heading' => fullname($touser),
+            'user' => $touser,
+            'usercontext' => context_user::instance($submission->touser)
+        ];
+
+        $contextheader = $OUTPUT->context_header($userheading, 3);
+        echo html_writer::div($contextheader, 'card card-block');
+    }
+
+    // Set status to in progress if pending.
+    if ($submission->status == \mod_threesixty\api::STATUS_PENDING) {
+        \mod_threesixty\api::set_completion($submission->id, \mod_threesixty\api::STATUS_IN_PROGRESS);
+    }
+
+    // 360-degree feedback question list.
+    $questionslist = new mod_threesixty\output\questionnaire($submission);
+    $questionslistoutput = $PAGE->get_renderer('mod_threesixty');
+    echo $questionslistoutput->render($questionslist);
+
+} else {
+    \core\notification::error(get_string('instancenotready', 'mod_threesixty'));
+    $viewurl = new moodle_url('/mod/threesixty/view.php', ['id' => $cm->id]);
+    echo html_writer::link($viewurl,  get_string('backto360dashboard', 'mod_threesixty'));
 }
-
-// Set status to in progress if pending.
-if ($submission->status == \mod_threesixty\api::STATUS_PENDING) {
-    \mod_threesixty\api::set_completion($submission->id, \mod_threesixty\api::STATUS_IN_PROGRESS);
-} 
-
-// 360-degree feedback question list.
-$questionslist = new mod_threesixty\output\questionnaire($submission);
-$questionslistoutput = $PAGE->get_renderer('mod_threesixty');
-echo $questionslistoutput->render($questionslist);
 
 echo $OUTPUT->footer();

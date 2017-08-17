@@ -34,17 +34,20 @@ $context = context_module::instance($cm->id);
 
 require_capability('mod/threesixty:viewreports', $context);
 
+$threesixty = \mod_threesixty\api::get_instance($threesixtyid);
+
 $PAGE->set_context($context);
 $PAGE->set_cm($cm, $course);
 $PAGE->set_pagelayout('incourse');
 
 $PAGE->set_url('/mod/threesixty/view.php', ['id' => $cm->id]);
 $PAGE->set_heading($course->fullname);
-$title = get_string('modulename', 'mod_threesixty');
+$title = format_string($threesixty->name);
 $PAGE->set_title($title);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($title));
+echo $OUTPUT->heading(get_string('viewfeedbackforuser', 'mod_threesixty'), 3);
 
 // Render user heading.
 if ($touserid > 0) {
@@ -54,7 +57,8 @@ if ($touserid > 0) {
         'user' => $touser,
         'usercontext' => context_user::instance($touserid)
     ];
-    echo $OUTPUT->context_header($userheading, 3);
+    $contextheader = $OUTPUT->context_header($userheading, 3);
+    echo html_writer::div($contextheader, 'card card-block');
 }
 
 $includeself = \mod_threesixty\api::can_respond($threesixtyid, $USER->id, $context) === true;

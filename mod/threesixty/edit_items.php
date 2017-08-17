@@ -24,8 +24,6 @@
 
 require_once("../../config.php");
 
-global $DB, $OUTPUT, $PAGE;
-
 $instanceid = required_param('id', PARAM_INT);
 $itemid = optional_param('itemid', 0, PARAM_INT);
 
@@ -36,25 +34,25 @@ if ($instanceid == 0) {
     print_error('error360notfound', 'mod_threesixty', $viewurl);
 }
 
-$PAGE->set_url('/mod/threesixty/edit_items.php', array('id' => $instanceid));
+$PAGE->set_url('/mod/threesixty/edit_items.php', ['id' => $instanceid]);
 
 if (!$cm = get_coursemodule_from_id('threesixty', $instanceid)) {
     print_error('invalidcoursemodule');
 }
 
-if (!$course = $DB->get_record("course", array("id" => $cm->course))) {
+if (!$course = $DB->get_record("course", ["id" => $cm->course])) {
     print_error('coursemisconf');
 }
 
 require_login($course, true, $cm);
 
-if (!$threesixty = $DB->get_record("threesixty", array("id" => $cm->instance))) {
+if (!$threesixty = $DB->get_record("threesixty", ["id" => $cm->instance])) {
     print_error('error360notfound', 'mod_threesixty', $viewurl);
 }
 
 // Check capability to edit items.
 $context = context_module::instance($cm->id);
-if (!has_capability('mod/threesixty:edititems', $context)) {
+if (!\mod_threesixty\api::can_edit_items($threesixty->id, $context)) {
     print_error('nocaptoedititems', 'mod_threesixty', $viewurl);
 }
 
@@ -68,6 +66,7 @@ $PAGE->set_title($threesixty->name);
 echo $OUTPUT->header();
 /// Print the main part of the page.
 echo $OUTPUT->heading(format_string($threesixty->name));
+echo $OUTPUT->heading(get_string('edititems', 'mod_threesixty'), 3);
 
 // 360-degree feedback item list.
 $itemslist = new mod_threesixty\output\list_360_items($instanceid, $course->id, $threesixty->id);

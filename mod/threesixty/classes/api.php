@@ -4,6 +4,7 @@ namespace mod_threesixty;
 
 use context_module;
 use moodle_exception;
+use moodle_url;
 use stdClass;
 
 class api {
@@ -25,6 +26,9 @@ class api {
     const MOVE_DOWN = 2;
 
     const PARTICIPANT_ROLE_ALL = 0;
+
+    const INSTANCE_NOT_READY = 0;
+    const INSTANCE_READY = 1;
 
     /**
      * Fetches the 360-degree feedback instance.
@@ -775,5 +779,62 @@ class api {
         }
 
         return $items;
+    }
+
+    /**
+     * Whether the 360 instance is ready for use.
+     *
+     * @param stdClass|int $threesixtyorid The 360 object or ID.
+     * @return bool
+     */
+    public static function is_ready($threesixtyorid) {
+        global $DB;
+        $status = null;
+        $threesixtyid = null;
+        if (is_object($threesixtyorid)) {
+            if (isset($threesixtyorid->status)) {
+                $status = $threesixtyorid->status;
+            } else {
+                $threesixtyid = $threesixtyorid->id;
+            }
+        } else {
+            $threesixtyid = $threesixtyorid;
+        }
+        if (!empty($threesixtyid) && empty($status)) {
+            $status = $DB->get_field('threesixty', 'status', ['id' => $threesixtyid]);
+        }
+        return $status == self::INSTANCE_READY;
+    }
+
+    /**
+     * Whether the user has the capability to edit items.
+     *
+     * @param int $threesixtyid The 360 instance ID.
+     * @return bool
+     */
+    public static function can_edit_items($threesixtyid, $context = null) {
+        if (empty($context)) {
+            list($course, $cm) = get_course_and_cm_from_instance($threesixtyid, 'threesixty');
+            $context = context_module::instance($cm->id);
+        }
+        return has_capability('mod/threesixty:edititems', $context);
+    }
+
+    /**
+     * Make the 360 instance ready for use by the participants.
+     *
+     * @param int $threesixtyid The 360 instance ID.
+     * @return bool
+     * @throws moodle_exception
+     */
+    public static function make_ready($threesixtyid) {
+        global $DB;
+        list($course, $cm) = get_course_and_cm_from_instance($threesixtyid, 'threesixty');
+        $context = context_module::instance($cm->id);
+        if (!self::can_edit_items($threesixtyid, $context)) {
+            $url = new moodle_url('/mod/threesixty/view.php', ['id' => $cm->id]);
+            throw new moodle_exception('nocaptoedititems', 'mod_threesixty', $url);
+        }
+        return $DB->set_field('threesixty', 'status', self::INSTANCE_READY, ['id' => $threesixtyid]);
     }
 }
