@@ -68,6 +68,9 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($threesixty->name));
 echo $OUTPUT->heading(get_string('edititems', 'mod_threesixty'), 3);
 
+$viewurl = new moodle_url('/mod/threesixty/view.php', ['id' => $cm->id]);
+echo html_writer::link($viewurl,  get_string('backto360dashboard', 'mod_threesixty'), ['class' => 'pull-right']);
+
 // 360-degree feedback item list.
 $itemslist = new mod_threesixty\output\list_360_items($instanceid, $course->id, $threesixty->id);
 $itemslistoutput = $PAGE->get_renderer('mod_threesixty');
