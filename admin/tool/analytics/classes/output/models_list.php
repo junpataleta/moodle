@@ -100,6 +100,20 @@ class models_list implements \renderable, \templatable {
                 $modeldata->indicators = $indicators;
             }
 
+            // Ok, time for the time splitting method.
+            if (!empty($modeldata->timesplitting)) {
+                $identifier = $modeldata->timesplitting->get_identifier();
+                $component = $modeldata->timesplitting->get_component();
+                if (get_string_manager()->string_exists($identifier . '_help', $component)) {
+                    $helpicon = new \help_icon($identifier, $component);
+                    $modeldata->timesplittinghelp = $helpicon->export_for_template($output);
+                } else {
+                    // We really want to encourage developers to add help to their targets.
+                    debugging("The time splitting method '{$modeldata->timesplitting}' should include a
+                        '" . $identifier . '_help' . "' string to describe its purpose.", DEBUG_DEVELOPER);
+                }
+            }
+
             // Model predictions list.
             if ($model->uses_insights()) {
                 $predictioncontexts = $model->get_predictions_contexts();
