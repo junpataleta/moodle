@@ -78,6 +78,28 @@ class models_list implements \renderable, \templatable {
                     describe its purpose.", DEBUG_DEVELOPER);
             }
 
+            // Let's do the same thing for indicators.
+            if (!empty($modeldata->indicators)) {
+                $indicators = array();
+                foreach ($modeldata->indicators as $ind) {
+                    // Create the indicator with the details we want for the context.
+                    $indicator = new \stdClass();
+                    $indicator->name = $ind->out();
+                    $identifier = $ind->get_identifier();
+                    $component = $ind->get_component();
+                    if (get_string_manager()->string_exists($identifier . '_help', $component)) {
+                        $helpicon = new \help_icon($identifier, $component);
+                        $indicator->help = $helpicon->export_for_template($output);
+                    } else {
+                        // We really want to encourage developers to add help to their indicators.
+                        debugging("The indicator '{$ind}' should include a '" . $identifier . '_help' . "' string to
+                            describe its purpose.", DEBUG_DEVELOPER);
+                    }
+                    $indicators[] = $indicator;
+                }
+                $modeldata->indicators = $indicators;
+            }
+
             // Model predictions list.
             if ($model->uses_insights()) {
                 $predictioncontexts = $model->get_predictions_contexts();
