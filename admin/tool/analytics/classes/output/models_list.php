@@ -74,7 +74,7 @@ class models_list implements \renderable, \templatable {
                 $modeldata->targethelp = $helpicon->export_for_template($output);
             } else {
                 // We really want to encourage developers to add help to their targets.
-                debugging("The target '{$modeldata->target}' should include a '" . $identifier . '_help' . "' string to
+                debugging("The target '{$modeldata->target}' should include a '{$identifier}_help' string to
                     describe its purpose.", DEBUG_DEVELOPER);
             }
 
