@@ -3949,10 +3949,9 @@ class context_header implements renderable {
                 }
             }
 
+            $class = 'btn btn-default';
             if (isset($button['linkattributes']['class'])) {
-                $class = $button['linkattributes']['class'] . ' btn';
-            } else {
-                $class = 'btn';
+                $class = $button['linkattributes']['class'] . ' ' . $class;
             }
             // Add the bootstrap 'btn' class for formatting.
             $this->additionalbuttons[$buttontype]['linkattributes'] = array_merge($button['linkattributes'],

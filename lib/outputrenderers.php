@@ -4279,12 +4279,14 @@ EOD;
             $headings = $this->heading($contextheader->heading, $contextheader->headinglevel);
         }
 
-        $html .= html_writer::tag('div', $headings, array('class' => 'page-header-headings'));
+        $html .= html_writer::start_div();
+        $html .= html_writer::div($headings, 'page-header-headings');
 
         // Buttons.
         if (isset($contextheader->additionalbuttons)) {
             $html .= html_writer::start_div('btn-group header-button-group');
             foreach ($contextheader->additionalbuttons as $button) {
+
                 if (!isset($button->page)) {
                     // Include js for messaging.
                     if ($button['buttontype'] === 'togglecontact') {
@@ -4295,16 +4297,24 @@ EOD;
                         'role' => 'presentation'
                     ));
                     $image .= html_writer::span($button['title'], 'header-button-title');
+                    $icon = new pix_icon($button['formattedimage'],$button['title'], 'moodle', array(
+                        'class' => 'iconsmall',
+                        'role' => 'presentation'
+                    ));
+                    $buttonlink = new action_link($button['url'], $button['title'], null, $button['linkattributes'], $icon);
                 } else {
                     $image = html_writer::empty_tag('img', array(
                         'src' => $button['formattedimage'],
                         'role' => 'presentation'
                     ));
                 }
+
+
                 $html .= html_writer::link($button['url'], html_writer::tag('span', $image), $button['linkattributes']);
             }
             $html .= html_writer::end_div();
         }
+        $html .= html_writer::end_div();
         $html .= html_writer::end_div();
 
         return $html;
