@@ -92,7 +92,7 @@ $PAGE->set_other_editing_capability('moodle/course:manageactivities');
 // are related to this one.
 $node = $PAGE->settingsnav->find('users', navigation_node::TYPE_CONTAINER);
 if ($node) {
-    $node->forceopen();
+    $node->force_open();
 }
 
 echo $OUTPUT->header();
