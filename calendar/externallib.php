@@ -138,7 +138,12 @@ class core_calendar_external extends external_api {
                                             new external_value(PARAM_INT, 'group ids')
                                             , 'List of group ids for which events should be returned',
                                             VALUE_DEFAULT, array(), NULL_ALLOWED
-                                                )
+                                                ),
+                                    'categoryids' => new external_multiple_structure(
+                                            new external_value(PARAM_INT, 'Category ids'),
+                                            'List of category ids for which events will be returned',
+                                    VALUE_DEFAULT, [], NULL_ALLOWED
+                                ),
                             ), 'Event details', VALUE_DEFAULT, array()),
                     'options' => new external_single_structure(
                             array(
@@ -177,7 +182,7 @@ class core_calendar_external extends external_api {
 
         // Parameter validation.
         $params = self::validate_parameters(self::get_calendar_events_parameters(), array('events' => $events, 'options' => $options));
-        $funcparam = array('courses' => array(), 'groups' => array());
+        $funcparam = array('courses' => array(), 'groups' => array(), 'categories' => array());
         $hassystemcap = has_capability('moodle/calendar:manageentries', context_system::instance());
         $warnings = array();
 
@@ -222,6 +227,63 @@ class core_calendar_external extends external_api {
             $funcparam['groups'] = $groups;
         }
 
+        $categories = [];
+        if (empty($params['events']['categoryids']) && !empty($courses)) {
+            list($wheresql, $sqlparams) = $DB->get_in_or_equal($courses);
+            $wheresql = "id $wheresql";
+            $courseswithcategory = $DB->get_records_select('course', $wheresql, $sqlparams);
+
+            // Grab the list of course categories for the requested course list.
+            $coursecategories = [];
+            foreach ($courseswithcategory as $course) {
+                if (empty($course->visible)) {
+                    if (!has_capability('moodle/course:viewhidden', context_course::instance($course->id))) {
+                        continue;
+                    }
+                }
+                $category = \coursecat::get($course->category);
+                $coursecategories[] = $category;
+            }
+
+            foreach (\coursecat::get_all() as $category) {
+                if (has_capability('moodle/category:manage', $category->get_context(), $USER, false)) {
+                    // If a user can manage a category, then they can see all child categories. as well as all parent categories.
+                    $categories[] = $category->id;
+
+                    foreach (\coursecat::get_all() as $cat) {
+                        if (array_search($category->id, $cat->get_parents()) !== false) {
+                            $categories[] = $cat->id;
+                        }
+                    }
+                    $categories = array_merge($categories, $category->get_parents());
+                } else if (isset($coursecategories[$category->id])) {
+                    // The user has access to a course in this category.
+                    // Fetch all of the parents too.
+                    $categories = array_merge($categories, [$category->id], $category->get_parents());
+                    $categories[] = $category->id;
+                }
+            }
+        } else {
+            // Build the category list.
+            // This includes the current category.
+            $categories = [];
+            foreach ($params['events']['categoryids'] as $categoryid) {
+                $category = \coursecat::get($categoryid);
+
+                // All of its descendants.
+                foreach (\coursecat::get_all() as $category) {
+                    if (array_search($categoryid, $category->get_parents()) !== false) {
+                        $categories[] = $category->id;
+                    }
+                }
+
+                // And all of its parents.
+                $categories = array_merge($categories, $category->get_parents());
+            }
+        }
+
+        $funcparam['categories'] = array_unique($categories);
+
         // Do we need user events?
         if (!empty($params['options']['userevents'])) {
             $funcparam['users'] = array($USER->id);
@@ -241,7 +303,8 @@ class core_calendar_external extends external_api {
 
         // Event list does not check visibility and permissions, we'll check that later.
         $eventlist = calendar_get_legacy_events($params['options']['timestart'], $params['options']['timeend'],
-            $funcparam['users'], $funcparam['groups'], $funcparam['courses'], true, $params['options']['ignorehidden']);
+                $funcparam['users'], $funcparam['groups'], $funcparam['courses'], true,
+                $params['options']['ignorehidden'], $funcparam['categories']);
 
         // WS expects arrays.
         $events = array();
