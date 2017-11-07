@@ -298,6 +298,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         // Create a few stuff to test with.
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
+        $category = $this->getDataGenerator()->create_category();
         $record = new stdClass();
         $record->courseid = $course->id;
         $group = $this->getDataGenerator()->create_group($record);
@@ -341,7 +342,13 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $record->groupid = $group->id;
         $groupevent = $this->create_calendar_event('group', $USER->id, 'group', 0, time(), $record);
 
-        $paramevents = array ('eventids' => array($siteevent->id), 'courseids' => array($course->id), 'groupids' => array($group->id));
+        $paramevents = [
+            'eventids'  => [$siteevent->id],
+            'courseids' => [$course->id],
+            'groupids'  => [$group->id],
+            'categoryids' => [$category->id]
+        ];
+
         $options = array ('siteevents' => true, 'userevents' => true);
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
@@ -468,6 +475,17 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
         // Expect one less.
         $this->assertCount(4, $events['events']);
+
+        $this->setAdminUser();
+        $record = new stdClass();
+        $record->categoryid = $category->id;
+        $categoryevent = $this->create_calendar_event('category', $USER->id, 'category', 0, time(), $record);
+        $paramevents = array ('eventids' => array($categoryevent->id));
+        $options = array ('siteevents' => false, 'userevents' => false, 'timeend' => time() + 7 * WEEKSECS);
+        $events = core_calendar_external::get_calendar_events($paramevents, $options);
+        $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
+        $this->assertEquals(1, count($events['events']));
+        $this->assertEquals(0, count($events['warnings']));
     }
 
     /**
