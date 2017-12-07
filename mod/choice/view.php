@@ -164,8 +164,43 @@ if ((!empty($choice->timeopen)) && ($choice->timeopen > $timenow)) {
 }
 
 if ( (!$current or $choice->allowupdate) and $choiceopen and is_enrolled($context, NULL, 'mod/choice:choose')) {
-// They haven't made their choice yet or updates allowed and choice is open
+    $renderer = $PAGE->get_renderer('mod_choice');
 
+    // Show information on how the results will be published to students.
+    $info = [];
+    // Publish results info.
+    switch ($choice->showresults) {
+        case CHOICE_SHOWRESULTS_NOT:
+            $info[] = get_string('publishnot_info', 'choice');
+            break;
+        case CHOICE_SHOWRESULTS_AFTER_ANSWER:
+            $info[] = get_string('publishafteranswer_info', 'choice');
+            break;
+        case CHOICE_SHOWRESULTS_AFTER_CLOSE:
+            $info[] = get_string('publishafterclose_info', 'choice');
+            break;
+        default:
+            // No need to inform the user in the case of CHOICE_SHOWRESULTS_ALWAYS since it's already obvious that the results are
+            // being published.
+            break;
+    }
+
+    // Info about the privacy of published results.
+    if ($choice->showresults != CHOICE_SHOWRESULTS_NOT && $choice->showresults != CHOICE_SHOWRESULTS_ALWAYS) {
+        if ($choice->publish == CHOICE_PUBLISH_ANONYMOUS) {
+            $info[] = get_string('publishanonymous_info', 'choice');
+        } else {
+            $info[] = get_string('publishnames_info', 'choice');
+        }
+    }
+
+    // Show info if necessary.
+    if (!empty($info)) {
+        $publishinfo = $OUTPUT->render_from_template('mod_choice/publish_info', (object)['messages' => $info]);
+        echo $OUTPUT->notification($publishinfo, 'info');
+    }
+
+    // They haven't made their choice yet or updates allowed and choice is open.
     $options = choice_prepare_options($choice, $USER, $cm, $allresponses);
     $renderer = $PAGE->get_renderer('mod_choice');
     echo $renderer->display_options($options, $cm->id, $choice->display, $choice->allowmultiple);
