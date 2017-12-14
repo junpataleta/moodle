@@ -1,0 +1,202 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_choice/publish_name_vertical
+
+    Template for rendering the results table of a choice activity.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * choicename string The name of the choice activity.
+    * canviewresponse boolean Whether the page being rendered is for someone who can view the responses.
+    * pageurl string The form action URL.
+    * coursemoduleid int The course module ID.
+    * sesskey string The session key.
+    * numresponses Array The list of number of responses for each option.
+    * options Array The list of option names.
+    * respondents Array The list of respondents for each option.
+    * canmanagechoices boolean Whether to show the bulk action controls for the responses.
+    * selectoptions object The context data for the "With selected" single select element.
+
+    Example context (json):
+    {
+        "choicename": "Choice activity",
+        "options": ["Not answered yet", "Option 1", "Option 2", "Option 3"],
+        "numresponses": [0, 2, 3, 0],
+        "respondents": [
+            { "users": [] },
+            { "users": [
+                {
+                    "fullname": "Peyton Lynch",
+                    "profileurl": "#",
+                    "profilepic": "<img src='https://randomuser.me/api/portraits/women/60.jpg' class='userpicture' width='35' height='35'>"
+                },
+                {
+                    "fullname": "Joy Wright",
+                    "profileurl": "#",
+                    "profilepic": "<img src='https://randomuser.me/api/portraits/women/8.jpg' class='userpicture' width='35' height='35'>"
+                }
+            ] },
+            { "users": [
+                {
+                    "fullname": "Rosemary Fletcher",
+                    "profileurl": "#",
+                    "profilepic": "<img src='https://randomuser.me/api/portraits/women/76.jpg' class='userpicture' width='35' height='35'>"
+                },
+                {
+                    "fullname": "Jill Campbell",
+                    "profileurl": "#",
+                    "profilepic": "<img src='https://randomuser.me/api/portraits/women/19.jpg' class='userpicture' width='35' height='35'>"
+                },
+                {
+                    "fullname": "Felecia Shaw",
+                    "profileurl": "#",
+                    "profilepic": "<img src='https://randomuser.me/api/portraits/women/25.jpg' class='userpicture' width='35' height='35'>"
+                }
+            ] },
+            { "users": [] }
+        ],
+        "canmanagechoices": true,
+        "selectactions": {
+            "name": "action",
+            "method": "get",
+            "action": "#",
+            "classes": "singleselect",
+            "label": "With selected",
+            "disabled": false,
+            "title": null,
+            "formid": "attemptsform",
+            "id": "single_select",
+            "params": [{
+                "name": "id",
+                "value": "17"
+            }, {
+                "name": "sesskey",
+                "value": "VAAmwDELAI"
+            }, {
+                "name": "action",
+                "value": "delete_confirmation()"
+            }],
+            "options": [{
+                    "value": "",
+                    "name": "Choose an action ...",
+                    "selected": true,
+                    "optgroup": false,
+                    "ignore": "data-ignore"
+                }, {
+                    "value": "delete",
+                    "name": "Delete",
+                    "selected": false,
+                    "optgroup": false
+                }, {
+                    "value": "choose_1",
+                    "name": "Option 1",
+                    "selected": false,
+                    "optgroup": false
+                }, {
+                    "value": "choose_2",
+                    "name": "Option 2",
+                    "selected": false,
+                    "optgroup": false
+                }, {
+                    "value": "choose_3",
+                    "name": "Option 3",
+                    "selected": false,
+                    "optgroup": false
+            }],
+            "labelattributes": [],
+            "helpicon": false
+        }
+    }
+}}
+<h3>{{#str}}responses, choice{{/str}}</h3>
+{{#canviewresponse}}
+<form action="{{pageurl}}" method="post" id="attemptsform">
+    <input type="hidden" id="id" value="{{coursemoduleid}}"/>
+    <input type="hidden" id="sesskey" value="{{sesskey}}"/>
+    <input type="hidden" id="mode" value="overview"/>
+{{/canviewresponse}}
+    <div class="response">
+        <table class="results names table table-bordered" summary="{{#str}}responsesto, choice, {{{choicename}}}{{/str}}">
+            <thead>
+                <tr>
+                    <th scope="row">
+                        {{#str}}choiceoptions, choice{{/str}}
+                    </th>
+                    {{#options}}
+                        <th>
+                            {{.}}
+                        </th>
+                    {{/options}}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">
+                        {{#str}}numberofuser, choice{{/str}}
+                    </th>
+                    {{#numresponses}}
+                        <td style="text-align: center;">
+                            {{.}}
+                        </td>
+                    {{/numresponses}}
+                </tr>
+                <tr>
+                    <th scope="row">
+                        {{#str}}userchoosethisoption, choice{{/str}}
+                    </th>
+                    {{#respondents}}
+                        <td>
+                            {{#users}}
+                                <div class="p-b-1">
+                                    {{#checkbox}}
+                                        <label for="{{id}}" class="accesshide">{{labelname}}</label>
+                                        <input type="checkbox" value="{{value}}" name="{{name}}" id="{{id}}"/>
+                                    {{/checkbox}}
+                                    <a href="{{profileurl}}">{{{profilepic}}}{{fullname}}</a>
+                                </div>
+                            {{/users}}
+                        </td>
+                    {{/respondents}}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{{#canmanagechoices}}
+    <div class="responseaction">
+        <div class="selectallnone">
+            <a href="#" data-select-info="true">{{#str}}selectall{{/str}}</a> / <a href="#" data-select-info="false">{{#str}}deselectall{{/str}}</a>
+        </div>
+        {{#selectactions}}
+            {{> core/single_select }}
+        {{/selectactions}}
+    </div>
+{{/canmanagechoices}}
+{{#canviewresponse}}
+</form>
+{{/canviewresponse}}
+
+{{#js}}
+    require(['mod_choice/select_all_choices'], function(selectall) {
+        selectall.init();
+    });
+{{/js}}

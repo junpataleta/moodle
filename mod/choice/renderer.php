@@ -128,173 +128,107 @@ class mod_choice_renderer extends plugin_renderer_base {
 
     /**
      * Returns HTML to display choices result
+     *
      * @param object $choices
-     * @param bool $forcepublish
      * @return string
+     * @throws coding_exception
+     * @throws moodle_exception
      */
     public function display_publish_name_vertical($choices) {
         global $PAGE;
-        $html ='';
-        $html .= html_writer::tag('h3',format_string(get_string("responses", "choice")));
 
-        $attributes = array('method'=>'POST');
-        $attributes['action'] = new moodle_url($PAGE->url);
-        $attributes['id'] = 'attemptsform';
-
+        $data = [];
+        $data['choicename'] = format_string($choices->name);
+        $data['canviewresponse'] = $choices->viewresponsecapability;
         if ($choices->viewresponsecapability) {
-            $html .= html_writer::start_tag('form', $attributes);
-            $html .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'id', 'value'=> $choices->coursemoduleid));
-            $html .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'sesskey', 'value'=> sesskey()));
-            $html .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'mode', 'value'=>'overview'));
+            $data['pageurl'] = $PAGE->url->out(false);
+            $data['coursemoduleid'] = $choices->coursemoduleid;
+            $data['sesskey'] = sesskey();
         }
 
-        $table = new html_table();
-        $table->cellpadding = 0;
-        $table->cellspacing = 0;
-        $table->attributes['class'] = 'results names table table-bordered';
-        $table->tablealign = 'center';
-        $table->summary = get_string('responsesto', 'choice', format_string($choices->name));
-        $table->data = array();
-
-        $count = 0;
         ksort($choices->options);
 
-        $columns = array();
-        $celldefault = new html_table_cell();
-        $celldefault->attributes['class'] = 'data';
+        // Data for the 'Choice options' row.
+        $optionnames = [];
+        // Data for the 'Number of responses' row.
+        $numberofresponses = [];
+        // Data for the 'Users who chose this option' row.
+        $respondents = [];
+        $canmanagechoices = $choices->viewresponsecapability && $choices->deleterepsonsecapability;
 
-        // This extra cell is needed in order to support accessibility for screenreader. MDL-30816
-        $accessiblecell = new html_table_cell();
-        $accessiblecell->scope = 'row';
-        $accessiblecell->text = get_string('choiceoptions', 'choice');
-        $columns['options'][] = $accessiblecell;
-
-        $usernumberheader = clone($celldefault);
-        $usernumberheader->header = true;
-        $usernumberheader->attributes['class'] = 'header data';
-        $usernumberheader->text = get_string('numberofuser', 'choice');
-        $columns['usernumber'][] = $usernumberheader;
-
-        $optionsnames = [];
         foreach ($choices->options as $optionid => $options) {
-            $celloption = clone($celldefault);
-            $cellusernumber = clone($celldefault);
-            $cellusernumber->style = 'text-align: center;';
-
-            $celltext = '';
+            $optionname = '';
             if ($choices->showunanswered && $optionid == 0) {
-                $celltext = get_string('notanswered', 'choice');
+                $optionname = get_string('notanswered', 'choice');
             } else if ($optionid > 0) {
-                $celltext = format_string($choices->options[$optionid]->text);
+                $optionname = format_string($choices->options[$optionid]->text);
             }
-            $numberofuser = 0;
-            if (!empty($options->user) && count($options->user) > 0) {
-                $numberofuser = count($options->user);
-            }
+            $optionnames[] = $optionname;
 
-            $celloption->text = $celltext;
-            $optionsnames[$optionid] = $celltext;
-            $cellusernumber->text = $numberofuser;
-
-            $columns['options'][] = $celloption;
-            $columns['usernumber'][] = $cellusernumber;
-        }
-
-        $table->head = $columns['options'];
-        $table->data[] = new html_table_row($columns['usernumber']);
-
-        $columns = array();
-
-        // This extra cell is needed in order to support accessibility for screenreader. MDL-30816
-        $accessiblecell = new html_table_cell();
-        $accessiblecell->text = get_string('userchoosethisoption', 'choice');
-        $accessiblecell->header = true;
-        $accessiblecell->scope = 'row';
-        $accessiblecell->attributes['class'] = 'header data';
-        $columns[] = $accessiblecell;
-
-        foreach ($choices->options as $optionid => $options) {
-            $cell = new html_table_cell();
-            $cell->attributes['class'] = 'data';
-
-            if ($choices->showunanswered || $optionid > 0) {
-                if (!empty($options->user)) {
-                    $optionusers = '';
-                    foreach ($options->user as $user) {
-                        $data = '';
-                        if (empty($user->imagealt)){
-                            $user->imagealt = '';
-                        }
-
-                        $userfullname = fullname($user, $choices->fullnamecapability);
-                        $mediabody = '';
-                        if ($choices->viewresponsecapability && $choices->deleterepsonsecapability) {
-                            $checkboxid = 'attempt-user'.$user->id.'-option'.$optionid;
-                            $attemptaction = html_writer::label($userfullname . ' ' . $optionsnames[$optionid],
-                                    $checkboxid, false, array('class' => 'accesshide'));
-                            if ($optionid > 0) {
-                                $attemptaction .= html_writer::checkbox('attemptid[]', $user->answerid, '', null,
-                                    array('id' => $checkboxid));
-                            } else {
-                                $attemptaction .= html_writer::checkbox('userid[]', $user->id, '', null,
-                                    array('id' => $checkboxid));
-                            }
-                            $mediabody .= html_writer::tag('div', $attemptaction, array('class'=>'media-left media-middle p-t-1'));
-                        }
-                        $userimage = $this->output->user_picture($user, array('courseid' => $choices->courseid));
-                        $mediabody .= html_writer::tag('div', $userimage, array('class' => 'media-left media-middle'));
-
-                        $userlink = new moodle_url('/user/view.php', array('id'=>$user->id,'course' => $choices->courseid));
-                        $name = html_writer::tag('a', $userfullname, array('href' => $userlink));
-                        $mediabody .= html_writer::tag('div', $name, array('class' => 'media-body media-middle'));
-                        $data .= html_writer::tag('div', $mediabody, array('class' => 'media m-b-1'));
-
-                        $optionusers .= $data;
+            // Users who chose this option.
+            $users = [];
+            if (!empty($options->user) && ($choices->showunanswered || $optionid > 0)) {
+                foreach ($options->user as $user) {
+                    if (empty($user->imagealt)) {
+                        $user->imagealt = '';
                     }
-                    $cell->text = $optionusers;
+                    // Context data fo the user.
+                    $userdata = new stdClass();
+                    $userdata->fullname = fullname($user, $choices->fullnamecapability);
+
+                    // Context data for the user's checkbox.
+                    $checkbox = null;
+                    if ($canmanagechoices) {
+                        $checkbox = new stdClass();
+                        $checkbox->id = 'attempt-user' . $user->id . '-option' . $optionid;
+                        $checkbox->labelname = $userdata->fullname . ' ' . $optionname;
+                        if ($optionid > 0) {
+                            $checkbox->name = 'attemptid[]';
+                            $checkbox->value = $user->answerid;
+                        } else {
+                            $checkbox->name = 'userid[]';
+                            $checkbox->value = $user->id;
+                        }
+                    }
+                    $userdata->checkbox = $checkbox;
+
+                    // Profile pic.
+                    $profilepicparams = ['courseid' => $choices->courseid, 'link' => false];
+                    $userdata->profilepic = $this->output->user_picture($user, $profilepicparams);
+
+                    // Profile URL.
+                    $profileurl = new moodle_url('/user/view.php', ['id' => $user->id, 'course' => $choices->courseid]);
+                    $userdata->profileurl = $profileurl->out(false);
+
+                    $users[] = $userdata;
                 }
             }
-            $columns[] = $cell;
-            $count++;
+
+            $numberofresponses[] = count($users);
+            $respondents[]['users'] = $users;
         }
-        $row = new html_table_row($columns);
-        $table->data[] = $row;
 
-        $html .= html_writer::tag('div', html_writer::table($table), array('class'=>'response'));
+        $data['numresponses'] = $numberofresponses;
+        $data['options'] = $optionnames;
+        $data['respondents'] = $respondents;
+        $data['canmanagechoices'] = $canmanagechoices;
 
-        $actiondata = '';
-        if ($choices->viewresponsecapability && $choices->deleterepsonsecapability) {
-            $selecturl = new moodle_url('#');
-
-            $actiondata .= html_writer::start_div('selectallnone');
-            $actiondata .= html_writer::link($selecturl, get_string('selectall'), ['data-select-info' => true]) . ' / ';
-
-            $actiondata .= html_writer::link($selecturl, get_string('deselectall'), ['data-select-info' => false]);
-
-            $actiondata .= html_writer::end_div();
-
-            $actionurl = new moodle_url($PAGE->url, array('sesskey'=>sesskey(), 'action'=>'delete_confirmation()'));
-            $actionoptions = array('delete' => get_string('delete'));
+        if ($canmanagechoices) {
+            $actionurl = new moodle_url($PAGE->url, ['sesskey' => sesskey(), 'action' => 'delete_confirmation()']);
+            $actionoptions = ['delete' => get_string('delete')];
             foreach ($choices->options as $optionid => $option) {
                 if ($optionid > 0) {
-                    $actionoptions['choose_'.$optionid] = get_string('chooseoption', 'choice', $option->text);
+                    $actionoptions['choose_' . $optionid] = get_string('chooseoption', 'choice', $option->text);
                 }
             }
-            $select = new single_select($actionurl, 'action', $actionoptions, null,
-                    array('' => get_string('chooseaction', 'choice')), 'attemptsform');
+            $selectnothing = ['' => get_string('chooseaction', 'choice')];
+            $select = new single_select($actionurl, 'action', $actionoptions, null, $selectnothing, 'attemptsform');
             $select->set_label(get_string('withselected', 'choice'));
-
-            $PAGE->requires->js_call_amd('mod_choice/select_all_choices', 'init');
-
-            $actiondata .= $this->output->render($select);
-        }
-        $html .= html_writer::tag('div', $actiondata, array('class'=>'responseaction'));
-
-        if ($choices->viewresponsecapability) {
-            $html .= html_writer::end_tag('form');
+            $selectdata = $select->export_for_template($this->output);
+            $data['selectactions'] = $selectdata;
         }
 
-        return $html;
+        return $this->render_from_template('mod_choice/publish_name_vertical', $data);
     }
 
 
