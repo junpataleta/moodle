@@ -242,14 +242,22 @@ class edit_renderer extends \plugin_renderer_base {
      * @return string HTML to output.
      */
     protected function selectmultiple_controls(structure $structure) {
+        global $OUTPUT;
+
         $output = '';
+
+        $togglegroup = 'quiz-questions';
 
         // Bulk action button delete and bulk action button cancel.
         $buttondeleteoptions = array(
             'type' => 'button',
             'id' => 'selectmultipledeletecommand',
             'value' => get_string('deleteselected', 'mod_quiz'),
-            'class' => 'btn btn-secondary'
+            'class' => 'btn btn-secondary',
+            'data-action' => 'toggle',
+            'data-togglegroup' => $togglegroup,
+            'data-toggle' => 'action',
+            'disabled' => true
         );
         $buttoncanceloptions = array(
             'type' => 'button',
@@ -259,7 +267,7 @@ class edit_renderer extends \plugin_renderer_base {
         );
 
         $groupoptions = array(
-            'class' => 'btn-group selectmultiplecommand actions',
+            'class' => 'btn-group selectmultiplecommand actions m-1',
             'role' => 'group'
         );
 
@@ -270,29 +278,26 @@ class edit_renderer extends \plugin_renderer_base {
                 $buttoncanceloptions), $groupoptions);
 
         $toolbaroptions = array(
-            'class' => 'btn-toolbar',
+            'class' => 'btn-toolbar m-1',
             'role' => 'toolbar',
             'aria-label' => get_string('selectmultipletoolbar', 'quiz'),
         );
 
         // Select all/deselect all questions.
-        $buttonselectalloptions = array(
-            'role' => 'button',
-            'id' => 'questionselectall',
-            'class' => 'btn btn-link'
-        );
-        $buttondeselectalloptions = array(
-            'role' => 'button',
-            'id' => 'questiondeselectall',
-            'class' => 'btn btn-link'
-        );
-        $output .= html_writer::tag('div',
-                html_writer::tag('div',
-                        html_writer::link('#', get_string('selectall', 'quiz'), $buttonselectalloptions) .
-                        html_writer::tag('span', "/", ['class' => 'separator']) .
-                        html_writer::link('#', get_string('selectnone', 'quiz'), $buttondeselectalloptions),
-                        array('class' => 'btn-group selectmultiplecommandbuttons')),
-                $toolbaroptions);
+        $selectallid = 'questionselectall';
+        $selectalltext = get_string('selectall', 'moodle');
+        $deselectalltext = get_string('deselectall', 'moodle');
+        $mastercheckbox = new \core\output\checkbox_toggleall($togglegroup, true, [
+            'id' => $selectallid,
+            'name' => $selectallid,
+            'value' => 1,
+            'label' => $selectalltext,
+            'selectall' => $selectalltext,
+            'deselectall' => $deselectalltext,
+        ], true);
+
+        $selectdeselect = html_writer::div($OUTPUT->render($mastercheckbox), 'selectmultiplecommandbuttons');
+        $output .= html_writer::tag('div', $selectdeselect, $toolbaroptions);
         return $output;
     }
 
@@ -718,6 +723,8 @@ class edit_renderer extends \plugin_renderer_base {
      * @return string HTML to output.
      */
     public function question(structure $structure, $slot, \moodle_url $pageurl) {
+        global $OUTPUT;
+
         $output = '';
         $output .= html_writer::start_tag('div');
 
@@ -726,10 +733,13 @@ class edit_renderer extends \plugin_renderer_base {
         }
 
         $output .= html_writer::start_div('mod-indent-outer');
-        $output .= html_writer::tag('input', '', array('id' => 'selectquestion-' .
-                $structure->get_displayed_number_for_slot($slot), 'name' => 'selectquestion[]',
-               'type' => 'checkbox', 'class' => 'select-multiple-checkbox',
-               'value' => $structure->get_displayed_number_for_slot($slot)));
+        $checkbox = new \core\output\checkbox_toggleall('quiz-questions', false, [
+            'id' => 'selectquestion-' . $structure->get_displayed_number_for_slot($slot),
+            'name' => 'selectquestion[]',
+            'value' => $structure->get_displayed_number_for_slot($slot),
+            'classes' => 'select-multiple-checkbox',
+        ]);
+        $output .= $OUTPUT->render($checkbox);
         $output .= $this->question_number($structure->get_displayed_number_for_slot($slot));
 
         // This div is used to indent the content.

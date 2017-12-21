@@ -380,4 +380,29 @@ abstract class quiz_attempts_report extends quiz_default_report {
         $msg = 'The function load_relevant_students() is deprecated. Please use get_students_joins() instead.';
         throw new coding_exception($msg);
     }
+
+    /**
+     * Generates a checkbox that can be added to header tables to select/deselect all quiz attempts.
+     *
+     * @return string
+     */
+    protected function generate_master_checkbox() {
+        global $OUTPUT;
+
+        // Build the select/deselect all control.
+        $selectallid = 'selectall-attempts';
+        $selectalltext = get_string('selectall', 'quiz');
+        $deselectalltext = get_string('selectnone', 'quiz');
+        $mastercheckbox = new \core\output\checkbox_toggleall('quiz-attempts', true, [
+            'id' => $selectallid,
+            'name' => $selectallid,
+            'value' => 1,
+            'label' => $selectalltext,
+            'labelclasses' => 'accesshide',
+            'selectall' => $selectalltext,
+            'deselectall' => $deselectalltext,
+        ]);
+
+        return $OUTPUT->render($mastercheckbox);
+    }
 }

@@ -168,7 +168,7 @@ class quiz_overview_report extends quiz_attempts_report {
 
             if (!$table->is_downloading() && $options->checkboxcolumn) {
                 $columns[] = 'checkbox';
-                $headers[] = null;
+                $headers[] = $this->generate_master_checkbox();
             }
 
             $this->add_user_columns($table, $columns, $headers);

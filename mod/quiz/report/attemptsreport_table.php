@@ -108,8 +108,14 @@ abstract class quiz_attempts_report_table extends table_sql {
      * @return string HTML content to go inside the td.
      */
     public function col_checkbox($attempt) {
+        global $OUTPUT;
+
         if ($attempt->attempt) {
-            return '<input type="checkbox" name="attemptid[]" value="'.$attempt->attempt.'" />';
+            $checkbox = new \core\output\checkbox_toggleall('quiz-attempts', false, [
+                'name' => 'attemptid[]',
+                'value' => $attempt->attempt,
+            ]);
+            return $OUTPUT->render($checkbox);
         } else {
             return '';
         }
@@ -609,22 +615,6 @@ abstract class quiz_attempts_report_table extends table_sql {
         }
 
         echo '<div id="commands">';
-        echo '<a id="checkattempts" href="#">' .
-                get_string('selectall', 'quiz') . '</a> / ';
-        echo '<a id="uncheckattempts" href="#">' .
-                get_string('selectnone', 'quiz') . '</a> ';
-        $PAGE->requires->js_amd_inline("
-        require(['jquery'], function($) {
-            $('#checkattempts').click(function(e) {
-                $('#attemptsform').find('input:checkbox').prop('checked', true);
-                e.preventDefault();
-            });
-            $('#uncheckattempts').click(function(e) {
-                $('#attemptsform').find('input:checkbox').prop('checked', false);
-                e.preventDefault();
-            });
-        });");
-        echo '&nbsp;&nbsp;';
         $this->submit_buttons();
         echo '</div>';
 
@@ -639,8 +629,18 @@ abstract class quiz_attempts_report_table extends table_sql {
     protected function submit_buttons() {
         global $PAGE;
         if (has_capability('mod/quiz:deleteattempts', $this->context)) {
-            echo '<input type="submit" class="btn btn-secondary mr-1" id="deleteattemptsbutton" name="delete" value="' .
-                    get_string('deleteselected', 'quiz_overview') . '"/>';
+            $deletebuttonparams = [
+                'type'  => 'submit',
+                'class' => 'btn btn-secondary mr-1',
+                'id'    => 'deleteattemptsbutton',
+                'name'  => 'delete',
+                'value' => get_string('deleteselected', 'quiz_overview'),
+                'data-action' => 'toggle',
+                'data-togglegroup' => 'quiz-attempts',
+                'data-toggle' => 'action',
+                'disabled' => true
+            ];
+            echo html_writer::empty_tag('input', $deletebuttonparams);
             $PAGE->requires->event_handler('#deleteattemptsbutton', 'click', 'M.util.show_confirm_dialog',
                     array('message' => get_string('deleteattemptcheck', 'quiz')));
         }
