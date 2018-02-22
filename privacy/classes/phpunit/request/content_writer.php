@@ -334,9 +334,9 @@ class content_writer implements \core_privacy\request\content_writer {
      * Export the specified file in the target location.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   \exported_file    $file       The file to be exported.
+     * @param   \stored_file    $file       The file to be exported.
      */
-    public function export_file(array $subcontext, \exported_file $file) : \core_privacy\request\content_writer  {
+    public function export_file(array $subcontext, \stored_file $file) : \core_privacy\request\content_writer  {
         if (!$file->is_directory()) {
             $subcontextextra = [
                 'files',
@@ -363,7 +363,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * Get all files in the specfied subcontext.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @return  exported_file[]               The list of exported_files in this context + subcontext.
+     * @return  stored_file[]               The list of stored_files in this context + subcontext.
      */
     public function get_files(array $subcontext = []) {
         $basepath = $this->files[$this->context->id];
