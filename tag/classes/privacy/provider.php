@@ -48,14 +48,14 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
      *
      * If you specify $onlyuser as true, only the tags created by that user will be included.
      *
-     * @param   int         $userid The user whose information is to be stored
-     * @param   array       $subcontext The subcontext within the context to store this information
+     * @param   int         $userid The user whose information is to be exported
+     * @param   array       $subcontext The subcontext within the context to export this information
      * @param   string      $component The component to fetch data from
-     * @param   string      $itemtype The itemtype that the data was stored in within the component
+     * @param   string      $itemtype The itemtype that the data was exported in within the component
      * @param   int         $itemid The itemid within that tag
-     * @param   bool        $onlyuser Whether to only store ratings that the current user has made, or all tags
+     * @param   bool        $onlyuser Whether to only export ratings that the current user has made, or all tags
      */
-    public static function store_item_tags(int $userid, \context $context, array $subcontext, string $component, string $itemtype, int $itemid, bool $onlyuser = false) {
+    public static function export_item_tags(int $userid, \context $context, array $subcontext, string $component, string $itemtype, int $itemid, bool $onlyuser = false) {
         global $DB;
 
         // Do not include the mdl_tag userid data because of bug with re-using existing tags by other users.
@@ -91,7 +91,7 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
 
         if ($tags = $DB->get_records_sql($sql, $params)) {
             $writer = \core_privacy\request\writer::with_context($context)
-                ->store_related_data($subcontext, 'tags', $tags);
+                ->export_related_data($subcontext, 'tags', $tags);
         }
     }
 }
