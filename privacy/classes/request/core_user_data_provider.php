@@ -41,4 +41,18 @@ interface core_user_data_provider extends core_data_provider {
      * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
      */
     public static function export_user_data(approved_contextlist $contextlist);
+
+    /**
+     * Delete all use data which matches the specified deletion_criteria.
+     *
+     * @param   deletion_criteria       $criteria   An object containing specific deletion criteria to delete for.
+     */
+    public static function delete_for_context(deletion_criteria $criteria);
+
+    /**
+     * Delete all user data for the specified user, in the specified contexts.
+     *
+     * @param   approved_contextlist    $contextlist    The approved contexts and user information to delete information for.
+     */
+    public static function delete_user_data(approved_contextlist $contextlist);
 }
