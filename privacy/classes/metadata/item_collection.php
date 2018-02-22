@@ -63,18 +63,6 @@ class item_collection {
     }
 
     /**
-     * Function to add a datastore item_record to the current item collection.
-     *
-     * @param string $name the name of the datastore.
-     * @param array $privacyfields is an associative array of the component's privacy fields.
-     * @param string $summary (optional) language string identifier within specified component describing this field.
-     */
-    public function add_datastore($name, array $privacyfields, $summary = '') {
-        debugging('Deprecated - use add_database_table instead');
-        $this->add_item_record(new item_record\database_table($name, $privacyfields, $summary));
-    }
-
-    /**
      * Function to add a database table which contains user data to this collection.
      *
      * @param   string  $name the name of the database table.
