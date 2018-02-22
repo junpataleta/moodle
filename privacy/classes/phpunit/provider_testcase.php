@@ -34,7 +34,7 @@ global $CFG;
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider_testcase extends \advanced_testcase {
+abstract class provider_testcase extends \advanced_testcase {
 
     /**
      * Test tearDown.
