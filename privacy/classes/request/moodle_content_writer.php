@@ -159,9 +159,9 @@ class moodle_content_writer implements content_writer {
      * Export the specified file in the target location.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   \exported_file    $file       The file to be exported.
+     * @param   \stored_file    $file       The file to be exported.
      */
-    public function export_file(array $subcontext, \exported_file $file) : content_writer  {
+    public function export_file(array $subcontext, \stored_file $file) : content_writer  {
         if (!$file->is_directory()) {
             $subcontextextra = [
                 'files',
