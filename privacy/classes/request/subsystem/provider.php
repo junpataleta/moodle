@@ -18,7 +18,7 @@
  * This file contains the \core_privacy\request\subsystem\provider interface to describe
  * a class which provides data in some form for a subsystem.
  *
- * Plugins should implement this if they directly store personal information.
+ * Plugins should implement this if they directly store any personal information.
  *
  * @package core_privacy
  * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>

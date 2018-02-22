@@ -36,9 +36,9 @@ interface core_user_data_provider extends core_data_provider {
     public static function get_contexts_for_userid(int $userid) : contextlist;
 
     /**
-     * Store all user data for the specified user, in the specified contexts, using the supplied exporter instance.
+     * Export all user data for the specified user, in the specified contexts.
      *
-     * @param   approved_contextlist    $contextlist    The approved contexts to store information for.
+     * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
      */
-    public static function store_user_data(approved_contextlist $contextlist);
+    public static function export_user_data(approved_contextlist $contextlist);
 }

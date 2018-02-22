@@ -37,20 +37,20 @@ require_once($CFG->dirroot . '/rating/lib.php');
 class provider implements \core_privacy\request\subsystem\plugin_provider {
 
     /**
-     * Store all ratings which match the specified component, areaid, and itemid.
+     * Export all ratings which match the specified component, areaid, and itemid.
      *
      * If requesting ratings for a users own content, and you wish to include all ratings of that content, specify $onlyuser as false.
      *
      * When requesting ratings for another users content, you should only export the ratings that the specified user made themselves.
      *
-     * @param   int         $userid The user whose information is to be stored
-     * @param   array       $subcontext The subcontext within the context to store this information
+     * @param   int         $userid The user whose information is to be exported
+     * @param   array       $subcontext The subcontext within the context to export this information
      * @param   string      $component The component to fetch data from
      * @param   string      $ratingarea The ratingarea that the data was stored in within the component
      * @param   int         $itemid The itemid within that ratingarea
-     * @param   bool        $onlyuser Whether to only store ratings that the current user has made, or all ratings
+     * @param   bool        $onlyuser Whether to only export ratings that the current user has made, or all ratings
      */
-    public static function store_area_ratings(int $userid, \context $context, array $subcontext, string $component, string $ratingarea, int $itemid, bool $onlyuser = true) {
+    public static function export_area_ratings(int $userid, \context $context, array $subcontext, string $component, string $ratingarea, int $itemid, bool $onlyuser = true) {
         global $DB;
 
         $rm = new \rating_manager();
@@ -71,7 +71,7 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
             return;
         }
 
-        $tostore = array_map(function($rating) {
+        $toexport = array_map(function($rating) {
             return (object) [
                 'id' => $rating->id,
                 'rating' => $rating->rating,
@@ -80,7 +80,7 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
         }, $ratings);
 
         $writer = \core_privacy\request\writer::with_context($context)
-            ->store_related_data($subcontext, 'rating', $tostore);
+            ->export_related_data($subcontext, 'rating', $toexport);
     }
 
     /**

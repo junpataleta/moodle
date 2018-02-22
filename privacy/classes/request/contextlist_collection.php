@@ -15,43 +15,45 @@
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file defines the core_privacy\request\contextlist_collection class object.
+ * This file defines the contextlist_collection class object.
  *
  * The contextlist_collection is used to organize a collection of contextlists.
  *
  * @package core_privacy
  * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
- *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\request;
 
 /**
- * Class contextlist_collection
- * @package core_privacy\request
+ * A collection of contextlist items.
+ *
+ * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class contextlist_collection {
     /**
      * @var array $contextlists the internal array of contextlist objects.
      */
-    protected $contextlists;
-
-    public function __construct() {
-        $this->contextlists = [];
-    }
+    protected $contextlists = [];
 
     /**
-     * @param string $component the frankenstyle name of the component to which the contextlist applies. E.g. core_comment.
-     * @param contextlist $contextlist the contextlist to store.
+     * Add a contextlist to this collection.
+     *
+     * @param   string      $component the frankenstyle name of the component to which the contextlist applies. E.g. core_comment.
+     * @param   contextlist $contextlist the contextlist to export.
+     * @return  $this
      */
     public function add_contextlist($component, contextlist $contextlist) {
         $this->contextlists[$component] = $contextlist;
+
+        return $this;
     }
 
     /**
      * Get the contextlists in this collection.
      *
-     * @return array the associative array of contextlists stored in this collection, indexeb by component name.
+     * @return  array   the associative array of contextlists in this collection, indexed by component name.
      * E.g. mod_assign => contextlist, core_comment => contextlist.
      */
     public function get_contextlists() : array {

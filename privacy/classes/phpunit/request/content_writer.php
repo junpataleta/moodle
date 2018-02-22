@@ -35,7 +35,7 @@ class content_writer implements \core_privacy\request\content_writer {
     protected $userprefs = [];
 
     /**
-     * Whether any data has been stored at all within the current context.
+     * Whether any data has been exported at all within the current context.
      */
     public function has_any_data() {
         $hasdata = !empty($this->data[$this->context->id]);
@@ -89,12 +89,12 @@ class content_writer implements \core_privacy\request\content_writer {
     }
 
     /**
-     * Store the supplied data within the current context, at the supplied subcontext.
+     * Export the supplied data within the current context, at the supplied subcontext.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   \stdClass       $data       The data to be stored
+     * @param   \stdClass       $data       The data to be exported
      */
-    public function store_data(array $subcontext, \stdClass $data) : \core_privacy\request\content_writer {
+    public function export_data(array $subcontext, \stdClass $data) : \core_privacy\request\content_writer {
         array_push($subcontext, 'data');
 
         $finalcontent = $data;
@@ -134,7 +134,7 @@ class content_writer implements \core_privacy\request\content_writer {
     }
 
     /**
-     * Store metadata about the supplied subcontext.
+     * Export metadata about the supplied subcontext.
      *
      * Metadata consists of a key/value pair and a description of the value.
      *
@@ -143,7 +143,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * @param   string          $value      The metadata value.
      * @param   string          $description    The description of the value.
      */
-    public function store_metadata(array $subcontext, String $key, $value, String $description) : \core_privacy\request\content_writer {
+    public function export_metadata(array $subcontext, String $key, $value, String $description) : \core_privacy\request\content_writer {
         array_push($subcontext, 'metadata');
 
         $finalcontent = [
@@ -205,13 +205,13 @@ class content_writer implements \core_privacy\request\content_writer {
     }
 
     /**
-     * Store a piece of related data.
+     * Export a piece of related data.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   string          $name       The name of the file to be stored.
-     * @param   \stdClass       $data       The related data to store.
+     * @param   string          $name       The name of the file to be exported.
+     * @param   \stdClass       $data       The related data to export.
      */
-    public function store_related_data(array $subcontext, $name, $data) : \core_privacy\request\content_writer {
+    public function export_related_data(array $subcontext, $name, $data) : \core_privacy\request\content_writer {
         array_push($subcontext, $name);
         array_push($subcontext, 'data');
 
@@ -253,13 +253,13 @@ class content_writer implements \core_privacy\request\content_writer {
     }
 
     /**
-     * Store a piece of data in a custom format.
+     * Export a piece of data in a custom format.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   string          $filename   The name of the file to be stored.
-     * @param   string          $filecontent    The content to be stored.
+     * @param   string          $filename   The name of the file to be exported.
+     * @param   string          $filecontent    The content to be exported.
      */
-    public function store_custom_file(array $subcontext, $filename, $filecontent) : \core_privacy\request\content_writer {
+    public function export_custom_file(array $subcontext, $filename, $filecontent) : \core_privacy\request\content_writer {
         $filename = clean_param($filename, PARAM_FILE);
 
         $finalcontent = [
@@ -313,30 +313,30 @@ class content_writer implements \core_privacy\request\content_writer {
     }
 
     /**
-     * Store all files within the specified component, filearea, itemid combination.
+     * Export all files within the specified component, filearea, itemid combination.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
      * @param   string          $component  The name of the component that the files belong to.
      * @param   string          $filearea   The filearea within that component.
      * @param   string          $itemid     Which item those files belong to.
      */
-    public function store_area_files(array $subcontext, $component, $filearea, $itemid) : \core_privacy\request\content_writer  {
+    public function export_area_files(array $subcontext, $component, $filearea, $itemid) : \core_privacy\request\content_writer  {
         $fs = get_file_storage();
         $files = $fs->get_area_files($this->context->id, $component, $filearea, $itemid);
         foreach ($files as $file) {
-            $this->store_file($subcontext, $file);
+            $this->export_file($subcontext, $file);
         }
 
         return $this;
     }
 
     /**
-     * Store the specified file in the target location.
+     * Export the specified file in the target location.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   \stored_file    $file       The file to be stored.
+     * @param   \exported_file    $file       The file to be exported.
      */
-    public function store_file(array $subcontext, \stored_file $file) : \core_privacy\request\content_writer  {
+    public function export_file(array $subcontext, \exported_file $file) : \core_privacy\request\content_writer  {
         if (!$file->is_directory()) {
             $subcontextextra = [
                 'files',
@@ -363,7 +363,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * Get all files in the specfied subcontext.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @return  stored_file[]               The list of stored_files in this context + subcontext.
+     * @return  exported_file[]               The list of exported_files in this context + subcontext.
      */
     public function get_files(array $subcontext = []) {
         $basepath = $this->files[$this->context->id];
@@ -377,15 +377,15 @@ class content_writer implements \core_privacy\request\content_writer {
     }
 
     /**
-     * Store the specified user preference.
+     * Export the specified user preference.
      *
      * @param   string          $component  The name of the component.
-     * @param   string          $key        The name of th key to be stored.
+     * @param   string          $key        The name of th key to be exported.
      * @param   string          $value      The value of the preference
      * @param   string          $description    A description of the value
      * @return  content_writer
      */
-    public function store_user_preference(string $component, string $key, string $value, string $description) : \core_privacy\request\content_writer {
+    public function export_user_preference(string $component, string $key, string $value, string $description) : \core_privacy\request\content_writer {
         if (!isset($this->userprefs[$component])) {
             $this->userprefs[$component] = (object) [];
         }
@@ -416,6 +416,6 @@ class content_writer implements \core_privacy\request\content_writer {
      * Finalise content for this writer.
      */
     public function finalise_content() {
-        // This plugin stores no actual content.
+        // This plugin exports no actual content.
     }
 }

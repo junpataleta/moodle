@@ -52,7 +52,8 @@ class provider implements metadataprovider, subsystemprovider {
                 'userid' => 'useridpurpose',
                 'timecreated' => 'timecreatedcommentpurpose'
         ];
-        $itemcollection->add_datastore('core_comment', $comments, 'commenttablepurpose');
+        $itemcollection->add_database_table('core_comment', $comments, 'commenttablepurpose');
+
         return $itemcollection;
     }
 
@@ -63,10 +64,10 @@ class provider implements metadataprovider, subsystemprovider {
      * @param  string $component The component that is calling this function
      * @param  string $commentarea The comment area related to the component
      * @param  int    $itemid An identifier for a group of comments
-     * @param  array  $path The directory path to store these comments.
+     * @param  array  $subcontext The sub-context in which to export this data
      * @param  int    $onlyforthisuser  Only return the comments this user made.
      */
-    public static function store_comments($context, $component, $commentarea, $itemid, $path, $onlyforthisuser = null) {
+    public static function export_comments($context, $component, $commentarea, $itemid, $subcontext, $onlyforthisuser = null) {
 
         $data = new \stdClass;
         $data->context   = $context;
@@ -77,7 +78,7 @@ class provider implements metadataprovider, subsystemprovider {
         $commentobject = new \comment($data);
         $commentobject->set_view_permission(true);
         $comments = $commentobject->get_comments(0);
-        $path[] = new \lang_string('commentpath');
+        $subcontext[] = new \lang_string('commentsubcontext');
         if ($onlyforthisuser) {
             $comments = array_filter($comments, function($comment) use ($onlyforthisuser) {
                 if ($comment->userid == $onlyforthisuser) {
@@ -87,7 +88,7 @@ class provider implements metadataprovider, subsystemprovider {
         }
         if (!empty($comments)) {
             writer::with_context($context)
-                    ->store_data($path, (object)$comments);
+                    ->export_data($subcontext, (object)$comments);
         }
     }
 }

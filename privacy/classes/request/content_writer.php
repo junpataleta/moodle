@@ -43,16 +43,16 @@ interface content_writer {
     public function set_context(\context $context) : content_writer ;
 
     /**
-     * Store the supplied data within the current context, at the supplied subcontext.
+     * Export the supplied data within the current context, at the supplied subcontext.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   \stdClass       $data       The data to be stored
+     * @param   \stdClass       $data       The data to be exported
      * @return  content_writer
      */
-    public function store_data(array $subcontext, \stdClass $data) : content_writer ;
+    public function export_data(array $subcontext, \stdClass $data) : content_writer ;
 
     /**
-     * Store metadata about the supplied subcontext.
+     * Export metadata about the supplied subcontext.
      *
      * Metadata consists of a key/value pair and a description of the value.
      *
@@ -62,27 +62,27 @@ interface content_writer {
      * @param   string          $description    The description of the value.
      * @return  content_writer
      */
-    public function store_metadata(array $subcontext, String $name, $value, String $description) : content_writer ;
+    public function export_metadata(array $subcontext, String $name, $value, String $description) : content_writer ;
 
     /**
-     * Store a piece of related data.
+     * Export a piece of related data.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   string          $name       The name of the file to be stored.
-     * @param   \stdClass       $data       The related data to store.
+     * @param   string          $name       The name of the file to be exported.
+     * @param   \stdClass       $data       The related data to export.
      * @return  content_writer
      */
-    public function store_related_data(array $subcontext, $name, $data) : content_writer ;
+    public function export_related_data(array $subcontext, $name, $data) : content_writer ;
 
     /**
-     * Store a piece of data in a custom format.
+     * Export a piece of data in a custom format.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   string          $filename   The name of the file to be stored.
-     * @param   string          $filecontent    The content to be stored.
+     * @param   string          $filename   The name of the file to be exported.
+     * @param   string          $filecontent    The content to be exported.
      * @return  content_writer
      */
-    public function store_custom_file(array $subcontext, $filename, $filecontent) : content_writer ;
+    public function export_custom_file(array $subcontext, $filename, $filecontent) : content_writer ;
 
     /**
      * Prepare a text area by processing pluginfile URLs within it.
@@ -97,7 +97,7 @@ interface content_writer {
     public function rewrite_pluginfile_urls(array $subcontext, $component, $filearea, $itemid, $text) : String;
 
     /**
-     * Store all files within the specified component, filearea, itemid combination.
+     * Export all files within the specified component, filearea, itemid combination.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
      * @param   string          $component  The name of the component that the files belong to.
@@ -105,27 +105,27 @@ interface content_writer {
      * @param   string          $itemid     Which item those files belong to.
      * @return  content_writer
      */
-    public function store_area_files(array $subcontext, $component, $filearea, $itemid) : content_writer ;
+    public function export_area_files(array $subcontext, $component, $filearea, $itemid) : content_writer ;
 
     /**
-     * Store the specified file in the target location.
+     * Export the specified file in the target location.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   \stored_file    $file       The file to be stored.
+     * @param   \exported_file    $file       The file to be exported.
      * @return  content_writer
      */
-    public function store_file(array $subcontext, \stored_file $file) : content_writer ;
+    public function export_file(array $subcontext, \exported_file $file) : content_writer ;
 
     /**
-     * Store the specified user preference.
+     * Export the specified user preference.
      *
      * @param   string          $component  The name of the component.
-     * @param   string          $key        The name of th key to be stored.
+     * @param   string          $key        The name of th key to be exported.
      * @param   string          $value      The value of the preference
      * @param   string          $description    A description of the value
      * @return  content_writer
      */
-    public function store_user_preference(string $component, string $key, string $value, string $description) : content_writer ;
+    public function export_user_preference(string $component, string $key, string $value, string $description) : content_writer ;
 
     /**
      * Perform any required finalisation steps.
