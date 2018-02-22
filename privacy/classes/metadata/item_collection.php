@@ -90,6 +90,20 @@ class item_collection {
     }
 
     /**
+     * Function to indicate that data may be exported to an external location.
+     *
+     * @param   string  $name A name for the type of data exported.
+     * @param   array   $privacyfields A list of fields with their description.
+     * @param   string  $summary A description of what the table is used for. This is a language string identifier within the component.
+     * @return  $this
+     */
+    public function link_external_location($name, array $privacyfields, $summary = '') {
+        $this->add_item_record(new item_record\external_location($name, $privacyfields, $summary));
+
+        return $this;
+    }
+
+    /**
      * Add a type of user preference to the collection.
      *
      * Typically this is a single user preference, but in some cases the
