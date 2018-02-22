@@ -27,9 +27,9 @@ namespace core_privacy\request;
 interface user_preference_provider extends core_data_provider {
 
     /**
-     * Store all user preferences for the plugin.
+     * Export all user preferences for the plugin.
      *
-     * @param   int         $userid The userid of the user whose data is to be stored.
+     * @param   int         $userid The userid of the user whose data is to be exported.
      */
-    public static function store_user_preferences(int $userid);
+    public static function export_user_preferences(int $userid);
 }

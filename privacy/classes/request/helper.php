@@ -96,8 +96,8 @@ class helper {
 
             // Add the intro, name, and others.
             writer::with_context($context)
-                // Store the files for the intro.
-                ->store_area_files([], $component, 'intro', 0);
+                // Export the files for the intro.
+                ->export_area_files([], $component, 'intro', 0);
 
             $intro = writer::with_context($context)
                 ->rewrite_pluginfile_urls([], $component, 'intro', 0, $intro);
@@ -125,13 +125,13 @@ class helper {
     }
 
     /**
-     * Store all files for this context.
+     * Export all files for this context.
      *
-     * @param   \context        $context The context to store files for.
+     * @param   \context        $context The context to export files for.
      * @param   \stdClass       $user The user being written.
      * @return  \stdClass
      */
-    public static function store_context_files(\context $context, \stdClass $user) {
+    public static function export_context_files(\context $context, \stdClass $user) {
         if ($context instanceof \context_module) {
             $coursecontext = $context->get_course_context();
             $modinfo = get_fast_modinfo($coursecontext->instanceid);
@@ -139,8 +139,8 @@ class helper {
             $component = "mod_{$cm->modname}";
 
             writer::with_context($context)
-                // Store the files for the intro.
-                ->store_area_files([], $component, 'intro', 0);
+                // Export the files for the intro.
+                ->export_area_files([], $component, 'intro', 0);
         }
     }
 }

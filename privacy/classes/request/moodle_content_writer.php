@@ -52,12 +52,12 @@ class moodle_content_writer implements content_writer {
     }
 
     /**
-     * Store the supplied data within the current context, at the supplied subcontext.
+     * Export the supplied data within the current context, at the supplied subcontext.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   \stdClass       $data       The data to be stored
+     * @param   \stdClass       $data       The data to be exported
      */
-    public function store_data(array $subcontext, \stdClass $data) : content_writer {
+    public function export_data(array $subcontext, \stdClass $data) : content_writer {
         $path = $this->get_path($subcontext, 'data.json');
 
         $this->write_data($path, json_encode($data));
@@ -66,7 +66,7 @@ class moodle_content_writer implements content_writer {
     }
 
     /**
-     * Store metadata about the supplied subcontext.
+     * Export metadata about the supplied subcontext.
      *
      * Metadata consists of a key/value pair and a description of the value.
      *
@@ -75,7 +75,7 @@ class moodle_content_writer implements content_writer {
      * @param   string          $value      The metadata value.
      * @param   string          $description    The description of the value.
      */
-    public function store_metadata(array $subcontext, String $key, $value, String $description) : content_writer {
+    public function export_metadata(array $subcontext, String $key, $value, String $description) : content_writer {
         $path = $this->get_path($subcontext, 'metadata.json');
 
         if (file_exists($path)) {
@@ -94,13 +94,13 @@ class moodle_content_writer implements content_writer {
     }
 
     /**
-     * Store a piece of related data.
+     * Export a piece of related data.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   string          $name       The name of the file to be stored.
-     * @param   \stdClass       $data       The related data to store.
+     * @param   string          $name       The name of the file to be exported.
+     * @param   \stdClass       $data       The related data to export.
      */
-    public function store_related_data(array $subcontext, $name, $data) : content_writer {
+    public function export_related_data(array $subcontext, $name, $data) : content_writer {
         $path = $this->get_path($subcontext, "{$name}.json");
 
         $this->write_data($path, json_encode($data));
@@ -109,13 +109,13 @@ class moodle_content_writer implements content_writer {
     }
 
     /**
-     * Store a piece of data in a custom format.
+     * Export a piece of data in a custom format.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   string          $filename   The name of the file to be stored.
-     * @param   string          $filecontent    The content to be stored.
+     * @param   string          $filename   The name of the file to be exported.
+     * @param   string          $filecontent    The content to be exported.
      */
-    public function store_custom_file(array $subcontext, $filename, $filecontent) : content_writer {
+    public function export_custom_file(array $subcontext, $filename, $filecontent) : content_writer {
         $filename = clean_param($filename, PARAM_FILE);
         $path = $this->get_path($subcontext, $filename);
         $this->write_data($path, $filecontent);
@@ -138,30 +138,30 @@ class moodle_content_writer implements content_writer {
     }
 
     /**
-     * Store all files within the specified component, filearea, itemid combination.
+     * Export all files within the specified component, filearea, itemid combination.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
      * @param   string          $component  The name of the component that the files belong to.
      * @param   string          $filearea   The filearea within that component.
      * @param   string          $itemid     Which item those files belong to.
      */
-    public function store_area_files(array $subcontext, $component, $filearea, $itemid) : content_writer  {
+    public function export_area_files(array $subcontext, $component, $filearea, $itemid) : content_writer  {
         $fs = get_file_storage();
         $files = $fs->get_area_files($this->context->id, $component, $filearea, $itemid);
         foreach ($files as $file) {
-            $this->store_file($subcontext, $file);
+            $this->export_file($subcontext, $file);
         }
 
         return $this;
     }
 
     /**
-     * Store the specified file in the target location.
+     * Export the specified file in the target location.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   \stored_file    $file       The file to be stored.
+     * @param   \exported_file    $file       The file to be exported.
      */
-    public function store_file(array $subcontext, \stored_file $file) : content_writer  {
+    public function export_file(array $subcontext, \exported_file $file) : content_writer  {
         if (!$file->is_directory()) {
             $subcontextextra = [
                 'files',
@@ -176,17 +176,17 @@ class moodle_content_writer implements content_writer {
     }
 
     /**
-     * Store the specified user preference.
+     * Export the specified user preference.
      *
      * @param   string          $component  The name of the component.
-     * @param   string          $key        The name of th key to be stored.
+     * @param   string          $key        The name of th key to be exported.
      * @param   string          $value      The value of the preference
      * @param   string          $description    A description of the value
      * @return  content_writer
      */
-    public function store_user_preference(string $component, string $key, string $value, string $description) : content_writer {
+    public function export_user_preference(string $component, string $key, string $value, string $description) : content_writer {
         if ($this->context !== \context_system::instance()) {
-            throw new \coding_exception('store_user_preference must be called against the system context');
+            throw new \coding_exception('export_user_preference must be called against the system context');
         }
         $subcontext = [
             get_string('userpreferences'),
@@ -227,7 +227,7 @@ class moodle_content_writer implements content_writer {
      * Get the fully-qualified file path within the current context, and
      * subcontext, using the specified filename.
      *
-     * @param   String[]        $subcontext The location within the current context to store this data.
+     * @param   String[]        $subcontext The location within the current context to export this data.
      * @param   String          $name       The intended filename, including any extensions.
      * @return  String                      The fully-qualfiied file path.
      */
@@ -248,8 +248,8 @@ class moodle_content_writer implements content_writer {
     /**
      * Write the data to the specified path.
      *
-     * @param   String          $path       The path to store the data at.
-     * @param   String          $data       The data to be stored.
+     * @param   String          $path       The path to export the data at.
+     * @param   String          $data       The data to be exported.
      */
     protected function write_data(String $path, String $data) {
         check_dir_exists(dirname($path), true, true);

@@ -84,7 +84,7 @@ class provider_testcase extends \advanced_testcase {
 
         if ($contextlist = $classname::get_contexts_for_userid($userid)) {
             $contextlist->set_user(\core_user::get_user($userid));
-            $classname::store_user_data($contextlist);
+            $classname::export_user_data($contextlist);
         }
     }
 
@@ -110,6 +110,6 @@ class provider_testcase extends \advanced_testcase {
         $cl->set_user(\core_user::get_user($userid));
         $cl->add_context($context);
 
-        $classname::store_user_data($cl);
+        $classname::export_user_data($cl);
     }
 }
