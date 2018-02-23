@@ -413,9 +413,9 @@ class content_writer implements \core_privacy\request\content_writer {
     }
 
     /**
-     * Finalise content for this writer.
+     * Perform any required finalisation steps and return the location of the finalised export.
+     *
+     * @return  string
      */
-    public function finalise_content() {
-        // This plugin exports no actual content.
-    }
+    public function finalise_content() : string ;
 }

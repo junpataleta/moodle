@@ -128,7 +128,9 @@ interface content_writer {
     public function export_user_preference(string $component, string $key, string $value, string $description) : content_writer ;
 
     /**
-     * Perform any required finalisation steps.
+     * Perform any required finalisation steps and return the location of the finalised export.
+     *
+     * @return  string
      */
-    public function finalise_content() ;
+    public function finalise_content() : string ;
 }
