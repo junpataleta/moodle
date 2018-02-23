@@ -29,7 +29,7 @@ class deletion_criteria {
     protected $context = null;
 
     public function __construct(\context $context) {
-        $this->contet = $context;
+        $this->context = $context;
     }
 
     /**
