@@ -257,6 +257,7 @@ $string['comments'] = 'Comments';
 $string['commentscount'] = 'Comments ({$a})';
 $string['commentsnotenabled'] = 'Comments feature is not enabled';
 $string['commentsrequirelogin'] = 'You need to log in to view the comments.';
+$string['commentsubcontext'] = 'Comments';
 $string['comparelanguage'] = 'Compare and edit current language';
 $string['complete'] = 'Complete';
 $string['completereport'] = 'Complete report';
