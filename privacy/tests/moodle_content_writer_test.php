@@ -313,6 +313,103 @@ class moodle_content_writer_test extends advanced_testcase {
 
     /**
      * Exporting a single stored_file should cause that file to be output in the files directory.
+     */
+    public function test_export_area_files() {
+        $this->resetAfterTest();
+        $context = \context_system::instance();
+        $fs = get_file_storage();
+
+        // Add two files to core_privacy::tests::0
+        $files = [];
+        $file = (object) [
+            'component' => 'core_privacy',
+            'filearea' => 'tests',
+            'itemid' => 0,
+            'path' => '/',
+            'name' => 'a.txt',
+            'content' => 'Test file 0',
+        ];
+        $files[] = $file;
+
+        $file = (object) [
+            'component' => 'core_privacy',
+            'filearea' => 'tests',
+            'itemid' => 0,
+            'path' => '/',
+            'name' => 'b.txt',
+            'content' => 'Test file 1',
+        ];
+        $files[] = $file;
+
+        // One with a different itemid.
+        $file = (object) [
+            'component' => 'core_privacy',
+            'filearea' => 'tests',
+            'itemid' => 1,
+            'path' => '/',
+            'name' => 'c.txt',
+            'content' => 'Other',
+        ];
+        $files[] = $file;
+
+        // One with a different filearea.
+        $file = (object) [
+            'component' => 'core_privacy',
+            'filearea' => 'alternative',
+            'itemid' => 0,
+            'path' => '/',
+            'name' => 'd.txt',
+            'content' => 'Alternative',
+        ];
+        $files[] = $file;
+
+        // One with a different component.
+        $file = (object) [
+            'component' => 'core',
+            'filearea' => 'tests',
+            'itemid' => 0,
+            'path' => '/',
+            'name' => 'e.txt',
+            'content' => 'Other tests',
+        ];
+        $files[] = $file;
+
+        foreach ($files as $file) {
+            $record = [
+                'contextid' => $context->id,
+                'component' => $file->component,
+                'filearea'  => $file->filearea,
+                'itemid'    => $file->itemid,
+                'filepath'  => $file->path,
+                'filename'  => $file->name,
+            ];
+
+            $file->namepath = $file->path . $file->name;
+            $file->storedfile = $fs->create_file_from_string($record, $file->content);
+        }
+
+        $writer = $this->get_writer_instance()
+            ->set_context($context)
+            ->export_area_files([], 'core_privacy', 'tests', 0);
+
+        $fileroot = $this->fetch_exported_content($writer);
+
+        $firstfiles = array_slice($files, 0, 2);
+        foreach ($firstfiles as $file) {
+            $contextpath = $this->get_context_path($context, [get_string('files')], $file->namepath);
+            $this->assertTrue($fileroot->hasChild($contextpath));
+            $this->assertEquals($file->content, $fileroot->getChild($contextpath)->getContent());
+        }
+
+        $otherfiles = array_slice($files, 2);
+        foreach ($otherfiles as $file) {
+            $contextpath = $this->get_context_path($context, [get_string('files')], $file->namepath);
+            $this->assertFalse($fileroot->hasChild($contextpath));
+        }
+    }
+
+    /**
+     * Exporting a single stored_file should cause that file to be output in the files directory.
      *
      * @dataProvider    export_file_provider
      */
@@ -483,6 +580,69 @@ class moodle_content_writer_test extends advanced_testcase {
     }
 
     /**
+     * User preferences can be exported against the system.
+     */
+    public function test_export_multiple_user_preference_context_system() {
+        $context = \context_system::instance();
+        $writer = $this->get_writer_instance();
+        $component = 'core_privacy';
+
+        $writer
+            ->set_context($context)
+            ->export_user_preference($component, 'key1', 'val1', 'desc1')
+            ->export_user_preference($component, 'key2', 'val2', 'desc2');
+
+        $fileroot = $this->fetch_exported_content($writer);
+
+        $contextpath = $this->get_context_path($context, [get_string('userpreferences')], "{$component}.json");
+        $this->assertTrue($fileroot->hasChild($contextpath));
+
+        $json = $fileroot->getChild($contextpath)->getContent();
+        $expanded = json_decode($json);
+
+        $this->assertTrue(isset($expanded->key1));
+        $data = $expanded->key1;
+        $this->assertEquals('val1', $data->value);
+        $this->assertEquals('desc1', $data->description);
+
+        $this->assertTrue(isset($expanded->key2));
+        $data = $expanded->key2;
+        $this->assertEquals('val2', $data->value);
+        $this->assertEquals('desc2', $data->description);
+    }
+
+    /**
+     * User preferences can be exported against the system.
+     */
+    public function test_export_user_preference_replace() {
+        $context = \context_system::instance();
+        $writer = $this->get_writer_instance();
+        $component = 'core_privacy';
+        $key = 'key';
+
+        $writer
+            ->set_context($context)
+            ->export_user_preference($component, $key, 'val1', 'desc1');
+
+        $writer
+            ->set_context($context)
+            ->export_user_preference($component, $key, 'val2', 'desc2');
+
+        $fileroot = $this->fetch_exported_content($writer);
+
+        $contextpath = $this->get_context_path($context, [get_string('userpreferences')], "{$component}.json");
+        $this->assertTrue($fileroot->hasChild($contextpath));
+
+        $json = $fileroot->getChild($contextpath)->getContent();
+        $expanded = json_decode($json);
+
+        $this->assertTrue(isset($expanded->$key));
+        $data = $expanded->$key;
+        $this->assertEquals('val2', $data->value);
+        $this->assertEquals('desc2', $data->description);
+    }
+
+    /**
      * Provider for various user preferences.
      *
      * @return  array
@@ -491,19 +651,19 @@ class moodle_content_writer_test extends advanced_testcase {
         return [
             'basic' => [
                 'core_privacy',
-                'validkey',
+                'onekey',
                 'value',
                 'description',
             ],
             'encodedvalue' => [
                 'core_privacy',
-                'validkey',
+                'donkey',
                 base64_encode('value'),
                 'description',
             ],
             'long description' => [
                 'core_privacy',
-                'validkey',
+                'twokey',
                 'value',
                 'This is a much longer description which actually states what this is used for. Blah blah blah.',
             ],
