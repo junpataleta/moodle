@@ -204,10 +204,11 @@ class moodle_content_writer implements content_writer {
         $subcontext = [
             get_string('userpreferences'),
         ];
+        $fullpath = $this->get_full_path($subcontext, "{$component}.json");
         $path = $this->get_path($subcontext, "{$component}.json");
 
-        if (file_exists($path)) {
-            $data = json_decode(file_get_contents($path));
+        if (file_exists($fullpath)) {
+            $data = json_decode(file_get_contents($fullpath));
         } else {
             $data = (object) [];
         }
