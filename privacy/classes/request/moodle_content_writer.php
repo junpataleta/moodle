@@ -87,7 +87,7 @@ class moodle_content_writer implements content_writer {
      * @param   string          $description    The description of the value.
      */
     public function export_metadata(array $subcontext, String $key, $value, String $description) : content_writer {
-        $path = $this->get_path($subcontext, 'metadata.json');
+        $path = $this->get_full_path($subcontext, 'metadata.json');
 
         if (file_exists($path)) {
             $data = json_decode(file_get_contents($path));
@@ -99,6 +99,8 @@ class moodle_content_writer implements content_writer {
             'value' => $value,
             'description' => $description,
         ];
+
+        $path = $this->get_path($subcontext, 'metadata.json');
         $this->write_data($path, json_encode($data));
 
         return $this;
@@ -235,8 +237,7 @@ class moodle_content_writer implements content_writer {
     }
 
     /**
-     * Get the fully-qualified file path within the current context, and
-     * subcontext, using the specified filename.
+     * Get the relative file path within the current context, and subcontext, using the specified filename.
      *
      * @param   String[]        $subcontext The location within the current context to export this data.
      * @param   String          $name       The intended filename, including any extensions.
@@ -251,6 +252,25 @@ class moodle_content_writer implements content_writer {
 
         // Join the directory together with the name.
         $filepath = implode(DIRECTORY_SEPARATOR, $path) . DIRECTORY_SEPARATOR . $name;
+
+        return preg_replace('@' . DIRECTORY_SEPARATOR . '+@', DIRECTORY_SEPARATOR, $filepath);
+    }
+
+    /**
+     * Get the fully-qualified file path within the current context, and subcontext, using the specified filename.
+     *
+     * @param   String[]        $subcontext The location within the current context to export this data.
+     * @param   String          $name       The intended filename, including any extensions.
+     * @return  String                      The fully-qualfiied file path.
+     */
+    protected function get_full_path(array $subcontext, String $name) : String {
+        $path = array_merge(
+            [$this->path],
+            [$this->get_path($subcontext, $name)]
+        );
+
+        // Join the directory together with the name.
+        $filepath = implode(DIRECTORY_SEPARATOR, $path);
 
         return preg_replace('@' . DIRECTORY_SEPARATOR . '+@', DIRECTORY_SEPARATOR, $filepath);
     }
