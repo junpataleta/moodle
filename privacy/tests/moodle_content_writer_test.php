@@ -39,15 +39,13 @@ use \core_privacy\request\moodle_content_writer;
 class moodle_content_writer_test extends advanced_testcase {
 
     /**
+     * Test that exported data is saved correctly within the system context.
+     *
+     * @dataProvider export_data_provider
      */
-    public function test_export_data() {
+    public function test_export_data($data) {
         $context = \context_system::instance();
         $subcontext = [];
-        $data = (object) [
-            'example' => (object) [
-                'a' => 'b',
-            ],
-        ];
 
         $writer = $this->get_writer_instance()
             ->set_context($context)
@@ -61,6 +59,256 @@ class moodle_content_writer_test extends advanced_testcase {
         $json = $fileroot->getChild($contextpath)->getContent();
         $expanded = json_decode($json);
         $this->assertEquals($data, $expanded);
+    }
+
+    /**
+     * Test that exported data is saved correctly for context/subcontext.
+     *
+     * @dataProvider export_data_provider
+     */
+    public function test_export_data_different_context($data) {
+        $context = \context_user::instance(\core_user::get_user_by_username('admin')->id);
+        $subcontext = ['sub', 'context'];
+
+        $writer = $this->get_writer_instance()
+            ->set_context($context)
+            ->export_data($subcontext, $data);
+
+        $fileroot = $this->fetch_exported_content($writer);
+
+        $contextpath = $this->get_context_path($context, $subcontext, 'data.json');
+        $this->assertTrue($fileroot->hasChild($contextpath));
+
+        $json = $fileroot->getChild($contextpath)->getContent();
+        $expanded = json_decode($json);
+        $this->assertEquals($data, $expanded);
+    }
+
+    /**
+     * Test that exported is saved within the correct directory locations.
+     */
+    public function test_export_data_writes_to_multiple_context() {
+        $subcontext = ['sub', 'context'];
+
+        $systemcontext = \context_system::instance();
+        $systemdata = (object) [
+            'belongsto' => 'system',
+        ];
+        $usercontext = \context_user::instance(\core_user::get_user_by_username('admin')->id);
+        $userdata = (object) [
+            'belongsto' => 'user',
+        ];
+
+        $writer = $this->get_writer_instance();
+
+        $writer
+            ->set_context($systemcontext)
+            ->export_data($subcontext, $systemdata);
+
+        $writer
+            ->set_context($usercontext)
+            ->export_data($subcontext, $userdata);
+
+        $fileroot = $this->fetch_exported_content($writer);
+
+        $contextpath = $this->get_context_path($systemcontext, $subcontext, 'data.json');
+        $this->assertTrue($fileroot->hasChild($contextpath));
+
+        $json = $fileroot->getChild($contextpath)->getContent();
+        $expanded = json_decode($json);
+        $this->assertEquals($systemdata, $expanded);
+
+        $contextpath = $this->get_context_path($usercontext, $subcontext, 'data.json');
+        $this->assertTrue($fileroot->hasChild($contextpath));
+
+        $json = $fileroot->getChild($contextpath)->getContent();
+        $expanded = json_decode($json);
+        $this->assertEquals($userdata, $expanded);
+    }
+
+    /**
+     * Test that multiple writes to the same location cause the latest version to be written.
+     */
+    public function test_export_data_multiple_writes_same_context() {
+        $subcontext = ['sub', 'context'];
+
+        $systemcontext = \context_system::instance();
+        $originaldata = (object) [
+            'belongsto' => 'system',
+        ];
+
+        $newdata = (object) [
+            'abc' => 'def',
+        ];
+
+        $writer = $this->get_writer_instance();
+
+        $writer
+            ->set_context($systemcontext)
+            ->export_data($subcontext, $originaldata);
+
+        $writer
+            ->set_context($systemcontext)
+            ->export_data($subcontext, $newdata);
+
+        $fileroot = $this->fetch_exported_content($writer);
+
+        $contextpath = $this->get_context_path($systemcontext, $subcontext, 'data.json');
+        $this->assertTrue($fileroot->hasChild($contextpath));
+
+        $json = $fileroot->getChild($contextpath)->getContent();
+        $expanded = json_decode($json);
+        $this->assertEquals($newdata, $expanded);
+    }
+
+    /**
+     * Data provider for exporting user data.
+     */
+    public function export_data_provider() {
+        return [
+            'basic' => [
+                (object) [
+                    'example' => (object) [
+                        'key' => 'value',
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Test that metadata can be set.
+     *
+     * @dataProvider export_metadata_provider
+     */
+    public function test_export_metadata($key, $value, $description) {
+        $context = \context_system::instance();
+        $subcontext = ['a', 'b', 'c',];
+
+        $writer = $this->get_writer_instance()
+            ->set_context($context)
+            ->export_metadata($subcontext, $key, $value, $description);
+
+        $fileroot = $this->fetch_exported_content($writer);
+
+        $contextpath = $this->get_context_path($context, $subcontext, 'metadata.json');
+        $this->assertTrue($fileroot->hasChild($contextpath));
+
+        $json = $fileroot->getChild($contextpath)->getContent();
+        $expanded = json_decode($json);
+        $this->assertTrue(isset($expanded->$key));
+        $this->assertEquals($value, $expanded->$key->value);
+        $this->assertEquals($description, $expanded->$key->description);
+    }
+
+    /**
+     * Test that metadata can be set additively.
+     */
+    public function test_export_metadata_additive() {
+        $context = \context_system::instance();
+        $subcontext = [];
+
+        $writer = $this->get_writer_instance();
+
+        $writer
+            ->set_context($context)
+            ->export_metadata($subcontext, 'firstkey', 'firstvalue', 'firstdescription');
+
+        $writer
+            ->set_context($context)
+            ->export_metadata($subcontext, 'secondkey', 'secondvalue', 'seconddescription');
+
+        $fileroot = $this->fetch_exported_content($writer);
+
+        $contextpath = $this->get_context_path($context, $subcontext, 'metadata.json');
+        $this->assertTrue($fileroot->hasChild($contextpath));
+
+        $json = $fileroot->getChild($contextpath)->getContent();
+        $expanded = json_decode($json);
+
+        $this->assertTrue(isset($expanded->firstkey));
+        $this->assertEquals('firstvalue', $expanded->firstkey->value);
+        $this->assertEquals('firstdescription', $expanded->firstkey->description);
+
+        $this->assertTrue(isset($expanded->secondkey));
+        $this->assertEquals('secondvalue', $expanded->secondkey->value);
+        $this->assertEquals('seconddescription', $expanded->secondkey->description);
+    }
+
+    /**
+     * Test that metadata can be set additively.
+     */
+    public function test_export_metadata_to_multiple_contexts() {
+        $systemcontext = \context_system::instance();
+        $usercontext = \context_user::instance(\core_user::get_user_by_username('admin')->id);
+        $subcontext = [];
+
+        $writer = $this->get_writer_instance();
+
+        $writer
+            ->set_context($systemcontext)
+            ->export_metadata($subcontext, 'firstkey', 'firstvalue', 'firstdescription')
+            ->export_metadata($subcontext, 'secondkey', 'secondvalue', 'seconddescription');
+
+        $writer
+            ->set_context($usercontext)
+            ->export_metadata($subcontext, 'firstkey', 'alternativevalue', 'alternativedescription')
+            ->export_metadata($subcontext, 'thirdkey', 'thirdvalue', 'thirddescription');
+
+        $fileroot = $this->fetch_exported_content($writer);
+
+        $systemcontextpath = $this->get_context_path($systemcontext, $subcontext, 'metadata.json');
+        $this->assertTrue($fileroot->hasChild($systemcontextpath));
+
+        $json = $fileroot->getChild($systemcontextpath)->getContent();
+        $expanded = json_decode($json);
+
+        $this->assertTrue(isset($expanded->firstkey));
+        $this->assertEquals('firstvalue', $expanded->firstkey->value);
+        $this->assertEquals('firstdescription', $expanded->firstkey->description);
+        $this->assertTrue(isset($expanded->secondkey));
+        $this->assertEquals('secondvalue', $expanded->secondkey->value);
+        $this->assertEquals('seconddescription', $expanded->secondkey->description);
+        $this->assertFalse(isset($expanded->thirdkey));
+
+        $usercontextpath = $this->get_context_path($usercontext, $subcontext, 'metadata.json');
+        $this->assertTrue($fileroot->hasChild($usercontextpath));
+
+        $json = $fileroot->getChild($usercontextpath)->getContent();
+        $expanded = json_decode($json);
+
+        $this->assertTrue(isset($expanded->firstkey));
+        $this->assertEquals('alternativevalue', $expanded->firstkey->value);
+        $this->assertEquals('alternativedescription', $expanded->firstkey->description);
+        $this->assertFalse(isset($expanded->secondkey));
+        $this->assertTrue(isset($expanded->thirdkey));
+        $this->assertEquals('thirdvalue', $expanded->thirdkey->value);
+        $this->assertEquals('thirddescription', $expanded->thirdkey->description);
+    }
+
+    /**
+     * Data provider for exporting user metadata.
+     *
+     * return   array
+     */
+    public function export_metadata_provider() {
+        return [
+            'basic' => [
+                'key',
+                'value',
+                'This is a description',
+            ],
+            'valuewithspaces' => [
+                'key',
+                'value has mixed',
+                'This is a description',
+            ],
+            'encodedvalue' => [
+                'key',
+                base64_encode('value has mixed'),
+                'This is a description',
+            ],
+        ];
     }
 
     /**
