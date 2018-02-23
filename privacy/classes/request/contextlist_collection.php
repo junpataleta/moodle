@@ -44,7 +44,7 @@ class contextlist_collection {
      * @param   contextlist $contextlist the contextlist to export.
      * @return  $this
      */
-    public function add_contextlist($component, contextlist $contextlist) {
+    public function add_contextlist($component, contextlist_base $contextlist) {
         $this->contextlists[$component] = $contextlist;
 
         return $this;
@@ -58,5 +58,13 @@ class contextlist_collection {
      */
     public function get_contextlists() : array {
         return $this->contextlists;
+    }
+
+    public function get_contextlist_for_component(string $component) : contextlist_base {
+        if (isset($this->contextlists[$component])) {
+            return $this->contextlists[$component];
+        }
+
+        return null;
     }
 }
