@@ -299,6 +299,9 @@ class moodle_content_writer implements content_writer {
         $fp = get_file_packer();
         $fp->archive_to_pathname($this->files, $exportfile);
 
+        // Reset the writer to prevent any further writes.
+        writer::reset();
+
         return $exportfile;
     }
 }
