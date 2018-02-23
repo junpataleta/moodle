@@ -31,9 +31,14 @@ namespace core_privacy\request;
  * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
  */
 class writer {
-
+    /**
+     * @var writer The singleton instance of this writer.
+     */
     protected static $instance = null;
 
+    /**
+     * @var content_writer The current content_writer instance.
+     */
     protected $realwriter = null;
 
     /**
@@ -41,9 +46,15 @@ class writer {
      *
      * Protected to prevent direct instantiation.
      */
-    protected function __construct() {}
+    protected function __construct() {
+    }
 
-    protected function get_writer_instance() {
+    /**
+     * Singleton to return or create and return a copy of a content_writer.
+     *
+     * @return  content_writer
+     */
+    protected function get_writer_instance() : content_writer {
         if (null === $this->realwriter) {
             if (PHPUNIT_TEST) {
                 $this->realwriter = new \core_privacy\phpunit\request\content_writer(static::instance());
@@ -55,6 +66,9 @@ class writer {
         return $this->realwriter;
     }
 
+    /**
+     * Return an instance of
+     */
     protected static final function instance() {
         if (null === self::$instance) {
             self::$instance = new static();
@@ -63,6 +77,9 @@ class writer {
         return self::$instance;
     }
 
+    /**
+     * Reset the writer and content_writer.
+     */
     public static final function reset() {
         static::$instance = null;
     }

@@ -89,6 +89,15 @@ class content_writer implements \core_privacy\request\content_writer {
     }
 
     /**
+     * Return the current context.
+     *
+     * @return  \context
+     */
+    public function get_current_context() : \context {
+        return $this->context;
+    }
+
+    /**
      * Export the supplied data within the current context, at the supplied subcontext.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
@@ -417,5 +426,6 @@ class content_writer implements \core_privacy\request\content_writer {
      *
      * @return  string
      */
-    public function finalise_content() : string ;
+    public function finalise_content() : string {
+    }
 }
