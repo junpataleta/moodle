@@ -45,6 +45,14 @@ class user_preference implements type {
      * @param   string  $summary A description of what the preference is used for.
      */
     public function __construct($name, $summary = '') {
+        if (debugging('', DEBUG_DEVELOPER)) {
+            $teststring = clean_param($summary, PARAM_STRINGID);
+            if ($teststring !== $summary) {
+                debugging("Summary information for use of the '{$name}' subsystem has an invalid langstring identifier: '{$summary}'",
+                    DEBUG_DEVELOPER);
+            }
+        }
+
         $this->name = $name;
         $this->summary = $summary;
     }

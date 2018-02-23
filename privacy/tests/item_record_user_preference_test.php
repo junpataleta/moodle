@@ -27,15 +27,15 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-use \core_privacy\metadata\item_record\subsystem_link;
+use \core_privacy\metadata\item_record\user_preference;
 
 /**
- * Tests for the \core_privacy API's item_record\subsystem_link functionality.
+ * Tests for the \core_privacy API's item_record\user_preference functionality.
  *
  * @copyright   2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class core_privacy_metadata_item_record_subsystem_link extends advanced_testcase {
+class core_privacy_metadata_item_record_user_preference extends advanced_testcase {
 
     /**
      * Ensure that warnings are thrown if string identifiers contain invalid characters.
@@ -43,7 +43,7 @@ class core_privacy_metadata_item_record_subsystem_link extends advanced_testcase
      * @dataProvider invalid_string_provider
      */
     public function test_invalid_configs($name, $summary) {
-        $record = new subsystem_link($name, $summary);
+        $record = new user_preference($name, $summary);
         $this->assertDebuggingCalled();
     }
 
@@ -57,7 +57,7 @@ class core_privacy_metadata_item_record_subsystem_link extends advanced_testcase
         $this->resetAfterTest();
 
         $CFG->debug = DEBUG_NORMAL;
-        $record = new subsystem_link($name, $summary);
+        $record = new user_preference($name, $summary);
         $this->assertDebuggingNotCalled();
     }
 
@@ -67,7 +67,7 @@ class core_privacy_metadata_item_record_subsystem_link extends advanced_testcase
      * @dataProvider valid_string_provider
      */
     public function test_valid_configs($name, $summary) {
-        $record = new subsystem_link($name, $summary);
+        $record = new user_preference($name, $summary);
         $this->assertDebuggingNotCalled();
     }
 

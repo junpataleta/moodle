@@ -85,6 +85,62 @@ class core_privacy_metadata_item_collection extends advanced_testcase {
     }
 
     /**
+     * Test that the add_database_table function adds a database table.
+     */
+    public function test_add_database_table() {
+        $collection = new item_collection('core_privacy');
+
+        $collection->add_database_table('example', [
+            'field' => 'description',
+        ], '');
+
+        $items = $collection->get_item_collection();
+        $this->assertCount(1, $items);
+        $this->assertInstanceOf(item_record\database_table::class, reset($items));
+    }
+
+    /**
+     * Test that the add_user_preference function adds a single user preference
+     */
+    public function test_add_user_preference() {
+        $collection = new item_collection('core_privacy');
+
+        $collection->add_user_preference('example', '');
+
+        $items = $collection->get_item_collection();
+        $this->assertCount(1, $items);
+        $this->assertInstanceOf(item_record\user_preference::class, reset($items));
+    }
+
+    /**
+     * Test that the link_external_location function links an external location.
+     */
+    public function test_link_external_location() {
+        $collection = new item_collection('core_privacy');
+
+        $collection->link_external_location('example', [
+            'field' => 'description',
+        ], '');
+
+        $items = $collection->get_item_collection();
+        $this->assertCount(1, $items);
+        $this->assertInstanceOf(item_record\external_location::class, reset($items));
+    }
+
+    /**
+     * Test that the link_subsystem function links the subsystem.
+     */
+    public function test_link_subsystem() {
+        $collection = new item_collection('core_privacy');
+
+        $collection->link_subsystem('example', '');
+
+        $items = $collection->get_item_collection();
+        $this->assertCount(1, $items);
+        $this->assertInstanceOf(item_record\subsystem_link::class, reset($items));
+    }
+
+    /**
      * Data provider to supply a list of valid components.
      *
      * @return  array
