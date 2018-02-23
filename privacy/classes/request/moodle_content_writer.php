@@ -43,7 +43,8 @@ class moodle_content_writer implements content_writer {
     /**
      * Constructor for the content writer.
      *
-     * Note: The writer_factory must be passed.
+     * Note: The writer factory must be passed.
+     *
      * @param   writer          $factory    The factory.
      */
     public function __construct(writer $writer) {
@@ -174,7 +175,7 @@ class moodle_content_writer implements content_writer {
     public function export_file(array $subcontext, \stored_file $file) : content_writer  {
         if (!$file->is_directory()) {
             $subcontextextra = [
-                'files',
+                get_string('files'),
                 $file->get_filepath(),
             ];
             $path = $this->get_path(array_merge($subcontext, $subcontextextra), $file->get_filename());
@@ -249,7 +250,9 @@ class moodle_content_writer implements content_writer {
         );
 
         // Join the directory together with the name.
-        return implode(DIRECTORY_SEPARATOR, $path) . DIRECTORY_SEPARATOR . $name;
+        $filepath = implode(DIRECTORY_SEPARATOR, $path) . DIRECTORY_SEPARATOR . $name;
+
+        return preg_replace('@' . DIRECTORY_SEPARATOR . '+@', DIRECTORY_SEPARATOR, $filepath);
     }
 
     /**
