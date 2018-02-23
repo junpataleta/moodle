@@ -9813,7 +9813,7 @@ function unserialize_array($expression) {
  * @copyright  2011 Sam Hemelryk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class lang_string implements JsonSerializable {
+class lang_string {
 
     /** @var string The strings identifier */
     protected $identifier;
@@ -9955,10 +9955,6 @@ class lang_string implements JsonSerializable {
      * @return string
      */
     public function __toString() {
-        return $this->get_string();
-    }
-
-    public function jsonSerialize() {
         return $this->get_string();
     }
 
