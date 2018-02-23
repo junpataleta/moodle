@@ -25,9 +25,20 @@
 namespace core_privacy\request;
 
 class moodle_content_writer implements content_writer {
+    /**
+     * @var string The base path on disk for this instance.
+     */
     protected $path = null;
 
+    /**
+     * @var \context The current context of the writer.
+     */
     protected $context = null;
+
+    /**
+     * @var \stored_file[] The list of files to be exported.
+     */
+    protected $files = [];
 
     /**
      * Constructor for the content writer.
@@ -36,8 +47,7 @@ class moodle_content_writer implements content_writer {
      * @param   writer          $factory    The factory.
      */
     public function __construct(writer $writer) {
-        $basedir = make_temp_directory('privacy');
-        $this->path = make_unique_writable_directory($basedir, true);
+        $this->path = make_request_directory();
     }
 
     /**
@@ -169,7 +179,7 @@ class moodle_content_writer implements content_writer {
             ];
             $path = $this->get_path(array_merge($subcontext, $subcontextextra), $file->get_filename());
             check_dir_exists(dirname($path), true, true);
-            $file->copy_content_to($path);
+            $this->files[$path] = $file;
         }
 
         return $this;
@@ -232,11 +242,8 @@ class moodle_content_writer implements content_writer {
      * @return  String                      The fully-qualfiied file path.
      */
     protected function get_path(array $subcontext, String $name) : String {
-        // Combine the base path of this exporter instance, with the context path, and the subcontext data.
+        // Combine the context path, and the subcontext data.
         $path = array_merge(
-            [
-                $this->path,
-            ],
             $this->get_context_path(),
             $subcontext
         );
@@ -252,20 +259,23 @@ class moodle_content_writer implements content_writer {
      * @param   String          $data       The data to be exported.
      */
     protected function write_data(String $path, String $data) {
-        check_dir_exists(dirname($path), true, true);
-        file_put_contents($path, $data);
+        $targetpath = $this->path . DIRECTORY_SEPARATOR . $path;
+        check_dir_exists(dirname($targetpath), true, true);
+        file_put_contents($targetpath, $data);
+        $this->files[$path] = $targetpath;
     }
 
     /**
-     * Perform any required finalisation steps.
-     * TODO: Compress and archive the content into a tgz or zip.
+     * Perform any required finalisation steps and return the location of the finalised export.
+     *
+     * @return  string
      */
-    public function finalise_content() {
-        // Not implemented yet.
-    }
+    public function finalise_content() : string {
+        $exportfile = make_request_directory() . '/export.zip';
 
-    public function get_archive_location() {
-        debugging('This is not part of the API - use with caution');
-        return $this->path;
+        $fp = get_file_packer();
+        $fp->archive_to_pathname($this->files, $exportfile);
+
+        return $exportfile;
     }
 }
