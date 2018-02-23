@@ -90,13 +90,19 @@ class core_privacy_metadata_item_collection extends advanced_testcase {
     public function test_add_database_table() {
         $collection = new item_collection('core_privacy');
 
-        $collection->add_database_table('example', [
-            'field' => 'description',
-        ], '');
+        $name = 'example';
+        $fields = ['field' => 'description'];
+        $summary = 'summarisation';
+
+        $collection->add_database_table($name, $fields, $summary);
 
         $items = $collection->get_item_collection();
         $this->assertCount(1, $items);
-        $this->assertInstanceOf(item_record\database_table::class, reset($items));
+        $item = reset($items);
+        $this->assertInstanceOf(item_record\database_table::class, $item);
+        $this->assertEquals($name, $item->get_name());
+        $this->assertEquals($fields, $item->get_privacy_fields());
+        $this->assertEquals($summary, $item->get_summary());
     }
 
     /**
@@ -105,11 +111,17 @@ class core_privacy_metadata_item_collection extends advanced_testcase {
     public function test_add_user_preference() {
         $collection = new item_collection('core_privacy');
 
-        $collection->add_user_preference('example', '');
+        $name = 'example';
+        $summary = 'summarisation';
+
+        $collection->add_user_preference($name, $summary);
 
         $items = $collection->get_item_collection();
         $this->assertCount(1, $items);
-        $this->assertInstanceOf(item_record\user_preference::class, reset($items));
+        $item = reset($items);
+        $this->assertInstanceOf(item_record\user_preference::class, $item);
+        $this->assertEquals($name, $item->get_name());
+        $this->assertEquals($summary, $item->get_summary());
     }
 
     /**
@@ -118,13 +130,19 @@ class core_privacy_metadata_item_collection extends advanced_testcase {
     public function test_link_external_location() {
         $collection = new item_collection('core_privacy');
 
-        $collection->link_external_location('example', [
-            'field' => 'description',
-        ], '');
+        $name = 'example';
+        $fields = ['field' => 'description'];
+        $summary = 'summarisation';
+
+        $collection->link_external_location($name, $fields, $summary);
 
         $items = $collection->get_item_collection();
         $this->assertCount(1, $items);
-        $this->assertInstanceOf(item_record\external_location::class, reset($items));
+        $item = reset($items);
+        $this->assertInstanceOf(item_record\external_location::class, $item);
+        $this->assertEquals($name, $item->get_name());
+        $this->assertEquals($fields, $item->get_privacy_fields());
+        $this->assertEquals($summary, $item->get_summary());
     }
 
     /**
@@ -133,11 +151,17 @@ class core_privacy_metadata_item_collection extends advanced_testcase {
     public function test_link_subsystem() {
         $collection = new item_collection('core_privacy');
 
-        $collection->link_subsystem('example', '');
+        $name = 'example';
+        $summary = 'summarisation';
+
+        $collection->link_subsystem($name, $summary);
 
         $items = $collection->get_item_collection();
         $this->assertCount(1, $items);
-        $this->assertInstanceOf(item_record\subsystem_link::class, reset($items));
+        $item = reset($items);
+        $this->assertInstanceOf(item_record\subsystem_link::class, $item);
+        $this->assertEquals($name, $item->get_name());
+        $this->assertEquals($summary, $item->get_summary());
     }
 
     /**
