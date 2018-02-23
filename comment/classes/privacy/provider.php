@@ -78,14 +78,24 @@ class provider implements metadataprovider, subsystemprovider {
         $commentobject = new \comment($data);
         $commentobject->set_view_permission(true);
         $comments = $commentobject->get_comments(0);
-        $subcontext[] = new \lang_string('commentsubcontext');
-        if ($onlyforthisuser) {
-            $comments = array_filter($comments, function($comment) use ($onlyforthisuser) {
+        $subcontext[] = get_string('commentsubcontext');
+        
+        $comments = array_filter($comments, function($comment) use ($onlyforthisuser) {
+            unset($comment->id);
+            unset($comment->profileurl);
+            unset($comment->avatar);
+            unset($comment->delete);
+            unset($comment->timecreated);
+            unset($comment->strftimeformat);
+            if ($onlyforthisuser) {
                 if ($comment->userid == $onlyforthisuser) {
                     return $comment;
                 }
-            });
-        }
+            } else {
+                return $comment;
+            }
+        });
+        
         if (!empty($comments)) {
             writer::with_context($context)
                     ->export_data($subcontext, (object)$comments);
