@@ -32,61 +32,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class contextlist implements
-    // This is currently an approved_contextlist until we decide upon implementation of that interface.
-    approved_contextlist
-
-{
-    protected $contextids = [];
-
-    protected $user;
-
-    protected $iteratorposition = 0;
-
-    /**
-     * Specify the user which owns this request.
-     *
-     * @param   \stdClass       $user The user record.
-     * @return  $this
-     */
-    public function set_user(\stdClass $user) : approved_contextlist {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    /**
-     * Get the user which requested their data.
-     *
-     * @return  \stdClass
-     */
-    public function get_user() : \stdClass {
-        return $this->user;
-    }
-
-    /**
-     * Get the list of context IDs that relate to this request.
-     *
-     * @return  int[]
-     */
-    public function get_contextids() : array {
-        return array_unique($this->contextids);
-    }
-
-    /**
-     * Get the complete list of context objects that relate to this
-     * request.
-     *
-     * @return  \contect[]
-     */
-    public function get_contexts() : array {
-        $contexts = [];
-        foreach ($this->contextids as $contextid) {
-            $contexts[] = \context::instance_by_id($contextid);
-        }
-
-        return $contexts;
-    }
+class contextlist extends contextlist_base {
 
     /**
      * Add a set of contexts from  SQL.
@@ -113,50 +59,5 @@ class contextlist implements
         $this->contextids += $contextids;
 
         return $this;
-    }
-
-    /**
-     * Return the current context.
-     *
-     * @return  \context
-     */
-    public function current() {
-        return \context::instance_by_id($this->contextids[$this->iteratorposition]);
-    }
-
-    /**
-     * Return the key of the current element.
-     *
-     * @return  mixed
-     */
-    public function key() {
-        return $this->iteratorposition;
-    }
-
-    /**
-     * Move to the next context in the list.
-     */
-    public function next() {
-        ++$this->iteratorposition;
-    }
-
-    /**
-     * Check if the current position is valid.
-     *
-     * @return  bool
-     */
-    public function valid() {
-        return isset($this->contextids[$this->iteratorposition]);
-    }
-
-    /**
-     * Rewind to the first found context.
-     */
-    public function rewind() {
-        $this->iteratorposition = 0;
-    }
-
-    public function count() {
-        return count($this->contextids);
     }
 }

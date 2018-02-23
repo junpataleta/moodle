@@ -15,27 +15,39 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Approved Context List interface
+ * An implementation of a contextlist which has been filtered and approved.
  *
  * @package    privacy
- * @copyright  2018 Zig Tan <zig@moodle.com>
+ * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace core_privacy\request;
 
 /**
- * Interface approved_contextlist
- * @package core_privacy\request
+ * An implementation of a contextlist which has been filtered and approved.
+ *
+ * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface approved_contextlist extends
+class approved_contextlist extends contextlist_base {
 
-    // Implement an Iterator to fetch the Context objects.
-    \Iterator,
+    /**
+     * @var \stdClass The user this contextlist belongs to.
+     */
+    protected $user;
 
-    // Implement the Countable interface to allow the number of returned results to be queried easily.
-    \Countable
-{
+    /**
+     * Create a new approved contextlist.
+     *
+     * @param   \stdClass       $user The user record.
+     * @param   \int[]          $contextids The list of contextids present in this list.
+     */
+    public function __construct(\stdClass $user, array $contextids) {
+        $this->set_user($user);
+
+        $this->contextids = $contextids;
+    }
 
     /**
      * Specify the user which owns this request.
@@ -43,27 +55,18 @@ interface approved_contextlist extends
      * @param   \stdClass       $user The user record.
      * @return  $this
      */
-    public function set_user(\stdClass $user) : approved_contextlist ;
+    public function set_user(\stdClass $user) : approved_contextlist {
+        $this->user = $user;
+
+        return $this;
+    }
 
     /**
      * Get the user which requested their data.
      *
      * @return  \stdClass
      */
-    public function get_user() : \stdClass;
-
-    /**
-     * Get the list of context IDs that relate to this request.
-     *
-     * @return  int[]
-     */
-    public function get_contextids() : array ;
-
-    /**
-     * Get the complete list of context objects that relate to this
-     * request.
-     *
-     * @return  \contect[]
-     */
-    public function get_contexts() : array ;
+    public function get_user() : \stdClass {
+        return $this->user;
+    }
 }
