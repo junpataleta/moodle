@@ -26,6 +26,9 @@
  */
 namespace mod_assign\privacy;
 
+use assign;
+use context;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**

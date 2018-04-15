@@ -30,8 +30,10 @@ require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
 use \core_privacy\local\metadata\collection;
 use \core_privacy\local\metadata\provider as metadataprovider;
+use core_privacy\local\request\contextlist;
 use \mod_assign\privacy\assignfeedback_provider;
 use \mod_assign\privacy\feedback_request_data;
+use mod_assign\privacy\useridlist;
 
 /**
  * Privacy class for requesting user data.
@@ -60,8 +62,7 @@ class provider implements metadataprovider, assignfeedback_provider {
      * @param  int $userid The user ID.
      * @param  contextlist $contextlist The context list.
      */
-    public static function get_context_for_userid_within_feedback(int $userid,
-            \core_privacy\local\request\contextlist $contextlist) {
+    public static function get_context_for_userid_within_feedback(int $userid, contextlist $contextlist) {
         // This uses the assign_grade table.
     }
 
@@ -70,7 +71,7 @@ class provider implements metadataprovider, assignfeedback_provider {
      *
      * @param  useridlist $useridlist A list of user IDs
      */
-    public static function get_student_user_ids(\mod_assign\privacy\useridlist $useridlist) {
+    public static function get_student_user_ids(useridlist $useridlist) {
         // Not required.
     }
 

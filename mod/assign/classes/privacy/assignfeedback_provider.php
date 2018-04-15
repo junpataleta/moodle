@@ -26,6 +26,8 @@
  */
 namespace mod_assign\privacy;
 
+use core_privacy\local\request\contextlist;
+
 defined('MOODLE_INTERNAL') || die();
 
 interface assignfeedback_provider extends \core_privacy\local\request\plugin\subplugin_provider {
@@ -38,8 +40,7 @@ interface assignfeedback_provider extends \core_privacy\local\request\plugin\sub
      * @param  int $userid The user ID to get context IDs for.
      * @param  contextlist $contextlist Use add_from_sql with this object to add your context IDs.
      */
-    public static function get_context_for_userid_within_feedback(int $userid, 
-            \core_privacy\local\request\contextlist $contextlist);
+    public static function get_context_for_userid_within_feedback(int $userid, contextlist $contextlist);
 
     /**
      * Returns student user ids related to the provided teacher ID. If an entry must be present in the assign_grade table for

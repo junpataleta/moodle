@@ -63,7 +63,10 @@ class provider implements metadataprovider, \mod_assign\privacy\assignsubmission
      */
     public static function get_context_for_userid_within_submission(int $userid, contextlist $contextlist) {
         $sql = "SELECT contextid
-                    FROM {comments} WHERE component = :component AND commentarea = :commentarea AND userid = :userid";
+                  FROM {comments}
+                 WHERE component = :component
+                       AND commentarea = :commentarea
+                       AND userid = :userid";
         $params = ['userid' => $userid, 'component' => 'assignsubmission_comments', 'commentarea' => 'submission_comments'];
         $contextlist->add_from_sql($sql, $params);
     }

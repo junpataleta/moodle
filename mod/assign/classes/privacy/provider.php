@@ -28,6 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
+use assign;
+use context;
 use \core_privacy\local\metadata\collection;
 use \core_privacy\local\metadata\provider as metadataprovider;
 use \core_privacy\local\request\contextlist;
@@ -37,6 +39,7 @@ use \core_privacy\local\request\writer;
 use \core_privacy\local\request\approved_contextlist;
 use \core_privacy\local\request\transform;
 use \core_privacy\local\request\helper;
+use stdClass;
 
 /**
  * Privacy class for requesting user data.
@@ -168,7 +171,7 @@ class provider implements metadataprovider, pluginprovider, preference_provider 
             helper::export_context_files($context, $user);
 
             writer::with_context($context)->export_data([], $assigndata);
-            $assign = new \assign($context, null, null);
+            $assign = new assign($context, null, null);
 
             // I need to find out if I'm a student or a teacher.
             if ($userids = self::find_grader_info($user->id, $assign)) {
@@ -232,12 +235,12 @@ class provider implements metadataprovider, pluginprovider, preference_provider 
      *
      * @param context $context The module context.
      */
-    public static function delete_data_for_all_users_in_context(\context $context) {
+    public static function delete_data_for_all_users_in_context(context $context) {
         global $DB;
 
         if ($context->contextlevel == CONTEXT_MODULE) {
             // Get the assignment related to this context.
-            $assign = new \assign($context, null, null);
+            $assign = new assign($context, null, null);
             // What to do first... Get sub plugins to delete their stuff.
             foreach ($assign->get_submission_plugins() as $submissionplugin) {
                 $requestdata = new submission_request_data($context, $submissionplugin, null, [], null, $assign);
@@ -274,7 +277,7 @@ class provider implements metadataprovider, pluginprovider, preference_provider 
                 continue;    
             }
             // Get the assign object.
-            $assign = new \assign($context, null, null);
+            $assign = new assign($context, null, null);
             $assignid = $assign->get_instance()->id;
             // Loop through each plugin.
             foreach ($assign->get_submission_plugins() as $submissionplugin) {
@@ -309,10 +312,10 @@ class provider implements metadataprovider, pluginprovider, preference_provider 
     /**
      * Deletes assignment overrides.
      *
-     * @param  \assign $assign The assignment object
-     * @param  \stdClass $user The user object if we are deleting only the overrides for one user.
+     * @param  assign $assign The assignment object
+     * @param  stdClass $user The user object if we are deleting only the overrides for one user.
      */
-    protected static function delete_user_overrides(\assign $assign, \stdClass $user = null) {
+    protected static function delete_user_overrides(assign $assign, stdClass $user = null) {
         global $DB;
 
         $assignid = $assign->get_instance()->id;
@@ -512,11 +515,11 @@ class provider implements metadataprovider, pluginprovider, preference_provider 
     /**
      * Clean up overrides for exporting.
      *
-     * @param  \context $context   Context
+     * @param  context $context   Context
      * @param  stdClass $overrides Overrides for this user.
      */
-    public static function export_overrides(\context $context, $overrides) {
-        $data = new \stdClass();
+    public static function export_overrides(context $context, $overrides) {
+        $data = new stdClass();
         if (!empty($overrides->duedate)) {
             $data->duedate = transform::datetime($overrides->duedate);
         }
