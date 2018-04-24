@@ -47,11 +47,7 @@ use core_competency\privacy\provider;
 class core_competency_privacy_testcase extends provider_testcase {
 
     public function setUp() {
-        global $PAGE;
         $this->resetAfterTest();
-
-        // We need this or exporters (core_competency\external\exporter) do not receive the right renderer.
-        $PAGE->get_renderer('core');
     }
 
     public function test_get_contexts_for_userid_with_usermodified_for_framework() {

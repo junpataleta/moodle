@@ -1351,16 +1351,17 @@ class provider implements
               FROM {" . user_competency::TABLE . "} uc
               JOIN {" . competency::TABLE . "} c
                 ON c.id = uc.competencyid
-         LEFT JOIN {comments} comment
-                ON comment.contextid = :contextid
-               AND comment.commentarea = :ucarea
-               AND comment.component = :competency
-               AND comment.itemid = uc.id
+         LEFT JOIN {comments} co
+                ON co.contextid = :contextid
+                   AND co.commentarea = :ucarea
+                   AND co.component = :competency
+                   AND co.itemid = uc.id
              WHERE uc.userid = :targetuserid
-               AND (uc.usermodified = :userid1
-                OR uc.reviewerid = :userid2
-                OR comment.userid = :userid3)
-               AND uc.competencyid $insql
+                   AND (uc.usermodified = :userid1
+                       OR uc.reviewerid = :userid2
+                       OR co.userid = :userid3
+                   )
+                   AND uc.competencyid $insql
           ORDER BY c.id, uc.id";
         $params = array_merge($inparams, [
             'targetuserid' => $context->instanceid,
@@ -1795,9 +1796,10 @@ class provider implements
      * @return array
      */
     protected static function transform_competency_brief(competency $competency) {
-        global $OUTPUT;
+        global $PAGE;
         $exporter = new \core_competency\external\competency_exporter($competency, ['context' => $competency->get_context()]);
-        $data = $exporter->export($OUTPUT);
+        $output = $PAGE->get_renderer('core');
+        $data = $exporter->export($output);
         return [
             'idnumber' => $data->idnumber,
             'name' => $data->shortname,
@@ -1864,9 +1866,10 @@ class provider implements
      * @return array
      */
     protected static function transform_framework_brief(competency_framework $framework) {
-        global $OUTPUT;
+        global $PAGE;
         $exporter = new \core_competency\external\competency_framework_exporter($framework);
-        $data = $exporter->export($OUTPUT);
+        $output = $PAGE->get_renderer('core');
+        $data = $exporter->export($output);
         return [
             'name' => $data->shortname,
             'idnumber' => $data->idnumber,
@@ -1881,9 +1884,10 @@ class provider implements
      * @return array
      */
     protected static function transform_template_brief(template $template) {
-        global $OUTPUT;
+        global $PAGE;
         $exporter = new \core_competency\external\template_exporter($template);
-        $data = $exporter->export($OUTPUT);
+        $output = $PAGE->get_renderer('core');
+        $data = $exporter->export($output);
         return [
             'name' => $data->shortname,
             'description' => $data->description
