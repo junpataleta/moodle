@@ -1,6 +1,12 @@
 This files describes API changes in core libraries and APIs,
 information provided here is intended especially for developers.
 
+=== 3.3.6 ===
+* A default constructor method has been implemented for \core\task\task_base. This sets up the $OUTPUT global variable to use
+  \core_renderer by default when running in CLI instead of \bootstrap_renderer. Should you need to implement your own constructor
+  for your scheduled/ad-hoc task, you may want to call this parent method first, especially if you intend on calling data exporters
+  within your task (e.g. \core\external\exporter::export(), some_renderable::export_for_template(), etc.).
+
 === 3.3.5 ===
 
 * Plugins can define class 'PLUGINNAME\privacy\local\sitepolicy\handler' if they implement an alternative mechanisms for
