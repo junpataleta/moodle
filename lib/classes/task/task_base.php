@@ -51,6 +51,18 @@ abstract class task_base {
     private $nextruntime = 0;
 
     /**
+     * task_base constructor.
+     */
+    public function __construct() {
+        global $OUTPUT, $PAGE;
+        // Set up $OUTPUT when necessary (e.g. the task is run via CLI).
+        if (!empty(CLI_SCRIPT) && $OUTPUT instanceof \bootstrap_renderer) {
+            $PAGE = new \moodle_page();
+            $OUTPUT = new \core_renderer($PAGE, RENDERER_TARGET_GENERAL);
+        }
+    }
+
+    /**
      * Set the current lock for this task.
      * @param \core\lock\lock $lock
      */
