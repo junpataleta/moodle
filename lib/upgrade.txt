@@ -24,6 +24,10 @@ information provided here is intended especially for developers.
   act as a site policy handler.
 * There is a new is_fulltext_search_supported() DML function. The default implementation returns false. This function
   is used by 'Simple search' global search engine to determine if the database full-text search capabilities can be used.
+* A default constructor method has been implemented for \core\task\task_base. This sets up the $OUTPUT global variable to use
+  \core_renderer by default when running in CLI instead of \bootstrap_renderer. Should you need to implement your own constructor
+  for your scheduled/ad-hoc task, you may want to call this parent method first, especially if you intend on calling data exporters
+  within your task (e.g. \core\external\exporter::export(), some_renderable::export_for_template(), etc.).
 
 === 3.4 ===
 
