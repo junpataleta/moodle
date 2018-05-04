@@ -78,7 +78,8 @@ class acceptances implements renderable, templatable {
         $policies = api::get_policies_with_acceptances($this->userid);
 
         $canviewfullnames = has_capability('moodle/site:viewfullnames', \context_system::instance());
-        foreach ($policies as $policy) {
+        $toexclude = [];
+        foreach ($policies as $key => $policy) {
 
             foreach ($policy->versions as $version) {
                 unset($version->summary);
@@ -119,6 +120,7 @@ class acceptances implements renderable, templatable {
             if ($policy->versions[0]->status != policy_version::STATUS_ACTIVE) {
                 // Add an empty "currentversion" on top.
                 $policy->versions = [0 => (object)[]] + $policy->versions;
+                $toexclude[] = $key;
             }
 
             $policy->versioncount = count($policy->versions);
@@ -127,6 +129,10 @@ class acceptances implements renderable, templatable {
             $policy->versions[0]->hasarchived = (count($policy->versions) > 1);
         }
 
+        // Exclude inactive policies.
+        foreach ($toexclude as $key) {
+            unset($policies[$key]);
+        }
         $data->policies = array_values($policies);
         return $data;
     }
