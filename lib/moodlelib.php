@@ -1630,7 +1630,7 @@ function get_users_from_config($value, $capability, $includeadmins = true) {
  * @return void
  */
 function purge_all_caches() {
-    purge_caches(true);
+    purge_caches();
 }
 
 /**
@@ -1639,18 +1639,18 @@ function purge_all_caches() {
  * Purges the cache areas specified.  By default, this will purge all caches but can selectively purge specific
  * areas alone or in combination.
  *
- * @param bool $all Purge all caches? (overrides all other options if true)
- * @param bool[] $options Specific parts of the cache to purge. Valid options are:
- *        'muc'    Purge MUC caches?
- *        'theme'  Purge theme cache?
- *        'lang'   Purge language string cache?
- *        'js'     Purge javascript cache?
- *        'filter' Purge text filter cache?
- *        'other'  Purge all other caches?
+ * @param bool[] $options Specific parts of the cache to purge.
+ *                        Valid options are:
+ *                          'muc'    Purge MUC caches?
+ *                          'theme'  Purge theme cache?
+ *                          'lang'   Purge language string cache?
+ *                          'js'     Purge javascript cache?
+ *                          'filter' Purge text filter cache?
+ *                          'other'  Purge all other caches?
  */
-function purge_caches($all, $options = []) {
+function purge_caches($options = []) {
     $defaults = ['muc' => false, 'theme' => false, 'lang' => false, 'js' => false, 'filter' => false, 'other' => false];
-    if ($all) {
+    if (empty($options)) {
         $options = array_fill_keys(array_keys($defaults), true); // Set all options to true.
     } else {
         $options = array_merge($defaults, array_intersect_key($options, $defaults)); // Override defaults with specified options.

@@ -46,17 +46,15 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-//@codingStandardsIgnoreStart
     // The indentation of this string is "wrong" but this is to avoid a extra whitespace in console output.
-    $help =
-"Invalidates Moodle internal caches
+    $help = <<<EOD
+Invalidates Moodle internal caches
 
 Specific caches can be defined (alone or in combination) using arguments. If none are specified,
 all caches will be purged.
 
 Options:
 -h, --help            Print out this help
-    --all             Purge all caches (default)
     --muc             Purge all MUC caches (includes lang cache)
     --theme           Purge theme cache
     --lang            Purge language string cache
@@ -67,20 +65,14 @@ Options:
 
 Example:
 \$sudo -u www-data /usr/bin/php admin/cli/purge_caches.php
-";
-//@codingStandardsIgnoreEnd
+
+EOD;
 
     echo $help;
     exit(0);
 }
 
-
-$trueoptions = array_filter($options);
-if ($options['all'] && count($trueoptions) > 1) {
-    cli_error(get_string('cliinvalidcombination', 'admin', '--' . implode(' --', array_keys($trueoptions))), 2);
-}
-
-$purgeall = empty($trueoptions) || $options['all'];
-purge_caches($purgeall, $options);
+$options = array_filter($options);
+purge_caches($options);
 
 exit(0);

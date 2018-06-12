@@ -120,7 +120,6 @@ $string['clianswerno'] = 'n';
 $string['cliansweryes'] = 'y';
 $string['cliincorrectvalueerror'] = 'Error, incorrect value "{$a->value}" for "{$a->option}"';
 $string['cliincorrectvalueretry'] = 'Incorrect value, please retry';
-$string['cliinvalidcombination'] = 'Invalid combination of options: {$a}';
 $string['clistatusdisabled'] = 'Status: disabled';
 $string['clistatusenabled'] = 'Status: enabled';
 $string['clistatusenabledlater'] = 'status: CLI maintenance mode will be enabled on {$a}';
