@@ -1,0 +1,53 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core_tag/add_tags
+
+    Renders the form for adding tags.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * sesskey string The session key
+
+    Example context (json):
+    {
+        "actionurl" : "#",
+        "sesskey" : "UniqueSesskey1a2b3c"
+    }
+
+}}
+<div>
+    <form id="addtags_form" method="post" action="{{actionurl}}">
+        <input type="hidden" name="action" value="addstandardtag"/>
+        <input type="hidden" name="sesskey" value="{{sesskey}}"/>
+        <div class="form-group" data-region="tagslistinput">
+            <label for="id_tagslist">{{#str}}inputstandardtags, tag{{/str}}</label>
+            <span class="pull-xs-right text-nowrap">
+                <abbr class="initialism text-danger" title="{{#str}}required{{/str}}">{{#pix}}req, core, {{#str}}required{{/str}}{{/pix}}</abbr>
+            </span>
+            <input type="text" id="id_tagslist" class="form-control" name="tagslist"/>
+            <div class="form-control-feedback" id="id_tagslist_error_message" hidden="hidden">
+                {{#str}}required{{/str}}
+            </div>
+        </div>
+    </form>
+</div>
