@@ -35,22 +35,27 @@
     }
 
 }}
-<div>
-    <form id="addtagcoll_form" method="post" action="{{actionurl}}">
-        <input type="hidden" name="sesskey" value="{{sesskey}}"/>
-        <div class="form-group" data-region="addtagcoll_nameinput">
-            <label for="addtagcoll_name">{{#str}}name{{/str}}</label>
-            <span class="pull-xs-right text-nowrap">
-                <abbr class="initialism text-danger" title="{{#str}}required{{/str}}">{{#pix}}req, core, {{#str}}required{{/str}}{{/pix}}</abbr>
+<form id="addtagcoll_form" method="post" action="{{actionurl}}" class="needs-validation">
+    <input type="hidden" name="sesskey" value="{{sesskey}}"/>
+    <div class="form-group control-group" data-region="addtagcoll_nameinput">
+        <label for="addtagcoll_name">
+            {{#str}}name{{/str}}
+            <span>
+                <abbr class="initialism text-danger" title="{{#str}}required{{/str}}">
+                    {{#pix}}req, core, {{#str}}required{{/str}}{{/pix}}
+                </abbr>
             </span>
-            <input id="addtagcoll_name" type="text" class="form-control" name="name"/>
-            <div class="form-control-feedback" id="id_addtagcoll_name_error_message" hidden="hidden">
+        </label>
+        {{! Enclosing these controls in a div with the controls class for BS2 compatibility when showing validation errors.}}
+        <div class="controls">
+            <input id="addtagcoll_name" type="text" class="form-control" name="name" aria-required="true" required/>
+            <div class="form-control-feedback invalid-feedback" id="id_addtagcoll_name_error_message" hidden="hidden">
                 {{#str}}required{{/str}}
             </div>
         </div>
-        <div class="form-group form-check">
-           <input id="addtagcoll_searchable" name="searchable" type="checkbox" value="1" checked class="form-check-input"/>
-           <label for="addtagcoll_searchable" class="form-check-label">{{#str}}searchable, tag{{/str}}</label>
-        </div>
-    </form>
-</div>
+    </div>
+    <div class="form-group form-check">
+        <input id="addtagcoll_searchable" name="searchable" type="checkbox" value="1" checked class="form-check-input"/>
+        <label for="addtagcoll_searchable" class="form-check-label">{{#str}}searchable, tag{{/str}}</label>
+    </div>
+</form>

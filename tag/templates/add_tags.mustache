@@ -35,19 +35,24 @@
     }
 
 }}
-<div>
-    <form id="addtags_form" method="post" action="{{actionurl}}">
-        <input type="hidden" name="action" value="addstandardtag"/>
-        <input type="hidden" name="sesskey" value="{{sesskey}}"/>
-        <div class="form-group" data-region="tagslistinput">
-            <label for="id_tagslist">{{#str}}inputstandardtags, tag{{/str}}</label>
-            <span class="pull-xs-right text-nowrap">
-                <abbr class="initialism text-danger" title="{{#str}}required{{/str}}">{{#pix}}req, core, {{#str}}required{{/str}}{{/pix}}</abbr>
+<form id="addtags_form" method="post" action="{{actionurl}}" class="needs-validation">
+    <input type="hidden" name="action" value="addstandardtag"/>
+    <input type="hidden" name="sesskey" value="{{sesskey}}"/>
+    <div class="form-group control-group" data-region="tagslistinput">
+        <label for="id_tagslist">
+            {{#str}}inputstandardtags, tag{{/str}}
+            <span>
+                <abbr class="initialism text-danger" title="{{#str}}required{{/str}}">
+                    {{#pix}}req, core, {{#str}}required{{/str}}{{/pix}}
+                </abbr>
             </span>
-            <input type="text" id="id_tagslist" class="form-control" name="tagslist"/>
-            <div class="form-control-feedback" id="id_tagslist_error_message" hidden="hidden">
+        </label>
+        {{! Enclosing these controls in a div with the controls class for BS2 compatibility when showing validation errors.}}
+        <div class="controls">
+            <input type="text" id="id_tagslist" class="form-control" name="tagslist" aria-required="true" required />
+            <div class="form-control-feedback invalid-feedback" id="id_tagslist_error_message" hidden>
                 {{#str}}required{{/str}}
             </div>
         </div>
-    </form>
-</div>
+    </div>
+</form>
