@@ -1,0 +1,72 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_dataprivacy/dpo_response_email
+
+    Email template for the DPO's response to a user enquiry.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * Object output The $OUTPUT global object.
+    * String requester The requester's name.
+    * Number timecreated The timestamp when the equiry was made.
+    * String message The requester's enquiry.
+    * String response The response to the user's enquiry.
+    * String datarequestsurl The URL to the data requests page.
+
+    Example context (json):
+    {
+        "output": {
+            "doctype": "<!doctype html>",
+            "htmlattributes": "lang=\"en\"",
+            "page_title": "Data requests",
+            "favicon": "#"
+        }
+        "requester": "John Doe",
+        "timecreated": 0,
+        "message": "<p>Hi DPO,</p> <p>I'd like to know more about GDPR.</p> <p>Thanks!</p>",
+        "response": "Thanks for your enquiry. However, I don't know the answer to your question. Have a good day!",
+        "datarequestsurl": "#"
+    }
+}}
+{{> theme_boost/head }}
+<body>
+    <div>
+        <p>{{#str}}emailsalutation, tool_dataprivacy, {{requester}}{{/str}}</p>
+        <p>
+            {{#str}}enquiryresponseemailintro, tool_dataprivacy, {{#userdate}} {{timecreated}}, {{#str}} strftimedatetime {{/str}} {{/userdate}}{{/str}}
+        </p>
+        <table class="table">
+            <tr>
+                <th scope="row">{{#str}}message, tool_dataprivacy{{/str}}</th>
+                <td>{{{message}}}</td>
+            </tr>
+            <tr>
+                <th scope="row">{{#str}}response, tool_dataprivacy{{/str}}</th>
+                <td>{{{response}}}</td>
+            </tr>
+        </table>
+        <hr>
+        <a href="{{datarequestsurl}}">{{#str}}viewrequest, tool_dataprivacy{{/str}}</a>
+    </div>
+</body>
+</html>

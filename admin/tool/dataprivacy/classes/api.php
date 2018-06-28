@@ -24,6 +24,7 @@
 namespace tool_dataprivacy;
 
 use coding_exception;
+use context_course;
 use context_system;
 use core\invalid_persistent_exception;
 use core\message\message;
@@ -426,7 +427,22 @@ class api {
         if ($dpoid) {
             $datarequest->set('dpo', $dpoid);
         }
-        $datarequest->set('dpocomment', $comment);
+        // Update the comment if necessary.
+        if (!empty(trim($comment))) {
+            $params = [
+                'date' => userdate(time()),
+                'comment' => $comment
+            ];
+            $commenttosave = get_string('datecomment', 'tool_dataprivacy', $params);
+            // Check if there's an existing DPO comment.
+            $currentcomment = trim($datarequest->get('dpocomment'));
+            if ($currentcomment) {
+                // Append the new comment to the current comment and give them 1 line space in between.
+                $commenttosave = $currentcomment . PHP_EOL . PHP_EOL . $commenttosave;
+            }
+            $datarequest->set('dpocomment', $commenttosave);
+        }
+
         return $datarequest->update();
     }
 
@@ -521,7 +537,6 @@ class api {
      * @param data_request $request The data request
      * @return int|false
      * @throws coding_exception
-     * @throws dml_exception
      * @throws moodle_exception
      */
     public static function notify_dpo($dpo, data_request $request) {
@@ -573,6 +588,68 @@ class api {
         // Render message email body.
         $messagehtml = $output->render_from_template('tool_dataprivacy/data_request_email', $messagetextdata);
         $message->userto = $dpo;
+        $message->fullmessage = html_to_text($messagehtml);
+        $message->fullmessagehtml = $messagehtml;
+
+        // Send message.
+        return message_send($message);
+    }
+
+    /**
+     * Sends a message to the user.
+     *
+     * @param stdClass $dpo The DPO user record who is replying to the user
+     * @param int $requestid The data request ID
+     * @param string $responsetext The DPO's response to the user.
+     * @return int|false
+     * @throws coding_exception
+     * @throws moodle_exception
+     */
+    public static function send_response_to_user($dpo, $requestid, $responsetext = '') {
+        global $OUTPUT, $PAGE, $SITE;
+
+        $output = $PAGE->get_renderer('tool_dataprivacy');
+
+        $request = new data_request($requestid);
+        $usercontext = \context_user::instance($request->get('requestedby'));
+        $requestexporter = new data_request_exporter($request, ['context' => $usercontext]);
+        $requestdata = $requestexporter->export($output);
+
+        // Create message to send to user.
+        $sitename = format_string($SITE->shortname, true, ['context' => context_course::instance(SITEID), "escape" => false]);
+        $subject = get_string('responsetoenquiry', 'tool_dataprivacy', $sitename);
+
+        $datarequestsurl = new moodle_url('/admin/tool/dataprivacy/mydatarequests.php');
+        $message = new message();
+        $message->courseid          = $SITE->id;
+        $message->component         = 'tool_dataprivacy';
+        $message->name              = 'datarequestprocessingresults';
+        $message->userfrom          = $dpo->id;
+        $message->replyto           = $dpo->email;
+        $message->replytoname       = fullname($dpo);
+        $message->subject           = $subject;
+        $message->fullmessageformat = FORMAT_HTML;
+        $message->notification      = 1;
+        $message->contexturl        = $datarequestsurl;
+        $message->contexturlname    = get_string('datarequests', 'tool_dataprivacy');
+
+        // Prepare the context data for the email message body.
+        if (!empty(trim($responsetext))) {
+            $responsetext = text_to_html($responsetext);
+        }
+        $requestedby = $requestdata->requestedbyuser;
+        $messagetextdata = [
+            'output' => $OUTPUT,
+            'requester' => $requestedby->fullname,
+            'timecreated' => $requestdata->timecreated,
+            'message' => $requestdata->messagehtml,
+            'response' => $responsetext,
+            'datarequestsurl' => $datarequestsurl
+        ];
+
+        // Render message email body.
+        $messagehtml = $output->render_from_template('tool_dataprivacy/dpo_response_email', $messagetextdata);
+        $message->userto = $requestedby->id;
         $message->fullmessage = html_to_text($messagehtml);
         $message->fullmessagehtml = $messagehtml;
 
