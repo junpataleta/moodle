@@ -25,6 +25,12 @@ dd a.contactdpo {
     margin-left: inherit;
 }
 
+/* Undo the no-overflow div's style to let the action menu show outside its bounds as action menu item constraints
+   don't work in Boost for 34 and below. */
+[data-region="data-requests-table"] .no-overflow {
+    overflow: inherit;
+}
+
 [data-region="data-requests-table"] .moodle-actionmenu {
     min-width: 150px;
 }
