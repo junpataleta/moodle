@@ -32,6 +32,8 @@ require_once($CFG->dirroot.'/group/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 require_once('locallib.php');
 require_once('user_form.php');
+require_once($CFG->dirroot.'/admin/tool/uploaduser/classes/field_value_validators.php');
+use tool_uploaduser\local\field_value_validators;
 
 $iid         = optional_param('iid', '', PARAM_INT);
 $previewrows = optional_param('previewrows', 10, PARAM_INT);
@@ -93,6 +95,7 @@ $STD_FIELDS = array('id', 'username', 'email',
         'auth',        // watch out when changing auth type or using external auth plugins!
         'oldusername', // use when renaming users - this is the original username
         'suspended',   // 1 means suspend user account, 0 means activate user account, nothing means keep as is for existing users
+        'theme',       // Define a theme for user when 'allowuserthemes' is enabled.
         'deleted',     // 1 means delete user
         'mnethostid',  // Can not be used for adding, updating or deleting of users - only for enrolments, groups, cohorts and suspending.
         'interests',
@@ -101,7 +104,6 @@ $STD_FIELDS = array('id', 'username', 'email',
 $STD_FIELDS = array_merge($STD_FIELDS, get_all_user_name_fields());
 
 $PRF_FIELDS = array();
-
 if ($proffields = $DB->get_records('user_info_field')) {
     foreach ($proffields as $key => $proffield) {
         $profilefieldname = 'profile_field_'.$proffield->shortname;
@@ -354,6 +356,12 @@ if ($formdata = $mform2->is_cancelled()) {
         } else {
             $upt->track('username', s($user->username), 'normal', false);
         }
+
+        // Verify if the theme is valid and allowed to be set.
+        if (isset($user->theme)) {
+            list($upt, $user) = field_value_validators::validate_theme($upt, $user);
+        }
+
 
         // add default values for remaining fields
         $formdefaults = array();
@@ -635,6 +643,10 @@ if ($formdata = $mform2->is_cancelled()) {
                         $dologout = true;
                     }
                 }
+            }
+            // Verify if the theme is valid and allowed to be set.
+            if (isset($existinguser->theme)) {
+                list($upt, $existinguser) = field_value_validators::validate_theme($upt, $existinguser);
             }
 
             // changing of passwords is a special case
@@ -1175,6 +1187,7 @@ $data = array();
 $cir->init();
 $linenum = 1; //column header is first line
 $noerror = true; // Keep status of any error.
+$themes = get_list_of_themes();
 while ($linenum <= $previewrows and $fields = $cir->next()) {
     $linenum++;
     $rowcols = array();
@@ -1211,6 +1224,15 @@ while ($linenum <= $previewrows and $fields = $cir->next()) {
     if (isset($rowcols['city'])) {
         $rowcols['city'] = $rowcols['city'];
     }
+
+    if (isset($rowcols['theme'])) {
+        if ($rowcols['theme'] == null) {
+            $rowcols['status'][] = get_string('notheme', 'tool_uploaduser');
+        } else if (!isset($themes[$rowcols['theme']])) {
+            $rowcols['status'][] = get_string('invalidtheme', 'tool_uploaduser', $rowcols['theme']);
+        }
+    }
+
     // Check if rowcols have custom profile field with correct data and update error state.
     $noerror = uu_check_custom_profile_data($rowcols) && $noerror;
     $rowcols['status'] = implode('<br />', $rowcols['status']);
@@ -1243,4 +1265,3 @@ if ($noerror) {
 }
 echo $OUTPUT->footer();
 die;
-
