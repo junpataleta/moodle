@@ -137,21 +137,17 @@ class behat_tool_dataprivacy extends behat_base {
      * @param string $purpose The ID of the purpose to be set for the instance.
      */
     public function i_set_the_category_and_purpose_for_course_category($name, $category, $purpose) {
-        $contextid = null;
-        $coursecats = coursecat::get_all();
-        foreach ($coursecats as $coursecat) {
-            if (in_array($name, [$coursecat->name, $coursecat->idnumber])) {
-                $context = context_coursecat::instance($coursecat->id);
-                $contextid = $context->id;
-                break;
-            }
-        }
+        global $DB;
 
-        if ($contextid === null) {
-            throw new coding_exception("Course category '{$name}' not found!");
-        }
+        $params = [
+            'name' => $name,
+            'idnumber' => $name,
+        ];
+        $select = 'name = :name OR idnumber = :idnumber';
+        $coursecatid = $DB->get_field_select('course_categories', 'id', $select, $params, MUST_EXIST);
+        $context = context_coursecat::instance($coursecatid);
 
-        $this->set_category_and_purpose($contextid, $category, $purpose);
+        $this->set_category_and_purpose($context->id, $category, $purpose);
     }
 
     /**
@@ -164,21 +160,18 @@ class behat_tool_dataprivacy extends behat_base {
      * @param string $purpose The ID of the purpose to be set for the instance.
      */
     public function i_set_the_category_and_purpose_for_course($name, $category, $purpose) {
-        $contextid = null;
-        $courses = get_courses();
-        foreach ($courses as $course) {
-            if (in_array($name, [$course->shortname, $course->fullname, $course->idnumber])) {
-                $context = context_course::instance($course->id);
-                $contextid = $context->id;
-                break;
-            }
-        }
+        global $DB;
 
-        if ($contextid === null) {
-            throw new coding_exception("Course '{$name}' not found!");
-        }
+        $params = [
+            'shortname' => $name,
+            'fullname' => $name,
+            'idnumber' => $name,
+        ];
+        $select = 'shortname = :shortname OR fullname = :fullname OR idnumber = :idnumber';
+        $courseid = $DB->get_field_select('course', 'id', $select, $params, MUST_EXIST);
+        $context = context_course::instance($courseid);
 
-        $this->set_category_and_purpose($contextid, $category, $purpose);
+        $this->set_category_and_purpose($context->id, $category, $purpose);
     }
 
     /**
@@ -193,18 +186,15 @@ class behat_tool_dataprivacy extends behat_base {
      * @param string $purpose The ID of the purpose to be set for the instance.
      */
     public function i_set_the_category_and_purpose_for_activity($name, $type, $coursename, $category, $purpose) {
-        $courseid = null;
-        $courses = get_courses();
-        foreach ($courses as $course) {
-            if (in_array($coursename, [$course->shortname, $course->fullname, $course->idnumber])) {
-                $courseid = $course->id;
-                break;
-            }
-        }
+        global $DB;
 
-        if ($courseid === null) {
-            throw new coding_exception("Course '{$name}' not found!");
-        }
+        $params = [
+            'shortname' => $coursename,
+            'fullname' => $coursename,
+            'idnumber' => $coursename,
+        ];
+        $select = 'shortname = :shortname OR fullname = :fullname OR idnumber = :idnumber';
+        $courseid = $DB->get_field_select('course', 'id', $select, $params, MUST_EXIST);
 
         $cmid = null;
         $cms = get_coursemodules_in_course($type, $courseid);
@@ -235,19 +225,13 @@ class behat_tool_dataprivacy extends behat_base {
     public function i_set_the_category_and_purpose_for_block($name, $coursename, $category, $purpose) {
         global $DB;
 
-        // Fetch the course this block instance belongs to.
-        $courseid = null;
-        $courses = get_courses();
-        foreach ($courses as $course) {
-            if (in_array($coursename, [$course->shortname, $course->fullname, $course->idnumber])) {
-                $courseid = $course->id;
-                break;
-            }
-        }
-
-        if ($courseid === null) {
-            throw new coding_exception("Course '{$name}' not found!");
-        }
+        $params = [
+            'shortname' => $coursename,
+            'fullname' => $coursename,
+            'idnumber' => $coursename,
+        ];
+        $select = 'shortname = :shortname OR fullname = :fullname OR idnumber = :idnumber';
+        $courseid = $DB->get_field_select('course', 'id', $select, $params, MUST_EXIST);
 
         // Fetch the course context.
         $coursecontext = context_course::instance($courseid);
