@@ -1356,6 +1356,11 @@ class tool_dataprivacy_api_testcase extends advanced_testcase {
      * Test for \tool_dataprivacy\api::set_context_defaults()
      *
      * @dataProvider set_context_defaults_provider
+     * @param int $contextlevel The context level
+     * @param bool $inheritcategory Whether to set category value as INHERIT.
+     * @param bool $inheritpurpose Whether to set purpose value as INHERIT.
+     * @param bool $foractivity Whether to set defaults for an activity.
+     * @param bool $override Whether to override instances.
      */
     public function test_set_context_defaults($contextlevel, $inheritcategory, $inheritpurpose, $foractivity, $override) {
         $this->setAdminUser();

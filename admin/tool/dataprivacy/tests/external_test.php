@@ -303,6 +303,8 @@ class tool_dataprivacy_external_testcase extends externallib_advanced_testcase {
      * More testing is done in \tool_dataprivacy_api_testcase::test_set_context_defaults().
      *
      * @dataProvider get_options_provider
+     * @param bool $modulelevel Whether defaults are to be applied on the module context level or for an activity only.
+     * @param bool $override Whether to override instances.
      */
     public function test_set_context_defaults($modulelevel, $override) {
         $this->setAdminUser();
@@ -385,6 +387,8 @@ class tool_dataprivacy_external_testcase extends externallib_advanced_testcase {
      * Test for \tool_dataprivacy\external::get_category_options().
      *
      * @dataProvider get_options_provider
+     * @param bool $includeinherit Whether "Inherit" would be included to the options.
+     * @param bool $includenotset Whether "Not set" would be included to the options.
      */
     public function test_get_category_options($includeinherit, $includenotset) {
         $this->setAdminUser();
@@ -443,6 +447,8 @@ class tool_dataprivacy_external_testcase extends externallib_advanced_testcase {
      * Test for \tool_dataprivacy\external::get_purpose_options().
      *
      * @dataProvider get_options_provider
+     * @param bool $includeinherit Whether "Inherit" would be included to the options.
+     * @param bool $includenotset Whether "Not set" would be included to the options.
      */
     public function test_get_purpose_options($includeinherit, $includenotset) {
         $this->setAdminUser();
@@ -507,6 +513,9 @@ class tool_dataprivacy_external_testcase extends externallib_advanced_testcase {
      * Test for \tool_dataprivacy\external::get_activity_options().
      *
      * @dataProvider get_activity_options_provider
+     * @param bool $includeinherit Whether "Inherit" would be included to the options.
+     * @param bool $includenotset Whether "Not set" would be included to the options.
+     * @param bool $nodefaults Whether to fetch only activities that don't have defaults.
      */
     public function test_get_activity_options($inheritcategory, $inheritpurpose, $nodefaults) {
         $this->setAdminUser();
