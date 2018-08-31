@@ -1192,6 +1192,8 @@ class external extends external_api {
     /**
      * Fetches a list of data category options containing category IDs as keys and the category name for the value.
      *
+     * @param bool $includeinherit Whether to include the "Inherit" option.
+     * @param bool $includenotset Whether to include the "Not set" option.
      * @return array
      */
     public static function get_category_options($includeinherit, $includenotset) {
@@ -1268,6 +1270,8 @@ class external extends external_api {
     /**
      * Fetches a list of data storage purposes containing purpose IDs as keys and the purpose name for the value.
      *
+     * @param bool $includeinherit Whether to include the "Inherit" option.
+     * @param bool $includenotset Whether to include the "Not set" option.
      * @return array
      */
     public static function get_purpose_options($includeinherit, $includenotset) {

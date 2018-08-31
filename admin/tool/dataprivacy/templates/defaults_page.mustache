@@ -110,30 +110,34 @@
             {{#modemodule}}
             <table class="m-t-1 table table-striped">
                 <thead>
-                    <th>&nbsp;</th>
-                    <th scope="col">{{#str}}category, tool_dataprivacy{{/str}}</th>
-                    <th scope="col">{{#str}}purpose, tool_dataprivacy{{/str}}</th>
-                    {{#canedit}}
-                    <th scope="col">{{#str}}actions{{/str}}</th>
-                    {{/canedit}}
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th scope="col">{{#str}}category, tool_dataprivacy{{/str}}</th>
+                        <th scope="col">{{#str}}purpose, tool_dataprivacy{{/str}}</th>
+                        {{#canedit}}
+                            <th scope="col">{{#str}}actions{{/str}}</th>
+                        {{/canedit}}
+                    </tr>
                 </thead>
-                {{#otherdefaults}}
-                <tr>
-                    <th scope="row">{{name}}</th>
-                    <td>{{category}}</td>
-                    <td>{{purpose}}</td>
-                    {{#canedit}}
-                    <td>
-                        <a href="#" role="button" data-action="edit-activity-defaults" data-contextlevel="{{contextlevel}}" data-activityname="{{activityname}}" data-category="{{categoryid}}" data-purpose="{{purposeid}}">
-                            {{#pix}}t/edit, core, {{#str}}edit{{/str}}{{/pix}}
-                        </a>
-                        <a href="#" role="button" data-action="delete-activity-defaults" data-contextlevel="{{contextlevel}}" data-activityname="{{activityname}}" data-activitydisplayname="{{name}}">
-                            {{#pix}}t/delete, core, {{#str}}delete{{/str}}{{/pix}}
-                        </a>
-                    </td>
-                    {{/canedit}}
-                </tr>
-                {{/otherdefaults}}
+                <tbody>
+                    {{#otherdefaults}}
+                    <tr>
+                        <th scope="row">{{name}}</th>
+                        <td>{{category}}</td>
+                        <td>{{purpose}}</td>
+                        {{#canedit}}
+                            <td>
+                                <a href="#" role="button" data-action="edit-activity-defaults" data-contextlevel="{{contextlevel}}" data-activityname="{{activityname}}" data-category="{{categoryid}}" data-purpose="{{purposeid}}">
+                                    {{#pix}}t/edit, core, {{#str}}edit{{/str}}{{/pix}}
+                                </a>
+                                <a href="#" role="button" data-action="delete-activity-defaults" data-contextlevel="{{contextlevel}}" data-activityname="{{activityname}}" data-activitydisplayname="{{name}}">
+                                    {{#pix}}t/delete, core, {{#str}}delete{{/str}}{{/pix}}
+                                </a>
+                            </td>
+                        {{/canedit}}
+                    </tr>
+                    {{/otherdefaults}}
+                </tbody>
             </table>
             {{/modemodule}}
         </div>
