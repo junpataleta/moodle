@@ -130,7 +130,8 @@ class behat_tool_dataprivacy extends behat_base {
     /**
      * Sets the data category and data storage purpose for a course category instance.
      *
-     * @Given /^I set the category and purpose for the course category "(?P<categoryname_string>(?:[^"]|\\")*)" to "(?P<category_string>(?:[^"]|\\")*)" and "(?P<purpose_string>(?:[^"]|\\")*)"$/
+     * @Given /^I set the category and purpose for the course category "(?P<categoryname_string>(?:[^"]|\\")*)" \
+     *          to "(?P<category_string>(?:[^"]|\\")*)" and "(?P<purpose_string>(?:[^"]|\\")*)"$/
      *
      * @param string $name The instance name. It should match the name or the idnumber.
      * @param string $category The ID of the category to be set for the instance.
@@ -153,7 +154,8 @@ class behat_tool_dataprivacy extends behat_base {
     /**
      * Sets the data category and data storage purpose for a course instance.
      *
-     * @Given /^I set the category and purpose for the course "(?P<coursename_string>(?:[^"]|\\")*)" to "(?P<category_string>(?:[^"]|\\")*)" and "(?P<purpose_string>(?:[^"]|\\")*)"$/
+     * @Given /^I set the category and purpose for the course "(?P<coursename_string>(?:[^"]|\\")*)" to \
+     *          "(?P<category_string>(?:[^"]|\\")*)" and "(?P<purpose_string>(?:[^"]|\\")*)"$/
      *
      * @param string $name The instance name. It should match the fullname or the shortname, or the idnumber.
      * @param string $category The ID of the category to be set for the instance.
@@ -177,11 +179,13 @@ class behat_tool_dataprivacy extends behat_base {
     /**
      * Sets the data category and data storage purpose for a course instance.
      *
-     * @Given /^I set the category and purpose for the "(?P<activityname_string>(?:[^"]|\\")*)" "(?P<activitytype_string>(?:[^"]|\\")*)" in course "(?P<coursename_string>(?:[^"]|\\")*)" to "(?P<category_string>(?:[^"]|\\")*)" and "(?P<purpose_string>(?:[^"]|\\")*)"$/
+     * @Given /^I set the category and purpose for the "(?P<activityname_string>(?:[^"]|\\")*)" \
+     *          "(?P<activitytype_string>(?:[^"]|\\")*)" in course "(?P<coursename_string>(?:[^"]|\\")*)" to \
+     *          "(?P<category_string>(?:[^"]|\\")*)" and "(?P<purpose_string>(?:[^"]|\\")*)"$/
      *
-     * @param string $coursename The course name. It should match the fullname or the shortname, or the idnumber.
-     * @param string $type The activity type. E.g. assign, quiz, forum, etc.
      * @param string $name The instance name. It should match the name of the activity.
+     * @param string $type The activity type. E.g. assign, quiz, forum, etc.
+     * @param string $coursename The course name. It should match the fullname or the shortname, or the idnumber.
      * @param string $category The ID of the category to be set for the instance.
      * @param string $purpose The ID of the purpose to be set for the instance.
      */
@@ -215,10 +219,12 @@ class behat_tool_dataprivacy extends behat_base {
     /**
      * Sets the data category and data storage purpose for a course instance.
      *
-     * @Given /^I set the category and purpose for the "(?P<blockname_string>(?:[^"]|\\")*)" block in the "(?P<coursename_string>(?:[^"]|\\")*)" course to "(?P<category_string>(?:[^"]|\\")*)" and "(?P<purpose_string>(?:[^"]|\\")*)"$/
+     * @Given /^I set the category and purpose for the "(?P<blockname_string>(?:[^"]|\\")*)" block in the \
+     *          "(?P<coursename_string>(?:[^"]|\\")*)" course to "(?P<category_string>(?:[^"]|\\")*)" and \
+     *          "(?P<purpose_string>(?:[^"]|\\")*)"$/
      *
+     * @param string $name The instance name. It should match the name of the block. (e.g. online_users)
      * @param string $coursename The course name. It should match the fullname or the shortname, or the idnumber.
-     * @param string $name The instance name. It should match the name of the activity.
      * @param string $category The ID of the category to be set for the instance.
      * @param string $purpose The ID of the purpose to be set for the instance.
      */
