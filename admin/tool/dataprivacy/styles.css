@@ -29,7 +29,9 @@ dd a.contactdpo {
     overflow: inherit;
 }
 
-#page-admin-tool-dataprivacy-datarequests [data-region="data-requests-table"] .moodle-actionmenu {
+[data-region="data-requests-table"] .moodle-actionmenu,
+[data-region="categories"] .moodle-actionmenu,
+[data-region="purposes"] .moodle-actionmenu {
     min-width: 150px;
 }
 
