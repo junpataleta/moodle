@@ -25,7 +25,9 @@ dd a.contactdpo {
     margin-left: inherit;
 }
 
-[data-region="data-requests-table"] .moodle-actionmenu {
+[data-region="data-requests-table"] .moodle-actionmenu,
+[data-region="categories"] .moodle-actionmenu,
+[data-region="purposes"] .moodle-actionmenu {
     min-width: 150px;
 }
 
