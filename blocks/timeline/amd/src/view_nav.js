@@ -98,7 +98,7 @@ function(
 
                 elementsWithDaysOffset.attr('data-days-offset', daysOffset);
 
-                if (daysLimit != undefined) {
+                if (typeof daysLimit !== "undefined") {
                     elementsWithDaysOffset.attr('data-days-limit', daysLimit);
                 } else {
                     elementsWithDaysOffset.removeAttr('data-days-limit');

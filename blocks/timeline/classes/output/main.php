@@ -71,18 +71,21 @@ class main implements renderable, templatable {
      *
      * @return array
      */
-    private function get_filters_as_booleans() {
-        $filters = array(
-            'all' => 'BLOCK_TIMELINE_FILTER_BY_NONE',
-            'overdue' => 'BLOCK_TIMELINE_FILTER_BY_OVERDUE',
-            'next7days' => 'BLOCK_TIMELINE_FILTER_BY_7_DAYS',
-            'next30days' => 'BLOCK_TIMELINE_FILTER_BY_30_DAYS',
-            'next3months' => 'BLOCK_TIMELINE_FILTER_BY_3_MONTHS',
-            'next6months' => 'BLOCK_TIMELINE_FILTER_BY_6_MONTHS'
-        );
+    protected function get_filters_as_booleans() {
+        $filters = [
+            BLOCK_TIMELINE_FILTER_BY_NONE => false,
+            BLOCK_TIMELINE_FILTER_BY_OVERDUE => false,
+            BLOCK_TIMELINE_FILTER_BY_7_DAYS => false,
+            BLOCK_TIMELINE_FILTER_BY_30_DAYS => false,
+            BLOCK_TIMELINE_FILTER_BY_3_MONTHS => false,
+            BLOCK_TIMELINE_FILTER_BY_6_MONTHS => false
+        ];
 
         foreach ($filters as $key => $value) {
-            $filters[$key] = $this->filter == constant($value);
+            if ($this->filter == $key) {
+                $filters[$key] = true;
+                break;
+            }
         }
 
         return $filters;
@@ -94,7 +97,7 @@ class main implements renderable, templatable {
      *
      * @return array
      */
-    private function get_filter_offsets() {
+    protected function get_filter_offsets() {
 
         $limit = false;
         if (in_array($this->filter, [BLOCK_TIMELINE_FILTER_BY_NONE, BLOCK_TIMELINE_FILTER_BY_OVERDUE])) {
@@ -129,7 +132,7 @@ class main implements renderable, templatable {
      * Export this data so it can be used as the context for a mustache template.
      *
      * @param \renderer_base $output
-     * @return stdClass
+     * @return \stdClass
      */
     public function export_for_template(renderer_base $output) {
 
@@ -154,18 +157,18 @@ class main implements renderable, templatable {
         $filters = $this->get_filters_as_booleans();
         $offsets = $this->get_filter_offsets();
         $contextvariables = [
-                'midnight' => usergetmidnight(time()),
-                'coursepages' => [$formattedcourses],
-                'urls' => [
-                        'nocourses' => $nocoursesurl,
-                        'noevents' => $noeventsurl
-                ],
-                'sorttimelinedates' => $this->order == BLOCK_TIMELINE_SORT_BY_DATES,
-                'sorttimelinecourses' => $this->order == BLOCK_TIMELINE_SORT_BY_COURSES,
-                'selectedfilter' => $this->filter,
-                'hasdaysoffset' => true,
-                'hasdayslimit' => $offsets['dayslimit'] !== false ,
-                'nodayslimit' => $offsets['dayslimit'] === false ,
+            'midnight' => usergetmidnight(time()),
+            'coursepages' => [$formattedcourses],
+            'urls' => [
+                'nocourses' => $nocoursesurl,
+                'noevents' => $noeventsurl
+            ],
+            'sorttimelinedates' => $this->order == BLOCK_TIMELINE_SORT_BY_DATES,
+            'sorttimelinecourses' => $this->order == BLOCK_TIMELINE_SORT_BY_COURSES,
+            'selectedfilter' => $this->filter,
+            'hasdaysoffset' => true,
+            'hasdayslimit' => $offsets['dayslimit'] !== false,
+            'nodayslimit' => $offsets['dayslimit'] === false,
         ];
         return array_merge($contextvariables, $filters, $offsets);
     }
