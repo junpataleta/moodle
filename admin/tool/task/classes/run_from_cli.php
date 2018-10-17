@@ -22,6 +22,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace tool_task;
+
+use moodle_exception;
+use moodle_url;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -30,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2018 Toni Barbera <toni@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tool_task_run_from_cli {
+class run_from_cli {
 
     /**
      * Finds the PHP executable arguments.
@@ -61,16 +66,16 @@ class tool_task_run_from_cli {
             return getenv('PHP_BINARY');
         }
 
-        // PHP_BINARY return the current sapi executable.
+        // PHP_BINARY return the current SAPI executable.
         $args = self::find_arguments();
-        if (PHP_BINARY && \in_array(\PHP_SAPI, array('cli', 'cli-server', 'phpdbg'), true)) {
+        if (PHP_BINARY && in_array(PHP_SAPI, array('cli', 'cli-server', 'phpdbg'), true)) {
             if (@is_executable(PHP_BINARY . $args)) {
                 return PHP_BINARY . $args;
             }
         }
 
         if (!empty(getenv('PHP_BINDIR'))) {
-            if (@is_executable($phpbin = PHP_BINDIR . ('\\' === \DIRECTORY_SEPARATOR ? '\\php.exe' : '/php'))) {
+            if (@is_executable($phpbin = PHP_BINDIR . ('\\' === DIRECTORY_SEPARATOR ? '\\php.exe' : '/php'))) {
                 return $phpbin;
             }
         }
@@ -79,41 +84,31 @@ class tool_task_run_from_cli {
     }
 
     /**
-     * Returns if Moodle have access to php cli binary or not.
+     * Returns if Moodle have access to PHP CLI binary or not.
      *
      * @return bool
      */
     public static function is_runnable() : bool {
-        if (self::find_php_cli_path() !== false) {
-            return true;
-        }
-        return false;
+        return self::find_php_cli_path() !== false;
     }
 
     /**
      * Executes a cron from web invocation using PHP CLI.
      *
-     * @param \core\task\task_base $task
+     * @param \core\task\task_base $task The task to be executed.
      * @return bool
-     * @throws coding_exception
      * @throws moodle_exception
      */
     public static function execute(\core\task\task_base $task) : bool {
         global $CFG;
 
         if (!self::is_runnable()) {
-            $systempathslink = html_writer::link(
-                    new moodle_url('/admin/settings.php', ['section' => 'systempaths']),
-                    get_string('here', 'tool_task')
-            );
-            echo get_string('phpclinotpresent', 'tool_task', $systempathslink);
-
-            return false;
+            $url = new moodle_url('/admin/settings.php', ['section' => 'systempaths']);
+            throw new moodle_exception('phpclinotpresent', 'tool_task', $url->out());
         } else {
             $classname = get_class($task);
-            $command   =
-                    self::find_php_cli_path() .
-                    " {$CFG->dirroot}/admin/tool/task/cli/schedule_task.php --execute='{$classname}'";
+            $command = self::find_php_cli_path() .
+                " {$CFG->dirroot}/{$CFG->admin}/tool/task/cli/schedule_task.php --execute='{$classname}'";
             passthru($command);
         }
 

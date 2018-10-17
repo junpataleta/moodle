@@ -88,8 +88,12 @@ echo html_writer::start_tag('pre');
 $CFG->mtrace_wrapper = 'tool_task_mtrace_wrapper';
 
 // Run the specified task (this will output an error if it doesn't exist).
-\tool_task_run_from_cli::execute($task);
-
+if (\tool_task\run_from_cli::is_runnable()) {
+    \tool_task\run_from_cli::execute($task);
+} else {
+    $url = new moodle_url('/admin/settings.php', ['section' => 'systempaths']);
+    echo get_string('phpclinotpresent', 'tool_task', $url->out());
+}
 
 echo html_writer::end_tag('pre');
 

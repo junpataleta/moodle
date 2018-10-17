@@ -37,6 +37,7 @@ $string['enablerunnow_desc'] = 'Allows administrators to run a single scheduled 
 $string['faildelay'] = 'Fail delay';
 $string['lastruntime'] = 'Last run';
 $string['nextruntime'] = 'Next run';
+$string['phpclinotpresent'] = 'Cannot find the path to the PHP CLI executable, task execution suspended. Please click <a href="{$a}">here</a> if you want to set the path to the PHP CLI.';
 $string['plugindisabled'] = 'Plugin disabled';
 $string['pluginname'] = 'Scheduled task configuration';
 $string['resettasktodefaults'] = 'Reset task schedule to defaults';
@@ -58,6 +59,3 @@ $string['taskscheduleminute_help'] = 'Minute field for task schedule. The field 
 $string['taskschedulemonth'] = 'Month';
 $string['taskschedulemonth_help'] = 'Month field for task schedule. The field uses the same format as unix cron. Some examples are:<br/><ul><li><strong>*</strong> Every month</li><li><strong>*/2</strong> Every second month</li><li><strong>1</strong> Every January</li><li><strong>1,5</strong> Every January and May</li></ul>';
 $string['privacy:metadata'] = 'The Scheduled task configuration plugin does not store any personal data.';
-$string['here'] = 'here';
-$string['phpclinotpresent'] = 'PHP CLI PATH is not present, cron execution suspended. Please go {$a} if you want to add a PHP CLI PATH.';
-
