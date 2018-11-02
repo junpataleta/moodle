@@ -137,6 +137,10 @@ class course_summary_exporter extends \core\external\exporter {
             ),
             'isfavourite' => array(
                 'type' => PARAM_BOOL
+            ),
+            'timeaccess' => array(
+                'type' => PARAM_INT,
+                'optional' => true
             )
         );
     }
