@@ -11167,6 +11167,34 @@ div.editor_atto_toolbar button .icon {
   background-position: center;
   background-size: cover; }
 
+[data-region="blocks-column"] .block_recentlyaccessedcourses .dashboard-card-deck {
+  height: unset; }
+
+.block_recentlyaccessedcourses [data-region="recentlyaccessedcourses-view-content"] {
+  overflow-x: hidden; }
+
+.block_recentlyaccessedcourses .dashboard-card {
+  height: 150px; }
+
+@media (min-width: 576px) {
+  .block_recentlyaccessedcourses .dashboard-card-deck {
+    height: 150px;
+    overflow: hidden; } }
+
+.block_recentlyaccessedcourses .course-info-container {
+  padding: 0.8rem; }
+
+.block_recentlyaccessedcourses .empty-placeholder-image-lg {
+  height: 125px; }
+
+.block_recentlyaccessedcourses a,
+.block_recentlyaccessedcourses a:hover {
+  text-decoration: none;
+  color: unset; }
+
+.block_recentlyaccessedcourses .block-controls ~ .content {
+  margin-top: 3rem !important; }
+
 .dashboard-card-deck .dashboard-card {
   margin-bottom: 0.5rem;
   flex-basis: 100%;

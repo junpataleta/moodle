@@ -387,6 +387,32 @@
     }
 }
 
+.block_recentlyaccessedcourses {
+    [data-region="recentlyaccessedcourses-view-content"] {
+        overflow-x: hidden;
+    }
+    .dashboard-card {
+        height: 150px;
+    }
+    .dashboard-card-deck {
+        @media (min-width: 576px) {
+            height: 150px;
+            overflow: hidden;
+        }
+    }
+    .course-info-container {
+        padding: 0.8rem;
+    }
+    .empty-placeholder-image-lg {
+        height: 125px;
+    }
+    a,
+    a:hover {
+        text-decoration: none;
+        color: unset;
+    }
+}
+
 .dashboard-card-deck {
     box-sizing: border-box;
     *,
@@ -425,8 +451,10 @@
 }
 
 @media (min-width: 768px) {
-    #block-region-side-post .dashboard-card-deck {
+    #block-region-side-post .dashboard-card-deck,
+    #block-region-side-pre .dashboard-card-deck {
         margin: 0;
+        height: unset;
         .dashboard-card {
             flex-basis: 100%;
             margin-left: 0;
