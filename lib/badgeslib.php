@@ -591,7 +591,7 @@ class badge {
     /**
      * Returns badge award criteria
      *
-     * @return array An array of badge criteria
+     * @return award_criteria[] An array of badge criteria
      */
     public function get_criteria() {
         global $DB;
@@ -769,8 +769,8 @@ class badge {
 
         $params = array('badgeid' => $this->id);
         $query = "SELECT b.id, b.name, b.version, b.language, b.type
-                    FROM {badge_related} br
-                    JOIN {badge} b ON b.id = br.relatedbadgeid
+                    FROM {badge} b
+                    JOIN {badge_related} br ON b.id = br.relatedbadgeid
                    WHERE br.badgeid = :badgeid";
         if ($activeonly) {
             $query .= " AND b.status <> :status";
@@ -807,7 +807,7 @@ class badge {
      */
     public function delete_alignment($alignmentid = 0) {
         global $DB;
-        return $DB->delete_records('badge_competencies', array('id' => $alignmentid));
+        return $DB->delete_records('badge_competencies', array('id' => $alignmentid, 'badgeid' => $this->id));
     }
 
     /**

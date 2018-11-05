@@ -173,10 +173,9 @@ class core_badges_assertion {
      * Get related badges of the badge.
      *
      * @param badge $badge Badge object.
-     * @return array|bool List related badges.
+     * @return array List related badges.
      */
     public function get_related_badges(badge $badge) {
-        global $DB;
         $arraybadges = array();
         $relatedbadges = $badge->get_related_badges(true);
         if ($relatedbadges) {
