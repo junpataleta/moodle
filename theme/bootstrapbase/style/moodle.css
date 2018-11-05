@@ -16652,6 +16652,29 @@ body {
   text-decoration: none;
   color: unset;
 }
+.block_recentlyaccessedcourses [data-region="recentlyaccessedcourses-view-content"] {
+  overflow-x: hidden;
+}
+.block_recentlyaccessedcourses .dashboard-card {
+  height: 150px;
+}
+@media (min-width: 576px) {
+  .block_recentlyaccessedcourses .dashboard-card-deck {
+    height: 150px;
+    overflow: hidden;
+  }
+}
+.block_recentlyaccessedcourses .course-info-container {
+  padding: 0.8rem;
+}
+.block_recentlyaccessedcourses .empty-placeholder-image-lg {
+  height: 125px;
+}
+.block_recentlyaccessedcourses a,
+.block_recentlyaccessedcourses a:hover {
+  text-decoration: none;
+  color: unset;
+}
 .dashboard-card-deck {
   box-sizing: border-box;
   display: flex;
