@@ -38,10 +38,10 @@ class renderer extends plugin_renderer_base {
     /**
      * Return the main content for the Recently accessed courses block.
      *
-     * @param recentcourses $main The main renderable
+     * @param main $main The main renderable
      * @return string HTML string
      */
-    public function render_recentcourses(\block_recentlyaccessedcourses\output\main $main) {
+    public function render_recentcourses(main $main) {
         return $this->render_from_template('block_recentlyaccessedcourses/main', $main->export_for_template($this));
     }
 }

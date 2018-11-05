@@ -11205,6 +11205,9 @@ div.editor_atto_toolbar button .icon {
   [data-region="blocks-column"] .block_recentlyaccesseditems .dashboard-card-deck {
     height: unset; } }
 
+[data-region="blocks-column"] .block_recentlyaccessedcourses .dashboard-card-deck {
+  height: unset; }
+
 .block_recentlyaccesseditems [data-region="recentlyaccesseditems-view-content"] {
   overflow-x: hidden; }
 
@@ -11229,9 +11232,6 @@ div.editor_atto_toolbar button .icon {
 
 .block_recentlyaccesseditems .block-controls ~ .content {
   margin-top: 2rem !important; }
-
-[data-region="blocks-column"] .block_recentlyaccessedcourses .dashboard-card-deck {
-  height: unset; }
 
 .block_recentlyaccessedcourses [data-region="recentlyaccessedcourses-view-content"] {
   overflow-x: hidden; }

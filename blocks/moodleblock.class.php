@@ -71,13 +71,13 @@ class block_base {
 
     /**
      * An object to contain the information to be displayed in the block.
-     * @var stdObject $content
+     * @var stdClass $content
      */
     var $content       = NULL;
 
     /**
      * The initialized instance of this block object.
-     * @var block $instance
+     * @var block_base $instance
      */
     var $instance      = NULL;
 
@@ -89,13 +89,13 @@ class block_base {
 
     /**
      * This blocks's context.
-     * @var stdClass
+     * @var context
      */
     public $context    = NULL;
 
     /**
      * An object containing the instance configuration information for the current instance of this block.
-     * @var stdObject $config
+     * @var stdClass $config
      */
     var $config        = NULL;
 
@@ -145,7 +145,7 @@ class block_base {
      * This should be implemented by the derived class to return
      * the content object.
      *
-     * @return stdObject
+     * @return stdClass
      */
     function get_content() {
         // This should be implemented by the derived class.
@@ -198,7 +198,7 @@ class block_base {
      * then calls the block's {@link get_content()} function
      * to set its value back.
      *
-     * @return stdObject
+     * @return stdClass
      */
     function refresh_content() {
         // Nothing special here, depends on content()
@@ -313,7 +313,7 @@ class block_base {
      * blocks, you probaby want to override the {@link get_contents()} method,
      * which generates that structured representation of the contents.
      *
-     * @param $output The core_renderer to use when generating the output.
+     * @param core_renderer $output The core_renderer to use when generating the output.
      * @return string the HTML that should appearn in the body of the block.
      * @since Moodle 2.0.
      */
@@ -507,7 +507,7 @@ class block_base {
      */
     function instance_config_save($data, $nolongerused = false) {
         global $DB;
-        $DB->update_record('block_instances', ['id' => $this->instance->id,
+        $DB->update_record('block_instances', (object)['id' => $this->instance->id,
                 'configdata' => base64_encode(serialize($data)), 'timemodified' => time()]);
     }
 
