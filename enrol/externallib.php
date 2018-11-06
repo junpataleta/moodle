@@ -311,16 +311,13 @@ class core_enrol_external extends external_api {
 
         // Retrieve favourited courses (starred).
         $favouritecourseids = array();
-        if ($sameuser) {
-            $ufservice = \core_favourites\service_factory::get_service_for_user_context(\context_user::instance($userid));
-            $favourites = $ufservice->find_favourites_by_type('core_course', 'courses');
-
-            if ($favourites) {
-                $favouritecourseids = array_flip(array_map(
-                    function($favourite) {
-                        return $favourite->itemid;
-                    }, $favourites));
-            }
+        $ufservice = \core_favourites\service_factory::get_service_for_user_context(\context_user::instance($userid));
+        $favourites = $ufservice->find_favourites_by_type('core_course', 'courses');
+        if ($favourites) {
+            $favouritecourseids = array_flip(array_map(
+                function($favourite) {
+                    return $favourite->itemid;
+                }, $favourites));
         }
 
         foreach ($courses as $course) {
@@ -373,10 +370,7 @@ class core_enrol_external extends external_api {
                 $lastaccess = $user->lastcourseaccess[$course->id];
             }
 
-            $hidden = false;
-            if ($sameuser) {
-                $hidden = boolval(get_user_preferences('block_myoverview_hidden_course_' . $course->id, 0));
-            }
+            $hidden = boolval(get_user_preferences('block_myoverview_hidden_course_' . $course->id, 0, $userid));
 
             // Retrieve course overview used files.
             $courselist = new core_course_list_element($course);

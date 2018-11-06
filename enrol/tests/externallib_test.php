@@ -480,8 +480,10 @@ class core_enrol_externallib_testcase extends externallib_advanced_testcase {
                 $this->assertEquals($timenow, $courseenrol['lastaccess']);
                 $this->assertEquals(100.0, $courseenrol['progress']);
                 $this->assertTrue($courseenrol['completionhascriteria']);
-                $this->assertFalse($courseenrol['isfavourite']);    // This always false.
-                $this->assertFalse($courseenrol['hidden']); // This always false.
+                // Admin should be able to see whether this course was favourited by the student.
+                $this->assertTrue($courseenrol['isfavourite']);
+                // Admin should be able to see whether this course has been marked as hidden by the student.
+                $this->assertTrue($courseenrol['hidden']);
             } else {
                 $this->assertEquals(0, $courseenrol['progress']);
                 $this->assertFalse($courseenrol['completionhascriteria']);
