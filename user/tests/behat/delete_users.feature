@@ -20,6 +20,13 @@ Feature: Deleting users
       | user2    | C1     | student        |
       | user3    | C1     | student        |
       | user4    | C1     | student        |
+    And I log in as "admin"
+    And I navigate to "Advanced features" in site administration
+    And I set the following fields to these values:
+      | Enable messaging system | 1 |
+      | Allow site-wide messaging | 1 |
+    And I click on "Save changes" "button"
+    And I log out
 
   @javascript
   Scenario: Deleting one user at a time
