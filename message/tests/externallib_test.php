@@ -2296,6 +2296,19 @@ class core_message_externallib_testcase extends externallib_advanced_testcase {
         $this->assertEquals($user7->id, $noncontacts[1]['id']);
         $this->assertEquals($user6->id, $noncontacts[2]['id']);
 
+        // We need to test pagination from this api.
+        $result = core_message_external::message_search_users($user1->id, 'search', 1, 1);
+        $result = external_api::clean_returnvalue(core_message_external::message_search_users_returns(),
+            $result);
+        $contacts = $result['contacts'];
+        $noncontacts = $result['noncontacts'];
+
+        // Check that we retrieved only 1 result in each list.
+        $this->assertCount(1, $contacts);
+        $this->assertCount(1, $noncontacts);
+        $this->assertEquals($user2->id, $contacts[0]['id']);
+        $this->assertEquals($user7->id, $noncontacts[0]['id']);
+
         // Perform a search $CFG->messagingallusers setting disabled.
         set_config('messagingallusers', 0);
         $result = core_message_external::message_search_users($user1->id, 'search');

@@ -1265,6 +1265,7 @@ class core_message_external extends external_api {
             array(
                 'userid' => new external_value(PARAM_INT, 'The id of the user who is performing the search'),
                 'search' => new external_value(PARAM_RAW, 'The string being searched'),
+                'limitfrom' => new external_value(PARAM_INT, 'Limit from', VALUE_DEFAULT, 0),
                 'limitnum' => new external_value(PARAM_INT, 'Limit number', VALUE_DEFAULT, 0)
             )
         );
@@ -1275,12 +1276,13 @@ class core_message_external extends external_api {
      *
      * @param int $userid The id of the user who is performing the search
      * @param string $search The string being searched
+     * @param int $limitfrom
      * @param int $limitnum
      * @return stdClass
      * @throws moodle_exception
      * @since 3.6
      */
-    public static function message_search_users($userid, $search, $limitnum = 0) {
+    public static function message_search_users($userid, $search, $limitfrom = 0, $limitnum = 0) {
         global $CFG, $PAGE, $USER;
 
         // Check if messaging is enabled.
@@ -1293,16 +1295,23 @@ class core_message_external extends external_api {
         $params = array(
             'userid' => $userid,
             'search' => $search,
+            'limitfrom' => $limitfrom,
             'limitnum' => $limitnum
         );
-        self::validate_parameters(self::message_search_users_parameters(), $params);
+        $params = self::validate_parameters(self::message_search_users_parameters(), $params);
         self::validate_context($systemcontext);
 
-        if (($USER->id != $userid) && !has_capability('moodle/site:readallmessages', $systemcontext)) {
+        if (($USER->id != $params['userid']) && !has_capability('moodle/site:readallmessages', $systemcontext)) {
             throw new moodle_exception('You do not have permission to perform this action.');
         }
 
-        list($contacts, $noncontacts) = \core_message\api::message_search_users($userid, $search, $limitnum);
+        list($contacts, $noncontacts) = \core_message\api::message_search_users(
+            $params['userid'],
+            $params['search'],
+            $params['limitfrom'],
+            $params['limitnum']
+        );
+
         return array('contacts' => $contacts, 'noncontacts' => $noncontacts);
     }
 

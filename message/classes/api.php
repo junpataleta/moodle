@@ -314,10 +314,11 @@ class api {
      *
      * @param int $userid The user id doing the searching
      * @param string $search The string the user is searching
+     * @param int $limitfrom
      * @param int $limitnum
      * @return array
      */
-    public static function message_search_users(int $userid, string $search, int $limitnum = 1000) : array {
+    public static function message_search_users(int $userid, string $search, int $limitfrom = 0, int $limitnum = 1000) : array {
         global $CFG, $DB;
 
         // Used to search for contacts.
@@ -339,7 +340,7 @@ class api {
                    AND " . $DB->sql_like($fullname, ':search', false) . "
                    AND u.id $exclude
               ORDER BY " . $DB->sql_fullname();
-        $foundusers = $DB->get_records_sql_menu($sql, $params + $excludeparams, 0, $limitnum);
+        $foundusers = $DB->get_records_sql_menu($sql, $params + $excludeparams, $limitfrom, $limitnum);
 
         $orderedcontacs = array();
         if (!empty($foundusers)) {
@@ -387,7 +388,7 @@ class api {
                   ORDER BY " . $DB->sql_fullname();
             $params['userid'] = $userid;
         }
-        $foundusers = $DB->get_records_sql_menu($sql, $params + $excludeparams, 0, $limitnum);
+        $foundusers = $DB->get_records_sql_menu($sql, $params + $excludeparams, $limitfrom, $limitnum);
 
         $orderednoncontacs = array();
         if (!empty($foundusers)) {
