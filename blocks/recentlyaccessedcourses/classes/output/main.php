@@ -24,8 +24,12 @@
 namespace block_recentlyaccessedcourses\output;
 defined('MOODLE_INTERNAL') || die();
 
+use context_course;
+use context_helper;
+use core_course\external\course_summary_exporter;
 use renderable;
 use renderer_base;
+use stdClass;
 use templatable;
 
 /**
@@ -36,20 +40,49 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class main implements renderable, templatable {
+
+    /** @var int The user ID. */
+    protected $userid;
+
+    /** @var stdClass[] Array of recently accessed courses. */
+    protected $recentcourses = [];
+
+    /**
+     * main constructor.
+     *
+     * @param int $userid The user ID
+     * @param stdClass[] $recentcourses Array of recently accessed courses
+     */
+    public function __construct($userid, $recentcourses) {
+        $this->userid = $userid;
+        $this->recentcourses = $recentcourses;
+    }
+
     /**
      * Export this data so it can be used as the context for a mustache template.
      *
      * @param renderer_base $output
-     * @return \stdClass|array
+     * @return array
      */
     public function export_for_template(renderer_base $output) {
-        global $USER;
-
         $nocoursesurl = $output->image_url('courses', 'block_recentlyaccessedcourses')->out();
 
+        $recentcourses = [];
+        if (!empty($this->recentcourses)) {
+            foreach ($this->recentcourses as $course) {
+                context_helper::preload_from_record($course);
+                $context = context_course::instance($course->id);
+                $isfavourite = !empty($course->component);
+                $exporter = new course_summary_exporter($course, ['context' => $context, 'isfavourite' => $isfavourite]);
+                $recentcourses[] = $exporter->export($output);
+            }
+        }
+
         return [
-            'userid' => $USER->id,
-            'nocoursesimgurl' => $nocoursesurl
+            'nocoursesimgurl' => $nocoursesurl,
+            'userid' => $this->userid,
+            'hascourses' => !empty($recentcourses),
+            'courses' => $recentcourses,
         ];
     }
 }

@@ -21,25 +21,28 @@
 
     Example context (json):
     {
-        "nocoursesimgurl": "https://moodlesite/theme/image.php/boost/block_recentlyaccessedcourses/1535727318/courses"
+        "nocoursesimgurl": "#",
+        "hascourses": true,
+        "courses": [
+            {
+                "name": "Assignment due 1",
+                "viewurl": "#",
+                "courseimageurl": "#",
+                "fullname": "course 3",
+                "isfavourite": true
+            }
+        ]
     }
 }}
 <div id="recentlyaccessedcourses-view-{{uniqid}}"
      data-region="recentlyaccessedcourses-view"
      data-nocoursesimgurl="{{nocoursesimgurl}}">
     <div data-region="recentlyaccessedcourses-view-content">
-        <div data-region="recentlyaccessedcourses-loading-placeholder">
-            <div class="card-deck dashboard-card-deck one-row">
-                {{> block_recentlyaccessedcourses/placeholder-course }}
-                {{> block_recentlyaccessedcourses/placeholder-course }}
-                {{> block_recentlyaccessedcourses/placeholder-course }}
-                {{> block_recentlyaccessedcourses/placeholder-course }}
-                {{> block_recentlyaccessedcourses/placeholder-course }}
-                {{> block_recentlyaccessedcourses/placeholder-course }}
-                {{> block_recentlyaccessedcourses/placeholder-course }}
-                {{> block_recentlyaccessedcourses/placeholder-course }}
-                {{> block_recentlyaccessedcourses/placeholder-course }}
-            </div>
-        </div>
+        {{#hascourses}}
+            {{> block_recentlyaccessedcourses/view-cards}}
+        {{/hascourses}}
+        {{^hascourses}}
+            {{> block_recentlyaccessedcourses/no-courses}}
+        {{/hascourses}}
     </div>
 </div>

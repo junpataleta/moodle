@@ -45,15 +45,24 @@ class block_recentlyaccessedcourses extends block_base {
      * @return stdClass contents of block
      */
     public function get_content() {
+        global $CFG, $USER;
+
         if (isset($this->content)) {
             return $this->content;
         }
 
-        $renderable = new block_recentlyaccessedcourses\output\main();
+        require_once($CFG->dirroot . '/course/lib.php');
+
+        // Get recent courses.
+        $courses = course_get_recent_courses($USER->id, 10);
+
+        // Get renderer.
         $renderer = $this->page->get_renderer('block_recentlyaccessedcourses');
 
+        $renderable = new block_recentlyaccessedcourses\output\main($USER->id, $courses);
+
         $this->content = new stdClass();
-        $this->content->text = $renderer->render($renderable);
+        $this->content->text = $renderer->render_recentcourses($renderable);
         $this->content->footer = '';
 
         return $this->content;
