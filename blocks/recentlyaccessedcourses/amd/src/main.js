@@ -130,7 +130,6 @@ define(
             root = $(root);
 
             registerEventListeners(userid, root);
-            reloadContent(userid, root);
         };
 
         return {
