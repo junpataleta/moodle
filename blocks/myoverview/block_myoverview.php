@@ -49,11 +49,21 @@ class block_myoverview extends block_base {
         if (isset($this->content)) {
             return $this->content;
         }
-        $group = get_user_preferences('block_myoverview_user_grouping_preference');
-        $sort = get_user_preferences('block_myoverview_user_sort_preference');
-        $view = get_user_preferences('block_myoverview_user_view_preference');
 
-        $renderable = new \block_myoverview\output\main($group, $sort, $view);
+        require_once(__DIR__ . '/lib.php');
+        $group = get_user_preferences('block_myoverview_user_grouping_preference', BLOCK_MYOVERVIEW_GROUPING_ALL);
+        $sortpref = get_user_preferences('block_myoverview_user_sort_preference', BLOCK_MYOVERVIEW_SORTING_TITLE);
+        $view = get_user_preferences('block_myoverview_user_view_preference', BLOCK_MYOVERVIEW_VIEW_CARD);
+
+        if ($sortpref === BLOCK_MYOVERVIEW_SORTING_TITLE) {
+            $sort = 'fullname';
+        } else {
+            $sort = 'ul.timeaccess desc';
+        }
+
+        list($favourites, $courses, $processedcount) = course_get_courses_by_timeline_classification($group, 0, 0, $sort);
+
+        $renderable = new \block_myoverview\output\main($group, $sortpref, $view, $favourites, $courses, $processedcount);
         $renderer = $this->page->get_renderer('block_myoverview');
 
         $this->content = new stdClass();

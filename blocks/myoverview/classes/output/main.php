@@ -24,6 +24,9 @@
 namespace block_myoverview\output;
 defined('MOODLE_INTERNAL') || die();
 
+use context_course;
+use context_helper;
+use core_course\external\course_summary_exporter;
 use renderable;
 use renderer_base;
 use templatable;
@@ -59,6 +62,10 @@ class main implements renderable, templatable {
      */
     private $view;
 
+    protected $favourites = [];
+    protected $courses = [];
+    protected $processedcount = 0;
+
     /**
      * main constructor.
      * Initialize the user preferences
@@ -67,10 +74,13 @@ class main implements renderable, templatable {
      * @param string $sort Sort user preference
      * @param string $view Display user preference
      */
-    public function __construct($grouping, $sort, $view) {
+    public function __construct($grouping, $sort, $view, $favourites, $courses, $processedcount) {
         $this->grouping = $grouping ? $grouping : BLOCK_MYOVERVIEW_GROUPING_ALL;
         $this->sort = $sort ? $sort : BLOCK_MYOVERVIEW_SORTING_TITLE;
         $this->view = $view ? $view : BLOCK_MYOVERVIEW_VIEW_CARD;
+        $this->favourites = $favourites;
+        $this->courses = $courses;
+        $this->processedcount = $processedcount;
     }
 
     /**
@@ -97,11 +107,29 @@ class main implements renderable, templatable {
 
         $nocoursesurl = $output->image_url('courses', 'block_myoverview')->out();
 
+        $courses = [];
+        foreach ($this->courses as $course) {
+            context_helper::preload_from_record($course);
+            $context = context_course::instance($course->id);
+            $isfavourite = false;
+            if (in_array($course->id, $this->favourites)) {
+                $isfavourite = true;
+            }
+            $exporter = new course_summary_exporter($course, ['context' => $context, 'isfavourite' => $isfavourite]);
+            $courses[] = $exporter->export($output);
+        }
+
         $defaultvariables = [
             'nocoursesimg' => $nocoursesurl,
             'grouping' => $this->grouping,
             'sort' => $this->sort == BLOCK_MYOVERVIEW_SORTING_TITLE ? 'fullname' : 'ul.timeaccess desc',
-            'view' => $this->view
+            'view' => $this->view,
+            'courses' => $courses,
+            'nextoffset' => $this->processedcount,
+            'hascourses' => !empty($this->processedcount),
+            'viewcards' => $this->view === BLOCK_MYOVERVIEW_VIEW_CARD,
+            'viewlist' => $this->view === BLOCK_MYOVERVIEW_VIEW_LIST,
+            'viewsummary' => $this->view === BLOCK_MYOVERVIEW_VIEW_SUMMARY,
         ];
 
         $preferences = $this->get_preferences_as_booleans();

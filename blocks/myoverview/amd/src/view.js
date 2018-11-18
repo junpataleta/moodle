@@ -317,7 +317,7 @@ function(
      * Set the courses favourite status and push to repository
      *
      * @param  {Number} courseId Course id to favourite.
-     * @param  {Bool} status new favourite status.
+     * @param  {Boolean} status new favourite status.
      * @return {Promise} Repository promise.
      */
     var setCourseFavouriteState = function(courseId, status) {
@@ -357,9 +357,9 @@ function(
         var filters = getFilterValues(root);
 
         var currentTemplate = '';
-        if (filters.display == 'cards') {
+        if (filters.display === 'cards') {
             currentTemplate = TEMPLATES.COURSES_CARDS;
-        } else if (filters.display == 'list') {
+        } else if (filters.display === 'list') {
             currentTemplate = TEMPLATES.COURSES_LIST;
         } else {
             currentTemplate = TEMPLATES.COURSES_SUMMARY;
@@ -381,7 +381,6 @@ function(
      * Intialise the paged list and cards views on page load.
      *
      * @param {object} root The root element for the courses view.
-     * @param {object} content The content element for the courses view.
      */
     var initializePagedContent = function(root) {
         var filters = getFilterValues(root);
@@ -412,8 +411,8 @@ function(
                     lastLimit = limit;
 
                     // Get 2 pages worth of data as we will need it for the hidden functionality.
-                    if (loadedPages[currentPage + 1] == undefined) {
-                        if (loadedPages[currentPage] == undefined) {
+                    if (loadedPages[currentPage + 1] === undefined) {
+                        if (loadedPages[currentPage] === undefined) {
                             limit *= 2;
                         }
                     }
@@ -427,7 +426,7 @@ function(
                         var pageCourses = [];
 
                         // If current page's data is loaded make sure we max it to page limit
-                        if (loadedPages[currentPage] != undefined) {
+                        if (loadedPages[currentPage] !== undefined) {
                             pageCourses = loadedPages[currentPage].courses;
                             var currentPageLength = pageCourses.length;
                             if (currentPageLength < pageData.limit) {
@@ -456,7 +455,7 @@ function(
                         if (loadedPages[currentPage].courses.length < pageData.limit) {
                             lastPage = currentPage;
                             actions.allItemsLoaded(currentPage);
-                        } else if (loadedPages[currentPage + 1] != undefined
+                        } else if (loadedPages[currentPage + 1] !== undefined
                             && loadedPages[currentPage + 1].courses.length < pageData.limit) {
                             lastPage = currentPage + 1;
                         }
@@ -464,7 +463,7 @@ function(
                         courseOffset = coursesData.nextoffset;
                         return renderCourses(root, loadedPages[currentPage]);
                     })
-                    .catch(Notification.exception);
+                        .catch(Notification.exception);
 
                     promises.push(pagePromise);
                 });

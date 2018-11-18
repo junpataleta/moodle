@@ -3688,65 +3688,13 @@ class core_course_external extends external_api {
         $offset = $params['offset'];
         $sort = $params['sort'];
 
-        switch($classification) {
-            case COURSE_TIMELINE_ALL:
-                break;
-            case COURSE_TIMELINE_PAST:
-                break;
-            case COURSE_TIMELINE_INPROGRESS:
-                break;
-            case COURSE_TIMELINE_FUTURE:
-                break;
-            case COURSE_FAVOURITES:
-                break;
-            case COURSE_TIMELINE_HIDDEN:
-                break;
-            default:
-                throw new invalid_parameter_exception('Invalid classification');
-        }
-
         self::validate_context(context_user::instance($USER->id));
 
-        $requiredproperties = course_summary_exporter::define_properties();
-        $fields = join(',', array_keys($requiredproperties));
-        $hiddencourses = get_hidden_courses_on_timeline();
-        $courses = [];
-
-        // If the timeline requires the hidden courses then restrict the result to only $hiddencourses else exclude.
-        if ($classification == COURSE_TIMELINE_HIDDEN) {
-            $courses = course_get_enrolled_courses_for_logged_in_user(0, $offset, $sort, $fields,
-                COURSE_DB_QUERY_LIMIT, $hiddencourses);
-        } else {
-            $courses = course_get_enrolled_courses_for_logged_in_user(0, $offset, $sort, $fields,
-                COURSE_DB_QUERY_LIMIT, [], $hiddencourses);
-        }
-
-        $favouritecourseids = [];
-        $ufservice = \core_favourites\service_factory::get_service_for_user_context(\context_user::instance($USER->id));
-        $favourites = $ufservice->find_favourites_by_type('core_course', 'courses');
-
-        if ($favourites) {
-            $favouritecourseids = array_map(
-                function($favourite) {
-                    return $favourite->itemid;
-                }, $favourites);
-        }
-
-        if ($classification == COURSE_FAVOURITES) {
-            list($filteredcourses, $processedcount) = course_filter_courses_by_favourites(
-                $courses,
-                $favouritecourseids,
-                $limit
-            );
-        } else {
-            list($filteredcourses, $processedcount) = course_filter_courses_by_timeline_classification(
-                $courses,
-                $classification,
-                $limit
-            );
-        }
+        list($favouritecourseids, $filteredcourses, $processedcount) = course_get_courses_by_timeline_classification(
+                $classification, $limit, $offset, $sort);
 
         $renderer = $PAGE->get_renderer('core');
+
         $formattedcourses = array_map(function($course) use ($renderer, $favouritecourseids) {
             context_helper::preload_from_record($course);
             $context = context_course::instance($course->id);
