@@ -211,6 +211,7 @@ $string['seeall'] = 'See all';
 $string['selectmessagestodelete'] = 'Select messages to delete';
 $string['selectnotificationtoview'] = 'Select from the list of notifications on the side to view more details';
 $string['send'] = 'Send';
+$string['sendercolon'] = '{$a}:';
 $string['sendingvia'] = 'Sending "{$a->provider}" via "{$a->processor}"';
 $string['sendingviawhen'] = 'Sending "{$a->provider}" via "{$a->processor}" when {$a->state}';
 $string['sendcontactrequest'] = 'Send contact request';
