@@ -305,17 +305,50 @@ class auth extends \auth_plugin_base {
      * Update user data according to data sent by authorization server.
      *
      * @param array $externaldata data from authorization server
-     * @param int $userid ID of the user to update
-     * @return stdClass The updated user record
+     * @param stdClass $userdata Current data of the user to be updated
+     * @return stdClass The updated user record, or the existing one if there's nothing to be updated.
      */
-    private function update_user(array $externaldata, int $userid) {
+    private function update_user(array $externaldata, $userdata) {
         $user = (object) [
-            'id' => $userid,
+            'id' => $userdata->id,
         ];
-        foreach ($externaldata as $fieldname => $value) {
-            $user->$fieldname = $value;
+
+        // We can only update if the default authentication type of the user is set to OAuth2 as well. Otherwise, we might mess
+        // up the user data of other users that use different authentication mechanisms.
+        if ($userdata->auth !== $this->authtype) {
+            return $userdata;
         }
+
+        // Get custom fields.
+        $customfields = $this->get_custom_user_profile_fields();
+
+        // Fields that must not be updated.
+        $fieldstoexclude = ['username', 'id', 'auth', 'mnethostid', 'deleted'];
+
+        // Go through each field from the external data.
+        foreach ($externaldata as $fieldname => $value) {
+            $iscustom = in_array($fieldname, $customfields);
+            if (!$iscustom) {
+                $fieldname = strtolower($fieldname);
+            }
+            if ((!property_exists($userdata, $fieldname) && !$iscustom) || in_array($fieldname, $fieldstoexclude)) {
+                // Unknown or must not be changed.
+                continue;
+            }
+            $lockvalue = $this->config->{'field_lock_' . $fieldname};
+            // Only update fields that are not locked.
+            if (!(empty($value) && $lockvalue !== 'locked')) {
+                $value = (string) $value;
+                if ($iscustom || (in_array($fieldname, $this->userfields) && ((string)$userdata->$fieldname !== $value))) {
+                    $user->$fieldname = $value;
+                }
+            }
+        }
+        // Update the user data.
         user_update_user($user, false);
+
+        // Save user profile data.
+        profile_save_data($user);
 
         // Refresh user for $USER variable.
         return get_complete_user_data('id', $user->id);
@@ -439,7 +472,7 @@ class auth extends \auth_plugin_base {
                 redirect(new moodle_url('/login/index.php'));
             } else if ($mappeduser && $mappeduser->confirmed) {
                 // Update user fields.
-                $userinfo = $this->update_user($userinfo, $mappeduser->id);
+                $userinfo = $this->update_user($userinfo, $mappeduser);
                 $userwasmapped = true;
             } else {
                 // Trigger login failed event.
@@ -497,7 +530,7 @@ class auth extends \auth_plugin_base {
                     exit();
                 } else {
                     \auth_oauth2\api::link_login($userinfo, $issuer, $moodleuser->id, true);
-                    $userinfo = $this->update_user($userinfo, $moodleuser->id);
+                    $userinfo = $this->update_user($userinfo, $moodleuser);
                     // No redirect, we will complete this login.
                 }
 
@@ -562,8 +595,7 @@ class auth extends \auth_plugin_base {
                 } else {
                     // Create a new confirmed account.
                     $newuser = \auth_oauth2\api::create_new_confirmed_account($userinfo, $issuer);
-                    // Update new user's fields.
-                    $userinfo = $this->update_user($userinfo, $newuser->id);
+                    $userinfo = get_complete_user_data('id', $newuser->id);
                     // No redirect, we will complete this login.
                 }
             }
