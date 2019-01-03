@@ -14691,7 +14691,7 @@ a.ygtvspacer:hover {
       filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3)); }
   .message-app a,
   .message-app .btn-link {
-    color: inherit; }
+    color: #000; }
   .message-app .btn-link:hover, .message-app .btn-link:focus {
     background-color: rgba(0, 0, 0, 0.035);
     text-decoration: none; }
