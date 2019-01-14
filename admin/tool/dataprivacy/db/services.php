@@ -233,4 +233,13 @@ $functions = [
         'ajax'          => true,
         'loginrequired' => true,
     ],
+    'tool_dataprivacy_can_create_delete_request' => [
+        'classname'     => 'tool_dataprivacy\external',
+        'methodname'    => 'can_create_delete_request',
+        'classpath'     => '',
+        'description'   => 'Check if current user can create delete data request for another user.',
+        'type'          => 'read',
+        'ajax'          => true,
+        'loginrequired' => true
+    ],
 ];

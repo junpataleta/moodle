@@ -9,15 +9,20 @@ Feature: Data delete from the privacy API
       | username | firstname      | lastname |
       | victim   | Victim User    | 1        |
       | parent   | Long-suffering | Parent   |
+      | dpo      | DPO            | One      |
     And the following "roles" exist:
       | shortname | name  | archetype |
       | tired     | Tired |           |
     And the following "permission overrides" exist:
-      | capability                                   | permission | role  | contextlevel | reference |
-      | tool/dataprivacy:makedatarequestsforchildren | Allow      | tired | System       |           |
+      | capability                                   | permission | role    | contextlevel | reference |
+      | tool/dataprivacy:makedatarequestsforchildren | Allow      | tired   | System       |           |
+      | tool/dataprivacy:managedatarequests          | Allow      | manager | System       |           |
     And the following "role assigns" exist:
       | user   | role  | contextlevel | reference |
       | parent | tired | User         | victim    |
+    And the following "system role assigns" exist:
+      | user | role    | contextlevel |
+      | dpo  | manager | User         |
     And the following config values are set as admin:
       | contactdataprotectionofficer | 1  | tool_dataprivacy |
     And the following data privacy "categories" exist:
@@ -26,6 +31,10 @@ Feature: Data delete from the privacy API
     And the following data privacy "purposes" exist:
       | name         | retentionperiod |
       | Site purpose | P10Y           |
+    And the following config values are set as admin:
+      | contactdataprotectionofficer | 1  | tool_dataprivacy |
+      | privacyrequestexpiry         | 55 | tool_dataprivacy |
+      | dporoles                     | 1  | tool_dataprivacy |
     And I set the site category and purpose to "Site category" and "Site purpose"
 
   @javascript
@@ -115,3 +124,52 @@ Feature: Data delete from the privacy API
     And I run all adhoc tasks
     And I reload the page
     And I should see "You don't have any personal data requests"
+
+  @javascript
+  Scenario: As a DPO, I cannot create delete data request unless I have permission.
+    Given I log in as "dpo"
+    And I navigate to "Users > Privacy and policies > Data requests" in site administration
+    And I follow "New request"
+    And I open the autocomplete suggestions list
+    And I click on "Victim User 1" item in the autocomplete list
+    Then I should see "Export all of my personal data"
+    And "Type" "select" should not be visible
+    When the following "permission overrides" exist:
+      | capability                                 | permission | role    | contextlevel | reference |
+      | tool/dataprivacy:requestdeleteforotheruser | Allow      | manager | System       |           |
+    And I reload the page
+    And I open the autocomplete suggestions list
+    And I click on "Victim User 1" item in the autocomplete list
+    Then "Type" "select" should be visible
+
+  @javascript
+  Scenario: As a student, I cannot create delete data request unless I have permission.
+    Given I log in as "victim"
+    And I follow "Profile" in the user menu
+    And I follow "Data requests"
+    And I follow "New request"
+    Then "Type" "select" should exist
+    When the following "permission overrides" exist:
+      | capability                     | permission | role | contextlevel | reference |
+      | tool/dataprivacy:requestdelete | Prevent    | user | System       |           |
+    And I reload the page
+    Then I should see "Export all of my personal data"
+    And "Type" "select" should not exist
+
+  @javascript
+  Scenario: As a parent, I cannot create delete data request unless I have permission.
+    Given I log in as "parent"
+    And I follow "Profile" in the user menu
+    And I follow "Data requests"
+    And I follow "New request"
+    And I open the autocomplete suggestions list
+    And I click on "Victim User 1" item in the autocomplete list
+    Then "Type" "select" should be visible
+    When the following "permission overrides" exist:
+      | capability                     | permission | role | contextlevel | reference |
+      | tool/dataprivacy:requestdelete | Prevent    | user | System       |           |
+    And I reload the page
+    And I open the autocomplete suggestions list
+    And I click on "Victim User 1" item in the autocomplete list
+    Then I should see "Export all of my personal data"
+    And "Type" "select" should not be visible

@@ -47,9 +47,10 @@ class tool_dataprivacy_data_request_form extends moodleform {
      * @throws coding_exception
      */
     public function definition() {
-        global $USER;
+        global $USER, $PAGE;
         $mform =& $this->_form;
 
+        $requestforother = false;
         $this->manage = $this->_customdata['manage'];
         if ($this->manage) {
             $options = [
@@ -69,7 +70,7 @@ class tool_dataprivacy_data_request_form extends moodleform {
             ];
             $mform->addElement('autocomplete', 'userid', get_string('requestfor', 'tool_dataprivacy'), [], $options);
             $mform->addRule('userid', null, 'required', null, 'client');
-
+            $requestforother = true;
         } else {
             // Get users whom you are being a guardian to if your role has the capability to make data requests for children.
             if ($children = helper::get_children_of_user($USER->id)) {
@@ -81,7 +82,7 @@ class tool_dataprivacy_data_request_form extends moodleform {
                 }
                 $mform->addElement('autocomplete', 'userid', get_string('requestfor', 'tool_dataprivacy'), $useroptions);
                 $mform->addRule('userid', null, 'required', null, 'client');
-
+                $requestforother = true;
             } else {
                 // Requesting for self.
                 $mform->addElement('hidden', 'userid', $USER->id);
@@ -108,6 +109,14 @@ class tool_dataprivacy_data_request_form extends moodleform {
         // Action buttons.
         $this->add_action_buttons();
 
+        if ($requestforother) {
+            $PAGE->requires->js_call_amd('tool_dataprivacy/form-check-deletepermission', 'init',
+                [api::DATAREQUEST_TYPE_EXPORT]);
+        } else {
+            if (!has_capability('tool/dataprivacy:requestdelete', context_user::instance($USER->id))) {
+                $mform->freeze('type');
+            }
+        }
     }
 
     /**

@@ -1642,4 +1642,44 @@ class external extends external_api {
 
         return new external_single_structure($fields, 'Node structure', VALUE_OPTIONAL);
     }
+
+    /**
+     * Parameters for can_create_delete_request().
+     *
+     * @return external_function_parameters
+     */
+    public static function can_create_delete_request_parameters() {
+        return new external_function_parameters([
+            'user' => new external_value(PARAM_INT, 'ID of the user being requested.'),
+        ]);
+    }
+
+    /**
+     * Returns for can_create_delete_request().
+     *
+     * @return external_single_structure
+     */
+    public static function can_create_delete_request_returns() {
+        return new external_single_structure([
+            'valid' => new external_value(PARAM_BOOL,
+                'Return true if allow create delete request for current user, otherwise return false.',
+                VALUE_REQUIRED),
+        ]);
+    }
+
+    /**
+     * Check if current user can create delete data request for $user or not.
+     *
+     * @param int $user ID of user being requested.
+     * @return object
+     * @throws coding_exception
+     * @throws moodle_exception
+     */
+    public static function can_create_delete_request(int $user) {
+        global $USER;
+
+        return (object) [
+            'valid' => api::can_create_delete_data_request($user, $USER->id)
+        ];
+    }
 }
