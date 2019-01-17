@@ -2917,7 +2917,7 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2019031500.01);
     }
 
-    if ($oldversion < 2019032200.01) {
+    if ($oldversion < 2019032700.00) {
 
         // Define table badge_competencies to be renamed to badge_alignment.
         $table = new xmldb_table('badge_competencies');
@@ -2938,7 +2938,7 @@ function xmldb_main_upgrade($oldversion) {
             $dbman->rename_table($table, 'badge_alignment');
         }
 
-        upgrade_main_savepoint(true, 2019032200.01);
+        upgrade_main_savepoint(true, 2019032700.00);
     }
 
     return true;
