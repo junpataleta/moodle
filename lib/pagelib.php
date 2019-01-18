@@ -1312,7 +1312,7 @@ class moodle_page {
 
         $fullurl = $this->_url->out_omit_querystring();
         if (strpos($fullurl, "$CFG->wwwroot/") !== 0) {
-            debugging('Most probably incorrect set_page() url argument, it does not match the wwwroot!');
+            debugging('Most probably incorrect set_page() url argument, it does not match the wwwroot!', DEBUG_NORMAL);
         }
         $shorturl = str_replace("$CFG->wwwroot/", '', $fullurl);
 

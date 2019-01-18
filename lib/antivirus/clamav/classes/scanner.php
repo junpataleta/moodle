@@ -63,7 +63,7 @@ class scanner extends \core\antivirus\scanner {
     public function scan_file($file, $filename) {
         if (!is_readable($file)) {
             // This should not happen.
-            debugging('File is not readable.');
+            debugging('File is not readable.', DEBUG_NORMAL);
             return self::SCAN_RESULT_ERROR;
         }
 

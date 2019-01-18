@@ -907,13 +907,13 @@ class admin_category implements parentable_part_of_admin_tree {
 
         $parent = $this->locate($parentname);
         if (is_null($parent)) {
-            debugging('parent does not exist!');
+            debugging('parent does not exist!', DEBUG_NORMAL);
             return false;
         }
 
         if ($something instanceof part_of_admin_tree) {
             if (!($parent instanceof parentable_part_of_admin_tree)) {
-                debugging('error - parts of tree can be inserted only into parentable parts');
+                debugging('error - parts of tree can be inserted only into parentable parts', DEBUG_NORMAL);
                 return false;
             }
             if ($CFG->debugdeveloper && !is_null($this->locate($something->name))) {
@@ -969,7 +969,7 @@ class admin_category implements parentable_part_of_admin_tree {
             return true;
 
         } else {
-            debugging('error - can not add this element');
+            debugging('error - can not add this element', DEBUG_NORMAL);
             return false;
         }
 
@@ -1451,7 +1451,7 @@ class admin_settingpage implements part_of_admin_tree {
      */
     public function add($setting) {
         if (!($setting instanceof admin_setting)) {
-            debugging('error - not a setting instance');
+            debugging('error - not a setting instance', DEBUG_NORMAL);
             return false;
         }
 

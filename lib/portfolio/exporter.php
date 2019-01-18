@@ -242,7 +242,7 @@ class portfolio_exporter {
         } catch (portfolio_export_exception $e) {
             throw $e;
         } catch (Exception $e) {
-            debugging(get_string('thirdpartyexception', 'portfolio', get_class($e)));
+            debugging(get_string('thirdpartyexception', 'portfolio', get_class($e)), DEBUG_NORMAL);
             debugging($e);
             portfolio_export_rethrow_exception($this, $e);
         }

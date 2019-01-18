@@ -144,7 +144,7 @@ class portfolio_format_leap2a_writer {
         }
         $this->entries[$selectionid]->add_category($selectiontype, 'selection_type');
         if ($this->entries[$selectionid]->type != 'selection') {
-            debugging(get_string('leap2a_overwritingselection', 'portfolio', $this->entries[$selectionid]->type));
+            debugging(get_string('leap2a_overwritingselection', 'portfolio', $this->entries[$selectionid]->type), DEBUG_NORMAL);
             $this->entries[$selectionid]->type = 'selection';
         }
     }

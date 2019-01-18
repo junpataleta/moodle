@@ -198,7 +198,7 @@ class badge {
         } else if ($this->type == BADGE_TYPE_COURSE) {
             return context_course::instance($this->courseid);
         } else {
-            debugging('Something is wrong...');
+            debugging('Something is wrong...', DEBUG_NORMAL);
         }
     }
 

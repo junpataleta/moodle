@@ -279,7 +279,7 @@ class portfolio_add_button {
                 $a = new stdClass();
                 $a->key = $key;
                 $a->value = print_r($value, true);
-                debugging(get_string('nonprimative', 'portfolio', $a));
+                debugging(get_string('nonprimative', 'portfolio', $a), DEBUG_NORMAL);
                 return;
             }
             $url->param('ca_' . $key, $value);
@@ -363,7 +363,7 @@ class portfolio_add_button {
                     'title' => $addstr));
             break;
             default:
-                debugging(get_string('invalidaddformat', 'portfolio', $format));
+                debugging(get_string('invalidaddformat', 'portfolio', $format), DEBUG_NORMAL);
         }
         $output = (in_array($format, array(PORTFOLIO_ADD_FULL_FORM, PORTFOLIO_ADD_ICON_FORM)) ? $formoutput : $linkoutput);
         return $output;
@@ -596,7 +596,7 @@ function portfolio_format_from_mimetype($mimetype) {
         $supportedmimetypes = call_user_func(array($classname, 'mimetypes'));
         if (!is_array($supportedmimetypes)) {
             debugging("one of the portfolio format classes, $classname, said it supported something funny for mimetypes, should have been array...");
-            debugging(print_r($supportedmimetypes, true));
+            debugging(print_r($supportedmimetypes, true), DEBUG_NORMAL);
             continue;
         }
         if (in_array($mimetype, $supportedmimetypes)) {
@@ -624,7 +624,7 @@ function portfolio_supported_formats_intersect($callerformats, $pluginformats) {
     foreach ($callerformats as $cf) {
         if (!array_key_exists($cf, $allformats)) {
             if (!portfolio_format_is_abstract($cf)) {
-                debugging(get_string('invalidformat', 'portfolio', $cf));
+                debugging(get_string('invalidformat', 'portfolio', $cf), DEBUG_NORMAL);
             }
             continue;
         }
@@ -633,7 +633,7 @@ function portfolio_supported_formats_intersect($callerformats, $pluginformats) {
         foreach ($pluginformats as $p => $pf) {
             if (!array_key_exists($pf, $allformats)) {
                 if (!portfolio_format_is_abstract($pf)) {
-                    debugging(get_string('invalidformat', 'portfolio', $pf));
+                    debugging(get_string('invalidformat', 'portfolio', $pf), DEBUG_NORMAL);
                 }
                 unset($pluginformats[$p]); // to avoid the same warning over and over
                 continue;
@@ -992,7 +992,7 @@ function portfolio_expected_time_file($totest) {
     foreach ($totest as $file) {
         if (!($file instanceof stored_file)) {
             debugging('something weird passed to portfolio_expected_time_file - not stored_file object');
-            debugging(print_r($file, true));
+            debugging(print_r($file, true), DEBUG_NORMAL);
             continue;
         }
         $size += $file->get_filesize();

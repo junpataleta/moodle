@@ -364,7 +364,7 @@ class grade_category extends grade_object {
         $this->timecreated = $this->timemodified = time();
 
         if (!parent::insert($source)) {
-            debugging("Could not insert this category: " . print_r($this, true));
+            debugging("Could not insert this category: " . print_r($this, true), DEBUG_NORMAL);
             return false;
         }
 
@@ -396,7 +396,7 @@ class grade_category extends grade_object {
         $this->timecreated = $this->timemodified = time();
 
         if (!parent::insert('system')) {
-            debugging("Could not insert this category: " . print_r($this, true));
+            debugging("Could not insert this category: " . print_r($this, true), DEBUG_NORMAL);
             return false;
         }
 

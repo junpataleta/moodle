@@ -197,7 +197,7 @@
         }
 
         if ($simplepiefeed->error()) {
-            debugging($feedrecord->url .' Failed with code: '.$simplepiefeed->error());
+            debugging($feedrecord->url .' Failed with code: '.$simplepiefeed->error(), DEBUG_NORMAL);
             return null;
         }
 
@@ -236,7 +236,7 @@
                     // want to crash the page. Specifically, moodle_url can
                     // throw an exception of the param is an extremely
                     // malformed url.
-                    debugging($e->getMessage());
+                    debugging($e->getMessage(), DEBUG_NORMAL);
                 }
             }
         }
@@ -255,7 +255,7 @@
                 // If there is an error with the RSS image, we don'twant to
                 // crash the page. Specifically, moodle_url can throw an
                 // exception if the param is an extremely malformed url.
-                debugging($e->getMessage());
+                debugging($e->getMessage(), DEBUG_NORMAL);
             }
         }
 

@@ -80,13 +80,14 @@ class toolproxy extends \mod_lti\local\ltiservice\resource_base {
             $toolproxyjson = json_decode($response->get_request_data());
             $ok = !empty($toolproxyjson);
             if (!$ok) {
-                debugging('Tool proxy is not properly formed JSON');
+                debugging('Tool proxy is not properly formed JSON', DEBUG_NORMAL);
             } else {
                 $ok = isset($toolproxyjson->tool_profile->product_instance->product_info->product_family->vendor->code);
                 $ok = $ok && isset($toolproxyjson->security_contract->shared_secret);
                 $ok = $ok && isset($toolproxyjson->tool_profile->resource_handler);
                 if (!$ok) {
-                    debugging('One or more missing elements from tool proxy: vendor code, shared secret or resource handlers');
+                    debugging('One or more missing elements from tool proxy: vendor code, shared secret or resource handlers',
+                            DEBUG_NORMAL);
                 }
             }
         }
@@ -183,7 +184,7 @@ class toolproxy extends \mod_lti\local\ltiservice\resource_base {
             }
             $ok = count($tools) > 0;
             if (!$ok) {
-                debugging('No launchable messages found in tool proxy');
+                debugging('No launchable messages found in tool proxy', DEBUG_NORMAL);
             }
         }
 

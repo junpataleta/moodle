@@ -996,7 +996,8 @@ class rating_manager {
         // If null then the callback does not exist.
         if ($isvalid === null) {
             $isvalid = false;
-            debugging('rating validation callback not found for component '.  clean_param($component, PARAM_ALPHANUMEXT));
+            debugging('rating validation callback not found for component ' . clean_param($params['component'], PARAM_ALPHANUMEXT),
+                    DEBUG_NORMAL);
         }
         return $isvalid;
     }

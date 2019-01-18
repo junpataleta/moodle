@@ -271,9 +271,11 @@ abstract class base extends \core_analytics\calculable {
 
         $minscore = floatval($this->min_prediction_score());
         if ($minscore < 0) {
-            debugging(get_class($this) . ' minimum prediction score is below 0, please update it to a value between 0 and 1.');
+            debugging(get_class($this) . ' minimum prediction score is below 0, please update it to a value between 0 and 1.',
+                    DEBUG_NORMAL);
         } else if ($minscore > 1) {
-            debugging(get_class($this) . ' minimum prediction score is above 1, please update it to a value between 0 and 1.');
+            debugging(get_class($this) . ' minimum prediction score is above 1, please update it to a value between 0 and 1.',
+                    DEBUG_NORMAL);
         }
 
         // We need to consider that targets may not have a min score.

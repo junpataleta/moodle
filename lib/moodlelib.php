@@ -5907,7 +5907,7 @@ function email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', 
     $noreplyaddress = empty($CFG->noreplyaddress) ? $noreplyaddressdefault : $CFG->noreplyaddress;
 
     if (!validate_email($noreplyaddress)) {
-        debugging('email_to_user: Invalid noreply-email '.s($noreplyaddress));
+        debugging('email_to_user: Invalid noreply-email '.s($noreplyaddress), DEBUG_NORMAL);
         $noreplyaddress = $noreplyaddressdefault;
     }
 
@@ -5921,7 +5921,7 @@ function email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', 
 
     // Make sure that the explicit replyto is valid, fall back to the implicit one.
     if (!empty($replyto) && !validate_email($replyto)) {
-        debugging('email_to_user: Invalid replyto-email '.s($replyto));
+        debugging('email_to_user: Invalid replyto-email '.s($replyto), DEBUG_NORMAL);
         $replyto = $noreplyaddress;
     }
 
@@ -9840,7 +9840,7 @@ function get_mnet_environment() {
  */
 function get_mnet_remote_client() {
     if (!defined('MNET_SERVER')) {
-        debugging(get_string('notinxmlrpcserver', 'mnet'));
+        debugging(get_string('notinxmlrpcserver', 'mnet'), DEBUG_NORMAL);
         return false;
     }
     global $MNET_REMOTE_CLIENT;

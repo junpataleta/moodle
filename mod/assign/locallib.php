@@ -9275,7 +9275,7 @@ class assign_portfolio_caller extends portfolio_module_caller_base {
                                                        $this->exporter->get('format')->manifest_name(),
                                                        true);
             } else {
-                debugging('invalid format class: ' . $this->exporter->get('formatclass'));
+                debugging('invalid format class: ' . $this->exporter->get('formatclass'), DEBUG_NORMAL);
             }
 
         }
