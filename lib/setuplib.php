@@ -849,7 +849,11 @@ function initialise_fullme() {
     }
 
     $rurl = setup_get_remote_url();
-    $wwwroot = parse_url($CFG->wwwroot.'/');
+    $murl = new moodle_url($CFG->wwwroot.'/');
+    $scheme = $murl->get_scheme();
+    $host = $murl->get_host();
+    $path = $murl->get_path();
+    $port = $murl->get_port();
 
     if (empty($rurl['host'])) {
         // missing host in request header, probably not a real browser, let's ignore them
@@ -860,9 +864,9 @@ function initialise_fullme() {
         // Do not abuse this to try to solve lan/wan access problems!!!!!
 
     } else {
-        if (($rurl['host'] !== $wwwroot['host']) or
-                (!empty($wwwroot['port']) and $rurl['port'] != $wwwroot['port']) or
-                (strpos($rurl['path'], $wwwroot['path']) !== 0)) {
+        if (($rurl['host'] !== $host) or
+                (!empty($port) and $rurl['port'] != $port) or
+                (strpos($rurl['path'], $path) !== 0)) {
 
             // Explain the problem and redirect them to the right URL
             if (!defined('NO_MOODLE_COOKIES')) {
@@ -870,12 +874,12 @@ function initialise_fullme() {
             }
             // The login/token.php script should call the correct url/port.
             if (defined('REQUIRE_CORRECT_ACCESS') && REQUIRE_CORRECT_ACCESS) {
-                $wwwrootport = empty($wwwroot['port'])?'':$wwwroot['port'];
+                $wwwrootport = empty($port) ? '' : $port;
                 $calledurl = $rurl['host'];
                 if (!empty($rurl['port'])) {
                     $calledurl .=  ':'. $rurl['port'];
                 }
-                $correcturl = $wwwroot['host'];
+                $correcturl = $host;
                 if (!empty($wwwrootport)) {
                     $correcturl .=  ':'. $wwwrootport;
                 }
@@ -887,8 +891,8 @@ function initialise_fullme() {
     }
 
     // Check that URL is under $CFG->wwwroot.
-    if (strpos($rurl['path'], $wwwroot['path']) === 0) {
-        $SCRIPT = substr($rurl['path'], strlen($wwwroot['path'])-1);
+    if (strpos($rurl['path'], $path) === 0) {
+        $SCRIPT = substr($rurl['path'], strlen($path)-1);
     } else {
         // Probably some weird external script
         $SCRIPT = $FULLSCRIPT = $FULLME = $ME = null;
@@ -898,7 +902,7 @@ function initialise_fullme() {
     // $CFG->sslproxy specifies if external SSL appliance is used
     // (That is, the Moodle server uses http, with an external box translating everything to https).
     if (empty($CFG->sslproxy)) {
-        if ($rurl['scheme'] === 'http' and $wwwroot['scheme'] === 'https') {
+        if ($rurl['scheme'] === 'http' and $scheme === 'https') {
             if (defined('REQUIRE_CORRECT_ACCESS') && REQUIRE_CORRECT_ACCESS) {
                 print_error('sslonlyaccess', 'error');
             } else {
@@ -906,7 +910,7 @@ function initialise_fullme() {
             }
         }
     } else {
-        if ($wwwroot['scheme'] !== 'https') {
+        if ($scheme !== 'https') {
             throw new coding_exception('Must use https address in wwwroot when ssl proxy enabled!');
         }
         $rurl['scheme'] = 'https'; // make moodle believe it runs on https, squid or something else it doing it
@@ -916,13 +920,13 @@ function initialise_fullme() {
 
     // hopefully this will stop all those "clever" admins trying to set up moodle
     // with two different addresses in intranet and Internet
-    if (!empty($CFG->reverseproxy) && $rurl['host'] === $wwwroot['host']) {
+    if (!empty($CFG->reverseproxy) && $rurl['host'] === $host) {
         print_error('reverseproxyabused', 'error');
     }
 
-    $hostandport = $rurl['scheme'] . '://' . $wwwroot['host'];
-    if (!empty($wwwroot['port'])) {
-        $hostandport .= ':'.$wwwroot['port'];
+    $hostandport = $rurl['scheme'] . '://' . $host;
+    if (!empty($port)) {
+        $hostandport .= ':' . $port;
     }
 
     $FULLSCRIPT = $hostandport . $rurl['path'];

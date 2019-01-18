@@ -183,7 +183,8 @@ class url_finder {
                                 $prefix = $match[1][$i];
                                 $protocol = $match[3][$i];
                                 $url = $protocol . $match[4][$i];
-                                $host = \core_text::strtolower(parse_url($url, PHP_URL_HOST));
+                                $murl = new \moodle_url($url);
+                                $host = \core_text::strtolower($murl->get_host());
                                 if (empty($host)) {
                                     continue;
                                 }

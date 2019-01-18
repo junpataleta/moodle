@@ -392,7 +392,6 @@ class OAuthRequest {
      * scheme://host/path
      */
     public function get_normalized_http_url() {
-        $parts = parse_url($this->http_url);
         $murl = new \moodle_url($this->http_url);
 
         $port = $murl->get_port();

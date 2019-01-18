@@ -1616,6 +1616,10 @@ function lti_get_tool_by_url_match($url, $courseid = null, $state = LTI_TOOL_STA
 }
 
 function lti_get_url_thumbprint($url) {
+    // Moodle URL requires a schema otherwise everything goes into 'path'.  Fixed 5.4.7 or later.
+    if (preg_match('/https?:\/\//', $url) !== 1) {
+        $url = 'http://'.$url;
+    }
     $murl = new moodle_url(strtolower($url));
     $path = $murl->get_path();
     $host = $murl->get_host();
@@ -1625,11 +1629,11 @@ function lti_get_url_thumbprint($url) {
         $host = substr($host, 4);
     }
 
-    $url = $host . '/' . $path;
+    $thumbprint = $host . '/' . $path;
     if ($query) {
-        $url .= '?' . $query;
+        $thumbprint .= '?' . $query;
     }
-    return $url;
+    return $thumbprint;
 }
 
 function lti_get_best_tool_by_url($url, $tools, $courseid = null) {

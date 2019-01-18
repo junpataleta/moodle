@@ -5764,8 +5764,8 @@ function email_should_be_diverted($email) {
 function generate_email_messageid($localpart = null) {
     global $CFG;
 
-    $urlinfo = parse_url($CFG->wwwroot);
-    $base = '@' . $urlinfo['host'];
+    $urlinfo = new moodle_url($CFG->wwwroot);
+    $base = '@' . $urlinfo->get_host();
 
     // If multiple moodles are on the same domain we want to tell them
     // apart so we add the install path to the local part. This means
@@ -5889,7 +5889,8 @@ function email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', 
     $tempreplyto = array();
 
     // Make sure that we fall back onto some reasonable no-reply address.
-    $noreplyaddressdefault = 'noreply@' . get_host_from_url($CFG->wwwroot);
+    $host = (new moodle_url('/'))->get_host();
+    $noreplyaddressdefault = 'noreply@' . $host;
     $noreplyaddress = empty($CFG->noreplyaddress) ? $noreplyaddressdefault : $CFG->noreplyaddress;
 
     if (!validate_email($noreplyaddress)) {

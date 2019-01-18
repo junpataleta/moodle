@@ -1930,13 +1930,13 @@ class moodle_page {
      * @return string
      */
     protected function url_to_class_name($url) {
-        $bits = parse_url($url);
-        $class = str_replace('.', '-', $bits['host']);
-        if (!empty($bits['port'])) {
-            $class .= '--' . $bits['port'];
+        $murl = new moodle_url($url);
+        $class = str_replace('.', '-', $murl->get_host());
+        if (!empty($murl->get_port())) {
+            $class .= '--' . $murl->get_port();
         }
-        if (!empty($bits['path'])) {
-            $path = trim($bits['path'], '/');
+        if (!empty($murl->get_path())) {
+            $path = trim($murl->get_path(), '/');
             if ($path) {
                 $class .= '--' . str_replace('/', '-', $path);
             }

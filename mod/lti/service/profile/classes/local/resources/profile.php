@@ -130,8 +130,8 @@ EOD;
             if (strlen($capabilityoffered) > 0) {
                 $capabilityoffered = "\n    \"{$capabilityoffered}\"";
             }
-            $urlparts = parse_url($CFG->wwwroot);
-            $orgid = $urlparts['host'];
+            $murl = new \moodle_url($CFG->wwwroot);
+            $orgid = $murl->get_host();
             $name = 'Moodle';
             $code = 'moodle';
             $vendorname = 'Moodle.org';
