@@ -580,9 +580,8 @@ abstract class handler {
      *   }
      *
      * @param stdClass $instance data received from a form
-     * @param bool $isnewinstance if this is call is made during instance creation
      */
-    public function instance_form_save(stdClass $instance, bool $isnewinstance = false) {
+    public function instance_form_save(stdClass $instance) {
         if (empty($instance->id)) {
             throw new \coding_exception('Caller must ensure that id is already set in data before calling this method');
         }
@@ -590,7 +589,7 @@ abstract class handler {
             // For performance.
             return;
         }
-        $editablefields = $this->get_editable_fields($isnewinstance ? 0 : $instance->id);
+        $editablefields = $this->get_editable_fields($instance->id);
         $fields = api::get_instance_fields_data($editablefields, $instance->id);
         foreach ($fields as $data) {
             if (!$data->get('id')) {

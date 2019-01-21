@@ -2491,7 +2491,7 @@ function create_course($data, $editoroptions = NULL) {
     // Save custom fields if there are any of them in the form.
     $handler = core_course\customfield\course_handler::create();
     $data->id = $course->id;
-    $handler->instance_form_save($data, true);
+    $handler->instance_form_save($data);
 
     return $course;
 }
