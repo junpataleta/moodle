@@ -34,11 +34,11 @@ $capabilities = [
         'archetypes' => []
     ],
 
-    // Capability for create new delete data request. Usually given to the site's Data Protection Officer.
-    'tool/dataprivacy:requestdeleteforotheruser' => [
+    // Capability for create new delete data request. Usually given to the site's Privacy Officer.
+    'tool/dataprivacy:managedatadeletionrequests' => [
         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_DATALOSS,
         'captype' => 'write',
-        'contextlevel' => CONTEXT_USER,
+        'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [],
         'clonepermissionsfrom' => 'tool/dataprivacy:managedatarequests'
     ],
@@ -54,6 +54,14 @@ $capabilities = [
     // Capability for parents/guardians to make data requests on behalf of their children.
     'tool/dataprivacy:makedatarequestsforchildren' => [
         'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_USER,
+        'archetypes' => []
+    ],
+
+    // Capability for parents/guardians to make data deletion requests on behalf of their children.
+    'tool/dataprivacy:makedatadeletionrequestsforminors' => [
+        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_USER,
         'archetypes' => []

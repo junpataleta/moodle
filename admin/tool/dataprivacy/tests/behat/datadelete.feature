@@ -133,10 +133,10 @@ Feature: Data delete from the privacy API
     And I open the autocomplete suggestions list
     And I click on "Victim User 1" item in the autocomplete list
     Then I should see "Export all of my personal data"
-    And "Type" "select" should not be visible
+    And "Type" "select" should be visible
     When the following "permission overrides" exist:
       | capability                                 | permission | role    | contextlevel | reference |
-      | tool/dataprivacy:requestdeleteforotheruser | Allow      | manager | System       |           |
+      | tool/dataprivacy:managedatadeletionrequests | Allow      | manager | System       |           |
     And I reload the page
     And I open the autocomplete suggestions list
     And I click on "Victim User 1" item in the autocomplete list
@@ -154,7 +154,7 @@ Feature: Data delete from the privacy API
       | tool/dataprivacy:requestdelete | Prevent    | user | System       |           |
     And I reload the page
     Then I should see "Export all of my personal data"
-    And "Type" "select" should not exist
+    And "Type" "select" should exist
 
   @javascript
   Scenario: As a parent, I cannot create delete data request unless I have permission.
@@ -172,4 +172,4 @@ Feature: Data delete from the privacy API
     And I open the autocomplete suggestions list
     And I click on "Victim User 1" item in the autocomplete list
     Then I should see "Export all of my personal data"
-    And "Type" "select" should not be visible
+    And "Type" "select" should be visible

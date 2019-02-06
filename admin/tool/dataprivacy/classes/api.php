@@ -762,27 +762,33 @@ class api {
      * @throws  coding_exception
      * @throws  moodle_exception
      */
-    public static function can_create_delete_data_request(int $user, int $requester = null) {
+    public static function can_create_data_deletion_request(int $user = null, int $requester = null) {
         global $USER;
 
         if (empty($requester)) {
             $requester = $USER->id;
         }
-        $usercontext = \context_user::instance($user);
+
         if ($user == $requester) {
+            $usercontext = \context_user::instance($user);
             // User requests delete data for themselves.
             return has_capability('tool/dataprivacy:requestdelete', $usercontext, $requester);
+
         } else {
+
             if (self::can_manage_data_requests($requester)) {
                 // DPO requests delete data for another user.
-                return has_capability('tool/dataprivacy:requestdeleteforotheruser', $usercontext, $requester);
-            } else {
-                // Check if user can request delete data for another user but not DPO (e.g. users
-                // with the Parent role, etc), then check for request delete permission.
-                return self::can_create_data_request_for_user($user, $requester) &&
-                    has_capability('tool/dataprivacy:requestdelete', $usercontext, $user);
+                $context = context_system::instance();
+                return has_capability('tool/dataprivacy:managedatadeletionrequests', $context);
+
+            } else if (!empty($user) && self::can_create_data_request_for_user($user, $requester)) {
+                $context = \context_user::instance($user);
+                return has_capability('tool/dataprivacy:makedatadeletionrequestsforminors', $context, $requester);
+
             }
         }
+
+        return false;
     }
 
     /**
@@ -794,8 +800,8 @@ class api {
      * @throws  coding_exception
      * @throws  moodle_exception
      */
-    public static function require_can_create_delete_data_request(int $user, int $requester = null) {
-        if (!self::can_create_delete_data_request($user, $requester)) {
+    public static function require_can_create_data_deletion_request(int $user, int $requester = null) {
+        if (!self::can_create_data_deletion_request($user, $requester)) {
             throw new moodle_exception('nopermissions', 'error', '',
                 get_string('createdeletedatarequest', 'tool_dataprivacy'));
         }

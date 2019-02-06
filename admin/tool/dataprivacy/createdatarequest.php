@@ -76,10 +76,6 @@ if ($data = $mform->get_data()) {
         }
     }
 
-    if ($data->type == \tool_dataprivacy\api::DATAREQUEST_TYPE_DELETE) {
-        \tool_dataprivacy\api::require_can_create_delete_data_request($data->userid, $USER->id);
-    }
-
     \tool_dataprivacy\api::create_data_request($data->userid, $data->type, $data->comments);
 
     if ($manage) {

@@ -47,10 +47,9 @@ class tool_dataprivacy_data_request_form extends moodleform {
      * @throws coding_exception
      */
     public function definition() {
-        global $USER, $PAGE;
+        global $USER;
         $mform =& $this->_form;
 
-        $requestforother = false;
         $this->manage = $this->_customdata['manage'];
         if ($this->manage) {
             $options = [
@@ -70,8 +69,13 @@ class tool_dataprivacy_data_request_form extends moodleform {
             ];
             $mform->addElement('autocomplete', 'userid', get_string('requestfor', 'tool_dataprivacy'), [], $options);
             $mform->addRule('userid', null, 'required', null, 'client');
-            $requestforother = true;
+
+            // Check if the user can request data deletion for others.
+            $canrequestdelete = api::can_create_data_deletion_request();
         } else {
+            // Check if the user can request data deletion for self.
+            $canrequestdelete = api::can_create_data_deletion_request($USER->id);
+
             // Get users whom you are being a guardian to if your role has the capability to make data requests for children.
             if ($children = helper::get_children_of_user($USER->id)) {
                 $useroptions = [
@@ -79,10 +83,11 @@ class tool_dataprivacy_data_request_form extends moodleform {
                 ];
                 foreach ($children as $key => $child) {
                     $useroptions[$key] = fullname($child);
+                    // Or check if user can request data deletion for their children.
+                    $canrequestdelete = $canrequestdelete || api::can_create_data_deletion_request($key, $USER->id);;
                 }
                 $mform->addElement('autocomplete', 'userid', get_string('requestfor', 'tool_dataprivacy'), $useroptions);
                 $mform->addRule('userid', null, 'required', null, 'client');
-                $requestforother = true;
             } else {
                 // Requesting for self.
                 $mform->addElement('hidden', 'userid', $USER->id);
@@ -93,9 +98,12 @@ class tool_dataprivacy_data_request_form extends moodleform {
 
         // Subject access request type.
         $options = [
-            api::DATAREQUEST_TYPE_EXPORT => get_string('requesttypeexport', 'tool_dataprivacy'),
-            api::DATAREQUEST_TYPE_DELETE => get_string('requesttypedelete', 'tool_dataprivacy')
+            api::DATAREQUEST_TYPE_EXPORT => get_string('requesttypeexport', 'tool_dataprivacy')
         ];
+        // Add delete option when the user can request deletion.
+        if ($canrequestdelete) {
+            $options[api::DATAREQUEST_TYPE_DELETE] = get_string('requesttypedelete', 'tool_dataprivacy');
+        }
         $mform->addElement('select', 'type', get_string('requesttype', 'tool_dataprivacy'), $options);
         $mform->setType('type', PARAM_INT);
         $mform->addHelpButton('type', 'requesttype', 'tool_dataprivacy');
@@ -108,15 +116,6 @@ class tool_dataprivacy_data_request_form extends moodleform {
 
         // Action buttons.
         $this->add_action_buttons();
-
-        if ($requestforother) {
-            $PAGE->requires->js_call_amd('tool_dataprivacy/form-check-deletepermission', 'init',
-                [api::DATAREQUEST_TYPE_EXPORT]);
-        } else {
-            if (!has_capability('tool/dataprivacy:requestdelete', context_user::instance($USER->id))) {
-                $mform->freeze('type');
-            }
-        }
     }
 
     /**
@@ -129,6 +128,8 @@ class tool_dataprivacy_data_request_form extends moodleform {
      * @throws dml_exception
      */
     public function validation($data, $files) {
+        global $USER;
+
         $errors = [];
 
         $validrequesttypes = [
@@ -141,6 +142,22 @@ class tool_dataprivacy_data_request_form extends moodleform {
 
         if (api::has_ongoing_request($data['userid'], $data['type'])) {
             $errors['type'] = get_string('errorrequestalreadyexists', 'tool_dataprivacy');
+        }
+
+        if ($data['type'] == api::DATAREQUEST_TYPE_DELETE) {
+            if ($this->manage) {
+                if (!api::can_create_data_deletion_request()) {
+                    $errors['userid'] = "You don't have the capability to create data deletion request for others.";
+                }
+            } else {
+                if (!api::can_create_data_deletion_request($data['userid'])) {
+                    if ($USER->id != $data['userid']) {
+                        $errors['userid'] = "You don't have the capability to create data deletion request for users assigned to you.";
+                    } else {
+                        $errors['userid'] = "You don't have the capability to create data deletion request for yourself.";
+                    }
+                }
+            }
         }
 
         return $errors;
