@@ -854,6 +854,18 @@ class badge {
     }
 
     /**
+     * Get alignments of badge.
+     *
+     * @deprecated since Moodle 3.7 see MDL-63876
+     * @return array List content alignments.
+     */
+    public function get_alignment() {
+        debugging('Use of get_alignment is deprecated. Call get_alignments instead.', DEBUG_DEVELOPER);
+
+        return $this->get_alignments();
+    }
+
+    /**
      * Insert/update Endorsement information of badge.
      *
      * @param stdClass $endorsement Data of an endorsement.
