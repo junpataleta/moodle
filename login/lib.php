@@ -370,7 +370,7 @@ function core_login_validate_forgot_password_data($data) {
         }
 
     } else {
-        if ($user = get_complete_user_data('username', $data['username'])) {
+        if ($user = get_complete_user_data('username', core_text::strtolower($data['username']))) {
             if (empty($user->confirmed)) {
                 $errors['email'] = get_string('confirmednot');
             }
