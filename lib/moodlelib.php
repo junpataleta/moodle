@@ -4713,8 +4713,13 @@ function get_complete_user_data($field, $value, $mnethostid = null) {
         $constraints .= " AND mnethostid = :mnethostid";
     }
 
-    // Get all the basic user data.
-    if (! $user = $DB->get_record_select('user', $constraints, $params)) {
+    try {
+        // Make sure that there's only a single record that matches our query.
+        // For example, when fetching by email, multiple records might match the query as there's no guarantee that email addresses
+        // are unique. Therefore we can't reliably tell whether the user profile data that we're fetching is the correct one.
+        $user = $DB->get_record_select('user', $constraints, $params, '*', MUST_EXIST);
+    } catch (dml_exception $exception) {
+        // Return false when no records or multiple records were found.
         return false;
     }
 
