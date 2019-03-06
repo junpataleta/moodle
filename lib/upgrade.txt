@@ -1,6 +1,12 @@
 This files describes API changes in core libraries and APIs,
 information provided here is intended especially for developers.
 
+=== 3.6.4 ===
+
+* New optional parameter $throwexception for \get_complete_user_data(). If true, an exception will be thrown when there's no
+  matching record found or when there are multiple records found for the given field value. If false, it will simply return false.
+  Defaults to false when not set.
+
 === 3.6.2 ===
 
 * The method core_user::is_real_user() now returns false for userid = 0 parameter
