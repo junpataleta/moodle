@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Forum repository class to encapsulate all of the AJAX requests that
+ * Forum repository class to encapsulate all of the AJAX requests that subscribe or unsubscribe
  * can be sent for forum.
  *
  * @module     mod_forum/repository
@@ -43,7 +43,20 @@ define(['core/ajax'], function(Ajax) {
         return Ajax.call([request])[0];
     };
 
+    var setDiscussionLockState = function(forumId, discussionId, targetState) {
+        var request = {
+            methodname: 'mod_forum_set_lock_state',
+            args: {
+                forumid: forumId,
+                discussionid: discussionId,
+                targetstate: targetState
+            }
+        };
+        return Ajax.call([request])[0];
+    };
+
     return {
         setDiscussionSubscriptionState: setDiscussionSubscriptionState,
+        setDiscussionLockState: setDiscussionLockState
     };
 });

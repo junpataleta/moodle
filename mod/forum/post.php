@@ -966,6 +966,7 @@ if ($mformpost->is_cancelled()) {
 
         $discussion = $fromform;
         $discussion->name = $fromform->subject;
+        $discussion->locked = 0;
 
         $newstopic = false;
         if ($forum->type == 'news' && !$fromform->parent) {
