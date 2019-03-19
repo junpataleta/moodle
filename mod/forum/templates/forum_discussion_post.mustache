@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_forum/forum_post_email_htmlemail
+    @template mod_forum/forum_discussion_post
 
     Template which defines a forum post for sending in a single-post HTML email.
 
@@ -80,7 +80,9 @@
                     {{/isimage}}
                 {{/attachments}}
 
-                {{{html.taglist}}}
+                {{#tags}}
+                    {{> core_tag/taglist}}
+                {{/tags}}
 
                 {{#attachments}}
                     {{^isimage}}

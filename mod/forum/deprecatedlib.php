@@ -430,7 +430,8 @@ function forum_cron() {
  * @deprecated since Moodle 3.7
  */
 function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode, $canreply=NULL, $canrate=false) {
-    debugging('forum_print_discussion() has been deprecated, please use \mod_forum\local\renderers\discussion instead.', DEBUG_DEVELOPER);
+    debugging('forum_print_discussion() has been deprecated, please use \mod_forum\local\renderers\discussion instead.',
+        DEBUG_DEVELOPER);
 
     global $USER, $CFG;
 
@@ -538,7 +539,8 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
  * @deprecated since Moodle 3.7
  */
 function forum_post_nesting_cache() {
-    debugging('forum_post_nesting_cache() has been deprecated, please use \mod_forum\local\renderers\posts instead.', DEBUG_DEVELOPER);
+    debugging('forum_post_nesting_cache() has been deprecated, please use \mod_forum\local\renderers\posts instead.',
+        DEBUG_DEVELOPER);
     static $nesting = array();
     return $nesting;
 }
@@ -551,7 +553,8 @@ function forum_post_nesting_cache() {
  * @deprecated since Moodle 3.7
  */
 function forum_should_start_post_nesting($id) {
-    debugging('forum_should_start_post_nesting() has been deprecated, please use \mod_forum\local\renderers\posts instead.', DEBUG_DEVELOPER);
+    debugging('forum_should_start_post_nesting() has been deprecated, please use \mod_forum\local\renderers\posts instead.',
+        DEBUG_DEVELOPER);
     $cache = forum_post_nesting_cache();
     if (!array_key_exists($id, $cache)) {
         $cache[$id] = 1;
@@ -570,7 +573,8 @@ function forum_should_start_post_nesting($id) {
  * @deprecated since Moodle 3.7
  */
 function forum_should_end_post_nesting($id) {
-    debugging('forum_should_end_post_nesting() has been deprecated, please use \mod_forum\local\renderers\posts instead.', DEBUG_DEVELOPER);
+    debugging('forum_should_end_post_nesting() has been deprecated, please use \mod_forum\local\renderers\posts instead.',
+        DEBUG_DEVELOPER);
     $cache = forum_post_nesting_cache();
     if (!array_key_exists($id, $cache)) {
         return true;
@@ -593,7 +597,8 @@ function forum_should_end_post_nesting($id) {
  * @deprecated since Moodle 3.7
  */
 function forum_print_post_start($post, $return = false) {
-    debugging('forum_print_post_start() has been deprecated, please use \mod_forum\local\renderers\posts instead.', DEBUG_DEVELOPER);
+    debugging('forum_print_post_start() has been deprecated, please use \mod_forum\local\renderers\posts instead.',
+        DEBUG_DEVELOPER);
     $output = '';
 
     if (forum_should_start_post_nesting($post->id)) {
@@ -620,7 +625,8 @@ function forum_print_post_start($post, $return = false) {
  * @deprecated since Moodle 3.7
  */
 function forum_print_post_end($post, $return = false) {
-    debugging('forum_print_post_end() has been deprecated, please use \mod_forum\local\renderers\posts instead.', DEBUG_DEVELOPER);
+    debugging('forum_print_post_end() has been deprecated, please use \mod_forum\local\renderers\posts instead.',
+        DEBUG_DEVELOPER);
     $output = '';
 
     if (forum_should_end_post_nesting($post->id)) {
@@ -1273,7 +1279,8 @@ function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent,
  * @deprecated since Moodle 3.7
  */
 function forum_print_posts_nested($course, &$cm, $forum, $discussion, $parent, $reply, $forumtracked, $posts) {
-    debugging('forum_print_posts_nested() has been deprecated, please use \mod_forum\local\renderers\posts instead.', DEBUG_DEVELOPER);
+    debugging('forum_print_posts_nested() has been deprecated, please use \mod_forum\local\renderers\posts instead.',
+        DEBUG_DEVELOPER);
     global $USER, $CFG;
 
     $link  = false;

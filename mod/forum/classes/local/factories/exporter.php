@@ -26,6 +26,7 @@ namespace mod_forum\local\factories;
 
 defined('MOODLE_INTERNAL') || die();
 
+use mod_forum\local\entities\author as author_entity;
 use mod_forum\local\entities\discussion as discussion_entity;
 use mod_forum\local\entities\forum as forum_entity;
 use mod_forum\local\entities\post as post_entity;
@@ -155,7 +156,7 @@ class exporter {
      * @param   stdClass[]      $groupsbyid The set of groups in the forum in an associative array for each group
      * @param   int[]           $discussionreplycount The number of replies for each discussion
      * @param   int[]           $discussionunreadcount The number of unread posts for each discussion
-     * @param   int[]           $latestpostids The latest post id for each discussion
+     * @param   int[]           $latestpostid The latest post id for each discussion
      * @return  discussion_summaries_exporter
      */
     public function get_discussion_summaries_exporter(
@@ -209,7 +210,7 @@ class exporter {
      * @param   array           $tagsbypostid List of tags for each post indexed by post id
      * @param   rating[]        $ratingbypostid List of ratings for each post indexed by post id
      * @param   bool            $includehtml Include some pre-constructed HTML in the export
-     * @return  post_exporter
+     * @return  posts_exporter
      */
     public function get_posts_exporter(
         stdClass $user,

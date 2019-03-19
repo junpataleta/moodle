@@ -26,15 +26,19 @@ namespace mod_forum\local\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
-use mod_forum\local\entities\post as post_entity;
-use mod_forum\local\exporters\author as author_exporter;
-use mod_forum\local\factories\exporter as exporter_factory;
 use core\external\exporter;
 use core_files\external\stored_file_exporter;
-use context;
+use core_tag\output\taglist;
 use core_tag_tag;
+use mod_forum\local\entities\post as post_entity;
+use mod_forum\local\entities\post_read_receipt_collection;
+use mod_forum\local\exporters\author as author_exporter;
+use mod_forum\local\factories\legacy_data_mapper;
+use mod_forum\local\factories\url;
+use mod_forum\local\managers\capability;
 use renderer_base;
 use stdClass;
+use stored_file;
 
 require_once($CFG->dirroot . '/mod/forum/lib.php');
 
@@ -233,12 +237,6 @@ class post extends exporter {
                         'null' => NULL_ALLOWED,
                         'type' => PARAM_RAW
                     ],
-                    'taglist' => [
-                        'optional' => true,
-                        'default' => null,
-                        'null' => NULL_ALLOWED,
-                        'type' => PARAM_RAW
-                    ],
                     'authorsubheading' => [
                         'optional' => true,
                         'default' => null,
@@ -257,29 +255,26 @@ class post extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
-        global $CFG;
-
         $post = $this->post;
         $authorgroups = $this->related['authorgroups'];
+        /** @var \mod_forum\local\entities\forum $forum */
         $forum = $this->related['forum'];
         $discussion = $this->related['discussion'];
         $author = $this->related['author'];
         $user = $this->related['user'];
-        $context = $this->related['context'];
+        /** @var post_read_receipt_collection $readreceiptcollection */
         $readreceiptcollection = $this->related['readreceiptcollection'];
         $rating = $this->related['rating'];
         $tags = $this->related['tags'];
         $attachments = $this->related['attachments'];
         $includehtml = $this->related['includehtml'];
-        $forumrecord = $this->get_forum_record();
-        $discussionrecord = $this->get_discussion_record();
-        $postrecord = $this->get_post_record();
         $isdeleted = $post->is_deleted();
         $hasrating = $rating != null;
         $hastags = !empty($tags);
         $discussionid = $post->get_discussion_id();
         $parentid = $post->get_parent_id();
 
+        /** @var capability $capabilitymanager */
         $capabilitymanager = $this->related['capabilitymanager'];
         $canview = $capabilitymanager->can_view_post($user, $discussion, $post);
         $canedit = $capabilitymanager->can_edit_post($user, $discussion, $post);
@@ -289,6 +284,7 @@ class post extends exporter {
         $canexport = $capabilitymanager->can_export_post($user, $post);
         $cancontrolreadstatus = $capabilitymanager->can_manually_control_post_read_status($user);
 
+        /** @var url $urlfactory */
         $urlfactory = $this->related['urlfactory'];
         $viewurl = $canview ? $urlfactory->get_view_post_url_from_post($post) : null;
         $viewisolatedurl = $canview ? $urlfactory->get_view_isolated_post_url_from_post($post) : null;
@@ -359,10 +355,9 @@ class post extends exporter {
                 'discuss' => $discussurl ? $discussurl->out(false) : null,
             ],
             'attachments' => ($exportattachments) ? $this->export_attachments($attachments, $post, $output, $canexport) : [],
-            'tags' => ($loadcontent && $hastags) ? $this->export_tags($tags) : [],
+            'tags' => ($loadcontent && $hastags) ? $this->export_tags($tags, $output) : [],
             'html' => $includehtml ? [
                 'rating' => ($loadcontent && $hasrating) ? $output->render($rating) : null,
-                'taglist' => ($loadcontent && $hastags) ? $output->tag_list($tags) : null,
                 'authorsubheading' => ($loadcontent) ? $this->get_author_subheading_html($exportedauthor, $timecreated) : null
             ] : null
         ];
@@ -399,6 +394,7 @@ class post extends exporter {
      * @return string
      */
     private function get_message(post_entity $post) : string {
+        global $CFG;
         $context = $this->related['context'];
         $message = file_rewrite_pluginfile_urls(
             $post->get_message(),
@@ -411,7 +407,8 @@ class post extends exporter {
 
         if (!empty($CFG->enableplagiarism)) {
             require_once($CFG->libdir . '/plagiarismlib.php');
-            $message .= plagiarism_get_links([
+            $forum = $this->get_forum_record();
+            $message .= plagiarism_get_links((object)[
                 'userid' => $post->get_author_id(),
                 'content' => $message,
                 'cmid' => $forum->get_course_module_record()->id,
@@ -445,6 +442,7 @@ class post extends exporter {
     private function export_attachments(array $attachments, post_entity $post, renderer_base $output, bool $canexport) : array {
         global $CFG;
 
+        /** @var url $urlfactory */
         $urlfactory = $this->related['urlfactory'];
         $enableplagiarism = $CFG->enableplagiarism;
         $forum = $this->related['forum'];
@@ -463,7 +461,6 @@ class post extends exporter {
             $post,
             $urlfactory
         ) {
-            $contextid = $attachment->get_contextid();
             $exporter = new stored_file_exporter($attachment, ['context' => $context]);
             $exportedattachment = $exporter->export($output);
             $exporturl = $canexport ? $urlfactory->get_export_attachment_url_from_post_and_attachment($post, $attachment) : null;
@@ -495,27 +492,12 @@ class post extends exporter {
      * Export the list of tags.
      *
      * @param core_tag_tag[] $tags List of tags to export
+     * @param $output
      * @return array
      */
-    private function export_tags(array $tags) : array {
-        $user = $this->related['user'];
-        $context = $this->related['context'];
-        $capabilitymanager = $this->related['capabilitymanager'];
-        $canmanagetags = $capabilitymanager->can_manage_tags($user);
-
-        return array_values(array_map(function($tag) use ($context, $canmanagetags) {
-            $viewurl = core_tag_tag::make_url($tag->tagcollid, $tag->rawname, 0, $context->id);
-            return [
-                'id' => $tag->taginstanceid,
-                'tagid' => $tag->id,
-                'isstandard' => $tag->isstandard,
-                'displayname' => $tag->get_display_name(),
-                'flag' => $canmanagetags && !empty($tag->flag),
-                'urls' => [
-                    'view' => $viewurl->out(false)
-                ]
-            ];
-        }, $tags));
+    private function export_tags(array $tags, $output) : array {
+        $taglist = new taglist($tags);
+        return (array)$taglist->export_for_template($output);
     }
 
     /**
@@ -523,6 +505,7 @@ class post extends exporter {
      *
      * @param stdClass $exportedauthor The exported author object
      * @param int $timecreated The post time created timestamp if it's to be displayed
+     * @return string
      */
     private function get_author_subheading_html(stdClass $exportedauthor, int $timecreated) : string {
         $fullname = $exportedauthor->fullname;
@@ -539,27 +522,9 @@ class post extends exporter {
      * @return stdClass
      */
     private function get_forum_record() : stdClass {
-        $forumdbdatamapper = $this->related['legacydatamapperfactory']->get_forum_data_mapper();
+        /** @var legacy_data_mapper $factory */
+        $factory = $this->related['legacydatamapperfactory'];
+        $forumdbdatamapper = $factory->get_forum_data_mapper();
         return $forumdbdatamapper->to_legacy_object($this->related['forum']);
-    }
-
-    /**
-     * Get the legacy discussion record.
-     *
-     * @return stdClass
-     */
-    private function get_discussion_record() : stdClass {
-        $discussiondbdatamapper = $this->related['legacydatamapperfactory']->get_discussion_data_mapper();
-        return $discussiondbdatamapper->to_legacy_object($this->related['discussion']);
-    }
-
-    /**
-     * Get the legacy post record.
-     *
-     * @return stdClass
-     */
-    private function get_post_record() : stdClass {
-        $postdbdatamapper = $this->related['legacydatamapperfactory']->get_post_data_mapper();
-        return $postdbdatamapper->to_legacy_object($this->post);
     }
 }

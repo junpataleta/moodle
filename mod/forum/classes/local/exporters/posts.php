@@ -26,6 +26,8 @@ namespace mod_forum\local\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
+use mod_forum\local\entities\author as author_entity;
+use mod_forum\local\entities\post as post_entity;
 use mod_forum\local\exporters\post as post_exporter;
 use core\external\exporter;
 use renderer_base;
@@ -109,7 +111,7 @@ class posts extends exporter {
         $tagsbypostid = $this->tagsbypostid;
         $ratingbypostid = $this->ratingbypostid;
         $exportedposts = array_map(
-            function($post) use (
+            function(post_entity $post) use (
                 $related,
                 $authorsbyid,
                 $attachmentsbypostid,

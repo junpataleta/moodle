@@ -120,7 +120,7 @@ abstract class db_table_vault {
      * Execute the defined preprocessors on the DB record results and then convert
      * them into entities.
      *
-     * @param stdClass[] $records List of DB results
+     * @param \stdClass[] $records List of DB results
      * @return array
      */
     protected function transform_db_records_to_entities(array $records) {
