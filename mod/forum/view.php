@@ -31,13 +31,18 @@ $forumvault = $vaultfactory->get_forum_vault();
 $discussionvault = $vaultfactory->get_discussion_vault();
 $postvault = $vaultfactory->get_post_vault();
 
-$cmid = required_param('id', PARAM_INT);
+$cmid = optional_param('id', 0, PARAM_INT);
+$forumid = optional_param('f', 0, PARAM_INT);
 $pageno = optional_param('p', 0, PARAM_INT);
 $pagesize = optional_param('s', 0, PARAM_INT);
 $sortorder = optional_param('o', null, PARAM_INT);
 $mode = optional_param('mode', 0, PARAM_INT);
 
-$forum = $forumvault->get_from_course_module_id($cmid);
+if (!$cmid && !$forumid) {
+    print_error('missingparameter');
+}
+
+$forum = $forumid ? $forumvault->get_from_id($forumid) : $forumvault->get_from_course_module_id($cmid);
 if (!$forum) {
     throw new \moodle_exception('Unable to find forum with id ' . $forumid);
 }

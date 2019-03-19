@@ -50,7 +50,7 @@ Feature: Edited forum posts handle tags correctly
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test forum"
-    And I click on "Add a new discussion topic" "button"
+    And I click on "Add a new discussion topic" "link"
     And I expand all fieldsets
     And I open the autocomplete suggestions list
     And I should see "OT1" in the ".form-autocomplete-suggestions" "css_element"

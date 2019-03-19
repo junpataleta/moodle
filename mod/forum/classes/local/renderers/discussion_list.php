@@ -154,7 +154,12 @@ class discussion_list {
         $discussions = $this->get_discussions($user, $groupids, $sortorder, $pageno, $pagesize);
 
         $forumview = [
-            'forum' => (array) $forumexporter->export($this->renderer)
+            'forum' => (array) $forumexporter->export($this->renderer),
+            'groupchangemenu' => groups_print_activity_menu(
+                $cm,
+                $this->urlfactory->get_forum_view_url_from_forum($forum),
+                true
+            )
         ];
 
         if (!$discussions) {
@@ -170,11 +175,6 @@ class discussion_list {
             $forumview,
             [
                 'notifications' => $this->get_notifications($user, $groupid),
-                'groupchangemenu' => groups_print_activity_menu(
-                    $cm,
-                    $this->urlfactory->get_forum_view_url_from_forum($forum),
-                    true
-                ),
                 'pagination' => $this->renderer->render(new \paging_bar($alldiscussionscount, $pageno, $pagesize, $PAGE->url, 'p')),
             ],
             $exportedposts
