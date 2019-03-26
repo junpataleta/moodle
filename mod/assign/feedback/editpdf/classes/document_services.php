@@ -56,6 +56,10 @@ class document_services {
     const STAMPS_FILEAREA = 'stamps';
     /** Filename for combined pdf */
     const COMBINED_PDF_FILENAME = 'combined.pdf';
+    /**  Temporary place to save JPG Image to PDF file */
+    const TMP_JPG_TO_PDF_FILEAREA = 'tmp_jpg_to_pdf';
+    /**  Temporary place to save (Automatically) Rotated JPG FILE */
+    const TMP_ROTATED_JPG_FILEAREA = 'tmp_rotated_jpg';
     /** Hash of blank pdf */
     const BLANK_PDF_HASH = '4c803c92c71f21b423d13de570c8a09e0a31c718';
 
@@ -187,6 +191,21 @@ EOD;
                 $pluginfiles = $plugin->get_files($submission, $user);
                 foreach ($pluginfiles as $filename => $file) {
                     if ($file instanceof \stored_file) {
+                        // Rotate JPEG file, and convert it to pdf if there is no converter.
+                        if ($plugin->get_type() == "file" && $file->get_mimetype() === "image/jpeg") {
+                            list ($newfile, $size) = self::rotate_jpg_image($assignment, $userid, $attemptnumber, $file);
+                            if (!empty($newfile)) {
+                                $file = $newfile;
+                            }
+                            if (!$converter->can_convert_format_to('jpg', 'pdf')) {
+                                $pdffile = self::save_jpg_to_pdf($assignment, $userid, $attemptnumber, $file, $size);
+                                if ($pdffile) {
+                                    $file = $pdffile;
+                                    $filename = $pdffile->get_filename();
+                                }
+                            }
+                        }
+
                         if ($file->get_mimetype() === 'application/pdf') {
                             $files[$filename] = $file;
                         } else if ($convertedfile = $converter->start_conversion($file, 'pdf')) {
@@ -975,5 +994,118 @@ EOD;
             }
         }
         return null;
+    }
+
+    /**
+     * Convert jpg file to pdf file
+     * @param int|\assign $assignment Assignment
+     * @param int $userid User ID
+     * @param int $attemptnumber Attempt Number
+     * @param \stored_file $file file to save
+     * @param null|array $size size of image
+     * @return \stored_file
+     * @throws \file_exception
+     * @throws \stored_file_creation_exception
+     */
+    private static function save_jpg_to_pdf($assignment, $userid, $attemptnumber, $file, $size=null) {
+        // Temporary file.
+        $filename = $file->get_filename();
+        $tmpdir = make_temp_directory('assignfeedback_editpdf/'
+            . self::TMP_JPG_TO_PDF_FILEAREA . '/'
+            . self::hash($assignment, $userid, $attemptnumber));
+        $tempfile = $tmpdir . '' . $filename . ".pdf";
+        // Determine orientation.
+        $orientation = 'P';
+        if (!empty($size['width']) && !empty($size['height'])) {
+            if ($size['width'] > $size['height']) {
+                $orientation = 'L';
+            }
+        }
+        // Save JPG image to PDF file.
+        $pdf = new pdf();
+        $pdf->SetHeaderMargin(0);
+        $pdf->SetFooterMargin(0);
+        $pdf->SetMargins(0, 0, 0, true);
+        $pdf->setPrintFooter(false);
+        $pdf->setPrintHeader(false);
+        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+        $pdf->AddPage($orientation, 'A4');
+        $pdf->SetAutoPageBreak(false, 0);
+        if ($orientation == 'P') {
+            $pdf->Image('@' . $file->get_content(), 0, 0, 210, 297, '', '', '', false, 300, '', false, false, 0);
+        } else {
+            $pdf->Image('@' . $file->get_content(), 0, 0, 297, 210, '', '', '', false, 300, '', false, false, 0);
+        }
+
+        $pdf->setPageMark();
+        $pdf->save_pdf($tempfile);
+        $filearea = self::TMP_JPG_TO_PDF_FILEAREA;
+        $pdffile = self::save_file($assignment, $userid, $attemptnumber, $filearea, $tempfile);
+        if (file_exists($tempfile)) {
+            unlink($tempfile);
+            rmdir($tmpdir);
+        }
+        return $pdffile;
+    }
+
+    /**
+     * Rotate image according to orientation value
+     * @param int|\assign $assignment Assignment
+     * @param int $userid User ID
+     * @param int $attemptnumber Attempt Number
+     * @param \stored_file $file file to save
+     * @return array
+     * @throws \file_exception
+     * @throws \stored_file_creation_exception
+     */
+    private static function rotate_jpg_image($assignment, $userid, $attemptnumber, $file) {
+        $filename = $file->get_filename();
+        $tmpdir = make_temp_directory('assignfeedback_editpdf/'
+            . self::TMP_ROTATED_JPG_FILEAREA .'/'
+            . self::hash($assignment, $userid, $attemptnumber));
+        $tempfile = $tmpdir . '' . $filename;
+        $file->copy_content_to($tempfile);
+        $rotation = [
+            3 => -180,
+            6 => -90,
+            8 => -270,
+        ];
+        $exif = @exif_read_data($tempfile);
+        $newfile = null;
+        $size = null;
+        if (!empty($exif)
+            && key_exists('ExifImageWidth', $exif)
+            && key_exists('ExifImageLength', $exif)
+            && key_exists('Orientation', $exif) ) {
+            $orientation = $exif['Orientation'];
+            // The function imagerotate() rotate image anti clockwise.
+            if ($orientation !== 1) {
+                $source = imagecreatefromstring($file->get_content());
+                $rotated = imagerotate($source, $rotation[$orientation], 0);
+                imagejpeg($rotated, $tempfile);
+                $filearea = self::TMP_ROTATED_JPG_FILEAREA;
+                $newfile = self::save_file($assignment, $userid, $attemptnumber, $filearea, $tempfile);
+                imagedestroy($source);
+                imagedestroy($rotated);
+            }
+
+            if ($orientation == 1 || $orientation == 3) {
+                $size = [
+                    'width' => $exif["ExifImageWidth"],
+                    'height' => $exif["ExifImageLength"],
+                ];
+            } else {
+                $size = [
+                    'height' => $exif["ExifImageWidth"],
+                    'width' => $exif["ExifImageLength"],
+                ];
+            }
+
+        }
+        if (file_exists($tempfile)) {
+            unlink($tempfile);
+            rmdir($tmpdir);
+        }
+        return [$newfile, $size];
     }
 }
