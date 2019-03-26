@@ -146,4 +146,13 @@ abstract class assign_submission_plugin extends assign_plugin {
     public function submission_is_empty(stdClass $data) {
         return false;
     }
+
+    /**
+     * Whether this submission plugin allows any image files it may have to be processed by document converters.
+     *
+     * @return bool
+     */
+    public function allows_image_conversion() {
+        return false;
+    }
 }

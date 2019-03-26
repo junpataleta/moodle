@@ -56,6 +56,10 @@ class document_services {
     const STAMPS_FILEAREA = 'stamps';
     /** Filename for combined pdf */
     const COMBINED_PDF_FILENAME = 'combined.pdf';
+    /**  Temporary place to save JPG Image to PDF file */
+    const TMP_JPG_TO_PDF_FILEAREA = 'tmp_jpg_to_pdf';
+    /**  Temporary place to save (Automatically) Rotated JPG FILE */
+    const TMP_ROTATED_JPG_FILEAREA = 'tmp_rotated_jpg';
     /** Hash of blank pdf */
     const BLANK_PDF_HASH = '4c803c92c71f21b423d13de570c8a09e0a31c718';
 
@@ -187,11 +191,41 @@ EOD;
                 $pluginfiles = $plugin->get_files($submission, $user);
                 foreach ($pluginfiles as $filename => $file) {
                     if ($file instanceof \stored_file) {
-                        if ($file->get_mimetype() === 'application/pdf') {
-                            $files[$filename] = $file;
-                        } else if ($convertedfile = $converter->start_conversion($file, 'pdf')) {
+                        switch ($file->get_mimetype()) {
+                            case 'application/pdf':
+                                // File's already in PDF format. No need to convert.
+                                $files[$filename] = $file;
+                                break;
+                            case 'image/jpeg':
+                                // Handle image files and convert these to PDF if the submission plugin allows it.
+                                if ($plugin->allows_image_conversion()) {
+                                    // First, we want image files to be rotated accordingly.
+                                    list ($newfile, $size) = self::rotate_jpg_image($assignment, $userid, $attemptnumber, $file);
+                                    if (!empty($newfile)) {
+                                        $file = $newfile;
+                                    }
+
+                                    // If the converter can't convert this image to PDF, save the JPEG file to PDF.
+                                    if (!$converter->can_convert_format_to('jpg', 'pdf')) {
+                                        $pdffile = self::save_jpg_to_pdf($assignment, $userid, $attemptnumber, $file, $size);
+                                        if ($pdffile) {
+                                            $filename = $pdffile->get_filename();
+                                            // Add the PDF file to the list of files.
+                                            $files[$filename] = $pdffile;
+                                        }
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+
+                        // If at this point the file has not yet been converted to PDF, just try to wing it and attempt to convert
+                        // the file to PDF.
+                        if (!isset($files[$filename]) && $convertedfile = $converter->start_conversion($file, 'pdf')) {
                             $files[$filename] = $convertedfile;
                         }
+
                     } else if ($converter->can_convert_format_to('html', 'pdf')) {
                         // Create a tmp stored_file from this html string.
                         $file = reset($file);
@@ -903,6 +937,7 @@ EOD;
 
     /**
      * This function rotate a page, and mark the page as rotated.
+     *
      * @param int|\assign $assignment Assignment
      * @param int $userid User ID
      * @param int $attemptnumber Attempt Number
@@ -966,5 +1001,122 @@ EOD;
             }
         }
         return null;
+    }
+
+    /**
+     * Convert jpg file to pdf file
+     *
+     * @param int|\assign $assignment Assignment
+     * @param int $userid User ID
+     * @param int $attemptnumber Attempt Number
+     * @param \stored_file $file file to save
+     * @param null|array $size size of image
+     * @return \stored_file
+     * @throws \file_exception
+     * @throws \stored_file_creation_exception
+     */
+    private static function save_jpg_to_pdf($assignment, $userid, $attemptnumber, $file, $size=null) {
+        // Temporary file.
+        $filename = $file->get_filename();
+        $pathcomponents = [
+            'assignfeedback_editpdf',
+            self::TMP_JPG_TO_PDF_FILEAREA,
+            self::hash($assignment, $userid, $attemptnumber)
+        ];
+        $tmpdir = make_temp_directory(implode(DIRECTORY_SEPARATOR, $pathcomponents));
+        $tempfile = $tmpdir . DIRECTORY_SEPARATOR . $filename . ".pdf";
+
+        // Determine orientation.
+        $orientation = 'P';
+        if (!empty($size['width']) && !empty($size['height'])) {
+            if ($size['width'] > $size['height']) {
+                $orientation = 'L';
+            }
+        }
+        // Save JPG image to PDF file.
+        $pdf = new pdf();
+        $pdf->SetHeaderMargin(0);
+        $pdf->SetFooterMargin(0);
+        $pdf->SetMargins(0, 0, 0, true);
+        $pdf->setPrintFooter(false);
+        $pdf->setPrintHeader(false);
+        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+        $pdf->AddPage($orientation, 'A4');
+        $pdf->SetAutoPageBreak(false, 0);
+        if ($orientation == 'P') {
+            $pdf->Image('@' . $file->get_content(), 0, 0, 210, 297);
+        } else {
+            $pdf->Image('@' . $file->get_content(), 0, 0, 297, 210);
+        }
+
+        $pdf->setPageMark();
+        $pdf->save_pdf($tempfile);
+        $filearea = self::TMP_JPG_TO_PDF_FILEAREA;
+        $pdffile = self::save_file($assignment, $userid, $attemptnumber, $filearea, $tempfile);
+        if (file_exists($tempfile)) {
+            unlink($tempfile);
+            rmdir($tmpdir);
+        }
+        return $pdffile;
+    }
+
+    /**
+     * Rotate image according to orientation value
+     *
+     * @param int|\assign $assignment Assignment
+     * @param int $userid User ID
+     * @param int $attemptnumber Attempt Number
+     * @param \stored_file $file file to save
+     * @return array
+     */
+    private static function rotate_jpg_image($assignment, $userid, $attemptnumber, $file) {
+        $filename = $file->get_filename();
+        $pathcomponents = [
+            'assignfeedback_editpdf',
+            self::TMP_ROTATED_JPG_FILEAREA,
+            self::hash($assignment, $userid, $attemptnumber)
+        ];
+        $tmpdir = make_temp_directory(implode(DIRECTORY_SEPARATOR, $pathcomponents));
+        $tempfile = $tmpdir . DIRECTORY_SEPARATOR . $filename;
+        $file->copy_content_to($tempfile);
+        $rotation = [
+            3 => -180,
+            6 => -90,
+            8 => -270,
+        ];
+        $exif = @exif_read_data($tempfile);
+        $newfile = null;
+        $size = null;
+        if (isset($exif['ExifImageWidth']) && isset($exif['ExifImageLength']) && isset($exif['Orientation']) ) {
+            $orientation = $exif['Orientation'];
+            // The function imagerotate() rotate image anti clockwise.
+            if ($orientation !== 1) {
+                $source = imagecreatefromstring($file->get_content());
+                $rotated = imagerotate($source, $rotation[$orientation], 0);
+                imagejpeg($rotated, $tempfile);
+                $filearea = self::TMP_ROTATED_JPG_FILEAREA;
+                $newfile = self::save_file($assignment, $userid, $attemptnumber, $filearea, $tempfile);
+                imagedestroy($source);
+                imagedestroy($rotated);
+            }
+
+            if ($orientation == 1 || $orientation == 3) {
+                $size = [
+                    'width' => $exif["ExifImageWidth"],
+                    'height' => $exif["ExifImageLength"],
+                ];
+            } else {
+                $size = [
+                    'height' => $exif["ExifImageWidth"],
+                    'width' => $exif["ExifImageLength"],
+                ];
+            }
+
+        }
+        if (file_exists($tempfile)) {
+            unlink($tempfile);
+            rmdir($tmpdir);
+        }
+        return [$newfile, $size];
     }
 }
