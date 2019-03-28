@@ -146,7 +146,30 @@ class exported_discussion_summaries {
             $latestposts
         );
 
-        return (array) $summaryexporter->export($this->renderer);
+        $exportedposts = (array) $summaryexporter->export($this->renderer);
+        $firstposts = $postvault->get_first_post_for_discussion_ids($discussionids);
+
+        array_walk($exportedposts['summaries'], function($summary) use ($firstposts) {
+            $summary->discussion->times['created'] = (int) $firstposts[$summary->discussion->firstpostid]->created;
+        });
+
+        // Pass the current, preferred sort order for the discussions list.
+        $discussionlistvault = $this->vaultfactory->get_discussions_in_forum_vault();
+        $sortorder = get_user_preferences('forum_discussionlistsortorder',
+                $discussionlistvault::SORTORDER_NEWEST_FIRST);
+
+        $sortoptions = array(
+            'islastpostdesc' => $sortorder == $discussionlistvault::SORTORDER_NEWEST_FIRST,
+            'islastpostasc' => $sortorder == $discussionlistvault::SORTORDER_OLDEST_FIRST,
+            'isrepliesdesc' => $sortorder == $discussionlistvault::SORTORDER_REPLIES_DESC,
+            'isrepliesasc' => $sortorder == $discussionlistvault::SORTORDER_REPLIES_ASC,
+            'iscreateddesc' => $sortorder == $discussionlistvault::SORTORDER_CREATED_DESC,
+            'iscreatedasc' => $sortorder == $discussionlistvault::SORTORDER_CREATED_ASC
+        );
+
+        $exportedposts['state']['sortorder'] = $sortoptions;
+
+        return $exportedposts;
     }
 
     /**
