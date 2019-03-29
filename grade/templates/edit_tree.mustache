@@ -15,7 +15,32 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    Edit tree.
+    @template core_grades/edit_tree
+
+    Edit tree template.
+
+    Context variables required for this template:
+    * actionurl - string - Form action URL.
+    * sesskey - string - The session key.
+    * notification - object - Context data for the notification.
+    * showsave - boolean - Whether to show the save changes button.
+    * showbulkmove - boolean - Whether to show the bulk move select menu.
+    * table - string - HTML content of the grade items table.
+    * bulkmoveoptions - array - Key-value pair array for the options of the the bulk move select menu element.
+
+    Example context (json):
+    {
+        "actionurl": "#",
+        "sesskey": "abcd",
+        "showsave": true,
+        "showbulkmove": true,
+        "table": "<table class='table'><tbody><tr><th>Grade tree table here</th></tr></tbody></table>",
+        "bulkmoveoptions": [
+            { "value": 1, "name": "Option 1" },
+            { "value": 2, "name": "Option 2" },
+            { "value": 3, "name": "Option 3" }
+        ]
+    }
 }}
 
 <form id="gradetreeform" method="post" action="{{actionurl}}">
