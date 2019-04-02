@@ -163,14 +163,13 @@ function add_moduleinfo($moduleinfo, $course, $mform = null) {
     // So we have to update one of them twice.
     $sectionid = course_add_cm_to_section($course, $moduleinfo->coursemodule, $moduleinfo->section);
 
+    $moduleinfo = edit_module_post_actions($moduleinfo, $course);
+
     // Trigger event based on the action we did.
     // Api create_from_cm expects modname and id property, and we don't want to modify $moduleinfo since we are returning it.
     $eventdata = clone $moduleinfo;
     $eventdata->modname = $eventdata->modulename;
     $eventdata->id = $eventdata->coursemodule;
-
-    $moduleinfo = edit_module_post_actions($moduleinfo, $course);
-
     $event = \core\event\course_module_created::create_from_cm($eventdata, $modcontext);
     $event->trigger();
 
@@ -200,7 +199,10 @@ function plugin_extend_coursemodule_edit_post_actions($moduleinfo, $course) {
 /**
  * Common create/update module module actions that need to be processed as soon as a module is created/updaded.
  * For example:create grade parent category, add outcomes, rebuild caches, regrade, save plagiarism settings...
- * Please note this api does not trigger events as of MOODLE 2.6. Please trigger events before calling this api.
+ * Please note this api does not trigger events as of MOODLE 2.6.
+ *
+ * This function must be called before triggering events in order to ensure that all course module settings have been saved before
+ * plugin functions that hook to these events and rely on the updated settings are run.
  *
  * @param object $moduleinfo the module info
  * @param object $course the course of the module
@@ -621,7 +623,7 @@ function update_moduleinfo($cm, $moduleinfo, $course, $mform = null) {
     if ($completion->is_enabled() && !empty($moduleinfo->completionunlocked)) {
         $completion->reset_all_state($cm);
     }
-    
+
     $moduleinfo = edit_module_post_actions($moduleinfo, $course);
 
     $cm->name = $moduleinfo->name;

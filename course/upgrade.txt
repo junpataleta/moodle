@@ -7,7 +7,9 @@ information provided here is intended especially for developers.
    - valueused (indicates whether the completion state affects the availability of other content)
  * External function core_course_external::get_course_contents now returns a new contentsinfo field with summary files information.
  * External function core_course_external::get_course_contents now returns an additional field "tags" returning the content tags.
-
+ * edit_module_post_actions() were moved before triggering the course_module_created and course_module_updated events. This is to
+   to ensure that all course module settings have been saved before plugin functions that hook to these events and rely on the
+   updated settings are run.
 
 === 3.6 ===
 
