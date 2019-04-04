@@ -72,7 +72,6 @@ class exporter {
      * @param manager_factory $managerfactory The factory fo fetch a manager instance
      * @param url_factory $urlfactory The factory to create urls
      * @param vault_factory $vaultfactory The vault factory
-
      */
     public function __construct(
         legacy_data_mapper_factory $legacydatamapperfactory,
