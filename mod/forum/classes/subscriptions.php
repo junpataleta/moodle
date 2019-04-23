@@ -24,6 +24,12 @@
 
 namespace mod_forum;
 
+use cm_info;
+use coding_exception;
+use context;
+use context_module;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -97,7 +103,7 @@ class subscriptions {
      * @param int $userid The user ID
      * @param \stdClass $forum The record of the forum to test
      * @param int $discussionid The ID of the discussion to check
-     * @param $cm The coursemodule record. If not supplied, this will be calculated using get_fast_modinfo instead.
+     * @param cm_info $cm The coursemodule record. If not supplied, this will be calculated using get_fast_modinfo instead.
      * @return boolean
      */
     public static function is_subscribed($userid, $forum, $discussionid = null, $cm = null) {
@@ -106,7 +112,7 @@ class subscriptions {
             if (!$cm) {
                 $cm = get_fast_modinfo($forum->course)->instances['forum'][$forum->id];
             }
-            if (has_capability('mod/forum:allowforcesubscribe', \context_module::instance($cm->id), $userid)) {
+            if (has_capability('mod/forum:allowforcesubscribe', context_module::instance($cm->id), $userid)) {
                 return true;
             }
         }
@@ -165,8 +171,8 @@ class subscriptions {
      */
     public static function is_subscribable($forum) {
         return (isloggedin() && !isguestuser() &&
-                !\mod_forum\subscriptions::is_forcesubscribed($forum) &&
-                !\mod_forum\subscriptions::subscription_disabled($forum));
+                !self::is_forcesubscribed($forum) &&
+                !self::subscription_disabled($forum));
     }
 
     /**
@@ -236,7 +242,7 @@ class subscriptions {
         foreach($forums as $forum) {
             if (empty($forum->visible)) {
                 // The forum is hidden - check if the user can view the forum.
-                $context = \context_module::instance($forum->cm);
+                $context = context_module::instance($forum->cm);
                 if (!has_capability('moodle/course:viewhiddenactivities', $context)) {
                     // The user can't see the hidden forum to cannot unsubscribe.
                     continue;
@@ -418,7 +424,7 @@ class subscriptions {
         $context = forum_get_context($forum->id, $context);
 
         if (self::is_forcesubscribed($forum)) {
-            $results = \mod_forum\subscriptions::get_potential_subscribers($context, $groupid, $fields, "u.email ASC");
+            $results = self::get_potential_subscribers($context, $groupid, $fields, "u.email ASC");
 
         } else {
             // Only active enrolled users or everybody on the frontpage.
@@ -578,7 +584,7 @@ class subscriptions {
      *
      * @param int $userid The ID of the user to subscribe
      * @param \stdClass $forum The forum record for this forum.
-     * @param \context_module|null $context Module context, may be omitted if not known or if called for the current
+     * @param context_module|null $context Module context, may be omitted if not known or if called for the current
      *      module set in page.
      * @param boolean $userrequest Whether the user requested this change themselves. This has an effect on whether
      *     discussion subscriptions are removed too.
@@ -646,7 +652,7 @@ class subscriptions {
      *
      * @param int $userid The ID of the user to unsubscribe
      * @param \stdClass $forum The forum record for this forum.
-     * @param \context_module|null $context Module context, may be omitted if not known or if called for the current
+     * @param context_module|null $context Module context, may be omitted if not known or if called for the current
      *     module set in page.
      * @param boolean $userrequest Whether the user requested this change themselves. This has an effect on whether
      *     discussion subscriptions are removed too.
@@ -705,7 +711,7 @@ class subscriptions {
      *
      * @param int $userid The userid of the user being subscribed
      * @param \stdClass $discussion The discussion to subscribe to
-     * @param \context_module|null $context Module context, may be omitted if not known or if called for the current
+     * @param context_module|null $context Module context, may be omitted if not known or if called for the current
      *     module set in page.
      * @return boolean Whether a change was made
      */
@@ -767,7 +773,7 @@ class subscriptions {
      *
      * @param int $userid The userid of the user being unsubscribed
      * @param \stdClass $discussion The discussion to unsubscribe from
-     * @param \context_module|null $context Module context, may be omitted if not known or if called for the current
+     * @param context_module|null $context Module context, may be omitted if not known or if called for the current
      *     module set in page.
      * @return boolean Whether a change was made
      */
@@ -823,6 +829,39 @@ class subscriptions {
         $event->trigger();
 
         return true;
+    }
+
+    /**
+     * Gets the default subscription value for the logged in user.
+     *
+     * @param stdclass $forum The forum record
+     * @param context $context Context
+     * @param cm_info $cm cm_info
+     * @param int|null $discussionid The discussion ID we are checking against. If null, we will check against the forum.
+     * @return bool Default subscription
+     * @throws coding_exception
+     */
+    public static function get_user_default_subscription($forum, $context, $cm, $discussionid = null) {
+        global $USER;
+
+        $manageactivities = has_capability('moodle/course:manageactivities', $context);
+        if (self::subscription_disabled($forum) && !$manageactivities) {
+            // User does not have permission to subscribe to this discussion at all.
+            $discussionsubscribe = false;
+        } else if (self::is_forcesubscribed($forum)) {
+            // User does not have permission to unsubscribe from this discussion at all.
+            $discussionsubscribe = true;
+        } else {
+            if (self::is_subscribed($USER->id, $forum, $discussionid, $cm)) {
+                // User is subscribed to the discussion or forum - continue the subscription.
+                $discussionsubscribe = true;
+            } else {
+                // User is not subscribed to either forum or discussion. Follow user preference.
+                $discussionsubscribe = $USER->autosubscribe ?? false;
+            }
+        }
+
+        return $discussionsubscribe;
     }
 
 }

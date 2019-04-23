@@ -49,15 +49,15 @@ class MoodleQuickForm_submit extends HTML_QuickForm_submit implements templatabl
     protected $primary;
 
     /**
-     * Any class apart from 'btn' would be overridded with this content.
+     * Any class apart from 'btn' would be overridden with this content.
      *
      * By default, submit buttons will utilize the btn-primary OR btn-secondary classes. However there are cases where we
-     * require a submit button with different stylings (e.g. btn-link). In these cases, $customclassoverride will override
+     * require a submit button with different stylings (e.g. btn-link). In these cases, $customclass will override
      * the defaults mentioned previously and utilize the provided class(es).
      *
-     * @var string $customclassoverride Custom class override for the input element
+     * @var string $customclass Custom class override for the input element
      */
-    protected $customclassoverride;
+    protected $customclass;
 
     /**
      * constructor
@@ -66,6 +66,9 @@ class MoodleQuickForm_submit extends HTML_QuickForm_submit implements templatabl
      * @param string $value (optional) field label
      * @param string $attributes (optional) Either a typical HTML attribute string or an associative array
      * @param bool|null $primary Is this button a primary button?
+     * @param array $options Options to further customise the submit button. Currently accepted options are:
+     *                  customclass String The CSS class to use for the button instead of the standard
+     *                                             btn-primary and btn-secondary classes.
      */
     public function __construct($elementName=null, $value=null, $attributes=null, $primary = null, $options = []) {
         parent::__construct($elementName, $value, $attributes);
@@ -77,7 +80,7 @@ class MoodleQuickForm_submit extends HTML_QuickForm_submit implements templatabl
             $this->primary = $primary;
         }
 
-        $this->customclassoverride = $options['customclassoverride'] ?? false;
+        $this->customclass = $options['customclass'] ?? false;
     }
 
     /**
@@ -145,8 +148,8 @@ class MoodleQuickForm_submit extends HTML_QuickForm_submit implements templatabl
             $context['secondary'] = true;
         }
 
-        if ($this->customclassoverride) {
-            $context['customclass'] = $this->customclassoverride;
+        if ($this->customclass) {
+            $context['customclass'] = $this->customclass;
         }
         return $context;
     }

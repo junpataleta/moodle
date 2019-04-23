@@ -720,7 +720,7 @@ $postid = empty($post->id) ? null : $post->id;
 $draftideditor = file_get_submitted_draft_itemid('message');
 $editoropts = mod_forum_post_form::editor_options($modcontext, $postid);
 $currenttext = file_prepare_draft_area($draftideditor, $modcontext->id, 'mod_forum', 'post', $postid, $editoropts, $post->message);
-$discussionsubscribe = forum_get_user_default_subscription($forum, ($discussion ?? null), $coursecontext, $cm);
+$discussionsubscribe = \mod_forum\subscriptions::get_user_default_subscription($forum, $context, $cm, $discussion->id ?? null);
 
 $mformpost->set_data(
     array(

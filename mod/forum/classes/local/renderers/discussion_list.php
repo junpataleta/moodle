@@ -33,6 +33,7 @@ use mod_forum\local\factories\vault as vault_factory;
 use mod_forum\local\factories\url as url_factory;
 use mod_forum\local\managers\capability as capability_manager;
 use mod_forum\local\vaults\discussion_list as discussion_list_vault;
+use mod_forum\subscriptions;
 use renderer_base;
 use stdClass;
 use core\output\notification;
@@ -228,14 +229,14 @@ class discussion_list {
             'modcontext' => $modcontext,
             'forum' => $forumrecord,
             'post' => $post,
-            'subscribe' => \mod_forum\subscriptions::is_subscribed($user->id, $forumrecord,
+            'subscribe' => subscriptions::is_subscribed($user->id, $forumrecord,
                 null, $cm),
             'thresholdwarning' => $thresholdwarning,
             'inpagereply' => true,
             'edit' => 0
         );
         $mformpost = new \mod_forum_post_form('post.php', $formparams, 'post', '', array('id' => 'mformforum'));
-        $discussionsubscribe = forum_get_user_default_subscription($forumrecord, null, $coursecontext, $cm);
+        $discussionsubscribe = subscriptions::get_user_default_subscription($forumrecord, $coursecontext, $cm);
 
         $params = array('reply' => 0, 'forum' => $forumrecord->id, 'edit' => 0) +
             (isset($post->groupid) ? array('groupid' => $post->groupid) : array()) +

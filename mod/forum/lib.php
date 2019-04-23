@@ -3526,43 +3526,6 @@ function forum_post_subscription($fromform, $forum, $discussion) {
 }
 
 /**
- * Gets the dfault subscription value for the logged in user.
- *
- * @param stdclass $forum The forum record
- * @param stdClass|null $discussion The discussion we are checking against
- * @param stdClass $context The course context
- * @param stdClass $cm cm_info
- * @return bool Default subscription
- * @throws coding_exception
- */
-function forum_get_user_default_subscription($forum, $discussion, $context, $cm) {
-    global $USER;
-    $discussionsubscribe = false;
-
-    $manageactivities = has_capability('moodle/course:manageactivities', $context);
-    if (\mod_forum\subscriptions::subscription_disabled($forum) && !$manageactivities) {
-        // User does not have permission to subscribe to this discussion at all.
-        $discussionsubscribe = false;
-    } else if (\mod_forum\subscriptions::is_forcesubscribed($forum)) {
-        // User does not have permission to unsubscribe from this discussion at all.
-        $discussionsubscribe = true;
-    } else {
-        if (isset($discussion) && \mod_forum\subscriptions::is_subscribed($USER->id, $forum, $discussion->id, $cm)) {
-            // User is subscribed to the discussion - continue the subscription.
-            $discussionsubscribe = true;
-        } else if (!isset($discussion) && \mod_forum\subscriptions::is_subscribed($USER->id, $forum, null, $cm)) {
-            // Starting a new discussion, and the user is subscribed to the forum - subscribe to the discussion.
-            $discussionsubscribe = true;
-        } else {
-            // User is not subscribed to either forum or discussion. Follow user preference.
-            $discussionsubscribe = $USER->autosubscribe ?? false;
-        }
-    }
-
-    return $discussionsubscribe;
-}
-
-/**
  * Generate and return the subscribe or unsubscribe link for a forum.
  *
  * @param object $forum the forum. Fields used are $forum->id and $forum->forcesubscribe.
