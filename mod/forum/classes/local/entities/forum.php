@@ -620,7 +620,7 @@ class forum {
     }
 
     /**
-     * Is the discussion locked? - Takes into account both discusion settings AND forum's criteria
+     * Is the discussion locked? - Takes into account both discussion settings AND forum's criteria
      *
      * @param discussion_entity $discussion The discussion to check
      * @return bool

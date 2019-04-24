@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use mod_forum\local\factories\entity as entity_factory;
 use moodle_database;
+use stdClass;
 
 /**
  * Abstract class for loading records from the DB.
@@ -40,7 +41,7 @@ abstract class db_table_vault {
     private $db;
     /** @var entity_factory $entityfactory Entity factory */
     private $entityfactory;
-    /** @var legacy_factor $legacyfactory Entity->legacy factory */
+    /** @var object $legacyfactory Entity->legacy factory */
     private $legacyfactory;
 
     /**

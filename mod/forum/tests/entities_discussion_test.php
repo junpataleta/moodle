@@ -148,6 +148,7 @@ class mod_forum_entities_discussion_testcase extends advanced_testcase {
             $basetime,
             $starttime,
             $endtime,
+            false,
             false
         );
         $CFG->forum_enabletimedposts = true;

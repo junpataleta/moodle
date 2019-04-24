@@ -137,6 +137,12 @@ function xmldb_forum_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2019040400, 'forum');
+    }
+
+    if ($oldversion < 2019040402) {
+
         // Define field deleted to be added to forum_posts.
         $table = new xmldb_table('forum_discussions');
         $field = new xmldb_field('locked', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'pinned');
@@ -147,7 +153,7 @@ function xmldb_forum_upgrade($oldversion) {
         }
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2019040400, 'forum');
+        upgrade_mod_savepoint(true, 2019040402, 'forum');
     }
 
     return true;

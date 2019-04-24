@@ -50,6 +50,7 @@ define([
             Repository.setDiscussionLockState(forumId, discussionId, state)
                 .then(function() {
                     location.reload();
+                    return true;
                 })
                 .catch(Notification.exception);
 

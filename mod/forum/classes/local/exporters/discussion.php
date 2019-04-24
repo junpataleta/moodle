@@ -30,7 +30,11 @@ use mod_forum\local\entities\discussion as discussion_entity;
 use mod_forum\local\exporters\post as post_exporter;
 use mod_forum\local\factories\exporter as exporter_factory;
 use core\external\exporter;
+use mod_forum\local\factories\legacy_data_mapper;
+use mod_forum\local\factories\url;
+use mod_forum\local\managers\capability;
 use renderer_base;
+use stdClass;
 
 /**
  * Discussion exporter class.
@@ -65,7 +69,7 @@ class discussion extends exporter {
             'forumid' => ['type' => PARAM_INT],
             'pinned' => ['type' => PARAM_BOOL],
             'locked' => ['type' => PARAM_BOOL],
-            'timelocked' => ['type' => PARAM_BOOL],
+            'istimelocked' => ['type' => PARAM_BOOL],
             'name' => ['type' => PARAM_TEXT],
             'group' => [
                 'optional' => true,
@@ -149,9 +153,13 @@ class discussion extends exporter {
      */
     protected function get_other_values(renderer_base $output) {
 
+        /** @var capability $capabilitymanager */
         $capabilitymanager = $this->related['capabilitymanager'];
+
+        /** @var url $urlfactory */
         $urlfactory = $this->related['urlfactory'];
 
+        /** @var \mod_forum\local\entities\forum $forum */
         $forum = $this->related['forum'];
         $forumrecord = $this->get_forum_record();
         $user = $this->related['user'];
@@ -184,7 +192,7 @@ class discussion extends exporter {
             'forumid' => $forum->get_id(),
             'pinned' => $discussion->is_pinned(),
             'locked' => $forum->is_discussion_locked($discussion),
-            'timelocked' => $forum->is_discussion_time_locked($discussion),
+            'istimelocked' => $forum->is_discussion_time_locked($discussion),
             'name' => format_string($discussion->get_name(), true, [
                 'context' => $this->related['context']
             ]),
@@ -237,7 +245,9 @@ class discussion extends exporter {
      * @return stdClass
      */
     private function get_forum_record() {
-        $forumdbdatamapper = $this->related['legacydatamapperfactory']->get_forum_data_mapper();
+        /** @var legacy_data_mapper $legacymapperfactory */
+        $legacymapperfactory = $this->related['legacydatamapperfactory'];
+        $forumdbdatamapper = $legacymapperfactory->get_forum_data_mapper();
         return $forumdbdatamapper->to_legacy_object($this->related['forum']);
     }
 
