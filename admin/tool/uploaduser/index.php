@@ -71,8 +71,6 @@ $struserauthunsupported     = get_string('userauthunsupported', 'error');
 $stremailduplicate          = get_string('useremailduplicate', 'error');
 
 $strinvalidpasswordpolicy   = get_string('invalidpasswordpolicy', 'error');
-$strinvalidtheme            = get_string('invalidtheme', 'error');
-
 $errorstr                   = get_string('error');
 
 $stryes                     = get_string('yes');
@@ -104,7 +102,6 @@ $STD_FIELDS = array('id', 'username', 'email',
 $STD_FIELDS = array_merge($STD_FIELDS, get_all_user_name_fields());
 
 $PRF_FIELDS = array();
-
 if ($proffields = $DB->get_records('user_info_field')) {
     foreach ($proffields as $key => $proffield) {
         $profilefieldname = 'profile_field_'.$proffield->shortname;
@@ -360,21 +357,16 @@ if ($formdata = $mform2->is_cancelled()) {
             $upt->track('username', s($user->username), 'normal', false);
         }
 
-        // Validate theme.
-        if (!$CFG->allowuserthemes) {
-            $upt->track('status', get_string('invalidtheme', 'error', 'theme'), 'error');
-            $upt->track('theme', $errorstr, 'error');
-            $userserrors++;
-            continue;
-        }
-
         if (isset($user->theme)) {
-            if (!isset($themes[$user->theme])) {
+            // Validate if user themes are allowed.
+            if (!$CFG->allowuserthemes) {
+                $upt->track('theme',
+                        get_string('userthemesnotallowed', 'tool_uploaduser'), 'warning');
+                unset($user->theme);
+            } else if (!isset($themes[$user->theme])) {
                 $user->theme = '';
-                $upt->track('status', get_string('invalidfieldvalue', 'error', 'theme'), 'error');
-                $upt->track('theme', $errorstr, 'error');
-                $userserrors++;
-                continue;
+                $upt->track('theme',
+                        get_string('invalidtheme', 'tool_uploaduser', $user->theme), 'warning');
             }
         }
 
@@ -1198,6 +1190,7 @@ $data = array();
 $cir->init();
 $linenum = 1; //column header is first line
 $noerror = true; // Keep status of any error.
+$themes = get_list_of_themes();
 while ($linenum <= $previewrows and $fields = $cir->next()) {
     $linenum++;
     $rowcols = array();
@@ -1234,6 +1227,15 @@ while ($linenum <= $previewrows and $fields = $cir->next()) {
     if (isset($rowcols['city'])) {
         $rowcols['city'] = $rowcols['city'];
     }
+
+    if (isset($rowcols['theme'])) {
+        if ($rowcols['theme'] == null) {
+            $rowcols['status'][] = get_string('notheme', 'tool_uploaduser');
+        } else if (!isset($themes[$rowcols['theme']])) {
+            $rowcols['status'][] = get_string('invalidtheme', 'tool_uploaduser', $rowcols['theme']);
+        }
+    }
+
     // Check if rowcols have custom profile field with correct data and update error state.
     $noerror = uu_check_custom_profile_data($rowcols) && $noerror;
     $rowcols['status'] = implode('<br />', $rowcols['status']);
