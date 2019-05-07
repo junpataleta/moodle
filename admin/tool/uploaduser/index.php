@@ -32,6 +32,8 @@ require_once($CFG->dirroot.'/group/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 require_once('locallib.php');
 require_once('user_form.php');
+require_once($CFG->dirroot.'/admin/tool/uploaduser/classes/field_value_validators.php');
+use tool_uploaduser\local\field_value_validators;
 
 $iid         = optional_param('iid', '', PARAM_INT);
 $previewrows = optional_param('previewrows', 10, PARAM_INT);
@@ -208,8 +210,6 @@ if ($formdata = $mform2->is_cancelled()) {
     $cir->init();
     $linenum = 1; //column header is first line
 
-    $themes = get_list_of_themes();
-
     // init upload progress tracker
     $upt = new uu_progress_tracker();
     $upt->start(); // start table
@@ -357,18 +357,11 @@ if ($formdata = $mform2->is_cancelled()) {
             $upt->track('username', s($user->username), 'normal', false);
         }
 
+        // Verify if the theme is valid and allowed to be set.
         if (isset($user->theme)) {
-            // Validate if user themes are allowed.
-            if (!$CFG->allowuserthemes) {
-                $upt->track('theme',
-                        get_string('userthemesnotallowed', 'tool_uploaduser'), 'warning');
-                unset($user->theme);
-            } else if (!isset($themes[$user->theme])) {
-                $user->theme = '';
-                $upt->track('theme',
-                        get_string('invalidtheme', 'tool_uploaduser', $user->theme), 'warning');
-            }
+            list($upt, $user) = field_value_validators::validate_theme($upt, $user);
         }
+
 
         // add default values for remaining fields
         $formdefaults = array();
@@ -650,6 +643,10 @@ if ($formdata = $mform2->is_cancelled()) {
                         $dologout = true;
                     }
                 }
+            }
+            // Verify if the theme is valid and allowed to be set.
+            if (isset($existinguser->theme)) {
+                list($upt, $existinguser) = field_value_validators::validate_theme($upt, $existinguser);
             }
 
             // changing of passwords is a special case
