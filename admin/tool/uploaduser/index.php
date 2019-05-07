@@ -32,7 +32,7 @@ require_once($CFG->dirroot.'/group/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 require_once('locallib.php');
 require_once('user_form.php');
-require_once($CFG->dirroot.'/admin/tool/uploaduser/classes/field_value_validators.php');
+require_once('classes/local/field_value_validators.php');
 use tool_uploaduser\local\field_value_validators;
 
 $iid         = optional_param('iid', '', PARAM_INT);
@@ -359,9 +359,13 @@ if ($formdata = $mform2->is_cancelled()) {
 
         // Verify if the theme is valid and allowed to be set.
         if (isset($user->theme)) {
-            list($upt, $user) = field_value_validators::validate_theme($upt, $user);
+            list($status, $message) = field_value_validators::validate_theme($user->theme);
+            if ($status !== 'normal' && !empty($message)) {
+                $upt->track('status', $message, $status);
+                // Unset the theme when validation fails.
+                unset($user->theme);
+            }
         }
-
 
         // add default values for remaining fields
         $formdefaults = array();
@@ -646,7 +650,12 @@ if ($formdata = $mform2->is_cancelled()) {
             }
             // Verify if the theme is valid and allowed to be set.
             if (isset($existinguser->theme)) {
-                list($upt, $existinguser) = field_value_validators::validate_theme($upt, $existinguser);
+                list($status, $message) = field_value_validators::validate_theme($existinguser->theme);
+                if ($status !== 'normal' && !empty($message)) {
+                     $upt->track('status', $message, $status);
+                    // Unset the theme when validation fails.
+                    unset($existinguser->theme);
+                }
             }
 
             // changing of passwords is a special case
@@ -1187,7 +1196,6 @@ $data = array();
 $cir->init();
 $linenum = 1; //column header is first line
 $noerror = true; // Keep status of any error.
-$themes = get_list_of_themes();
 while ($linenum <= $previewrows and $fields = $cir->next()) {
     $linenum++;
     $rowcols = array();
@@ -1226,10 +1234,9 @@ while ($linenum <= $previewrows and $fields = $cir->next()) {
     }
 
     if (isset($rowcols['theme'])) {
-        if ($rowcols['theme'] == null) {
-            $rowcols['status'][] = get_string('notheme', 'tool_uploaduser');
-        } else if (!isset($themes[$rowcols['theme']])) {
-            $rowcols['status'][] = get_string('invalidtheme', 'tool_uploaduser', $rowcols['theme']);
+        list($status, $message) = field_value_validators::validate_theme($rowcols['theme']);
+        if ($status !== 'normal' && !empty($message)) {
+            $rowcols['status'][] = $message;
         }
     }
 

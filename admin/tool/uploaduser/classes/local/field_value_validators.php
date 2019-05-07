@@ -43,31 +43,37 @@ class field_value_validators {
     protected static $themescache;
 
     /**
-     * Return the uu_progress_tracker & user object after
-     * checking if the supplied theme is installed & if the user
-     * can defined their own theme.
+     * Validates the value provided for the theme field.
      *
-     * @param $upt
-     * @param $user
-     * @return array
-     * @throws \coding_exception
+     * @param string $value The value for the theme field.
+     * @return array Contains the validation status and message.
      */
-    public static function validate_theme($upt, $user) {
+    public static function validate_theme($value) {
         global $CFG;
-        // Cache list of themes if not yet set.
-        if (!isset(self::$themescache)) {
-            self::$themescache = get_list_of_themes();
-        }
+
+        $status = 'normal';
+        $message = '';
+
         // Validate if user themes are allowed.
         if (!$CFG->allowuserthemes) {
-            $upt->track('theme',
-                    get_string('userthemesnotallowed', 'tool_uploaduser'), 'warning');
-            unset($user->theme);
-        } else if (!isset(self::$themescache[$user->theme])) {
-            $user->theme = '';
-            $upt->track('theme',
-                    get_string('invalidtheme', 'tool_uploaduser', $user->theme), 'warning');
+            $status = 'warning';
+            $message = get_string('userthemesnotallowed', 'error');
+        } else {
+            // Cache list of themes if not yet set.
+            if (!isset(self::$themescache)) {
+                self::$themescache = get_list_of_themes();
+            }
+
+            // Check if we have a valid theme.
+            if (empty($value)) {
+                $status = 'warning';
+                $message = get_string('notheme', 'tool_uploaduser');
+            } else if (!isset(self::$themescache[$value])) {
+                $status = 'warning';
+                $message = get_string('invalidtheme', 'tool_uploaduser', s($value));
+            }
         }
-        return [$upt, $user];
+
+        return [$status, $message];
     }
 }
