@@ -57,7 +57,7 @@ class field_value_validators {
         // Validate if user themes are allowed.
         if (!$CFG->allowuserthemes) {
             $status = 'warning';
-            $message = get_string('userthemesnotallowed', 'error');
+            $message = get_string('userthemesnotallowed', 'tool_uploaduser');
         } else {
             // Cache list of themes if not yet set.
             if (!isset(self::$themescache)) {
