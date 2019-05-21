@@ -1,0 +1,78 @@
+build: false
+platform:
+  - x64
+clone_folder: c:\projects\moodle
+
+## Build matrix for lowest and highest possible targets
+environment:
+  matrix:
+    - dependencies: lowest
+      php_ver_target: 7.1
+    - dependencies: highest
+      php_ver_target: 7.3
+
+## Cache composer, Chocolatey and PHP bits
+cache:
+  - '%LOCALAPPDATA%\Composer\files -> composer.lock'
+  - composer.phar
+  - C:\ProgramData\chocolatey\bin -> .appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> .appveyor.yml
+  - c:\tools\php -> .appveyor.yml
+
+## Set up environment variables
+init:
+  - SET PATH=C:\Program Files\OpenSSL;c:\tools\php;C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
+  - SET COMPOSER_NO_INTERACTION=1
+  - SET PHP=1
+  - SET ANSICON=121x90 (121x90)
+
+services:
+  - postgresql
+
+## Install PHP.
+install:
+  - IF EXIST c:\tools\php (SET PHP=0)
+  - ps: appveyor-retry cinst --params '""/InstallDir:C:\tools\php""' --ignore-checksums -y php --version ((choco search php --exact --all-versions -r | select-string -pattern $env:php_ver_target | sort { [version]($_ -split '\|' | select -last 1) } -Descending | Select-Object -first 1) -replace '[php|]','')
+  - cd c:\tools\php
+  - IF %PHP%==1 copy php.ini-production php.ini /Y
+  - IF %PHP%==1 echo date.timezone="UTC" >> php.ini
+  - IF %PHP%==1 echo extension_dir=ext >> php.ini
+  # Enable required PHP extensions.
+  - IF %PHP%==1 echo extension=php_curl.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_fileinfo.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_gd2.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_intl.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_mbstring.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_mysqli.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_openssl.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_pgsql.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_soap.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_xmlrpc.dll >> php.ini
+
+  # Set PostgreSQL variables.
+  - SET PGUSER=postgres
+  - SET PGPASSWORD=Password12!
+
+## Run the actual test
+test_script:
+  # Create test database.
+  - createdb moodle
+  # Create data folders.
+  - md c:\projects\moodledata
+  - md c:\projects\moodledata_phpu
+  # Create config file.
+  - cd c:\projects\moodle
+  - php admin/cli/install.php --wwwroot=http://localhost --dataroot=c:\projects\moodledata --dbtype=pgsql --dbhost=localhost --dbname=moodle --dbuser=postgres --dbpass=Password12! --dbport=5432 --prefix=mdl_ --fullname=Moodle --shortname=moodle --adminpass=test --adminemail=admin@example.com --non-interactive --agree-license --allow-unstable --skip-database
+  # Add PHPUnit variables to config.php. We use PHP's file_put_contents() because echo can't seem to escape ">" even with the caret escape "^" sign already present.
+  - php -r 'file_put_contents("config.php", "$CFG->phpunit_dataroot = \"C:\\projects\\moodle\\moodledata_phpu\";\n", FILE_APPEND);'
+  - php -r 'file_put_contents("config.php", "$CFG->phpunit_prefix = \"phpu_\";\n", FILE_APPEND);'
+  # Check contents of generated config.php.
+  - echo *** START config.php ***
+  - type config.php
+  - echo *** END config.php ***
+  # Initialise PHPUnit.
+  - appveyor-retry appveyor DownloadFile https://getcomposer.org/composer.phar
+  - appveyor-retry php composer.phar install --no-progress --profile
+  - appveyor-retry php admin/tool/phpunit/cli/init.php
+  # Run PHPUnit tests!
+  - vendor/bin/phpunit
