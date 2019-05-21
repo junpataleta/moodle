@@ -213,6 +213,11 @@ class behat_data_generators extends behat_base {
             'required' => array('user', 'group', 'message'),
             'switchids' => array('user' => 'userid', 'group' => 'groupid')
         ),
+        'muted conversation' => array(
+            'datagenerator' => 'mute_conversation',
+            'required' => array('user'),
+            'switchids' => array('user' => 'userid', 'contact' => 'contactid', 'group' => 'groupid')
+        ),
         'language customisations' => array(
             'datagenerator' => 'customlang',
             'required' => array('component', 'stringid', 'value'),
@@ -1031,5 +1036,43 @@ class behat_data_generators extends behat_base {
             $conversationid = $conversation->id;
         }
         \core_message\api::set_favourite_conversation($conversationid, $data['userid']);
+    }
+
+    /**
+     * Mute an existing conversation for user
+     *
+     * @param array $data
+     * @return void
+     */
+    protected function process_mute_conversation(array $data) {
+        global $DB;
+
+        // Mute private conversation.
+        if (!empty($data['contactid'])) {
+            if (!$conversationid = \core_message\api::get_conversation_between_users([$data['userid'], $data['contactid']])) {
+                $conversation = \core_message\api::create_conversation(
+                    \core_message\api::MESSAGE_CONVERSATION_TYPE_INDIVIDUAL,
+                    [$data['userid'], $data['contactid']]
+                );
+                $conversationid = $conversation->id;
+            }
+            \core_message\api::mute_conversation($data['userid'], $conversationid);
+        }
+
+        // Mute group conversation.
+        if (!empty($data['groupid'])) {
+            $group = $DB->get_record('groups', array('id' => $data['groupid']), '*', MUST_EXIST);
+            $context = context_course::instance($group->courseid);
+
+            if (groups_is_member($data['groupid'], $data['userid']) &&
+                $conversation = \core_message\api::get_conversation_by_area(
+                    'core_group',
+                    'groups',
+                    $data['groupid'],
+                    $context->id
+                )) {
+                \core_message\api::mute_conversation($data['userid'], $conversation->id);
+            }
+        }
     }
 }
