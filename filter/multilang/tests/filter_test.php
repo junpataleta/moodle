@@ -46,8 +46,8 @@ class filter_multilang_filter_testcase extends advanced_testcase {
     /**
      * Setup parent language relationship.
      *
-     * @param string $parent the parent langauge, e.g. 'fr'.
-     * @param string $child the child langauge, e.g. 'fr_ca'.
+     * @param string $parent the parent language, e.g. 'fr'.
+     * @param string $child the child language, e.g. 'fr_ca'.
      */
     protected function setup_parent_language(string $parent, string $child) {
         global $CFG;
@@ -58,100 +58,102 @@ class filter_multilang_filter_testcase extends advanced_testcase {
         file_put_contents($langfolder . '/langconfig.php', $langconfig);
     }
 
-    public function test_basic_case_en() {
-        // Format text with the example given in the docs.
-        $html = '<span lang="en" class="multilang">English</span><span lang="fr" class="multilang">Français</span>';
-        $filtered = format_text($html, FORMAT_HTML, array('context' => context_system::instance()));
-        $this->assertEquals('English', $filtered);
+    /**
+     * Data provider for multi-language filtering tests.
+     */
+    public function multilang_provider() {
+        return [
+            'Basic case EN' => [
+                [
+                    'en' => 'English',
+                    'fr' => 'Français',
+                ], null, null, 'English'
+            ],
+            'Basic case FR' => [
+                [
+                    'en' => 'English',
+                    'fr' => 'Français',
+                ], 'fr', null, 'Français'
+            ],
+            'Reversed attributes EN' => [
+                [
+                    'fr' => 'Français',
+                    'en' => 'English',
+                ], 'en', null, 'English'
+            ],
+            'Reversed attributes FR' => [
+                [
+                    'fr' => 'Français',
+                    'en' => 'English',
+                ], 'fr', null, 'Français'
+            ],
+            'Fallback to parent when child not present' => [
+                [
+                    'en' => 'English',
+                    'fr' => 'Français',
+                ], 'fr_ca', ['fr'=> 'fr_ca'], 'Français'
+            ],
+            'Both parent and child language present, using child' => [
+                [
+                    'fr_ca' => 'Québécois',
+                    'fr' => 'Français',
+                    'en' => 'English',
+                ], 'fr_ca', ['fr'=> 'fr_ca'], 'Québécois'
+            ],
+            'Both parent and child language present, using parent' => [
+                [
+                    'fr_ca' => 'Québécois',
+                    'fr' => 'Français',
+                    'en' => 'English',
+                ], 'fr', ['fr'=> 'fr_ca'], 'Français'
+            ],
+            'Both parent and child language present - reverse order, using child' => [
+                [
+                    'en' => 'English',
+                    'fr' => 'Français',
+                    'fr_ca' => 'Québécois',
+                ], 'fr_ca', ['fr'=> 'fr_ca'], 'Québécois'
+            ],
+            'Both parent and child language present - reverse order, using parent' => [
+                [
+                    'en' => 'English',
+                    'fr' => 'Français',
+                    'fr_ca' => 'Québécois',
+                ], 'fr', ['fr'=> 'fr_ca'], 'Français'
+            ],
+        ];
     }
 
-    public function test_basic_case_fr() {
-        global $SESSION;
-        $SESSION->forcelang = 'fr';
+    /**
+     * Tests the filtering of multi-language strings.
+     *
+     * @dataProvider multilang_provider
+     * @param array $langlist List of key-value pairs for language code and multi-language text.
+     * @param string|null $forcelang The language to use.
+     * @param array|null $parentchildpairs The parent-child language pairs.
+     * @param string $expected The expected value.
+     */
+    public function test_filtering($langlist, $forcelang, $parentchildpairs, $expected) {
+        // Set up parent language of child languages if necessary.
+        if ($parentchildpairs) {
+            foreach ($parentchildpairs as $parent => $child) {
+                $this->setup_parent_language($parent, $child);
+            }
+        }
 
-        // Format text with the example given in the docs.
-        $html = '<span lang="en" class="multilang">English</span><span lang="fr" class="multilang">Français</span>';
+        // Force language if necessary.
+        if ($forcelang) {
+            global $SESSION;
+            $SESSION->forcelang = $forcelang;
+        }
+
+        // Build the HTML string.
+        $html = '';
+        foreach ($langlist as $key => $value) {
+            $html .= "<span lang=\"{$key}\" class=\"multilang\">{$value}</span>";
+        }
         $filtered = format_text($html, FORMAT_HTML, array('context' => context_system::instance()));
-        $this->assertEquals('Français', $filtered);
-    }
-
-    public function test_reversed_attributes_en() {
-        // Example with the attributes in a different order.
-        $html = '<span lang="fr" class="multilang">Français</span><span class="multilang" lang="en">English</span>';
-        $filtered = format_text($html, FORMAT_HTML, array('context' => context_system::instance()));
-        $this->assertEquals('English', $filtered);
-    }
-
-    public function test_reversed_attributes_case_fr() {
-        global $SESSION;
-        $SESSION->forcelang = 'fr';
-
-        // Example with the attributes in a different order.
-        $html = '<span class="multilang" lang="fr">Français</span><span lang="en" class="multilang">English</span>';
-        $filtered = format_text($html, FORMAT_HTML, array('context' => context_system::instance()));
-        $this->assertEquals('Français', $filtered);
-    }
-
-    public function test_parent_language() {
-        global $SESSION;
-        $this->setup_parent_language('fr', 'fr_ca');
-        $SESSION->forcelang = 'fr_ca';
-
-        // Format text with the example given in the docs.
-        $html = '<span lang="en" class="multilang">English</span><span lang="fr" class="multilang">Français</span>';
-        $filtered = format_text($html, FORMAT_HTML, array('context' => context_system::instance()));
-        $this->assertEquals('Français', $filtered);
-    }
-
-    public function test_parent_language_with_both_provided_child() {
-        global $SESSION;
-        $this->setup_parent_language('fr', 'fr_ca');
-        $SESSION->forcelang = 'fr_ca';
-
-        // Example with both parent and child language present.
-        $html = '<span lang="fr_ca" class="multilang">Québécois</span>
-                <span lang="fr" class="multilang">Français</span>
-                <span lang="en" class="multilang">English</span>';
-        $filtered = format_text($html, FORMAT_HTML, array('context' => context_system::instance()));
-        $this->assertEquals('Québécois', $filtered);
-    }
-
-    public function test_parent_language_with_both_provided_parent() {
-        global $SESSION;
-        $this->setup_parent_language('fr', 'fr_ca');
-        $SESSION->forcelang = 'fr';
-
-        // Example with both parent and child language present.
-        $html = '<span lang="fr_ca" class="multilang">Québécois</span>
-                <span lang="fr" class="multilang">Français</span>
-                <span lang="en" class="multilang">English</span>';
-        $filtered = format_text($html, FORMAT_HTML, array('context' => context_system::instance()));
-        $this->assertEquals('Français', $filtered);
-    }
-
-    public function test_parent_language_with_both_provided_other_order_child() {
-        global $SESSION;
-        $this->setup_parent_language('fr', 'fr_ca');
-        $SESSION->forcelang = 'fr_ca';
-
-        // Example with both parent and child language present - reverse order.
-        $html = '<span lang="en" class="multilang">English</span>
-                <span lang="fr" class="multilang">Français</span>
-                <span lang="fr_ca" class="multilang">Québécois</span>';
-        $filtered = format_text($html, FORMAT_HTML, array('context' => context_system::instance()));
-        $this->assertEquals('Québécois', $filtered);
-    }
-
-    public function test_parent_language_with_both_provided_other_order_parent() {
-        global $SESSION;
-        $this->setup_parent_language('fr', 'fr_ca');
-        $SESSION->forcelang = 'fr';
-
-        // Example with both parent and child language present - reverse order.
-        $html = '<span lang="en" class="multilang">English</span>
-                <span lang="fr" class="multilang">Français</span>
-                <span lang="fr_ca" class="multilang">Québécois</span>';
-        $filtered = format_text($html, FORMAT_HTML, array('context' => context_system::instance()));
-        $this->assertEquals('Français', $filtered);
+        // Assert that the filtered text equals our expected text.
+        $this->assertEquals($expected, $filtered);
     }
 }
