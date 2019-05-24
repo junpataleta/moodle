@@ -354,6 +354,72 @@ class core_userliblib_testcase extends advanced_testcase {
     }
 
     /**
+     * Data provider for \core_user_externallib_testcase::test_create_users_with_same_emails().
+     */
+    public function user_email_case_provider() {
+        return [
+            'Same emails allowed, same case' => [
+                1, false
+            ],
+            'Same emails allowed, different case' => [
+                1, true
+            ],
+            'Same emails disallowed, same case' => [
+                0, false
+            ],
+            'Same emails disallowed, different case' => [
+                0, true
+            ],
+        ];
+    }
+
+    /**
+     * Test for user_create_user() when users with the same email addresses are being created.
+     *
+     * @dataProvider user_email_case_provider
+     * @param int $sameemailallowed The value to set for $CFG->allowaccountssameemail.
+     * @param boolean $samecase Whether to user a different case for the other user.
+     */
+    public function test_user_create_user_with_same_emails($sameemailallowed, $samecase) {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Allow multiple users with the same email address.
+        set_config('allowaccountssameemail', $sameemailallowed);
+        $user1 = [
+            'username' => 's1',
+            'firstname' => 'Johnny',
+            'lastname' => 'Bravo',
+            'email' => 's1@example.com',
+            'password' => 'Passw0rd!'
+        ];
+        $user2 = [
+            'username' => 's2',
+            'firstname' => 'John',
+            'lastname' => 'Doe',
+            'email' => $samecase ? 's1@example.com' : 'S1@EXAMPLE.COM',
+            'password' => 'Passw0rd!'
+        ];
+
+        // Create our user 1.
+        user_create_user($user1);
+
+        if (!$sameemailallowed) {
+            // This should throw an exception when $CFG->allowaccountssameemail is empty.
+//            $this->expectException(moodle_exception::class);
+        }
+
+        // Create user 2.
+        user_create_user($user2);
+
+        // Confirm that the users have been created.
+        list($insql, $params) = $DB->get_in_or_equal(['s1', 's2']);
+        $this->assertEquals(2, $DB->count_records_select('user', 'username ' . $insql, $params));
+    }
+
+    /**
      * Test function user_count_login_failures().
      */
     public function test_user_count_login_failures() {

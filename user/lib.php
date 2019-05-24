@@ -40,7 +40,7 @@ define('USER_FILTER_STRING', 6);
  * @return int id of the newly created user
  */
 function user_create_user($user, $updatepassword = true, $triggerevent = true) {
-    global $DB;
+    global $CFG, $DB;
 
     // Set the timecreate field to the current time.
     if (!is_object($user)) {
@@ -70,6 +70,23 @@ function user_create_user($user, $updatepassword = true, $triggerevent = true) {
 
         $userpassword = $user->password;
         unset($user->password);
+    }
+
+    // In case same email accounts are not allowed, check email's uniqueness.
+    if (isset($user->email) && empty($CFG->allowaccountssameemail)) {
+        // Make a case-insensitive query for the given email address.
+        $select = $DB->sql_equal('email', ':email', false) . ' AND mnethostid = :mnethostid';
+        $params = array(
+            'email' => $user->email,
+            'mnethostid' => $CFG->mnet_localhost_id
+        );
+        // If there are other user(s) that already have the same email, show an error.
+        print_object($params);
+        if ($DB->record_exists_select('user', $select, $params)) {
+            throw new moodle_exception('emailexists');
+        } else {
+
+        }
     }
 
     // Apply default values for user preferences that are stored in users table.
@@ -143,7 +160,7 @@ function user_create_user($user, $updatepassword = true, $triggerevent = true) {
  *             This will not affect user_password_updated event triggering.
  */
 function user_update_user($user, $updatepassword = true, $triggerevent = true) {
-    global $DB;
+    global $CFG, $DB;
 
     // Set the timecreate field to the current time.
     if (!is_object($user)) {
@@ -158,6 +175,21 @@ function user_update_user($user, $updatepassword = true, $triggerevent = true) {
             if ($user->username !== core_user::clean_field($user->username, 'username')) {
                 throw new moodle_exception('invalidusername');
             }
+        }
+    }
+
+    // In case same email accounts are not allowed, check email's uniqueness.
+    if (isset($user->email) && empty($CFG->allowaccountssameemail)) {
+        // Make a case-insensitive query for the given email address.
+        $select = $DB->sql_equal('email', ':email', false) . ' AND mnethostid = :mnethostid AND id <> :userid';
+        $params = array(
+            'email' => $user->email,
+            'mnethostid' => $CFG->mnet_localhost_id,
+            'userid' => $user->id,
+        );
+        // If there are other user(s) that already have the same email, show an error.
+        if ($DB->record_exists_select('user', $select, $params)) {
+            throw new moodle_exception('emailexists');
         }
     }
 
