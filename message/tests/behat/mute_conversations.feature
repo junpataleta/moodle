@@ -1,6 +1,6 @@
 @core @core_message @javascript
 Feature: Mute and unmute conversations
-  In order to manage a course group in a course
+  In order to manage my message conversations
   As a user
   I need to be able to mute and unmute conversations
 
@@ -59,9 +59,9 @@ Feature: Mute and unmute conversations
     And "muted" "icon_container" in the "Student 2" "group_message" should be visible
 
   Scenario: Unmute a group conversation
-    Given the following "muted conversation" exist:
-      | user     | group |
-      | student1 | G1    |
+    Given the following "muted group conversations" exist:
+      | user     | course | group |
+      | student1 | C1     | G1    |
     When I log in as "student1"
     And I open messaging
     And I open the "Group" conversations list
@@ -76,7 +76,7 @@ Feature: Mute and unmute conversations
     And "muted" "icon_container" in the "Group 1" "group_message" should not be visible
 
   Scenario: Unmute a private conversation
-    Given the following "muted conversation" exist:
+    Given the following "muted private conversations" exist:
       | user     | contact  |
       | student1 | student2 |
     When I log in as "student1"
