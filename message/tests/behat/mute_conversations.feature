@@ -59,9 +59,9 @@ Feature: Mute and unmute conversations
     And "muted" "icon_container" in the "Student 2" "group_message" should be visible
 
   Scenario: Unmute a group conversation
-    Given the following "muted conversation" exist:
-      | user     | group |
-      | student1 | G1    |
+    Given the following "muted conversations" exist:
+      | user     | course | group |
+      | student1 | C1     | G1    |
     When I log in as "student1"
     And I open messaging
     And I open the "Group" conversations list

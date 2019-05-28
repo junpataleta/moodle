@@ -213,10 +213,10 @@ class behat_data_generators extends behat_base {
             'required' => array('user', 'group', 'message'),
             'switchids' => array('user' => 'userid', 'group' => 'groupid')
         ),
-        'muted conversation' => array(
+        'muted conversations' => array(
             'datagenerator' => 'mute_conversation',
             'required' => array('user'),
-            'switchids' => array('user' => 'userid', 'contact' => 'contactid', 'group' => 'groupid')
+            'switchids' => array('user' => 'userid', 'contact' => 'contactid', 'group' => 'groupid', 'course' => 'courseid')
         ),
         'language customisations' => array(
             'datagenerator' => 'customlang',
@@ -1045,7 +1045,7 @@ class behat_data_generators extends behat_base {
      * @return void
      */
     protected function process_mute_conversation(array $data) {
-        global $DB;
+        $conversationid = null;
 
         // Mute private conversation.
         if (!empty($data['contactid'])) {
@@ -1056,23 +1056,27 @@ class behat_data_generators extends behat_base {
                 );
                 $conversationid = $conversation->id;
             }
-            \core_message\api::mute_conversation($data['userid'], $conversationid);
         }
 
         // Mute group conversation.
         if (!empty($data['groupid'])) {
-            $group = $DB->get_record('groups', array('id' => $data['groupid']), '*', MUST_EXIST);
-            $context = context_course::instance($group->courseid);
-
-            if (groups_is_member($data['groupid'], $data['userid']) &&
+            if (groups_is_member($data['groupid'], $data['userid'])) {
+//                $courseid = $DB->get_field('groups', 'courseid', array('id' => $data['groupid']), MUST_EXIST);
+                $context = context_course::instance($data['courseid']);
                 $conversation = \core_message\api::get_conversation_by_area(
                     'core_group',
                     'groups',
                     $data['groupid'],
                     $context->id
-                )) {
-                \core_message\api::mute_conversation($data['userid'], $conversation->id);
+                );
+                if ($conversation) {
+                    $conversationid = $conversation->id;
+                }
             }
+        }
+
+        if ($conversationid) {
+            \core_message\api::mute_conversation($data['userid'], $conversation->id);
         }
     }
 }
