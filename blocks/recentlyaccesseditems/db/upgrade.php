@@ -31,7 +31,6 @@
  * Please do not forget to use upgrade_set_timeout()
  * before any action that may take longer time to finish.
  *
- * @since Moodle 3.7
  * @package block_recentlyaccesseditems
  * @copyright 2019 Peter Dias
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -40,33 +39,21 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
+ * Upgrade code for block_recentlyaccesseditems.
  *
  * @param int $oldversion
+ * @return bool
  */
 function xmldb_block_recentlyaccesseditems_upgrade($oldversion) {
-    global $CFG;
-
-    // Automatically generated Moodle v3.3.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v3.4.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v3.5.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v3.6.0 release upgrade line.
-    // Put any upgrade step following this.
+    global $DB;
 
     // Automatically generated Moodle v3.7.0 release upgrade line.
     // Put any upgrade step following this.
-    if($oldversion < 2019052001) {
-        global $DB;
-        $sql = "DELETE rai FROM {block_recentlyaccesseditems} rai
-                LEFT JOIN {course_modules} cm ON rai.cmid = cm.id
-                LEFT JOIN {course} c ON rai.courseid = c.id
-                WHERE c.id IS NULL OR cm.id IS NULL";
-        $DB->execute($sql);
+    if ($oldversion < 2019052001) {
+        $select = "
+            courseid NOT IN (SELECT c.id from {course} c)
+            OR cmid NOT IN (SELECT cm.id from {course_modules} cm)";
+        $DB->delete_records_select('block_recentlyaccesseditems', $select);
         upgrade_block_savepoint(true, 2019052001, 'recentlyaccesseditems');
     }
 
