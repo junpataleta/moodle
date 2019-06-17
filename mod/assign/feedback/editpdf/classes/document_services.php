@@ -275,7 +275,16 @@ EOD;
         $fs = get_file_storage();
 
         $partialpdf = $fs->get_file($contextid, $component, $partialfilearea, $itemid, $filepath, $filename);
-        if (!empty($partialpdf)) {
+
+        $sql = "SELECT * FROM {files}
+                        WHERE contextid = ?
+                          AND component = ?
+                          AND mimetype IS NOT NULL
+                          AND mimetype <> 'application/pdf'
+                          AND userid = ?";
+        $nonpdfsubmission = $DB->record_exists_sql($sql, array($contextid, 'assignsubmission_file', $userid));
+
+        if (!empty($partialpdf) && $nonpdfsubmission) {
             $combinedpdf = $partialpdf;
         } else {
             $combinedpdf = $fs->get_file($contextid, $component, $filearea, $itemid, $filepath, $filename);
