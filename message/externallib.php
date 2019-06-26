@@ -134,7 +134,9 @@ class core_message_external extends external_api {
                             'clientmsgid' => new external_value(PARAM_ALPHANUMEXT, 'your own client id for the message. If this id is provided, the fail message id will be returned to you', VALUE_OPTIONAL),
                         )
                     )
-                )
+                ),
+                'emailfallback' => new external_value(PARAM_BOOL,
+                    'Whether to send message as email as a fallback when messaging is disabled.', VALUE_DEFAULT, false),
             )
         );
     }
@@ -143,15 +145,29 @@ class core_message_external extends external_api {
      * Send private messages from the current USER to other users
      *
      * @param array $messages An array of message to send.
+     * @param bool $emailfallback Whether to send message as email as a fallback when messaging is disabled.
      * @return array
      * @since Moodle 2.2
      */
-    public static function send_instant_messages($messages = array()) {
+    public static function send_instant_messages($messages = array(), $emailfallback = false) {
         global $CFG, $USER, $DB;
 
+        $params = self::validate_parameters(self::send_instant_messages_parameters(), array(
+            'messages' => $messages,
+            'emailfallback' => $emailfallback
+        ));
+        $emailfallback = $params['emailfallback'];
+
         // Check if messaging is enabled.
+        $emailonly = false;
         if (empty($CFG->messaging)) {
-            throw new moodle_exception('disabled', 'message');
+            // If messaging is disabled, check if we can fallback to sending an email only.
+            if ($emailfallback) {
+                $emailonly = true;
+            } else {
+                // Otherwise, throw an exception.
+                throw new moodle_exception('disabled', 'message');
+            }
         }
 
         // Ensure the current user is allowed to run this function
@@ -160,9 +176,11 @@ class core_message_external extends external_api {
         require_capability('moodle/site:sendmessage', $context);
 
         // Ensure the current user is allowed to delete message for everyone.
-        $candeletemessagesforallusers = has_capability('moodle/site:deleteanymessage', $context);
-
-        $params = self::validate_parameters(self::send_instant_messages_parameters(), array('messages' => $messages));
+        if ($emailonly) {
+            $candeletemessagesforallusers = false;
+        } else {
+            $candeletemessagesforallusers = has_capability('moodle/site:deleteanymessage', $context);
+        }
 
         //retrieve all tousers of the messages
         $receivers = array();
@@ -196,9 +214,14 @@ class core_message_external extends external_api {
 
             // Now we can send the message (at least try).
             if ($success) {
-                // TODO MDL-31118 performance improvement - edit the function so we can pass an array instead one touser object.
-                $success = message_post_message($USER, $tousers[$message['touserid']],
+                if ($emailonly) {
+                    $subject = get_string('unreadnewmessage', 'message', fullname($USER));
+                    $success = email_to_user($tousers[$message['touserid']], $USER, $subject, $message['text']);
+                } else {
+                    // TODO MDL-31118 performance improvement - edit the function so we can pass an array instead one touser object.
+                    $success = message_post_message($USER, $tousers[$message['touserid']],
                         $message['text'], external_validate_format($message['textformat']));
+                }
             }
 
             // Build the resultmsg.
@@ -207,9 +230,11 @@ class core_message_external extends external_api {
             }
             if ($success) {
                 $resultmsg['msgid'] = $success;
-                $resultmsg['timecreated'] = time();
-                $resultmsg['candeletemessagesforallusers'] = $candeletemessagesforallusers;
-                $messageids[] = $success;
+                if (!$emailonly) {
+                    $resultmsg['timecreated'] = time();
+                    $resultmsg['candeletemessagesforallusers'] = $candeletemessagesforallusers;
+                    $messageids[] = $success;
+                }
             } else {
                 // WARNINGS: for backward compatibility we return this errormessage.
                 //          We should have thrown exceptions as these errors prevent results to be returned.
