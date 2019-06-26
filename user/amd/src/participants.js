@@ -305,7 +305,7 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
 
         return Ajax.call([{
             methodname: 'core_message_send_instant_messages',
-            args: {messages: messages}
+            args: {messages: messages, emailfallback: true}
         }])[0].then(function(messageIds) {
             if (messageIds.length == 1) {
                 return Str.get_string('sendbulkmessagesentsingle', 'core_message');
