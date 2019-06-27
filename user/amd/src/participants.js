@@ -293,32 +293,48 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
      * @return {Promise}
      */
     Participants.prototype.submitSendMessage = function(users) {
+        var form = $('#bulk_send_message');
 
-        var messageText = this.modal.getRoot().find('form textarea').val();
-
-        var messages = [],
-            i = 0;
-
-        for (i = 0; i < users.length; i++) {
-            messages.push({touserid: users[i], text: messageText});
-        }
-
-        return Ajax.call([{
-            methodname: 'core_message_send_instant_messages',
-            args: {messages: messages}
-        }])[0].then(function(messageIds) {
-            if (messageIds.length == 1) {
-                return Str.get_string('sendbulkmessagesentsingle', 'core_message');
-            } else {
-                return Str.get_string('sendbulkmessagesent', 'core_message', messageIds.length);
+        form.on('submit', function(e) {
+            // Validate the form.
+            if (form[0].checkValidity() === false) {
+                e.preventDefault();
+                e.stopPropagation();
             }
-        }).then(function(msg) {
-            Notification.addNotification({
-                message: msg,
-                type: "success"
-            });
-            return true;
-        }).catch(Notification.exception);
+            form.addClass('was-validated');
+
+            var errorMessage = $('#id_bulk-message_error_message');
+            errorMessage.removeAttr('hidden');
+            errorMessage.addClass('help-block');
+        });
+
+        form.submit();
+
+        // var messageText = this.modal.getRoot().find('form textarea').val();
+        //
+        // var messages = [],
+        //     i = 0;
+        //
+        // for (i = 0; i < users.length; i++) {
+        //     messages.push({touserid: users[i], text: messageText});
+        // }
+        //
+        // return Ajax.call([{
+        //     methodname: 'core_message_send_instant_messages',
+        //     args: {messages: messages}
+        // }])[0].then(function(messageIds) {
+        //     if (messageIds.length == 1) {
+        //         return Str.get_string('sendbulkmessagesentsingle', 'core_message');
+        //     } else {
+        //         return Str.get_string('sendbulkmessagesent', 'core_message', messageIds.length);
+        //     }
+        // }).then(function(msg) {
+        //     Notification.addNotification({
+        //         message: msg,
+        //         type: "success"
+        //     });
+        //     return true;
+        // }).catch(Notification.exception);
     };
 
     return /** @alias module:core_user/participants */ {

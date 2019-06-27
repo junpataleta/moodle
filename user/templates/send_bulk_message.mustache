@@ -26,13 +26,16 @@
     {
     }
 }}
-<form>
-<p>
-<label for="bulk-message">
-<span class="sr-only">{{#str}}message, core_message{{/str}}</span>
-</label>
-<textarea id="bulk-message" rows="3" data-max-rows="10" data-auto-rows="true" cols="30" class="form-control"></textarea>
-</p>
+<form class="needs-validation" id="bulk_send_message">
+    <div class="form-row">
+        <label for="bulk-message">
+            <span class="sr-only">{{#str}}message, core_message{{/str}}</span>
+        </label>
+        <textarea id="bulk-message" rows="3" data-max-rows="10" data-auto-rows="true" cols="30" class="form-control" aria-required="true" required></textarea>
+        <div class="form-control-feedback invalid-feedback" id="id_bulk-message_error_message" hidden="hidden">
+            {{#str}}required{{/str}}
+        </div>
+    </div>
 </form>
 {{#js}}
 require(['core/auto_rows'], function(AutoRows) {
