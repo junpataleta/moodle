@@ -3402,5 +3402,28 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2019062900.00);
     }
 
+    if ($oldversion < 2019071800.00) {
+        $messageconfig = get_config('message');
+
+        $defaults = [
+            'message_provider_moodle_messagecontactrequests_loggedin' =>
+                $messageconfig->message_provider_moodle_messagecontactrequests_loggedin,
+            'message_provider_moodle_messagecontactrequests_loggedoff' =>
+                $messageconfig->message_provider_moodle_messagecontactrequests_loggedoff
+        ];
+
+        foreach ($defaults as $configname => $default) {
+            $defaultvalues = explode(',', $default);
+            $popupindex = array_search('popup', $defaultvalues);
+            if ($popupindex !== false) {
+                unset($defaultvalues[$popupindex]);
+            }
+            set_config($configname, implode(',', $defaultvalues), 'message');
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2019071800.00);
+    }
+
     return true;
 }
