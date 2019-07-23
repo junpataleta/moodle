@@ -1,18 +1,12 @@
 // Import font awesome.
+@import "fontawesome/fontawesome";
 
-$fa-version: "4.7.0" !default;
+// Import font faces.
+@import "fontawesome/solid";  // Default icons. Prefix: "fa" or "fas".
+@import "fontawesome/brands"; // Brand icons. Prefix: "fab".
+@import "fontawesome/regular"; // Free regular icons. Prefix: "far".
 
-@font-face {
-    font-family: 'FontAwesome';
-    src: url('[[font:core|fontawesome-webfont.eot]]?v=#{$fa-version}');
-    src:
-        url('[[font:core|fontawesome-webfont.eot]]?#iefix&v=#{$fa-version}') format('embedded-opentype'),
-        url('[[font:core|fontawesome-webfont.woff2]]?v=#{$fa-version}') format('woff2'),
-        url('[[font:core|fontawesome-webfont.woff]]?v=#{$fa-version}') format('woff'),
-        url('[[font:core|fontawesome-webfont.ttf]]?v=#{$fa-version}') format('truetype'),
-        url('[[font:core|fontawesome-webfont.svg]]?v=#{$fa-version}#fontawesomeregular') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@import "fontawesome/font-awesome";
+// Import shims. Band aid solution for backwards compatibility to map v4 icon names, prefixes, aliases, etc. to v5.
+// Our icons are already mapped to the correct v5 icon names. Providing this for the benefit of plugin developers who still have not
+// updated their icon mappings for v5.
+@import "fontawesome/v4-shims";
