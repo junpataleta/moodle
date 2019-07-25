@@ -19440,8 +19440,8 @@ body.path-question-type {
 
 .que.multichoice .answer div.r0 .icon.fa-check,
 .que.multichoice .answer div.r1 .icon.fa-check,
-.que.multichoice .answer div.r0 .icon.fa-remove,
-.que.multichoice .answer div.r1 .icon.fa-remove {
+.que.multichoice .answer div.r0 .icon.fa-times,
+.que.multichoice .answer div.r1 .icon.fa-times {
   text-indent: 0; }
 
 .qtype_multichoice_clearchoice {

@@ -1338,7 +1338,7 @@ function lesson_update_media_file($lessonid, $context, $draftitemid) {
  */
 function mod_lesson_get_fontawesome_icon_map() {
     return [
-        'mod_lesson:e/copy' => 'fa-clone',
+        'mod_lesson:e/copy' => 'fa fa-clone',
     ];
 }
 

@@ -604,7 +604,7 @@ function lti_check_updates_since(cm_info $cm, $from, $filter = array()) {
  */
 function mod_lti_get_fontawesome_icon_map() {
     return [
-        'mod_lti:warning' => 'fa-exclamation text-warning',
+        'mod_lti:warning' => 'fa fa-exclamation text-warning',
     ];
 }
 

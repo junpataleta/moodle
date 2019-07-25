@@ -153,8 +153,8 @@ define(['jquery', 'core/str', 'core/ajax', 'core/notification', 'core/templates'
                                 this.expand(trigger);
                             } else {
 
-                                trigger.find('> i').removeClass('fa-plus');
-                                trigger.find('> i').addClass('fa-circle-o-notch fa-spin');
+                                trigger.find('> i').removeClass('fa fa-plus');
+                                trigger.find('> i').addClass('fa fa-circle-notch fa-spin');
                                 this.loadExtra(trigger, expandContextId, expandElement);
                             }
                         } else {
@@ -287,17 +287,17 @@ define(['jquery', 'core/str', 'core/ajax', 'core/notification', 'core/templates'
         DataRegistry.prototype.collapse = function(node) {
             node.data('expanded', 0);
             node.siblings('nav').addClass('hidden');
-            node.find('> i').removeClass('fa-minus');
-            node.find('> i').addClass('fa-plus');
+            node.find('> i').removeClass('fa fa-minus');
+            node.find('> i').addClass('fa fa-plus');
         };
 
         DataRegistry.prototype.expand = function(node) {
             node.data('expanded', 1);
             node.siblings('nav').removeClass('hidden');
-            node.find('> i').removeClass('fa-plus');
+            node.find('> i').removeClass('fa fa-plus');
             // Also remove the spinning one if data was just loaded.
-            node.find('> i').removeClass('fa-circle-o-notch fa-spin');
-            node.find('> i').addClass('fa-minus');
+            node.find('> i').removeClass('fa fa-circle-notch fa-spin');
+            node.find('> i').addClass('fa fa-minus');
         };
         return /** @alias module:tool_dataprivacy/data_registry */ {
 

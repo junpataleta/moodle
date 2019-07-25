@@ -2030,7 +2030,7 @@ function quiz_check_updates_since(cm_info $cm, $from, $filter = array()) {
  */
 function mod_quiz_get_fontawesome_icon_map() {
     return [
-        'mod_quiz:navflagged' => 'fa-flag',
+        'mod_quiz:navflagged' => 'fa fa-flag',
     ];
 }
 

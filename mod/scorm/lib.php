@@ -1554,20 +1554,20 @@ function scorm_check_updates_since(cm_info $cm, $from, $filter = array()) {
  */
 function mod_scorm_get_fontawesome_icon_map() {
     return [
-        'mod_scorm:assetc' => 'fa-file-archive-o',
-        'mod_scorm:asset' => 'fa-file-archive-o',
-        'mod_scorm:browsed' => 'fa-book',
-        'mod_scorm:completed' => 'fa-check-square-o',
-        'mod_scorm:failed' => 'fa-times',
-        'mod_scorm:incomplete' => 'fa-pencil-square-o',
-        'mod_scorm:minus' => 'fa-minus',
-        'mod_scorm:notattempted' => 'fa-square-o',
-        'mod_scorm:passed' => 'fa-check',
-        'mod_scorm:plus' => 'fa-plus',
-        'mod_scorm:popdown' => 'fa-window-close-o',
-        'mod_scorm:popup' => 'fa-window-restore',
-        'mod_scorm:suspend' => 'fa-pause',
-        'mod_scorm:wait' => 'fa-clock-o',
+        'mod_scorm:assetc' => 'far fa-file-archive',
+        'mod_scorm:asset' => 'far fa-file-archive',
+        'mod_scorm:browsed' => 'fa fa-book',
+        'mod_scorm:completed' => 'far fa-check-square',
+        'mod_scorm:failed' => 'fa fa-times',
+        'mod_scorm:incomplete' => 'far fa-edit',
+        'mod_scorm:minus' => 'fa fa-minus',
+        'mod_scorm:notattempted' => 'far fa-square',
+        'mod_scorm:passed' => 'fa fa-check',
+        'mod_scorm:plus' => 'fa fa-plus',
+        'mod_scorm:popdown' => 'far fa-window-close',
+        'mod_scorm:popup' => 'fa fa-window-restore',
+        'mod_scorm:suspend' => 'fa fa-pause',
+        'mod_scorm:wait' => 'far fa-clock',
     ];
 }
 

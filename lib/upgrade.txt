@@ -1,6 +1,24 @@
 This files describes API changes in core libraries and APIs,
 information provided here is intended especially for developers.
 
+=== 3.9 ===
+* Upgrade Font Awesome from version 4 to version 5.9.
+  Notable changes:
+  1. There are now three prefixes being used for the free version of Font Awesome 5:
+     * 'fa' or 'fas' - Solid. The default. (956 icons at the time)
+     * 'fab' - Brands. (427 icons at the time)
+     * 'far' - Some of the free regular icons. (151 icons at the time)
+  2. These prefixes have been added to the core icon mappings where appropriate. For plugin developers who want to use the new
+     v5 mappings:
+     - If, for example, you are using the 'fa-calculator' in your current icon mapping, you will have to update this to
+       'fas fa-calculator'.
+  3. Some icon names have been changed. For plugin developers who are currently using the renamed v4 icons for their icon mappings,
+     these will still work as we have included the fontawesome/shims, but it is highly recommended that you update your icon mapping
+     to be compatible for v5.
+     For example:
+     - In v4, 'fa fa-question-circle-o' is now 'far fa-question-circle'.
+  For more information, check out https://fontawesome.com/how-to-use/on-the-web/setup/upgrading-from-version-4
+
 === 3.8 ===
 * The rotate_image function has been added to the stored_file class (MDL-63349)
 * The yui checknet module is removed. Call \core\session\manager::keepalive instead.

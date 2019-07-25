@@ -47,7 +47,7 @@ function qtype_ddmarker_pluginfile($course, $cm, $context, $filearea, $args, $fo
  */
 function qtype_ddmarker_get_fontawesome_icon_map() {
     return [
-        'qtype_ddmarker:crosshairs' => 'fa-crosshairs',
-        'qtype_ddmarker:grid' => 'fa-th',
+        'qtype_ddmarker:crosshairs' => 'fa fa-crosshairs',
+        'qtype_ddmarker:grid' => 'fa fa-th',
     ];
 }

@@ -4539,18 +4539,18 @@ function data_view($data, $course, $cm, $context) {
  */
 function mod_data_get_fontawesome_icon_map() {
     return [
-        'mod_data:field/checkbox' => 'fa-check-square-o',
-        'mod_data:field/date' => 'fa-calendar-o',
-        'mod_data:field/file' => 'fa-file',
-        'mod_data:field/latlong' => 'fa-globe',
-        'mod_data:field/menu' => 'fa-bars',
-        'mod_data:field/multimenu' => 'fa-bars',
-        'mod_data:field/number' => 'fa-hashtag',
-        'mod_data:field/picture' => 'fa-picture-o',
-        'mod_data:field/radiobutton' => 'fa-circle-o',
-        'mod_data:field/textarea' => 'fa-font',
-        'mod_data:field/text' => 'fa-i-cursor',
-        'mod_data:field/url' => 'fa-link',
+        'mod_data:field/checkbox' => 'far fa-check-square',
+        'mod_data:field/date' => 'far fa-calendar',
+        'mod_data:field/file' => 'fa fa-file',
+        'mod_data:field/latlong' => 'fa fa-globe',
+        'mod_data:field/menu' => 'fa fa-bars',
+        'mod_data:field/multimenu' => 'fa fa-bars',
+        'mod_data:field/number' => 'fa fa-hashtag',
+        'mod_data:field/picture' => 'far fa-image',
+        'mod_data:field/radiobutton' => 'far fa-circle',
+        'mod_data:field/textarea' => 'fa fa-font',
+        'mod_data:field/text' => 'fa fa-i-cursor',
+        'mod_data:field/url' => 'fa fa-link',
     ];
 }
 

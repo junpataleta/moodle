@@ -1314,8 +1314,8 @@ function mod_choice_core_calendar_event_timestart_updated(\calendar_event $event
  */
 function mod_choice_get_fontawesome_icon_map() {
     return [
-        'mod_choice:row' => 'fa-info',
-        'mod_choice:column' => 'fa-columns',
+        'mod_choice:row' => 'fa fa-info',
+        'mod_choice:column' => 'fa fa-columns',
     ];
 }
 

@@ -80,8 +80,8 @@ function tool_usertours_before_footer() {
  */
 function tool_usertours_get_fontawesome_icon_map() {
     return [
-        'tool_usertours:t/export' => 'fa-download',
-        'tool_usertours:i/reload' => 'fa-refresh',
-        'tool_usertours:t/filler' => 'fa-spacer',
+        'tool_usertours:t/export' => 'fa fa-download',
+        'tool_usertours:i/reload' => 'fa fa-sync',
+        'tool_usertours:t/filler' => 'fa fa-spacer',
     ];
 }

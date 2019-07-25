@@ -204,11 +204,11 @@ function tool_policy_pluginfile($course, $cm, $context, $filearea, $args, $force
  */
 function tool_policy_get_fontawesome_icon_map() {
     return [
-        'tool_policy:agreed' => 'fa-check text-success',
-        'tool_policy:declined' => 'fa-times text-danger',
-        'tool_policy:pending' => 'fa-clock-o text-warning',
-        'tool_policy:partial' => 'fa-exclamation-triangle text-warning',
-        'tool_policy:level' => 'fa-level-up fa-rotate-90 text-muted',
+        'tool_policy:agreed' => 'fa fa-check text-success',
+        'tool_policy:declined' => 'fa fa-times text-danger',
+        'tool_policy:pending' => 'far fa-clock text-warning',
+        'tool_policy:partial' => 'fa fa-exclamation-triangle text-warning',
+        'tool_policy:level' => 'fa fa-level-up-alt fa-rotate-90 text-muted',
     ];
 }
 

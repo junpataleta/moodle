@@ -2947,8 +2947,8 @@ function feedback_can_view_analysis($feedback, $context, $courseid = false) {
  */
 function mod_feedback_get_fontawesome_icon_map() {
     return [
-        'mod_feedback:required' => 'fa-exclamation-circle',
-        'mod_feedback:notrequired' => 'fa-question-circle-o',
+        'mod_feedback:required' => 'fa fa-exclamation-circle',
+        'mod_feedback:notrequired' => 'far fa-question-circle',
     ];
 }
 
