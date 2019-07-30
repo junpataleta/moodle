@@ -151,7 +151,7 @@ EOD;
 
     /**
      * This function will search for all files that can be converted
-     * and concatinated into a PDF (1.4) - for any submission plugin
+     * and concatenated into a PDF (1.4) - for any submission plugin
      * for this students attempt.
      *
      * @param int|\assign $assignment
@@ -160,7 +160,7 @@ EOD;
      * @return combined_document
      */
     protected static function list_compatible_submission_files_for_attempt($assignment, $userid, $attemptnumber) {
-        global $USER, $DB;
+        global $DB;
 
         $assignment = self::get_assignment_from_param($assignment);
 
@@ -185,21 +185,28 @@ EOD;
 
         $fs = get_file_storage();
         $converter = new \core_files\converter();
+        error_log("list_compatible_submission_files_for_attempt");
         // Ask each plugin for it's list of files.
+        /** @var \assign_submission_plugin $plugin */
         foreach ($assignment->get_submission_plugins() as $plugin) {
             if ($plugin->is_enabled() && $plugin->is_visible()) {
                 $pluginfiles = $plugin->get_files($submission, $user);
                 foreach ($pluginfiles as $filename => $file) {
+                    error_log("PROCESSING $filename");
                     if ($file instanceof \stored_file) {
                         // Rotate JPEG file, and convert it to pdf if there is no converter.
-                        if ($plugin->get_type() == "file" && $file->get_mimetype() === "image/jpeg") {
+                        if ($plugin->allows_image_conversion() && $file->get_mimetype() === "image/jpeg") {
+                            error_log("ATTEMPTING TO ROTATE IMAGE: " . $plugin->get_type());
                             list ($newfile, $size) = self::rotate_jpg_image($assignment, $userid, $attemptnumber, $file);
                             if (!empty($newfile)) {
+                                error_log("IMAGE ROTATED!");
                                 $file = $newfile;
                             }
                             if (!$converter->can_convert_format_to('jpg', 'pdf')) {
+                                error_log("SAVING JPEG TO PDF FILE");
                                 $pdffile = self::save_jpg_to_pdf($assignment, $userid, $attemptnumber, $file, $size);
                                 if ($pdffile) {
+                                    error_log("SUCCESS!");
                                     $file = $pdffile;
                                     $filename = $pdffile->get_filename();
                                 }
@@ -931,6 +938,7 @@ EOD;
 
     /**
      * This function rotate a page, and mark the page as rotated.
+     *
      * @param int|\assign $assignment Assignment
      * @param int $userid User ID
      * @param int $attemptnumber Attempt Number
@@ -998,6 +1006,7 @@ EOD;
 
     /**
      * Convert jpg file to pdf file
+     *
      * @param int|\assign $assignment Assignment
      * @param int $userid User ID
      * @param int $attemptnumber Attempt Number
@@ -1010,10 +1019,14 @@ EOD;
     private static function save_jpg_to_pdf($assignment, $userid, $attemptnumber, $file, $size=null) {
         // Temporary file.
         $filename = $file->get_filename();
-        $tmpdir = make_temp_directory('assignfeedback_editpdf/'
-            . self::TMP_JPG_TO_PDF_FILEAREA . '/'
-            . self::hash($assignment, $userid, $attemptnumber));
-        $tempfile = $tmpdir . '' . $filename . ".pdf";
+        $pathcomponents = [
+            'assignfeedback_editpdf',
+            self::TMP_JPG_TO_PDF_FILEAREA,
+            self::hash($assignment, $userid, $attemptnumber)
+        ];
+        $tmpdir = make_temp_directory(implode(DIRECTORY_SEPARATOR, $pathcomponents));
+        $tempfile = $tmpdir . DIRECTORY_SEPARATOR . $filename . ".pdf";
+
         // Determine orientation.
         $orientation = 'P';
         if (!empty($size['width']) && !empty($size['height'])) {
@@ -1050,20 +1063,22 @@ EOD;
 
     /**
      * Rotate image according to orientation value
+     *
      * @param int|\assign $assignment Assignment
      * @param int $userid User ID
      * @param int $attemptnumber Attempt Number
      * @param \stored_file $file file to save
      * @return array
-     * @throws \file_exception
-     * @throws \stored_file_creation_exception
      */
     private static function rotate_jpg_image($assignment, $userid, $attemptnumber, $file) {
         $filename = $file->get_filename();
-        $tmpdir = make_temp_directory('assignfeedback_editpdf/'
-            . self::TMP_ROTATED_JPG_FILEAREA .'/'
-            . self::hash($assignment, $userid, $attemptnumber));
-        $tempfile = $tmpdir . '' . $filename;
+        $pathcomponents = [
+            'assignfeedback_editpdf',
+            self::TMP_ROTATED_JPG_FILEAREA,
+            self::hash($assignment, $userid, $attemptnumber)
+        ];
+        $tmpdir = make_temp_directory(implode(DIRECTORY_SEPARATOR, $pathcomponents));
+        $tempfile = $tmpdir . DIRECTORY_SEPARATOR . $filename;
         $file->copy_content_to($tempfile);
         $rotation = [
             3 => -180,
@@ -1073,10 +1088,7 @@ EOD;
         $exif = @exif_read_data($tempfile);
         $newfile = null;
         $size = null;
-        if (!empty($exif)
-            && key_exists('ExifImageWidth', $exif)
-            && key_exists('ExifImageLength', $exif)
-            && key_exists('Orientation', $exif) ) {
+        if (isset($exif['ExifImageWidth']) && isset($exif['ExifImageLength']) && isset($exif['Orientation']) ) {
             $orientation = $exif['Orientation'];
             // The function imagerotate() rotate image anti clockwise.
             if ($orientation !== 1) {

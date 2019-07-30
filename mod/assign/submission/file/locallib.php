@@ -619,6 +619,15 @@ class assign_submission_file extends assign_submission_plugin {
     }
 
     /**
+     * Whether this submission plugin allows any image files it may have to be processed by document converters.
+     *
+     * @return bool
+     */
+    public function allows_image_conversion() {
+        return true;
+    }
+
+    /**
      * Get the type sets configured for this assignment.
      *
      * @return array('groupname', 'mime/type', ...)
