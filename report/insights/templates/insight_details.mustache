@@ -35,6 +35,17 @@
         "timerange": "Monday, 4 September 2017, 6:00 PM to Thursday, 5 October 2017, 12:00 AM",
         "sampleimage": "<a href=\"#\">Link</a>",
         "sampledescription": "Sample description",
+        "actions": [
+            {
+                "classes": "",
+                "primary": {
+                    "items": [{"rawhtml": "<p>View details</p>"}]
+                },
+                "secondary": {
+                    "items": [{"rawhtml": "<p>Not useful</p>"}]
+                }
+            }
+        ],
         "style": "success",
         "outcomeicon": {
             "attributes": [
@@ -74,8 +85,11 @@
 }}
 
 <h2 class="mb-2">{{insightname}}</h2>
-<table class="generaltable insights-list">
-    {{#showpredicionheading}}
+
+{{> report_insights/bulk_actions }}
+
+<table class="generaltable insights-list mt-3">
+    {{#showpredictionheading}}
         <caption>
             {{#str}}prediction, report_insights{{/str}}:
             <span class="{{#style}}table-{{style}}{{/style}}">
@@ -85,14 +99,15 @@
                 {{predictiondisplayvalue}}
             </span>
         </caption>
-    {{/showpredicionheading}}
+    {{/showpredictionheading}}
     <thead>
         <tr>
-            <th scope="col">{{#str}}name{{/str}}</th>
-            <th scope="col">{{#str}}actions{{/str}}</th>
+            <th scope="col" {{^bulkactions}}class="hidden"{{/bulkactions}}></th>
+            <th scope="col">{{#str}}description{{/str}}</th>
+            <th scope="col" {{^actions}}class="hidden"{{/actions}}>{{#str}}actions{{/str}}</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody data-prediction-id="{{predictionid}}">
         {{> report_insights/insight}}
     </tbody>
 </table>

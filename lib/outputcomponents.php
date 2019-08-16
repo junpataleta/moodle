@@ -908,7 +908,7 @@ class single_button implements renderable {
     /**
      * Sets an attribute for the HTML button tag.
      *
-     * @param  string $key   The attribute name
+     * @param  string $name  The attribute name
      * @param  mixed  $value The value
      * @return null
      */

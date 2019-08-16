@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template report_insights/insight
+    @template report_insights/insight_details
 
-    Template for a insight.
+    Actions panel at the bottom of the assignment grading UI.
 
     Classes required for JS:
     * none
@@ -30,34 +30,13 @@
 
     Example context (json):
     {
-        "sampleimage": "<a href=\"#\">Link</a>",
-        "sampledescription": "Sample description",
-        "actions": [
-            {
-                "classes": "",
-                "primary": {
-                    "items": [{"rawhtml": "<p>View details</p>"}]
-                },
-                "secondary": {
-                    "items": [{"rawhtml": "<p>Not useful</p>"}]
-                }
-            }
-        ]
     }
 }}
-<tr>
-    <td class="insight-checkbox-cell col-xs-1{{^bulkactions}} hidden{{/bulkactions}}">
-        {{{toggleslave}}}
-    </td>
-    <td>
-        {{#sampleimage}}
-            {{{sampleimage}}}
-        {{/sampleimage}}
-        {{{sampledescription}}}
-    </td>
-    <td {{^actions}}class="hidden"{{/actions}}>
-    {{#actions}}
-        {{> core/action_menu}}
-    {{/actions}}
-    </td>
-</tr>
+
+<div class="{{^bulkactions}} hidden{{/bulkactions}}">
+    <div class="insights-bulk-actions btn-group mt-3" role="group">
+        {{#bulkactions}}
+            {{> report_insights/bulk_action_button}}
+        {{/bulkactions}}
+    </div>
+</div>

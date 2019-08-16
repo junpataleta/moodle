@@ -26,50 +26,126 @@
  *
  * @module report_insights/actions
  */
-define(['jquery', 'core/ajax', 'core/notification', 'core/url'], function($, Ajax, Notification, Url) {
+define(['jquery', 'core/str', 'core/ajax', 'core/notification', 'core/modal_factory', 'core/modal_events'],
+        function($, Str, Ajax, Notification, ModalFactory, ModalEvents) {
 
     return {
 
         /**
-         * Attach on click handlers to hide predictions.
+         * Attach on click handlers for bulk actions.
          *
-         * @param {Number} predictionId The prediction id.
-         * @param {Number} contextId The context in which the prediction was made.
-         * @param {Number} modelId The model id model with which the prediction was made.
+         * @param {String} rootNode
          * @access public
          */
-        init: function(predictionId, contextId, modelId) {
+        initBulk: function(rootNode) {
 
-            // Select the prediction with the provided id ensuring that an external function is set as method name.
-            $('a[data-prediction-methodname][data-prediction-id=' + predictionId + ']').on('click', function(e) {
+            /**
+             * Show the no items selected note.
+             *
+             * @param  {String} actionVisibleName
+             * @return {Promise}
+             */
+            var noItemsSelected = function(actionVisibleName) {
+                return Str.get_strings([
+                        {key: 'noitemsselected', component: 'report_insights'},
+                ]).then(function(strings) {
+                        return ModalFactory.create({
+                            type: ModalFactory.types.CANCEL,
+                            title: actionVisibleName,
+                            body: strings[0],
+                        });
+                }).then(function(modal) {
+                        modal.show();
+                        return modal;
+                }).catch(Notification.exception);
+            };
+
+            /**
+             * Executes the provided action.
+             *
+             * @param  {Array}  predictionIds
+             * @param  {Array}  predictionContainers
+             * @param  {String} actionName
+             * @return {Promise}
+             */
+            var executeAction = function(predictionIds, predictionContainers, actionName) {
+
+                return Ajax.call([
+                    {
+                        methodname: 'report_insights_action_executed',
+                        args: {
+                            predictionids: predictionIds,
+                            actionname: actionName
+                        }
+                    }
+                ])[0].then(function() {
+                    // Remove the selected elements from the list.
+
+                    var tableNode = false;
+                    predictionContainers.forEach(function(el) {
+                        if (tableNode === false) {
+                            tableNode = el.closest('table');
+                        }
+                        el.remove();
+                    });
+
+                    if (tableNode.find('tbody').length === 0) {
+                        window.location.reload();
+                    }
+                    return;
+                }).catch(Notification.exception);
+            };
+
+            $(rootNode + ' [data-bulk-actionname]').on('click', function(e) {
                 e.preventDefault();
                 var action = $(e.currentTarget);
-                var methodname = action.attr('data-prediction-methodname');
-                var predictionContainers = action.closest('tr');
+                var actionName = action.data('bulk-actionname');
+                var actionVisibleName = action.text().trim();
 
-                if (predictionContainers.length > 0) {
-                    var promise = Ajax.call([
-                        {
-                            methodname: methodname,
-                            args: {predictionid: predictionId}
-                        }
-                    ])[0];
-                    promise.done(function() {
-                        predictionContainers[0].remove();
+                var predictionIds = [];
+                var predictionContainers = [];
 
-                        // Move back if no remaining predictions.
-                        if ($('.insights-list tr').length < 2) {
-                            var params = {
-                                contextid: contextId,
-                                modelid: modelId
-                            };
+                $('.insights-list input[data-togglegroup^="insight-bulk-action-"][data-toggle="slave"]:checked').each(function() {
+                    var container = $(this).closest('tbody[data-prediction-id]');
+                    predictionContainers.push(container);
+                    predictionIds.push(container.data('prediction-id'));
+                });
 
-                            var queryparams = $.param(params);
-                            window.location.assign(Url.relativeUrl("report/insights/insights.php?" + queryparams));
-                        }
-                    }).fail(Notification.exception);
+                if (predictionIds.length === 0) {
+                    // No items selected message.
+                    return noItemsSelected(actionVisibleName);
                 }
+
+                var strings = [];
+                return Str.get_strings([{
+                    key: 'confirmbulkaction',
+                    component: 'report_insights',
+                    param: {
+                        action: actionVisibleName,
+                        nitems: predictionIds.length
+                    }
+                }, {
+                    key: 'confirm',
+                    component: 'moodle'
+                }]
+                ).then(function(strs) {
+                    strings = strs;
+                    return ModalFactory.create({
+                        type: ModalFactory.types.SAVE_CANCEL,
+                        title: actionVisibleName,
+                        body: strings[0],
+                    });
+                }).then(function(modal) {
+                    modal.setSaveButtonText(strings[1]);
+                    modal.show();
+                    modal.getRoot().on(ModalEvents.save, function() {
+                        // The action is now confirmed, sending an action for it.
+                        return executeAction(predictionIds, predictionContainers, actionName);
+                    });
+
+                    return modal;
+                }).catch(Notification.exception);
             });
-        }
+        },
     };
 });

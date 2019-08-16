@@ -223,6 +223,7 @@ class icon_system_fontawesome extends icon_system_font {
             'core:i/enrolmentsuspended' => 'fa-pause',
             'core:i/enrolusers' => 'fa-user-plus',
             'core:i/expired' => 'fa-exclamation text-warning',
+            'core:i/incorrect' => 'fa-exclamation',
             'core:i/export' => 'fa-download',
             'core:i/files' => 'fa-file',
             'core:i/filter' => 'fa-filter',

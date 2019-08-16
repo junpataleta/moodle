@@ -34,6 +34,7 @@
         "nostaticmodelnotification": {
             "message": "This is just a prediction."
         },
+        "showpredictionheading": "true",
         "predictions": [
             {
                 "predictiondisplayvalue": "This dev will understand it",
@@ -43,10 +44,36 @@
                         {"name": "src", "value": "https://moodle.org/logo/moodle-logo.svg" }
                     ]
                 },
+                "multiplepredictions": "true",
                 "insights": [
                     {
                         "sampleimage": "<a href=\"#\">Link</a>",
-                        "sampledescription": "Sample description"
+                        "sampledescription": "Sample description",
+                        "actions": [
+                            {
+                                "classes": "",
+                                "primary": {
+                                    "items": [{"rawhtml": "<p>View details</p>"}]
+                                },
+                                "secondary": {
+                                    "items": [{"rawhtml": "<p>Not useful</p>"}]
+                                }
+                            }
+                        ]
+                    }, {
+                        "sampleimage": "<a href=\"#\">Link</a>",
+                        "sampledescription": "Sample description",
+                        "actions": [
+                            {
+                                "classes": "",
+                                "primary": {
+                                    "items": [{"rawhtml": "<p>View details</p>"}]
+                                },
+                                "secondary": {
+                                    "items": [{"rawhtml": "<p>Not useful</p>"}]
+                                }
+                            }
+                        ]
                     }
                 ]
             }, {
@@ -85,9 +112,13 @@
 {{/nostaticmodelnotification}}
 
 {{{ pagingbar }}}
+
+{{> report_insights/bulk_actions}}
+
 {{#predictions}}
-    <table class="generaltable insights-list">
-        {{#showpredicionheading}}
+
+    <table class="generaltable insights-list mt-3">
+        {{#showpredictionheading}}
             <caption>
                 {{#str}}prediction, report_insights{{/str}}:
                 <span class="{{#style}}table-{{style}}{{/style}}">
@@ -97,20 +128,34 @@
                     {{predictiondisplayvalue}}
                 </span>
             </caption>
-        {{/showpredicionheading}}
+        {{/showpredictionheading}}
         <thead>
             <tr>
-                <th scope="col">{{#str}}name{{/str}}</th>
+                {{#multiplepredictions}}
+                    <th{{^bulkactions}} class="hidden"{{/bulkactions}}>
+                        {{{checkboxtoggleall}}}
+                    </th>
+                {{/multiplepredictions}}
+                {{^multiplepredictions}}
+                    <th{{^bulkactions}} class="hidden"{{/bulkactions}}></th>
+                {{/multiplepredictions}}
+                <th scope="col">{{#str}}description{{/str}}</th>
                 <th scope="col">{{#str}}actions{{/str}}</th>
             </tr>
         </thead>
     {{#insights}}
-        <tbody>
+        <tbody data-prediction-id="{{predictionid}}">
             {{> report_insights/insight}}
         </tbody>
     {{/insights}}
     </table>
+
 {{/predictions}}
+
+{{#multiplepredictions}}
+    {{> report_insights/bulk_actions}}
+{{/multiplepredictions}}
+
 {{{ pagingbar }}}
 {{/noinsights}}
 {{#noinsights}}
