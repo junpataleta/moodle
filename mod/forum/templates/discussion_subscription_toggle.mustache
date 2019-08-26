@@ -35,7 +35,8 @@
 {{#capabilities.subscribe}}
     <a
         href="{{{urls.subscribe}}}"
-        class="py-3 btn btn-link"
+        class="dropdown-item"
+        role="menuitem"
         data-type="subscription-toggle"
         data-action="toggle"
         data-discussionid="{{id}}"
@@ -50,10 +51,10 @@
         {{/userstate.subscribed}}
     >
         {{#userstate.subscribed}}
-            {{#pix}}t/subscribed, mod_forum, {{#str}}clicktounsubscribe, mod_forum{{/str}}{{/pix}}
+            {{#str}}unsubscribediscussion, forum{{/str}}
         {{/userstate.subscribed}}
         {{^userstate.subscribed}}
-            {{#pix}}t/unsubscribed, mod_forum, {{#str}}clicktosubscribe, mod_forum{{/str}}{{/pix}}
+            {{#str}}subscribediscussion, forum{{/str}}
         {{/userstate.subscribed}}
     </a>
 {{/capabilities.subscribe}}

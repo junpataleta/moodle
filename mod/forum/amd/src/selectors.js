@@ -56,5 +56,10 @@ define([], function() {
         pin: {
             toggle: "[data-type='pin-toggle'][data-action='toggle']",
         },
+        discussion: {
+            item: '[data-region="discussion-list-item"]',
+            lockedLabel: "[data-region='locked-label']",
+            subscribedLabel: "[data-region='subscribed-label']",
+        },
     };
 });
