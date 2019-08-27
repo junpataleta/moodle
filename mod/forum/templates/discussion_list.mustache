@@ -80,7 +80,9 @@
                 {{$discussion_list_header}}
                 <thead>
                     <tr>
-                        <th scope="col">&nbsp;</th>
+                        <th scope="col">
+                            <span class="accesshide">{{#str}}status{{/str}}</span>
+                        </th>
                         <th scope="col" class="p-l-0">{{#str}}discussion, mod_forum{{/str}}</th>
                         <th scope="col" class="author">
                             {{#str}}startedby, mod_forum{{/str}}
@@ -119,8 +121,9 @@
                                 {{/forum.userstate.tracked}}
                             </th>
                         {{/forum.capabilities.viewdiscussions}}
-                        <th scope="col">&nbsp;</th>
-                        <th scope="col" class="discussionsubscription"></th>
+                        <th scope="col" class="discussionsubscription">
+                            <span class="accesshide">{{#str}}actions{{/str}}</span>
+                        </th>
                     </tr>
                 </thead>
                 {{/discussion_list_header}}
@@ -141,18 +144,37 @@
                                         {{> mod_forum/forum_discussion_favourite_toggle}}
                                     {{/discussion}}
                                 {{/discussion.pinned}}
+                                {{#discussion.timed.istimed}}
+                                    <div class="timedpost p-1">
+                                        {{#pix}}
+                                            i/calendar, moodle,
+                                            {{#discussion.times.start}}{{!
+    }}{{#str}} displaystart, mod_forum {{/str}}: {{#userdate}}{{.}}, {{#str}}strftimerecentfull {{/str}}{{/userdate}}
+{{/discussion.times.start}}
+{{#discussion.times.end}}{{!
+    }}{{#str}} displayend, mod_forum {{/str}}: {{#userdate}}{{.}}, {{#str}} strftimerecentfull {{/str}}{{/userdate}}
+{{/discussion.times.end}}
+{{#discussion.timed.visible}}{{!
+    }}{{#str}} timedvisible, mod_forum {{/str}}
+{{/discussion.timed.visible}}
+{{^discussion.timed.visible}}{{!
+    }}{{#str}} timedhidden, mod_forum {{/str}}
+{{/discussion.timed.visible}}
+                                        {{/pix}}
+                                    </div>
+                                {{/discussion.timed.istimed}}
                             </td>
-                            <td class="topic p-0 align-middle">
+                            <th scope="row" class="topic p-0 align-middle">
                                 <div class="p-3 p-l-0">
                                     <a class="w-100 h-100 d-block" href="{{discussion.urls.view}}">
-                                        <strong>{{#shortentext}}72, {{{discussion.name}}}{{/shortentext}}</strong>
+                                        {{#shortentext}}72, {{{discussion.name}}}{{/shortentext}}
                                     </a>
                                     <div>
                                         <span class="badge badge-danger" data-region="locked-label" {{^discussion.locked}}hidden{{/discussion.locked}}>{{#str}}locked, forum{{/str}}</span>
                                         <span class="badge badge-light" data-region="subscribed-label" {{^discussion.userstate.subscribed}}hidden{{/discussion.userstate.subscribed}}>{{#str}}subscribed, forum{{/str}}</span>
                                     </div>
                                 </div>
-                            </td>
+                            </th>
                             <td class="author align-middle">
                                 {{#firstpostauthor}}
                                     <div class="d-flex flex-row">
@@ -214,27 +236,6 @@
                                     {{/forum.userstate.tracked}}
                                 </td>
                             {{/forum.capabilities.viewdiscussions}}
-                            <td class="timed p-0 text-center align-middle">
-                                {{#discussion.timed.istimed}}
-                                    <div class="timedpost">
-                                        {{#pix}}
-                                            i/calendar, moodle,
-{{#discussion.times.start}}{{!
-    }}{{#str}} displaystart, mod_forum {{/str}}: {{#userdate}}{{.}}, {{#str}}strftimerecentfull {{/str}}{{/userdate}}
-{{/discussion.times.start}}
-{{#discussion.times.end}}{{!
-    }}{{#str}} displayend, mod_forum {{/str}}: {{#userdate}}{{.}}, {{#str}} strftimerecentfull {{/str}}{{/userdate}}
-{{/discussion.times.end}}
-{{#discussion.timed.visible}}{{!
-    }}{{#str}} timedvisible, mod_forum {{/str}}
-{{/discussion.timed.visible}}
-{{^discussion.timed.visible}}{{!
-    }}{{#str}} timedhidden, mod_forum {{/str}}
-{{/discussion.timed.visible}}
-                                        {{/pix}}
-                                    </div>
-                                {{/discussion.timed.istimed}}
-                            </td>
                             <td class="p-0 align-middle" data-container="discussion-summary-actions">
                                 {{#discussion}}
                                     <div class="d-flex flex-wrap justify-content-end pr-4">
