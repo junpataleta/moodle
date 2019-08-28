@@ -261,10 +261,10 @@
                                         {{#unread}}
                                         {{! TODO Rewrite as AJAX}}
                                             <span class="p-1">
-                                                <a href="{{{discussion.urls.viewfirstunread}}}" class="badge badge-primary" aria-label="{{#str}}unreadpostsnumber, mod_forum, {{unread}}{{/str}}">{{unread}}</a>
-                                            </span>
-                                            <span class="p-1">
-                                                <a href="{{{discussion.urls.markasread}}}">{{#pix}}t/markasread, core, {{#str}}markalldread, mod_forum{{/str}}{{/pix}}</a>
+                                                <a href="{{{discussion.urls.viewfirstunread}}}" class="badge badge-primary"
+                                                   title="{{#str}}unreadpostsnumber, mod_forum, {{unread}}{{/str}}" aria-label="{{#str}}unreadpostsnumber, mod_forum, {{unread}}{{/str}}">
+                                                    {{unread}}
+                                                </a>
                                             </span>
                                         {{/unread}}
                                     {{/forum.userstate.tracked}}
