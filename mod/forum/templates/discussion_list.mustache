@@ -144,25 +144,6 @@
                                         {{> mod_forum/forum_discussion_favourite_toggle}}
                                     {{/discussion}}
                                 {{/discussion.pinned}}
-                                {{#discussion.timed.istimed}}
-                                    <div class="timedpost p-1">
-                                        {{#pix}}
-                                            i/calendar, moodle,
-                                            {{#discussion.times.start}}{{!
-    }}{{#str}} displaystart, mod_forum {{/str}}: {{#userdate}}{{.}}, {{#str}}strftimerecentfull {{/str}}{{/userdate}}
-{{/discussion.times.start}}
-{{#discussion.times.end}}{{!
-    }}{{#str}} displayend, mod_forum {{/str}}: {{#userdate}}{{.}}, {{#str}} strftimerecentfull {{/str}}{{/userdate}}
-{{/discussion.times.end}}
-{{#discussion.timed.visible}}{{!
-    }}{{#str}} timedvisible, mod_forum {{/str}}
-{{/discussion.timed.visible}}
-{{^discussion.timed.visible}}{{!
-    }}{{#str}} timedhidden, mod_forum {{/str}}
-{{/discussion.timed.visible}}
-                                        {{/pix}}
-                                    </div>
-                                {{/discussion.timed.istimed}}
                             </td>
                             <th scope="row" class="topic p-0 align-middle">
                                 <div class="p-3 p-l-0">
@@ -172,6 +153,9 @@
                                     <div>
                                         <span class="badge badge-danger" data-region="locked-label" {{^discussion.locked}}hidden{{/discussion.locked}}>{{#str}}locked, forum{{/str}}</span>
                                         <span class="badge badge-light" data-region="subscribed-label" {{^discussion.userstate.subscribed}}hidden{{/discussion.userstate.subscribed}}>{{#str}}subscribed, forum{{/str}}</span>
+                                        <a href="#" role="button" class="badge badge-info" data-region="timed-label" {{^discussion.timed.istimed}}hidden{{/discussion.timed.istimed}}
+                                            data-toggle="popover" data-container="body" data-placement="right" data-html="true" data-content='{{#discussion.times}}{{> mod_forum/discussion_times}}{{/discussion.times}}'
+                                            data-trigger="click">{{#str}}timed, forum{{/str}}</a>
                                     </div>
                                 </div>
                             </th>
