@@ -188,8 +188,13 @@
                                         <span class="badge badge-danger" data-region="locked-label" {{^discussion.locked}}hidden{{/discussion.locked}}>{{#str}}locked, forum{{/str}}</span>
                                         <span class="badge badge-light" data-region="subscribed-label" {{^discussion.userstate.subscribed}}hidden{{/discussion.userstate.subscribed}}>{{#str}}subscribed, forum{{/str}}</span>
                                         <a href="#" role="button" class="badge badge-info" data-region="timed-label" {{^discussion.timed.istimed}}hidden{{/discussion.timed.istimed}}
-                                            data-toggle="popover" data-container="body" data-placement="right" data-html="true" data-content='{{#discussion.times}}{{> mod_forum/discussion_times}}{{/discussion.times}}'
-                                            data-trigger="click">{{#str}}timed, forum{{/str}}</a>
+                                            data-toggle="popover" data-html="true"
+                                            data-content='{{#discussion.times}}
+                                                {{< mod_forum/discussion_times}}
+                                                    {{$discussionid}}{{id}}{{/discussionid}}
+                                                {{/ mod_forum/discussion_times}}
+                                            {{/discussion.times}}'
+                                           data-trigger="focus" tabindex="0" aria-describedby="timeddiscussion-popover-{{id}}" title="{{#str}}timeddiscussion, mod_forum{{/str}}">{{#str}}timed, forum{{/str}}</a>
                                     </div>
                                 </div>
                             </th>

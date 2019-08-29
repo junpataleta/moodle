@@ -37,33 +37,25 @@
         "visible": true
     }
 }}
-<div>
-    <dl>
+<ul id="timeddiscussion-popover-{{$discussionid}}{{/discussionid}}">
     {{#start}}
-        <dt>
-            {{#str}} displaystart, mod_forum {{/str}}
-        </dt>
-        <dd>
-            {{#userdate}}{{.}}, {{#str}}strftimerecentfull {{/str}}{{/userdate}}
-        </dd>
+        <li>
+            {{#str}} displaystartdate, mod_forum, {{#userdate}}{{.}}, {{#str}}strftimerecentfull{{/str}}{{/userdate}} {{/str}}
+        </li>
     {{/start}}
     {{#end}}
-        <dt>
-            {{#str}} displayend, mod_forum {{/str}}
-        </dt>
-        <dd>
-            {{#userdate}}{{.}}, {{#str}}strftimerecentfull {{/str}}{{/userdate}}
-        </dd>
+        <li>
+            {{#str}} displayenddate, mod_forum , {{#userdate}}{{.}}, {{#str}}strftimerecentfull{{/str}}{{/userdate}} {{/str}}
+        </li>
     {{/end}}
     {{#visible}}
-        <dd>
+        <li>
             {{#str}} timedvisible, mod_forum {{/str}}
-        </dd>
+        </li>
     {{/visible}}
     {{^visible}}
-        <dt>
+        <li>
             {{#str}} timedhidden, mod_forum {{/str}}
-        </dt>
+        </li>
     {{/visible}}
-    </dl>
-</div>
+</ul>
