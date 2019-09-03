@@ -1,0 +1,58 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core/drawer
+
+    This template will render a generic drawer panel.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * none
+
+    Example context (json):
+    {}
+}}
+<div
+    id="{{$drawerName}}{{/drawerName}}-{{$drawerUniqId}}{{uniqid}}{{/drawerUniqId}}"
+    class="{{$drawerClasses}}{{/drawerClasses}} settings-drawer drawer bg-light hidden"
+    aria-expanded="false"
+    aria-hidden="true"
+    data-region="{{$drawerRegion}}{{/drawerRegion}}"
+    role="region"
+>
+    <div class="header-container position-relative" data-region="header-container">
+        {{$drawerHeaderContent}}{{/drawerHeaderContent}}
+    </div>
+    <div class="body-container position-relative" data-region="body-container">
+        {{$drawerBodyContainer}}{{/drawerBodyContainer}}
+    </div>
+    <div class="footer-container position-relative" data-region="footer-container">
+        {{$drawerFooterContent}}{{/drawerFooterContent}}
+    </div>
+</div>
+
+{{#js}}
+require(['jquery', 'core/drawer'], function($, Drawer) {
+    var root = $('#{{$drawerName}}{{/drawerName}}-{{$drawerUniqId}}{{uniqid}}{{/drawerUniqId}}');
+    Drawer.init(root, '{{$drawerUniqId}}{{uniqid}}{{/drawerUniqId}}', false);
+});
+{{/js}}
