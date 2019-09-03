@@ -41,13 +41,6 @@ function(
     };
 
     /**
-     * Trigger an event to show the message drawer.
-     */
-    var show = function() {
-        PubSub.publish(MessageDrawerEvents.SHOW);
-    };
-
-    /**
      * Trigger an event to show the given conversation.
      *
      * @param {int} conversationId Id for the conversation to show.
@@ -65,7 +58,6 @@ function(
 
     return {
         createConversationWithUser: createConversationWithUser,
-        show: show,
         showConversation: showConversation,
         showSettings: showSettings
     };

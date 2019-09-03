@@ -25,13 +25,15 @@ define(
     'jquery',
     'core/custom_interaction_events',
     'core/pubsub',
-    'core_message/message_drawer_events'
+    'core_message/message_drawer_events',
+    'core/drawer_events'
 ],
 function(
     $,
     CustomEvents,
     PubSub,
-    MessageDrawerEvents
+    MessageDrawerEvents,
+    DrawerEvents
 ) {
     var SELECTORS = {
         COUNT_CONTAINER: '[data-region="count-container"]'
@@ -39,9 +41,11 @@ function(
 
     /**
      * Toggle the message drawer visibility.
+     *
+     * @param {string} toggle The drawer to be toggled.
      */
-    var toggleMessageDrawerVisibility = function() {
-        PubSub.publish(MessageDrawerEvents.TOGGLE_VISIBILITY);
+    var toggleMessageDrawerVisibility = function(toggle) {
+        PubSub.publish(DrawerEvents.TOGGLE_VISIBILITY, toggle);
     };
 
     /**
@@ -77,7 +81,8 @@ function(
         CustomEvents.define(root, [CustomEvents.events.activate]);
 
         root.on(CustomEvents.events.activate, function(e, data) {
-            toggleMessageDrawerVisibility();
+            var toggle = root.attr('data-toggle');
+            toggleMessageDrawerVisibility(toggle);
             data.originalEvent.preventDefault();
         });
 

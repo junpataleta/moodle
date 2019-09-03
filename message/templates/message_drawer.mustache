@@ -33,23 +33,19 @@
     {}
 
 }}
-
-<div
-    id="message-drawer-{{uniqid}}"
-    class="message-app drawer bg-light hidden"
-    aria-expanded="false"
-    aria-hidden="true"
-    data-region="message-drawer"
-    role="region"
->
-    <div class="header-container position-relative" data-region="header-container">
+{{<core/drawer}}
+    {{$drawerName}}message-drawer{{/drawerName}}
+    {{$drawerUniqId}}{{uniqid}}{{/drawerUniqId}}
+    {{$drawerClasses}}message-app{{/drawerClasses}}
+    {{$drawerRegion}}message-drawer{{/drawerRegion}}
+    {{$drawerHeaderContent}}
         {{> core_message/message_drawer_view_contacts_header }}
         {{> core_message/message_drawer_view_conversation_header }}
         {{> core_message/message_drawer_view_overview_header }}
         {{> core_message/message_drawer_view_search_header }}
         {{> core_message/message_drawer_view_settings_header }}
-    </div>
-    <div class="body-container position-relative" data-region="body-container">
+    {{/drawerHeaderContent}}
+    {{$drawerBodyContainer}}
         {{> core_message/message_drawer_view_contact_body }}
         {{> core_message/message_drawer_view_contacts_body }}
         {{> core_message/message_drawer_view_conversation_body }}
@@ -57,12 +53,13 @@
         {{> core_message/message_drawer_view_overview_body }}
         {{> core_message/message_drawer_view_search_body }}
         {{> core_message/message_drawer_view_settings_body }}
-    </div>
-    <div class="footer-container position-relative" data-region="footer-container">
+    {{/drawerBodyContainer}}
+    {{$drawerFooterContent}}
         {{> core_message/message_drawer_view_conversation_footer }}
         {{> core_message/message_drawer_view_overview_footer }}
-    </div>
-</div>
+    {{/drawerFooterContent}}
+{{/core/drawer}}
+
 {{#js}}
 require(['jquery', 'core_message/message_drawer'], function($, MessageDrawer) {
     var root = $('#message-drawer-{{uniqid}}');

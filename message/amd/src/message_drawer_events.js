@@ -42,7 +42,6 @@ define([], function() {
         ROUTE_CHANGED: 'message-drawer-route-change',
         SHOW: 'message-drawer-show',
         HIDE: 'message-drawer-hide',
-        TOGGLE_VISIBILITY: 'message-drawer-toggle',
         SHOW_CONVERSATION: 'message-drawer-show-conversation',
         SHOW_SETTINGS: 'message-drawer-show-settings',
     };

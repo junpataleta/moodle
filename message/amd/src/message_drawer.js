@@ -34,7 +34,9 @@ define(
     'core_message/message_drawer_view_settings',
     'core_message/message_drawer_router',
     'core_message/message_drawer_routes',
-    'core_message/message_drawer_events'
+    'core_message/message_drawer_events',
+    'core/drawer',
+    'core/drawer_events',
 ],
 function(
     $,
@@ -49,7 +51,9 @@ function(
     ViewSettings,
     Router,
     Routes,
-    Events
+    Events,
+    Drawer,
+    DrawerEvents
 ) {
 
     var SELECTORS = {
@@ -64,9 +68,6 @@ function(
         VIEW_SETTINGS: '[data-region="view-settings"]',
         ROUTES: '[data-route]',
         ROUTES_BACK: '[data-route-back]',
-        HEADER_CONTAINER: '[data-region="header-container"]',
-        BODY_CONTAINER: '[data-region="body-container"]',
-        FOOTER_CONTAINER: '[data-region="footer-container"]',
     };
 
     /**
@@ -80,15 +81,15 @@ function(
     */
     var getParametersForRoute = function(namespace, root, selector) {
 
-        var header = root.find(SELECTORS.HEADER_CONTAINER).find(selector);
+        var header = root.find(Drawer.SELECTORS.HEADER_CONTAINER).find(selector);
         if (!header.length) {
             header = root.find(SELECTORS.PANEL_HEADER_CONTAINER).find(selector);
         }
-        var body = root.find(SELECTORS.BODY_CONTAINER).find(selector);
+        var body = root.find(Drawer.SELECTORS.BODY_CONTAINER).find(selector);
         if (!body.length) {
             body = root.find(SELECTORS.PANEL_BODY_CONTAINER).find(selector);
         }
-        var footer = root.find(SELECTORS.FOOTER_CONTAINER).find(selector);
+        var footer = root.find(Drawer.SELECTORS.FOOTER_CONTAINER).find(selector);
 
         return [
             namespace,
@@ -131,31 +132,6 @@ function(
             Router.go(namespace, Routes.VIEW_OVERVIEW);
             root.attr('data-shown', true);
         }
-
-        root.removeClass('hidden');
-        root.attr('aria-expanded', true);
-        root.attr('aria-hidden', false);
-    };
-
-    /**
-     * Hide the message drawer.
-     *
-     * @param {Object} root The message drawer container.
-     */
-    var hide = function(root) {
-        root.addClass('hidden');
-        root.attr('aria-expanded', false);
-        root.attr('aria-hidden', true);
-    };
-
-    /**
-     * Check if the drawer is visible.
-     *
-     * @param {Object} root The message drawer container.
-     * @return {bool}
-     */
-    var isVisible = function(root) {
-        return !root.hasClass('hidden');
     };
 
     /**
@@ -163,7 +139,7 @@ function(
      *
      * @param {string} namespace The route namespace.
      * @param {Object} root The message drawer container.
-     * @param {bool} alwaysVisible Is this messaging app always shown?
+     * @param {boolean} alwaysVisible Whether the message drawer is always visible.
      */
     var registerEventListeners = function(namespace, root, alwaysVisible) {
         CustomEvents.define(root, [CustomEvents.events.activate]);
@@ -216,35 +192,34 @@ function(
         });
 
         if (!alwaysVisible) {
-            PubSub.subscribe(Events.SHOW, function() {
+            PubSub.subscribe(DrawerEvents.DRAWER_SHOWN, function() {
                 show(namespace, root);
             });
 
-            PubSub.subscribe(Events.HIDE, function() {
-                hide(root);
-            });
-
-            PubSub.subscribe(Events.TOGGLE_VISIBILITY, function() {
-                if (isVisible(root)) {
-                    hide(root);
+            PubSub.subscribe(DrawerEvents.TOGGLE_VISIBILITY, function(toggleTarget) {
+                if (toggleTarget != 'message-drawer') {
+                    return false;
+                }
+                if (Drawer.isVisible(root)) {
+                    Drawer.hide(root);
                 } else {
-                    show(namespace, root);
+                    Drawer.show(namespace, root);
                 }
             });
         }
 
         PubSub.subscribe(Events.SHOW_CONVERSATION, function(conversationId) {
-            show(namespace, root);
+            Drawer.show(namespace, root);
             Router.go(namespace, Routes.VIEW_CONVERSATION, conversationId);
         });
 
         PubSub.subscribe(Events.CREATE_CONVERSATION_WITH_USER, function(userId) {
-            show(namespace, root);
+            Drawer.show(namespace, root);
             Router.go(namespace, Routes.VIEW_CONVERSATION, null, 'create', userId);
         });
 
         PubSub.subscribe(Events.SHOW_SETTINGS, function() {
-            show(namespace, root);
+            Drawer.show(namespace, root);
             Router.go(namespace, Routes.VIEW_SETTINGS);
         });
 
@@ -266,9 +241,8 @@ function(
      *
      * @param {Object} root The message drawer container.
      * @param {String} uniqueId Unique identifier for the Routes
-     * @param {bool} alwaysVisible Should we show the app now, or wait for the user?
-     * @param {int} sendToUser Should we message someone now?
-     * @param {int} conversationId The value of the conversation id, null if none
+     * @param {boolean} alwaysVisible Should we show the app now, or wait for the user?
+     * @param route
      */
     var init = function(root, uniqueId, alwaysVisible, route) {
         root = $(root);
