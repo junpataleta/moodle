@@ -26,6 +26,8 @@ import $ from 'jquery';
 import Popper from 'core/popper';
 import CustomEvents from 'core/custom_interaction_events';
 import Selectors from 'forumreport_summary/selectors';
+import Y from 'core/yui';
+import Ajax from 'core/ajax';
 
 export const init = (root) => {
     let jqRoot = $(root);
@@ -78,6 +80,24 @@ export const init = (root) => {
         generateWithFilters(false);
     };
 
+    // Use popper to override date mform calendar position.
+    var updateCalendarPosition = () => {
+        let referenceElement = document.querySelector(Selectors.filters.date.popover),
+            popperContent = document.querySelector(Selectors.filters.date.calendar);
+
+        new Popper(referenceElement, popperContent, {placement: 'bottom'});
+    };
+
+    // Call when opening filter to ensure only one can be activated.
+    var canOpenFilter = (event) => {
+        if (document.querySelector('[data-openfilter="true"]')) {
+            return false;
+        }
+
+        event.target.setAttribute('data-openfilter', "true");
+        return true;
+    };
+
     // Groups filter specific handlers.
 
     // Event handler for clicking select all groups.
@@ -98,7 +118,11 @@ export const init = (root) => {
     });
 
     // Event handler for showing groups filter popover.
-    jqRoot.on(CustomEvents.events.activate, Selectors.filters.group.trigger, function() {
+    jqRoot.on(CustomEvents.events.activate, Selectors.filters.group.trigger, function(event) {
+        if (!canOpenFilter(event)) {
+            return false;
+        }
+
         // Create popover.
         var referenceElement = root.querySelector(Selectors.filters.group.trigger),
             popperContent = root.querySelector(Selectors.filters.group.popover);
@@ -114,10 +138,107 @@ export const init = (root) => {
 
         // Let screen readers know that it's now expanded.
         referenceElement.setAttribute('aria-expanded', true);
+        return true;
     });
 
     // Event handler to click save groups filter.
     jqRoot.on(CustomEvents.events.activate, Selectors.filters.group.save, function() {
         submitWithFilter('#filter-groups-popover');
+    });
+
+    // Dates filter specific handlers.
+
+   // Event handler for showing dates filter popover.
+    jqRoot.on(CustomEvents.events.activate, Selectors.filters.date.trigger, function(event) {
+        if (!canOpenFilter(event)) {
+            return false;
+        }
+
+        // Create popover.
+        let referenceElement = root.querySelector(Selectors.filters.date.trigger),
+            popperContent = root.querySelector(Selectors.filters.date.popover);
+
+        new Popper(referenceElement, popperContent, {placement: 'bottom'});
+
+        // Show popover and move focus.
+        popperContent.classList.remove('hidden');
+        popperContent.querySelector('[name="filterdatefrompopover[enabled]"]').focus();
+
+        // Change to outlined button.
+        referenceElement.classList.add('btn-outline-primary');
+        referenceElement.classList.remove('btn-primary');
+
+        // Let screen readers know that it's now expanded.
+        referenceElement.setAttribute('aria-expanded', true);
+        return true;
+    });
+
+    // Event handler to save dates filter.
+    jqRoot.on(CustomEvents.events.activate, Selectors.filters.date.save, function() {
+        // Populate the hidden form inputs to submit the data.
+        let filtersForm = document.forms.filtersform;
+        const datesPopover = root.querySelector(Selectors.filters.date.popover);
+        const dateFromObj = {
+                'day': datesPopover.querySelector('[name="filterdatefrompopover[day]"]').value,
+                'month': datesPopover.querySelector('[name="filterdatefrompopover[month]"]').value,
+                'year': datesPopover.querySelector('[name="filterdatefrompopover[year]"]').value,
+                'enabled': datesPopover.querySelector('[name="filterdatefrompopover[enabled]"]').checked ? 1 : 0
+            };
+        const dateToObj = {
+                'day': datesPopover.querySelector('[name="filterdatetopopover[day]"]').value,
+                'month': datesPopover.querySelector('[name="filterdatetopopover[month]"]').value,
+                'year': datesPopover.querySelector('[name="filterdatetopopover[year]"]').value,
+                'enabled': datesPopover.querySelector('[name="filterdatetopopover[enabled]"]').checked ? 1 : 0
+            };
+        const args = {
+                datefrom: dateFromObj,
+                dateto: dateToObj
+            };
+        const request = {
+                methodname: 'forumreport_summary_get_timestamps',
+                args: args
+            };
+
+        // Disable the mform checker to prevent unsubmitted form warning to the user when closing the popover.
+        Y.use('moodle-core-formchangechecker', function() {
+            M.core_formchangechecker.reset_form_dirty_state();
+        });
+
+        if (!dateFromObj.enabled && !dateToObj.enabled) {
+            // Update the elements in the filter form.
+            filtersForm.elements['datefrom[timestamp]'].value = 0;
+            filtersForm.elements['datefrom[enabled]'].value = dateFromObj.enabled;
+            filtersForm.elements['dateto[timestamp]'].value = 0;
+            filtersForm.elements['dateto[enabled]'].value = dateToObj.enabled;
+
+            // Submit the filter values and re-generate report.
+            submitWithFilter('#filter-dates-popover');
+        } else {
+            Ajax.call([request])[0].done(function(result) {
+                if (result.warnings.length > 0) {
+                    // Display the error.
+                    let warningdiv = document.getElementById('dates-filter-warning');
+                    warningdiv.textContent = result.warnings[0].message;
+                    warningdiv.classList.remove('hidden');
+                    warningdiv.classList.add('d-block');
+                } else {
+                    filtersForm.elements['datefrom[timestamp]'].value = result.timestampfrom;
+                    filtersForm.elements['datefrom[enabled]'].value = dateFromObj.enabled;
+                    filtersForm.elements['dateto[timestamp]'].value = result.timestampto;
+                    filtersForm.elements['dateto[enabled]'].value = dateToObj.enabled;
+
+                    // Submit the filter values and re-generate report.
+                    submitWithFilter('#filter-dates-popover');
+                }
+            });
+        }
+    });
+
+    jqRoot.on("click", "#id_filterdatefrompopover_calendar", function() {
+        updateCalendarPosition();
+    });
+
+    jqRoot.on("click", "#id_filterdatetopopover_calendar", function() {
+        updateCalendarPosition();
     });
 };

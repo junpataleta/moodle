@@ -15,15 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version of the forum report subplugin.
+ * Forum summary report external functions and service definitions.
  *
  * @package    forumreport_summary
+ * @category   external
  * @copyright  2019 Michael Hawkins <michaelh@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$plugin->version  = 2019101800;
-$plugin->requires = 2019071900;
-$plugin->component = 'forumreport_summary';
+$functions = [
+    'forumreport_summary_get_timestamps' => [
+        'classname'     => 'forumreport_summary_external',
+        'methodname'    => 'get_timestamps',
+        'classpath'     => 'mod/forum/report/summary/externallib.php',
+        'description'   => 'Fetch unix timestamps for given dates',
+        'type'          => 'read',
+        'capabilities'  => 'forumreport/summary:view',
+        'ajax'          => true,
+        'loginrequired' => true,
+    ],
+];
