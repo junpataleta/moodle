@@ -359,3 +359,197 @@ span.unread {
     outline: 5px auto -webkit-focus-ring-color;
 }
 /* stylelint-enable declaration-block-no-duplicate-properties */
+
+#page-mod-forum-discuss.modern-display-mode.path-mod-forum .discussionsubscription {
+    margin-top: 0;
+    text-align: inherit;
+    margin-bottom: 0;
+}
+
+#page-mod-forum-discuss.modern-display-mode.path-mod-forum .preload-subscribe,
+#page-mod-forum-discuss.modern-display-mode.path-mod-forum .preload-unsubscribe {
+    display: none;
+}
+
+#page-mod-forum-discuss.modern-display-mode {
+    line-height: 1.6;
+}
+
+/** Add a max-width to improve readability on larger screens. */
+
+/** Reset the badge styling back to pill style. */
+#page-mod-forum-discuss.modern-display-mode .badge {
+    font-size: inherit;
+    font-weight: inherit;
+    padding-left: .5rem;
+    padding-right: .5rem;
+    border-radius: 10rem;
+}
+
+#page-mod-forum-discuss.modern-display-mode .badge-light {
+    background-color: #f6f6f6;
+    color: #5b5b5b;
+}
+
+/** Style the ratings like a badge. */
+#page-mod-forum-discuss.modern-display-mode .rating-aggregate-container {
+    background-color: #f6f6f6;
+    color: #5b5b5b;
+    padding: .25em .4em;
+    line-height: 1;
+    margin-right: .5rem;
+    vertical-align: middle;
+    padding-left: .5rem;
+    padding-right: .5rem;
+    border-radius: 10rem;
+    text-align: center;
+}
+
+#page-mod-forum-discuss.modern-display-mode .ratinginput {
+    padding: .25em 1.75rem 0.25em .75em;
+    line-height: 1;
+    height: auto;
+    border-radius: 10rem;
+}
+
+#page-mod-forum-discuss.modern-display-mode .group-image {
+    width: 35px;
+    height: 35px;
+    margin-right: 0;
+    float: none;
+    display: inline-block;
+}
+
+/** Don't show the discussion locked alert in this mode because it's already indicated with a badge. */
+#page-mod-forum-discuss.modern-display-mode .alert.discussionlocked {
+    display: none;
+}
+
+/** Fix muted text contrast ratios for accessibility. */
+#page-mod-forum-discuss.modern-display-mode .text-muted,
+#page-mod-forum-discuss.modern-display-mode .dimmed_text {
+    color: #707070 !important; /* stylelint-disable-line declaration-no-important */
+}
+
+#page-mod-forum-discuss.modern-display-mode .author-header {
+    font-style: italic;
+}
+
+#page-mod-forum-discuss.modern-display-mode .author-header .author-name {
+    font-style: normal;
+}
+
+/** Make the tag list text screen reader visible only */
+#page-mod-forum-discuss.modern-display-mode .tag_list > b {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/** Gently highlight the selected post by changing it's background to blue and then fading it out. */
+@keyframes background-highlight {
+    from {
+        background-color: rgba(0, 123, 255, 0.5);
+    }
+    to {
+        background-color: inherit;
+    }
+}
+
+#page-mod-forum-discuss.modern-display-mode :target > .focus-target {
+    animation-name: background-highlight;
+    animation-duration: 1s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 1;
+}
+
+#page-mod-forum-discuss.modern-display-mode .forum-post-container .replies-container .forum-post-container {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1.5rem;
+}
+
+#page-mod-forum-discuss.modern-display-mode .forum-post-container .replies-container .forum-post-container
+.replies-container .forum-post-container {
+    border-top: none;
+    padding-top: 0;
+}
+
+#page-mod-forum-discuss.modern-display-mode .forum-post-container .post-message p:last-of-type {
+    margin-bottom: 0;
+}
+
+#page-mod-forum-discuss.modern-display-mode .forum-post-container .author-image-container {
+    width: 70px;
+    margin-right: 24px;
+    flex-shrink: 0;
+}
+
+#page-mod-forum-discuss.modern-display-mode .forum-post-container .inline-reply-container textarea {
+    border: 0;
+    resize: none;
+}
+
+#page-mod-forum-discuss.modern-display-mode .indent {
+    margin-left: 0;
+}
+
+/**
+ * The first post and first set of replies have a larger author image so offset the 2nd
+ * set of replies by the image width + margin to ensure they align.
+ */
+#page-mod-forum-discuss.modern-display-mode .forum-post-container .indent .indent {
+    padding-left: 94px;
+}
+
+/**
+ * Reduce the size of the the author image for all second level replies (and below).
+ */
+#page-mod-forum-discuss.modern-display-mode .forum-post-container .indent .indent .author-image-container {
+    width: 30px;
+    margin-right: 8px;
+}
+
+/**
+ * Adjust the indentation offset for all 3rd level replies and below for the smaller author image.
+ */
+#page-mod-forum-discuss.modern-display-mode .forum-post-container .indent .indent .indent {
+    padding-left: 38px;
+}
+
+/**
+ * Stop indenting the replies after the 5th reply.
+ */
+#page-mod-forum-discuss.modern-display-mode .forum-post-container .indent .indent .indent .indent .indent .indent {
+    padding-left: 0;
+}
+
+#page-mod-forum-discuss.modern-display-mode .forum-post-container .replies-container .inline-reply-container .reply-author {
+    display: none;
+}
+
+/** Extra small devices (portrait phones, less than 576px). */
+@media (max-width: 575.98px) {
+    #page-mod-forum-discuss.modern-display-mode .forum-post-container .author-image-container {
+        width: 30px;
+        margin-right: 8px;
+        flex-shrink: 0;
+    }
+
+    #page-mod-forum-discuss.modern-display-mode .forum-post-container .indent .indent {
+        padding-left: 38px;
+    }
+
+    #page-mod-forum-discuss.modern-display-mode .forum-post-container .indent .indent .indent .indent {
+        padding-left: 0;
+    }
+
+    #page-mod-forum-discuss.modern-display-mode .group-image {
+        width: 30px;
+        height: 30px;
+    }
+}
