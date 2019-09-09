@@ -39,17 +39,17 @@
                 {{^discussionlocked}}
                     <div class="d-flex mt-1">
                         {{#capabilities.reply}}
-                            <a
-                                href="{{{urls.reply}}}"
+                            <button
                                 class="font-weight-bold btn btn-link btn-lg px-0"
+                                data-href="{{{urls.reply}}}"
                                 data-post-id="{{id}}"
-                                data-action="collapsible-link"
+                                data-action="create-inpage-reply"
                                 data-can-reply-privately="{{capabilities.canreplyprivately}}"
                                 title="{{#str}} reply, mod_forum {{/str}}"
                                 role="button"
                             >
                                 {{#str}} reply, mod_forum {{/str}}
-                            </a>
+                            </button>
                         {{/capabilities.reply}}
                     </div>
                 {{/discussionlocked}}
