@@ -312,16 +312,16 @@
                         <div class="d-flex mt-3">
                             {{#capabilities.reply}}
                                 <button
-                                    href="{{{urls.reply}}}"
                                     {{#discussionlocked}}
-                                        class="btn btn-secondary d-inline-block btn-lg disabled"
+                                        class="btn btn-secondary btn-lg disabled"
                                         disabled
                                     {{/discussionlocked}}
                                     {{^discussionlocked}}
-                                        class="btn btn-primary d-inline-block btn-lg"
+                                        class="btn btn-primary btn-lg"
                                     {{/discussionlocked}}
+                                    data-href="{{{urls.reply}}}"
                                     data-post-id="{{id}}"
-                                    data-action="collapsible-link"
+                                    data-action="create-inpage-reply"
                                     data-can-reply-privately="{{capabilities.canreplyprivately}}"
                                 >
                                     {{#str}} reply, mod_forum {{/str}}
@@ -343,9 +343,7 @@
         <div class="indent replies-container" data-region="replies-container">
             {{#hasreplies}}
                 {{#replies}}
-                    <div class="mt-4">
-                        {{> mod_forum/forum_discussion_modern_post_reply }}
-                    </div>
+                    {{> mod_forum/forum_discussion_modern_post_reply }}
                 {{/replies}}
             {{/hasreplies}}
         </div>
