@@ -28,12 +28,16 @@ define([
         'core/notification',
         'mod_forum/repository',
         'mod_forum/selectors',
+        'core/custom_interaction_events',
+        'core/str',
     ], function(
         $,
         Templates,
         Notification,
         Repository,
-        Selectors
+        Selectors,
+        CustomEvents,
+        String,
     ) {
 
     /**
@@ -54,6 +58,32 @@ define([
                 })
                 .then(function(html, js) {
                     return Templates.replaceNode(toggleElement, html, js);
+                })
+                .catch(Notification.exception);
+
+            e.preventDefault();
+        });
+
+        root.on(CustomEvents.events.activate, Selectors.subscription.toggleSwitch, function(e) {
+            var toggleElement = $(this);
+            var forumId = toggleElement.data('forumid');
+            var discussionId = toggleElement.data('discussionid');
+            var subscriptionState = toggleElement.data('targetstate');
+
+            Repository.setDiscussionSubscriptionState(forumId, discussionId, subscriptionState)
+                .then(function(context) {
+                    var newTargetState = context.userstate.subscribed ? 0 : 1;
+                    toggleElement.data('targetstate', newTargetState);
+                    return context.userstate.subscribed;
+                }).then(function(isSubscribed) {
+                    var updateMessage = isSubscribed ? 'discussionsubscribed' : 'discussionunsubscribed';
+                    return String.get_string(updateMessage, "forum");
+                })
+                .then(function(s) {
+                    return Notification.addNotification({
+                        message: s,
+                        type: "info"
+                    });
                 })
                 .catch(Notification.exception);
 
