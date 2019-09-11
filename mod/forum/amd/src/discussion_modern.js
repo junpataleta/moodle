@@ -38,8 +38,8 @@ const ANIMATION_DURATION = 150;
  */
 const clearUrlHash = () => {
     // After adding a reply a url hash is being generated that scrolls (points) to the newly added reply.
-    // The hash being present causes this scrolling behavior to the particular reply to persists even when
-    // another, non-related in-page replay link is being clicked which ultimately causes a bad user experience.
+    // The hash being present causes this scrolling behavior to the particular reply to persist even when
+    // another, non-related in-page reply link is being clicked which ultimately causes a bad user experience.
     // A particular solution for this problem would be changing the browser's history state when a url hash is
     // present.
     if (window.location.hash) {
@@ -124,7 +124,7 @@ const getRepliesContainer = (postContainer) => {
  * Check if the post has any replies.
  *
  * @param {Object} postContainer jQuery element for the post container
- * @return {Bool}
+ * @return {boolean}
  */
 const hasReplies = (postContainer) => {
     return getRepliesContainer(postContainer).children().length > 0;
@@ -154,7 +154,7 @@ const getHideRepliesButton = (replyVisibilityToggleContainer) => {
  * Check if the replies are visible.
  *
  * @param {Object} postContainer jQuery element for the post container
- * @return {Bool}
+ * @return {boolean}
  */
 const repliesVisible = (postContainer) => {
     const repliesContainer = getRepliesContainer(postContainer);
@@ -217,7 +217,7 @@ const buildShowInPageReplyFormFunction = (additionalTemplateContext) => {
      *
      * @param {Object} postContainer jQuery element for the post container
      */
-    return async (postContainer) => {
+    return async(postContainer) => {
 
         const inPageReplyContainer = getInPageReplyContainer(postContainer);
         const repliesVisibilityToggleContainer = getRepliesVisibilityToggleContainer(postContainer);
@@ -256,7 +256,8 @@ const buildShowInPageReplyFormFunction = (additionalTemplateContext) => {
  *
  * @param {Object} postContainer jQuery element for the post container
  */
-const hideInPageReplyForm = (postContainer) => {
+let hideInPageReplyForm;
+hideInPageReplyForm = (postContainer) => {
     const inPageReplyForm = getInPageReplyForm(postContainer);
     const inPageReplyCreateButton = getInPageReplyCreateButton(postContainer);
     const repliesVisibilityToggleContainer = getRepliesVisibilityToggleContainer(postContainer);
@@ -281,7 +282,7 @@ const hideInPageReplyForm = (postContainer) => {
  * Check if the in page reply container contains the in page reply form.
  *
  * @param {Object} inPageReplyContainer jQuery element for the in page reply container
- * @return {Bool}
+ * @return {boolean}
  */
 const hasInPageReplyForm = (inPageReplyContainer) => {
     return inPageReplyContainer.find(Selectors.post.inpageReplyContent).length > 0;
