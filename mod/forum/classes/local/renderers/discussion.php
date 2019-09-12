@@ -229,7 +229,9 @@ class discussion {
         $capabilities = (array) $exporteddiscussion['capabilities'];
 
         if ($capabilities['subscribe']) {
-            $exporteddiscussion['html']['subscribe'] = $this->get_subscription_button_html();
+            $exporteddiscussion['html']['subscribe'] = [
+                'showtext' => true,
+            ];
         }
 
         if ($capabilities['move']) {
@@ -287,26 +289,6 @@ class discussion {
         $select->set_label(get_string('displaymode', 'forum'), ['class' => 'accesshide']);
 
         return $this->renderer->render($select);
-    }
-
-    /**
-     * Get the HTML to render the subscription button.
-     *
-     * @return string
-     */
-    private function get_subscription_button_html() : string {
-        global $PAGE;
-
-        $forumrecord = $this->forumrecord;
-        $discussion = $this->discussion;
-        $html = html_writer::div(
-            forum_get_discussion_subscription_icon($forumrecord, $discussion->get_id(), null, true),
-            'discussionsubscription'
-        );
-        $html .= forum_get_discussion_subscription_icon_preloaders();
-        // Add the subscription toggle JS.
-        $PAGE->requires->yui_module('moodle-mod_forum-subscriptiontoggle', 'Y.M.mod_forum.subscriptiontoggle.init');
-        return $html;
     }
 
     /**

@@ -35,7 +35,7 @@
 {{#capabilities.subscribe}}
     <a
         href="{{{urls.subscribe}}}"
-        class="py-3 btn btn-link"
+        class="btn btn-link {{^showtext}}btn-icon{{/showtext}}"
         data-type="subscription-toggle"
         data-action="toggle"
         data-discussionid="{{id}}"
@@ -48,12 +48,20 @@
             title="{{#str}}clicktosubscribe, mod_forum{{/str}}"
             data-targetstate="1"
         {{/userstate.subscribed}}
+        {{#showtext}}data-showtext="1"{{/showtext}}
+        {{^showtext}}data-showtext="0"{{/showtext}}
     >
         {{#userstate.subscribed}}
             {{#pix}}t/subscribed, mod_forum, {{#str}}clicktounsubscribe, mod_forum{{/str}}{{/pix}}
+            {{#showtext}}
+                {{#str}}unsubscribeshort, mod_forum{{/str}}
+            {{/showtext}}
         {{/userstate.subscribed}}
         {{^userstate.subscribed}}
             {{#pix}}t/unsubscribed, mod_forum, {{#str}}clicktosubscribe, mod_forum{{/str}}{{/pix}}
+            {{#showtext}}
+                {{#str}}notsubscribed, mod_forum{{/str}}
+            {{/showtext}}
         {{/userstate.subscribed}}
     </a>
 {{/capabilities.subscribe}}

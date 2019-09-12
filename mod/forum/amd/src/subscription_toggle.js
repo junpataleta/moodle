@@ -51,9 +51,11 @@ define([
             var forumId = toggleElement.data('forumid');
             var discussionId = toggleElement.data('discussionid');
             var subscriptionState = toggleElement.data('targetstate');
+            var showText = toggleElement.data('showtext');
 
             Repository.setDiscussionSubscriptionState(forumId, discussionId, subscriptionState)
                 .then(function(context) {
+                    context.showtext = showText;
                     return Templates.render('mod_forum/discussion_subscription_toggle', context);
                 })
                 .then(function(html, js) {
