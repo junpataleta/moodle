@@ -2282,10 +2282,14 @@ $switch-transition: .2s all !default;
     float: right !important; /* stylelint-disable-line declaration-no-important */
 }
 
-body {
-    &.fixed-width-content {
-        #page {
-            max-width: 960px;
+$allow-fixed-width-content: true !default;
+
+@if $allow-fixed-width-content {
+    body {
+        &.fixed-width-content {
+            #page {
+                max-width: 960px;
+            }
         }
     }
 }

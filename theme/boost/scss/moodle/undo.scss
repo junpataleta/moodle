@@ -192,43 +192,47 @@ body:not(.jsenabled) .langmenu:hover > .dropdown-menu,
  * - Make the content region flex grow so it pushes things like the
  *   next activity selector to the bottom of the page.
  */
-body.reset-style {
-    #page-header {
-        .card {
-            border: none;
+$allow-reset-style: true !default;
 
-            .card-body {
-                padding-left: 0;
-                padding-right: 0;
-            }
+@if $allow-reset-style {
+    body.reset-style {
+        #page-header {
+            .card {
+                border: none;
 
-            .page-header-headings {
-                h1 {
-                    margin-bottom: 0;
+                .card-body {
+                    padding-left: 0;
+                    padding-right: 0;
+                }
+
+                .page-header-headings {
+                    h1 {
+                        margin-bottom: 0;
+                    }
                 }
             }
+
+            & > div {
+                padding-top: 0 !important;  /* stylelint-disable-line declaration-no-important */
+                padding-bottom: 0 !important;  /* stylelint-disable-line declaration-no-important */
+            }
         }
 
-        & > div {
-            padding-top: 0 !important;  /* stylelint-disable-line declaration-no-important */
+        #page-content {
             padding-bottom: 0 !important;  /* stylelint-disable-line declaration-no-important */
-        }
-    }
 
-    #page-content {
-        padding-bottom: 0 !important;  /* stylelint-disable-line declaration-no-important */
+            #region-main {
+                border: none;
+                display: flex;
+                flex-direction: column;
+                padding: 0;
+                height: 100%;
+                width: 100%;
+                overflow: visible;
 
-        #region-main {
-            border: none;
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: visible;
-
-            div[role="main"] {
-                flex: 1;
+                div[role="main"] {
+                    flex: 1;
+                }
             }
         }
     }

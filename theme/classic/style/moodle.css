@@ -11732,9 +11732,6 @@ div.editor_atto_toolbar button .icon {
   float: right !important;
   /* stylelint-disable-line declaration-no-important */ }
 
-body.fixed-width-content #page {
-  max-width: 960px; }
-
 .icon {
   font-size: 16px;
   width: 16px;
@@ -17609,34 +17606,6 @@ body:not(.jsenabled) .langmenu:hover > .dropdown-menu,
  * - Make the content region flex grow so it pushes things like the
  *   next activity selector to the bottom of the page.
  */
-body.reset-style #page-header .card, body.reset-style #page-header #page-enrol-users #filterform, #page-enrol-users body.reset-style #page-header #filterform, body.reset-style #page-header .que .history, .que body.reset-style #page-header .history, body.reset-style #page-header .userprofile .profile_tree section, .userprofile .profile_tree body.reset-style #page-header section, body.reset-style #page-header .groupinfobox, body.reset-style #page-header .well {
-  border: none; }
-  body.reset-style #page-header .card .card-body, body.reset-style #page-header #page-enrol-users #filterform .card-body, #page-enrol-users body.reset-style #page-header #filterform .card-body, body.reset-style #page-header .que .history .card-body, .que body.reset-style #page-header .history .card-body, body.reset-style #page-header .userprofile .profile_tree section .card-body, .userprofile .profile_tree body.reset-style #page-header section .card-body, body.reset-style #page-header .groupinfobox .card-body, body.reset-style #page-header .well .card-body, body.reset-style #page-header .card .userprofile .profile_tree section, .userprofile .profile_tree body.reset-style #page-header .card section, body.reset-style #page-header #page-enrol-users #filterform .userprofile .profile_tree section, .userprofile .profile_tree body.reset-style #page-header #page-enrol-users #filterform section, #page-enrol-users body.reset-style #page-header #filterform .userprofile .profile_tree section, .userprofile .profile_tree #page-enrol-users body.reset-style #page-header #filterform section, body.reset-style #page-header .que .history .userprofile .profile_tree section, .userprofile .profile_tree body.reset-style #page-header .que .history section, .que body.reset-style #page-header .history .userprofile .profile_tree section, .userprofile .profile_tree .que body.reset-style #page-header .history section, body.reset-style #page-header .userprofile .profile_tree section section, .userprofile .profile_tree body.reset-style #page-header section section, body.reset-style #page-header .groupinfobox .userprofile .profile_tree section, .userprofile .profile_tree body.reset-style #page-header .groupinfobox section, body.reset-style #page-header .well .userprofile .profile_tree section, .userprofile .profile_tree body.reset-style #page-header .well section {
-    padding-left: 0;
-    padding-right: 0; }
-  body.reset-style #page-header .card .page-header-headings h1, body.reset-style #page-header #page-enrol-users #filterform .page-header-headings h1, #page-enrol-users body.reset-style #page-header #filterform .page-header-headings h1, body.reset-style #page-header .que .history .page-header-headings h1, .que body.reset-style #page-header .history .page-header-headings h1, body.reset-style #page-header .userprofile .profile_tree section .page-header-headings h1, .userprofile .profile_tree body.reset-style #page-header section .page-header-headings h1, body.reset-style #page-header .groupinfobox .page-header-headings h1, body.reset-style #page-header .well .page-header-headings h1 {
-    margin-bottom: 0; }
-
-body.reset-style #page-header > div {
-  padding-top: 0 !important;
-  /* stylelint-disable-line declaration-no-important */
-  padding-bottom: 0 !important;
-  /* stylelint-disable-line declaration-no-important */ }
-
-body.reset-style #page-content {
-  padding-bottom: 0 !important;
-  /* stylelint-disable-line declaration-no-important */ }
-  body.reset-style #page-content #region-main {
-    border: none;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    overflow: visible; }
-    body.reset-style #page-content #region-main div[role="main"] {
-      flex: 1; }
-
 body.behat-site .fixed-top {
   position: absolute; }
 
