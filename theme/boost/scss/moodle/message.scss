@@ -418,25 +418,9 @@
     }
 }
 
-$message-drawer-width: 320px;
-
-.message-app {
-    display: flex;
-    flex-direction: column;
-    @include transition();
-
-    .icon-back-in-drawer {
-        display: none;
-    }
-
-    &.drawer {
-        z-index: $zindex-sticky;
-        position: fixed;
-        top: $navbar-height;
-        right: 0;
-        height: calc(100% - #{$navbar-height});
-        width: $message-drawer-width;
-        box-shadow: -2px 2px 4px rgba(0, 0, 0, .08);
+.drawer {
+    .message-app {
+        height: 100%;
         .icon-back-in-app {
             display: none;
         }
@@ -444,14 +428,18 @@ $message-drawer-width: 320px;
             display: inherit;
         }
     }
+}
+
+.message-app {
+    display: flex;
+    flex-direction: column;
+
+    .icon-back-in-drawer {
+        display: none;
+    }
 
     &.main {
         min-height: 400px;
-    }
-
-    &.hidden {
-        display: block;
-        right: $message-drawer-width * -1;
     }
 
     .header-container {
