@@ -111,6 +111,26 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('enrol_imsenterprise/imsunenrol',
         get_string('allowunenrol', 'enrol_imsenterprise'), get_string('allowunenrol_desc', 'enrol_imsenterprise'), 0));
 
+    /* Action to take when a request to remove a user enrolment record is detected in the IMS file */
+    $imsunenrolaction = new enrol_imsenterprise_unenrol_behaviour();
+    $options = array(
+        $imsunenrolaction::ENROL_IMSENTERPRISE_REMOVE_ENROL_AND_ROLES => get_string('removeenrolmentandallroles',
+            'enrol_imsenterprise'),
+        $imsunenrolaction::ENROL_IMSENTERPRISE_DISABLE_ENROL_ONLY => get_string('disableenrolonly',
+            'enrol_imsenterprise'),
+        $imsunenrolaction::ENROL_IMSENTERPRISE_DISABLE_ENROL_REMOVE_ROLES  => get_string('disableenrolmentandremoveallroles',
+            'enrol_imsenterprise'),
+        $imsunenrolaction::ENROL_IMSENTERPRISE_REMOVE_ENROL_ONLY => get_string('removeenrolmentonly',
+            'enrol_imsenterprise'),
+    );
+
+    $settings->add(
+        new admin_setting_configselect('enrol_imsenterprise/imsunenrolaction',
+            get_string('unenrolaction', 'enrol_imsenterprise'),
+            get_string('unenrolaction_desc', 'enrol_imsenterprise'),
+            $imsunenrolaction::ENROL_IMSENTERPRISE_REMOVE_ENROL_AND_ROLES, $options)
+    );
+
     if (!during_initial_install()) {
         $imscourses = new imsenterprise_courses();
         foreach ($imscourses->get_courseattrs() as $courseattr) {
@@ -130,10 +150,12 @@ if ($ADMIN->fulltree) {
         get_string('miscsettings', 'enrol_imsenterprise'), ''));
 
     $settings->add(new admin_setting_configtext('enrol_imsenterprise/imsrestricttarget',
-        get_string('restricttarget', 'enrol_imsenterprise'), get_string('restricttarget_desc', 'enrol_imsenterprise'), ''));
+        get_string('restricttarget', 'enrol_imsenterprise'), get_string('restricttarget_desc',
+            'enrol_imsenterprise'), ''));
 
     $settings->add(new admin_setting_configcheckbox('enrol_imsenterprise/imscapitafix',
-        get_string('usecapitafix', 'enrol_imsenterprise'), get_string('usecapitafix_desc', 'enrol_imsenterprise'), 0));
+        get_string('usecapitafix', 'enrol_imsenterprise'), get_string('usecapitafix_desc',
+            'enrol_imsenterprise'), 0));
 
     $importurl = new moodle_url('/enrol/imsenterprise/importnow.php', array('sesskey' => sesskey()));
     $importnowstring = get_string('aftersaving...', 'enrol_imsenterprise').' ';

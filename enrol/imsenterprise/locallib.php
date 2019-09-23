@@ -168,3 +168,26 @@ class imsenterprise_courses {
         return $imsname;
     }
 }
+
+
+/**
+ * Constants used to specify actions to be taken during IMS unenrolment
+ *
+ * @package   enrol_imsenterprise
+ * @copyright 2019 Segun Babalola
+ * @since Moodle 3.7
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class enrol_imsenterprise_unenrol_behaviour {
+    /** Suspend user enrolment record ONLY (if it exists). */
+    const ENROL_IMSENTERPRISE_DISABLE_ENROL_ONLY = 1;
+
+    /** Suspend user enrolment and remove roles. */
+    const ENROL_IMSENTERPRISE_DISABLE_ENROL_REMOVE_ROLES = 2;
+
+    /** Delete user enrolment record ONLY */
+    const ENROL_IMSENTERPRISE_REMOVE_ENROL_ONLY = 3;
+
+    /** Delete user enrolment and also delete roles assigned to user */
+    const ENROL_IMSENTERPRISE_REMOVE_ENROL_AND_ROLES = 4;
+}

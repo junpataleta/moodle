@@ -2130,9 +2130,10 @@ abstract class enrol_plugin {
      *
      * @param stdClass $instance
      * @param int $userid
+     * @param bool $removeroles optional parameter to indicate whether roles should be removed during unenrolment
      * @return void
      */
-    public function unenrol_user(stdClass $instance, $userid) {
+    public function unenrol_user(stdClass $instance, $userid, $removeroles = true) {
         global $CFG, $USER, $DB;
         require_once("$CFG->dirroot/group/lib.php");
 
@@ -2156,10 +2157,18 @@ abstract class enrol_plugin {
             }
         }
 
-        role_unassign_all(array('userid'=>$userid, 'contextid'=>$context->id, 'component'=>'enrol_'.$name, 'itemid'=>$instance->id));
+        if ($removeroles) {
+            role_unassign_all(array(
+                'userid' => $userid,
+                'contextid' => $context->id,
+                'component' => 'enrol_' . $name,
+                'itemid' => $instance->id
+            ));
+        }
+
         $DB->delete_records('user_enrolments', array('id'=>$ue->id));
 
-        // add extra info and trigger event
+        // Add extra info and trigger event.
         $ue->courseid  = $courseid;
         $ue->enrol     = $name;
 
@@ -2171,34 +2180,37 @@ abstract class enrol_plugin {
             $ue->lastenrol = false;
 
         } else {
-            // the big cleanup IS necessary!
-            require_once("$CFG->libdir/gradelib.php");
+            if ($removeroles) {
+                // The big cleanup IS necessary!
+                require_once("$CFG->libdir/gradelib.php");
 
-            // remove all remaining roles
-            role_unassign_all(array('userid'=>$userid, 'contextid'=>$context->id), true, false);
+                // Remove all remaining roles.
+                role_unassign_all(array('userid' => $userid, 'contextid' => $context->id), true, false);
 
-            //clean up ALL invisible user data from course if this is the last enrolment - groups, grades, etc.
-            groups_delete_group_members($courseid, $userid);
+                // Clean up ALL invisible user data from course if this is the last enrolment - groups, grades, etc.
+                groups_delete_group_members($courseid, $userid);
 
-            grade_user_unenrol($courseid, $userid);
+                grade_user_unenrol($courseid, $userid);
 
-            $DB->delete_records('user_lastaccess', array('userid'=>$userid, 'courseid'=>$courseid));
+                $DB->delete_records('user_lastaccess', array('userid' => $userid, 'courseid' => $courseid));
+            }
 
             $ue->lastenrol = true; // means user not enrolled any more
+
         }
         // Trigger event.
         $event = \core\event\user_enrolment_deleted::create(
-                array(
-                    'courseid' => $courseid,
-                    'context' => $context,
-                    'relateduserid' => $ue->userid,
-                    'objectid' => $ue->id,
-                    'other' => array(
-                        'userenrolment' => (array)$ue,
-                        'enrol' => $name
-                        )
-                    )
-                );
+            array(
+                'courseid' => $courseid,
+                'context' => $context,
+                'relateduserid' => $ue->userid,
+                'objectid' => $ue->id,
+                'other' => array(
+                    'userenrolment' => (array)$ue,
+                    'enrol' => $name
+                )
+            )
+        );
         $event->trigger();
 
         // User enrolments have changed, so mark user as dirty.
@@ -2218,6 +2230,7 @@ abstract class enrol_plugin {
             }
         }
     }
+
 
     /**
      * Forces synchronisation of user enrolments.

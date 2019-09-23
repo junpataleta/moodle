@@ -189,7 +189,7 @@ class enrol_lti_plugin extends enrol_plugin {
      * @param int $userid
      * @return void
      */
-    public function unenrol_user(stdClass $instance, $userid) {
+    public function unenrol_user(stdClass $instance, $userid, $removeroles = true) {
         global $DB;
 
         // Get the tool associated with this instance. Note - it may not exist if we have deleted
@@ -199,7 +199,7 @@ class enrol_lti_plugin extends enrol_plugin {
             $DB->delete_records('enrol_lti_users', array('userid' => $userid, 'toolid' => $tool->id));
         }
 
-        parent::unenrol_user($instance, $userid);
+        parent::unenrol_user($instance, $userid, $removeroles);
     }
 
     /**
