@@ -30,6 +30,8 @@
 
     Example context (json):
     {
+        "contextid": 123,
+        "modelid": 321,
         "insightname": "Best insight ever",
         "nostaticmodelnotification": {
             "message": "This is just a prediction."
@@ -102,64 +104,68 @@
     </div>
 {{/modelselector}}
 
-<h2 class="mb-2">{{{insightname}}}</h2>
+<div class="insight-container" data-context-id="{{contextid}}" data-model-id="{{modelid}}">
 
-{{^noinsights}}
-{{#nostaticmodelnotification}}
-    <div class="mt-2">
-        {{> core/notification_info}}
-    </div>
-{{/nostaticmodelnotification}}
+    <h2 class="mb-2">{{{insightname}}}</h2>
 
-{{{ pagingbar }}}
+    {{^noinsights}}
+    {{#nostaticmodelnotification}}
+        <div class="mt-2">
+            {{> core/notification_info}}
+        </div>
+    {{/nostaticmodelnotification}}
 
-{{> report_insights/bulk_actions}}
+    {{{ pagingbar }}}
 
-{{#predictions}}
-
-    <table class="generaltable insights-list mt-3">
-        {{#showpredictionheading}}
-            <caption>
-                {{#str}}prediction, report_insights{{/str}}:
-                <span class="{{#style}}table-{{style}}{{/style}}">
-                    {{#outcomeicon}}
-                        {{> core/pix_icon}}
-                    {{/outcomeicon}}
-                    {{predictiondisplayvalue}}
-                </span>
-            </caption>
-        {{/showpredictionheading}}
-        <thead>
-            <tr>
-                {{#multiplepredictions}}
-                    <th{{^bulkactions}} class="hidden"{{/bulkactions}}>
-                        {{{checkboxtoggleall}}}
-                    </th>
-                {{/multiplepredictions}}
-                {{^multiplepredictions}}
-                    <th{{^bulkactions}} class="hidden"{{/bulkactions}}></th>
-                {{/multiplepredictions}}
-                <th scope="col">{{#str}}description{{/str}}</th>
-                <th scope="col">{{#str}}actions{{/str}}</th>
-            </tr>
-        </thead>
-    {{#insights}}
-        <tbody data-prediction-id="{{predictionid}}">
-            {{> report_insights/insight}}
-        </tbody>
-    {{/insights}}
-    </table>
-
-{{/predictions}}
-
-{{#multiplepredictions}}
     {{> report_insights/bulk_actions}}
-{{/multiplepredictions}}
 
-{{{ pagingbar }}}
-{{/noinsights}}
-{{#noinsights}}
-    <div class="mt-2">
-        {{> core/notification_info}}
-    </div>
-{{/noinsights}}
+    {{#predictions}}
+
+        <table class="generaltable insights-list mt-3">
+            {{#showpredictionheading}}
+                <caption>
+                    {{#str}}prediction, report_insights{{/str}}:
+                    <span class="{{#style}}table-{{style}}{{/style}}">
+                        {{#outcomeicon}}
+                            {{> core/pix_icon}}
+                        {{/outcomeicon}}
+                        {{predictiondisplayvalue}}
+                    </span>
+                </caption>
+            {{/showpredictionheading}}
+            <thead>
+                <tr>
+                    {{#multiplepredictions}}
+                        <th{{^bulkactions}} class="hidden"{{/bulkactions}}>
+                            {{{checkboxtoggleall}}}
+                        </th>
+                    {{/multiplepredictions}}
+                    {{^multiplepredictions}}
+                        <th{{^bulkactions}} class="hidden"{{/bulkactions}}></th>
+                    {{/multiplepredictions}}
+                    <th scope="col">{{#str}}description{{/str}}</th>
+                    <th scope="col">{{#str}}actions{{/str}}</th>
+                </tr>
+            </thead>
+        {{#insights}}
+            <tbody data-prediction-id="{{predictionid}}">
+                {{> report_insights/insight}}
+            </tbody>
+        {{/insights}}
+        </table>
+
+    {{/predictions}}
+
+    {{#multiplepredictions}}
+        {{> report_insights/bulk_actions}}
+    {{/multiplepredictions}}
+
+    {{{ pagingbar }}}
+    {{/noinsights}}
+    {{#noinsights}}
+        <div class="mt-2">
+            {{> core/notification_info}}
+        </div>
+    {{/noinsights}}
+
+</div>

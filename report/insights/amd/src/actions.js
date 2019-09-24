@@ -26,8 +26,8 @@
  *
  * @module report_insights/actions
  */
-define(['jquery', 'core/str', 'core/ajax', 'core/notification', 'core/modal_factory', 'core/modal_events'],
-        function($, Str, Ajax, Notification, ModalFactory, ModalEvents) {
+define(['jquery', 'core/str', 'core/ajax', 'core/notification', 'core/url', 'core/modal_factory', 'core/modal_events'],
+        function($, Str, Ajax, Notification, Url, ModalFactory, ModalEvents) {
 
     return {
 
@@ -90,7 +90,11 @@ define(['jquery', 'core/str', 'core/ajax', 'core/notification', 'core/modal_fact
                     });
 
                     if (tableNode.find('tbody').length === 0) {
-                        window.location.reload();
+                        let params = {
+                            contextid: tableNode.closest('div.insight-container').data('context-id'),
+                            modelid: tableNode.closest('div.insight-container').data('model-id')
+                        };
+                        window.location.assign(Url.relativeUrl("report/insights/insights.php?" + $.param(params)));
                     }
                     return;
                 }).catch(Notification.exception);

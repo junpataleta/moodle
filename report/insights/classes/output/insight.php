@@ -86,6 +86,8 @@ class insight implements \renderable, \templatable {
         $target = $this->model->get_target();
 
         $data = new \stdClass();
+        $data->modelid = $this->model->get_id();
+        $data->contextid = $this->context->id;
         $data->predictionid = $predictiondata->id;
         $data->insightname = format_string($target->get_name());
 
