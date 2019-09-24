@@ -147,11 +147,11 @@
                     <th scope="col">{{#str}}actions{{/str}}</th>
                 </tr>
             </thead>
-        {{#insights}}
-            <tbody data-prediction-id="{{predictionid}}">
+            <tbody>
+            {{#insights}}
                 {{> report_insights/insight}}
+            {{/insights}}
             </tbody>
-        {{/insights}}
         </table>
 
     {{/predictions}}

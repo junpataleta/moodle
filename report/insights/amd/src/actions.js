@@ -94,7 +94,7 @@ define(['jquery', 'core/str', 'core/ajax', 'core/notification', 'core/url', 'cor
                             contextid: tableNode.closest('div.insight-container').data('context-id'),
                             modelid: tableNode.closest('div.insight-container').data('model-id')
                         };
-                        window.location.assign(Url.relativeUrl("report/insights/insights.php?" + $.param(params)));
+                        window.location.assign(Url.relativeUrl("report/insights/insights.php", params, false));
                     }
                     return;
                 }).catch(Notification.exception);
