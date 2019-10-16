@@ -184,7 +184,7 @@ function xmldb_forum_upgrade($oldversion) {
     if ($oldversion < 2019071902) {
         // Create adhoc task for upgrading of existing forum_posts.
         $record = new \stdClass();
-        $record->classname = '\mod_forum\task\refresh_forum_post_counts';
+        $record->classname = \mod_forum\task\refresh_forum_post_counts::class;
         $record->component = 'mod_forum';
 
         // Next run time based from nextruntime computation in \core\task\manager::queue_adhoc_task().

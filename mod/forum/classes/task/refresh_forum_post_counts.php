@@ -24,6 +24,8 @@
 
 namespace mod_forum\task;
 
+use core\task\adhoc_task;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -33,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2019 David Monllao
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class refresh_forum_post_counts extends \core\task\adhoc_task {
+class refresh_forum_post_counts extends adhoc_task {
 
     /**
      * Run the task to refresh calendar events.
@@ -49,7 +51,7 @@ class refresh_forum_post_counts extends \core\task\adhoc_task {
         // since there may be more records to update.
         if ($recordsfound) {
             $record = new \stdClass();
-            $record->classname = '\mod_forum\task\refresh_forum_post_counts';
+            $record->classname = refresh_forum_post_counts::class;
             $record->component = 'mod_forum';
 
             // Next run time based from nextruntime computation in \core\task\manager::queue_adhoc_task().

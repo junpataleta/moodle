@@ -716,11 +716,7 @@ class summary_table extends table_sql {
                       JOIN {forum_discussions} fd ON fd.id = fp.discussion
                      WHERE fd.forum = :forumid AND (fp.wordcount IS NULL OR fp.charcount IS NULL)";
 
-            if ($DB->record_exists_sql($sql, ['forumid' => $this->cm->instance])) {
-                $this->showwordcharcounts = false;
-            } else {
-                $this->showwordcharcounts = true;
-            }
+            $this->showwordcharcounts = $DB->record_exists_sql($sql, ['forumid' => $this->cm->instance]);
         }
 
         return $this->showwordcharcounts;
