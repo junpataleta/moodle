@@ -42,7 +42,7 @@ export const init = (root) => {
     // Generic filter handlers.
 
     // Called to override click event to trigger a proper generate request with filtering.
-    var generateWithFilters = (event) => {
+    const generateWithFilters = (event) => {
         var newLink = $('#filtersform').attr('action');
 
         if (event) {
@@ -72,7 +72,7 @@ export const init = (root) => {
     });
 
     // Submit report via filter
-    var submitWithFilter = (containerelement) => {
+    const submitWithFilter = (containerelement) => {
         // Close the container (eg popover).
         $(containerelement).addClass('hidden');
 
@@ -81,15 +81,16 @@ export const init = (root) => {
     };
 
     // Use popper to override date mform calendar position.
-    var updateCalendarPosition = () => {
-        let referenceElement = document.querySelector(Selectors.filters.date.popover),
+    const updateCalendarPosition = (elementName) => {
+        let referenceElement = document.querySelector(elementName),
             popperContent = document.querySelector(Selectors.filters.date.calendar);
+        popperContent.style.removeProperty("z-index");
 
-        new Popper(referenceElement, popperContent, {placement: 'bottom'});
+        new Popper(referenceElement, popperContent, {placement: 'auto'});
     };
 
     // Call when opening filter to ensure only one can be activated.
-    var canOpenFilter = (event) => {
+    const canOpenFilter = (event) => {
         if (document.querySelector('[data-openfilter="true"]')) {
             return false;
         }
@@ -234,11 +235,11 @@ export const init = (root) => {
         }
     });
 
-    jqRoot.on("click", "#id_filterdatefrompopover_calendar", function() {
-        updateCalendarPosition();
+    jqRoot.on(CustomEvents.events.activate, "#id_filterdatefrompopover_calendar", function() {
+        updateCalendarPosition("#id_filterdatefrompopover_calendar");
     });
 
-    jqRoot.on("click", "#id_filterdatetopopover_calendar", function() {
-        updateCalendarPosition();
+    jqRoot.on(CustomEvents.events.activate, "#id_filterdatetopopover_calendar", function() {
+        updateCalendarPosition("#id_filterdatetopopover_calendar");
     });
 };

@@ -296,6 +296,8 @@ class summary_table extends table_sql {
 
         // Fetch the data.
         $sql = $this->get_full_sql();
+        print_object($sql);
+        print_object($this->sql->params);
 
         // Only paginate when not downloading.
         if (!$this->is_downloading()) {
@@ -565,6 +567,8 @@ class summary_table extends table_sql {
         $this->build_table();
         $this->close_recordset();
         $this->finish_output();
+        // Drop the temp table.
+        $this->drop_log_summary_temp_table();
     }
 
     /**
@@ -699,6 +703,18 @@ class summary_table extends table_sql {
         $xmldbtable->add_key('primary', XMLDB_KEY_PRIMARY, array('userid'));
 
         $dbman->create_temp_table($xmldbtable);
+    }
+
+    protected function drop_log_summary_temp_table() {
+        global $DB;
+
+        $dbman = $DB->get_manager();
+        $temptablename = self::LOG_SUMMARY_TEMP_TABLE;
+        $xmldbtable = new \xmldb_table($temptablename);
+
+        if ($dbman->table_exists($xmldbtable)) {
+            $dbman->drop_table($xmldbtable);
+        }
     }
 
     /**

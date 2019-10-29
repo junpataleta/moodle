@@ -202,7 +202,7 @@ class filters implements renderable, templatable {
         ];
 
         // Prepare button string data.
-        $displayformat = '%e %b %Y';
+        $displayformat = get_string('strftimedatemonthabbr', 'langconfig');
         $fromdatestring = $calendartype->timestamp_to_date_string($fromtimestamp, $displayformat, $timezone, true, true);
         $todatestring = $calendartype->timestamp_to_date_string($totimestamp, $displayformat, $timezone, true, true);
 
@@ -225,7 +225,7 @@ class filters implements renderable, templatable {
      * Export data for use as the context of a mustache template.
      *
      * @param renderer_base $renderer The renderer to be used to display report filters.
-     * @return array Data in a format compatible with a mustache template.
+     * @return stdClass Data in a format compatible with a mustache template.
      */
     public function export_for_template(renderer_base $renderer): stdClass {
         $output = new stdClass();
