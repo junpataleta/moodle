@@ -90,6 +90,7 @@ require_once($CFG->dirroot . '/mod/assign/renderable.php');
 require_once($CFG->dirroot . '/mod/assign/gradingtable.php');
 require_once($CFG->libdir . '/portfolio/caller.php');
 
+use core\output\notification;
 use \mod_assign\output\grading_app;
 
 /**
@@ -178,6 +179,8 @@ class assign {
      * to update the gradebook.
      */
     private $mostrecentteamsubmission = null;
+
+    protected $errors = [];
 
     /**
      * Constructor for the base assign class.
@@ -460,7 +463,6 @@ class assign {
         $mform = null;
         $notices = array();
         $nextpageparams = array();
-        $notifications = array();
 
         if (!empty($this->get_course_module()->id)) {
             $nextpageparams['id'] = $this->get_course_module()->id;
@@ -488,12 +490,7 @@ class assign {
             $action = 'redirect';
             $nextpageparams['action'] = 'grading';
         } else if ($action == 'removesubmission') {
-            try {
-                $this->process_remove_submission();
-            } catch (Exception $e) {
-                $notifications[] = $e->getMessage();
-            }
-
+            $this->process_remove_submission();
             $action = 'redirect';
             if ($this->can_grade()) {
                 $nextpageparams['action'] = 'grading';
@@ -536,7 +533,7 @@ class assign {
                 $action = 'viewsubmitforgradingerror';
             }
         } else if ($action == 'gradingbatchoperation') {
-            list($action, $notifications) = $this->process_grading_batch_operation($mform);
+            $action = $this->process_grading_batch_operation($mform);
             if ($action == 'grading') {
                 $action = 'redirect';
                 $nextpageparams['action'] = 'grading';
@@ -603,7 +600,13 @@ class assign {
         // Now show the right view page.
         if ($action == 'redirect') {
             $nextpageurl = new moodle_url('/mod/assign/view.php', $nextpageparams);
-            redirect($nextpageurl, implode($notifications), null, \core\output\notification::NOTIFY_ERROR);
+            $messages = '';
+            $messagetype =  notification::NOTIFY_INFO;
+            if ($this->errors) {
+                $messages = html_writer::alist($this->errors, ['class' => 'd-block mb-1 mt-1']);
+                $messagetype =  notification::NOTIFY_ERROR;
+            }
+            redirect($nextpageurl, $messages, null, $messagetype);
             return;
         } else if ($action == 'savegradingresult') {
             $message = get_string('gradingchangessaved', 'assign');
@@ -4876,14 +4879,12 @@ class assign {
      * Ask the user to confirm they want to perform this batch operation
      *
      * @param moodleform $mform Set to a grading batch operations form
-     * @return array Array containing the page to view after processing these actions and the notification messages.
+     * @return string - the page to view after processing these actions
      */
     protected function process_grading_batch_operation(& $mform) {
         global $CFG;
         require_once($CFG->dirroot . '/mod/assign/gradingbatchoperationsform.php');
         require_sesskey();
-
-        $notifications = array();
 
         $markingallocation = $this->get_instance()->markingworkflow &&
             $this->get_instance()->markingallocation &&
@@ -4914,18 +4915,18 @@ class assign {
             if ($data->operation == 'grantextension') {
                 // Reset the form so the grant extension page will create the extension form.
                 $mform = null;
-                return ['grantextension', $notifications];
+                return 'grantextension';
             } else if ($data->operation == 'setmarkingworkflowstate') {
-                return ['viewbatchsetmarkingworkflowstate', $notifications];
+                return 'viewbatchsetmarkingworkflowstate';
             } else if ($data->operation == 'setmarkingallocation') {
-                return ['viewbatchmarkingallocation', $notifications];
+                return 'viewbatchmarkingallocation';
             } else if (strpos($data->operation, $prefix) === 0) {
                 $tail = substr($data->operation, strlen($prefix));
                 list($plugintype, $action) = explode('_', $tail, 2);
 
                 $plugin = $this->get_feedback_plugin_by_type($plugintype);
                 if ($plugin) {
-                    return ['plugingradingbatchoperation', $notifications];
+                    return 'plugingradingbatchoperation';
                 }
             }
 
@@ -4940,12 +4941,7 @@ class assign {
                     } else if ($data->operation == 'reverttodraft') {
                         $this->process_revert_to_draft($userid);
                     } else if ($data->operation == 'removesubmission') {
-                        try {
-                            $this->process_remove_submission($userid);
-                        } catch (Exception $e) {
-                            $notifications[] = html_writer::tag('span', $e->getMessage(),
-                                ['class' => 'd-block mb-1 mt-1']);
-                        }
+                        $this->process_remove_submission($userid);
                     } else if ($data->operation == 'addattempt') {
                         if (!$this->get_instance()->teamsubmission) {
                             $this->process_add_attempt($userid);
@@ -4959,7 +4955,7 @@ class assign {
             }
         }
 
-        return ['grading', $notifications];
+        return 'grading';
     }
 
     /**
@@ -7947,11 +7943,10 @@ class assign {
      * Remove any data from the current submission.
      *
      * @param int $userid
+     * @return boolean
      */
     public function remove_submission($userid) {
         global $USER;
-
-        $user = core_user::get_user($userid);
 
         if ($this->get_instance()->teamsubmission) {
             $submission = $this->get_group_submission($userid, 0, false);
@@ -7959,13 +7954,17 @@ class assign {
             $submission = $this->get_user_submission($userid, false);
         }
 
+        $error = null;
         if (!$submission) {
-            throw new moodle_exception('usersubmissionnotfound', 'mod_assign', '', fullname($user));
+            $error = 'usersubmissionnotfound';
+        } else if (!$this->can_edit_submission($userid, $USER->id)) {
+            $error = 'usersubmissioncannotberemoved';
         }
 
-        if (!$this->can_edit_submission($userid, $USER->id)) {
-            throw new moodle_exception('usersubmissioncannotberemoved', 'mod_assign', '',
-                fullname($user));
+        if ($error) {
+            $user = core_user::get_user($userid);
+            $this->errors[] =  get_string($error, 'mod_assign', fullname($user));
+            return false;
         }
 
         // Tell each submission plugin we were saved with no data.
@@ -7979,6 +7978,7 @@ class assign {
         if ($submission->userid != 0) {
             \mod_assign\event\submission_status_updated::create_from_submission($this, $submission)->trigger();
         }
+        return true;
     }
 
     /**
@@ -8030,6 +8030,7 @@ class assign {
      * Remove the current submission.
      *
      * @param int $userid
+     * @return boolean
      */
     protected function process_remove_submission($userid = 0) {
         require_sesskey();
@@ -8038,7 +8039,7 @@ class assign {
             $userid = required_param('userid', PARAM_INT);
         }
 
-        $this->remove_submission($userid);
+        return $this->remove_submission($userid);
     }
 
     /**
