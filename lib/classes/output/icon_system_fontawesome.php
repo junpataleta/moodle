@@ -208,7 +208,6 @@ class icon_system_fontawesome extends icon_system_font {
             'core:i/competencies' => 'far fa-check-square',
             'core:i/completion_self' => 'far fa-user',
             'core:i/dashboard' => 'fa fa-tachometer-alt',
-            'core:i/lock' => 'fa fa-lock',
             'core:i/categoryevent' => 'fa fa-cubes',
             'core:i/course' => 'fa fa-graduation-cap',
             'core:i/courseevent' => 'fa fa-university',
