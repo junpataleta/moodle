@@ -167,14 +167,14 @@ class icon_system_test extends advanced_testcase {
                 icon_system_standard::class,
                 true,
             ],
-            'icon_system => icon_system_fontawesome' => [
+            'icon_system => icon_system_forkawesome' => [
                 icon_system::class,
-                icon_system_fontawesome::class,
+                icon_system_forkawesome::class,
                 true,
             ],
-            'icon_system => \theme_classic\output\icon_system_fontawesome' => [
+            'icon_system => \theme_classic\output\icon_system_forkawesome' => [
                 icon_system::class,
-                \theme_classic\output\icon_system_fontawesome::class,
+                \theme_classic\output\icon_system_forkawesome::class,
                 true,
             ],
             'icon_system => notification' => [
@@ -188,18 +188,18 @@ class icon_system_test extends advanced_testcase {
                 icon_system_standard::class,
                 true,
             ],
-            'icon_system_standard => icon_system_fontawesome' => [
+            'icon_system_standard => icon_system_forkawesome' => [
                 icon_system_standard::class,
-                icon_system_fontawesome::class,
+                icon_system_forkawesome::class,
                 false,
             ],
-            'icon_system_standard => \theme_classic\output\icon_system_fontawesome' => [
+            'icon_system_standard => \theme_classic\output\icon_system_forkawesome' => [
                 icon_system_standard::class,
-                \theme_classic\output\icon_system_fontawesome::class,
+                \theme_classic\output\icon_system_forkawesome::class,
                 false,
             ],
-            'icon_system_fontawesome => icon_system_standard' => [
-                icon_system_fontawesome::class,
+            'icon_system_forkawesome => icon_system_standard' => [
+                icon_system_forkawesome::class,
                 icon_system_standard::class,
                 false,
             ],

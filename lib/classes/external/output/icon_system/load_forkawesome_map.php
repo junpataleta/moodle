@@ -1,0 +1,90 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace core\external\output\icon_system;
+
+use external_api;
+use external_description;
+use external_function_parameters;
+use external_multiple_structure;
+use external_single_structure;
+use external_value;
+use core\output\icon_system_forkawesome;
+use theme_config;
+
+/**
+ * Web service to load Fork Awesome icon maps.
+ *
+ * @package    core
+ * @category   external
+ * @copyright  2021 Jun Pataleta
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class load_forkawesome_map extends external_api {
+
+    /**
+     * Description of the parameters suitable for the `execute` function.
+     *
+     * @return external_function_parameters
+     */
+    public static function execute_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'themename' => new external_value(PARAM_ALPHANUMEXT, 'The theme to fetch the map for'),
+        ]);
+    }
+
+    /**
+     * Return a mapping of icon names to icons.
+     *
+     * @param   string $themename The theme to fetch icons for
+     * @return  array the mapping
+     */
+    public static function execute(string $themename): array {
+        [
+            'themename' => $themename,
+        ] = self::validate_parameters(self::execute_parameters(), [
+            'themename' => $themename,
+        ]);
+
+        $theme = theme_config::load($themename);
+        $instance = icon_system_forkawesome::instance($theme->get_icon_system());
+
+        $result = [];
+        foreach ($instance->get_icon_name_map() as $from => $to) {
+            [$component, $pix] = explode(':', $from);
+            $result[] = [
+                'component' => $component,
+                'pix' => $pix,
+                'to' => $to,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Description of the return value for the `execute` function.
+     *
+     * @return external_description
+     */
+    public static function execute_returns() {
+        return new external_multiple_structure(new external_single_structure([
+            'component' => new external_value(PARAM_COMPONENT, 'The component for the icon.'),
+            'pix' => new external_value(PARAM_RAW, 'Value to map the icon from.'),
+            'to' => new external_value(PARAM_RAW, 'Value to map the icon to.'),
+        ]));
+    }
+}
