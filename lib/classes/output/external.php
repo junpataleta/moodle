@@ -202,30 +202,20 @@ class external extends external_api {
     /**
      * Return a mapping of icon names to icons.
      *
+     * @deprecated since 3.9
      * @return array the mapping
      */
     public static function load_fontawesome_icon_map() {
-        $instance = icon_system::instance(icon_system::FONTAWESOME);
+        debugging('\core\output\external::load_fontawesome_icon_map() is deprecated. ' .
+            'Please use \core\output\external::load_forkawesome_icon_map() instead.', DEBUG_DEVELOPER);
 
-        $map = $instance->get_icon_name_map();
-
-        $result = [];
-
-        foreach ($map as $from => $to) {
-            list($component, $pix) = explode(':', $from);
-            $one = [];
-            $one['component'] = $component;
-            $one['pix'] = $pix;
-            $one['to'] = $to;
-            $result[] = $one;
-        }
-        return $result;
+        return self::load_forkawesome_icon_map();
     }
 
     /**
      * Returns description of load_icon_map() result value.
      *
-     * @return external_description
+     * @return external_multiple_structure
      */
     public static function load_fontawesome_icon_map_returns() {
         return new external_multiple_structure(new external_single_structure(

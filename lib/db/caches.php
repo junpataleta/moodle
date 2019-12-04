@@ -350,15 +350,6 @@ $definitions = array(
         'datasource' => '\core_message\time_last_message_between_users',
     ),
 
-    // Caches font awesome icons.
-    'fontawesomeiconmapping' => array(
-        'mode' => cache_store::MODE_APPLICATION,
-        'simplekeys' => true,
-        'simpledata' => true,
-        'staticacceleration' => true,
-        'staticaccelerationsize' => 1
-    ),
-
     // Caches Fork Awesome icons.
     'forkawesomeiconmapping' => array(
         'mode' => cache_store::MODE_APPLICATION,
