@@ -25,16 +25,14 @@
 
 namespace core\output;
 
+use context_system;
+use core\external\output\icon_system\load_forkawesome_map;
 use external_api;
+use external_description;
 use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
-use core_component;
-use moodle_exception;
-use context_system;
-use theme_config;
-use core\external\output\icon_system\load_fontawesome_map;
 
 /**
  * This class contains a list of webservice functions related to output.
@@ -195,6 +193,7 @@ class external extends external_api {
     /**
      * Returns description of load_icon_map() parameters.
      *
+     * @deprecated since Moodle 3.10
      * @return external_function_parameters
      */
     public static function load_fontawesome_icon_map_parameters() {
@@ -210,21 +209,22 @@ class external extends external_api {
     public static function load_fontawesome_icon_map() {
         global $PAGE;
 
-        return load_fontawesome_map::execute($PAGE->theme->name);
+        return load_forkawesome_map::execute($PAGE->theme->name);
     }
 
     /**
      * Returns description of load_icon_map() result value.
      *
-     * @return external_description
+     * @deprecated since Moodle 3.10
+     * @return external_multiple_structure
      */
     public static function load_fontawesome_icon_map_returns() {
-        return load_fontawesome_map::execute_returns();
+        return load_forkawesome_map::execute_returns();
     }
 
     /**
      * The `load_fontawesome_icon_map` function has been replaced with
-     * @see load_fontawesome_map::execute()
+     * @see load_forkawesome_map::execute()
      *
      * @return bool
      */
