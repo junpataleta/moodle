@@ -1586,6 +1586,14 @@ $functions = array(
         'loginrequired' => false,
         'ajax' => true,
     ),
+    'core_output_load_forkawesome_icon_map' => array(
+        'classname' => 'core\output\external',
+        'methodname' => 'load_forkawesome_icon_map',
+        'description' => 'Load the mapping of pix_icon names to Fork Awesome icons',
+        'type' => 'read',
+        'loginrequired' => false,
+        'ajax' => true,
+    ),
     // Question related functions.
     'core_question_update_flag' => array(
         'classname'     => 'core_question_external',

@@ -74,6 +74,9 @@ $theme-colors: map-merge((
 ), $theme-colors);
 // stylelint-enable
 
+// Import ForkAwesome.
+@import "forkawesome";
+
 // Import FontAwesome.
 @import "fontawesome";
 
