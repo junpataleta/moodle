@@ -52,6 +52,10 @@ abstract class icon_system {
      * @const FONTAWESOME Default icon system.
      */
     const FONTAWESOME = '\\core\\output\\icon_system_fontawesome';
+    /**
+     * @const FORKAWESOME Default icon system.
+     */
+    const FORKAWESOME = '\\core\\output\\icon_system_forkawesome';
 
     /**
      * @var \core\output\icon_system $instance The cached default instance

@@ -1576,6 +1576,13 @@ $functions = array(
         'loginrequired' => false,
         'ajax' => true,
     ),
+    'core_output_load_forkawesome_icon_system_map' => array(
+        'classname' => 'core\external\output\icon_system\load_forkawesome_map',
+        'description' => 'Load the mapping of moodle pix names to Fork Awesome icon names',
+        'type' => 'read',
+        'loginrequired' => false,
+        'ajax' => true,
+    ),
     // Question related functions.
     'core_question_update_flag' => array(
         'classname'     => 'core_question_external',

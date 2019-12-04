@@ -105,6 +105,9 @@ $spacers: (
     6: ($spacer * 3)
 ) !default;
 
+// Import ForkAwesome.
+@import "forkawesome";
+
 // Import FontAwesome.
 @import "fontawesome";
 
