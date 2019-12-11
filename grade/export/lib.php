@@ -274,7 +274,7 @@ abstract class grade_export {
         }
 
         // We can't have feedback and display type at the same time.
-        $column->extra = ($feedback) ? get_string('feedback') : get_string($gradedisplayname, 'grades');
+        $column->extra = ($feedback) ? get_string('feedback', 'grades') : get_string($gradedisplayname, 'grades');
 
         return html_to_text(get_string('gradeexportcolumntype', 'grades', $column), 0, false);
     }

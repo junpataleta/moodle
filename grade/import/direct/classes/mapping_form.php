@@ -65,6 +65,18 @@ class gradeimport_direct_mapping_form extends moodleform {
         $mform->addElement('header', 'general_map', get_string('mappings', 'grades'));
         $mform->addHelpButton('general_map', 'mappings', 'grades');
 
+        // Set defaults for mappings to first matching set.
+        foreach ($maptooptions as $maptokey => $maptodefault) {
+            foreach ($mapfromoptions as $mapfromkey => $mapfromdefault) {
+                if ($maptodefault == $mapfromdefault) {
+                    $mform->setDefault('mapto', $maptokey);
+                    $mform->setDefault('mapfrom', $mapfromkey);
+                    $defaultsareset = true;
+                    break 2;
+                }
+            }
+        }
+
         // Add a feedback option.
         $feedbacks = array();
         if ($gradeitems = $this->_customdata['gradeitems']) {
@@ -87,6 +99,29 @@ class gradeimport_direct_mapping_form extends moodleform {
                     get_string('feedbacks', 'grades')  => $feedbacks
                 );
                 $mform->addElement('selectgroups', 'mapping_'.$i, s($h), $headermapsto);
+                // Auto-map matching grade items.
+                $gradestring = '(' . get_string('real', 'grades') . ')';
+                if (strpos($h, $gradestring) !== false) {
+                    $trimheader = trim(explode($gradestring, $h)[0]);
+                    foreach ($gradeitems as $key => $g) {
+                        $g = trim($g);
+                        if ($g == $trimheader) {
+                            $mform->setDefault('mapping_' . $i, $key);
+                        }
+                    }
+                }
+                // Auto-map matching feedback items.
+                $feedbackstring = '(' . get_string('feedback', 'grades') . ')';
+                if (strpos($h, $feedbackstring) !== false) {
+                    $trimheader = trim(explode($feedbackstring, $h)[0]);
+                    $trimheader = get_string('feedbackforgradeitems', 'grades', $trimheader);
+                    foreach ($feedbacks as $key => $f) {
+                        $f = trim($f);
+                        if ($f == $trimheader) {
+                            $mform->setDefault('mapping_' . $i, $key);
+                        }
+                    }
+                }
                 $i++;
             }
         }
