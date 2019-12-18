@@ -65,18 +65,6 @@ class gradeimport_direct_mapping_form extends moodleform {
         $mform->addElement('header', 'general_map', get_string('mappings', 'grades'));
         $mform->addHelpButton('general_map', 'mappings', 'grades');
 
-        // Set defaults for mappings to first matching set.
-        foreach ($maptooptions as $maptokey => $maptodefault) {
-            foreach ($mapfromoptions as $mapfromkey => $mapfromdefault) {
-                if ($maptodefault == $mapfromdefault) {
-                    $mform->setDefault('mapto', $maptokey);
-                    $mform->setDefault('mapfrom', $mapfromkey);
-                    $defaultsareset = true;
-                    break 2;
-                }
-            }
-        }
-
         // Add a feedback option.
         $feedbacks = array();
         if ($gradeitems = $this->_customdata['gradeitems']) {
@@ -99,29 +87,28 @@ class gradeimport_direct_mapping_form extends moodleform {
                     get_string('feedbacks', 'grades')  => $feedbacks
                 );
                 $mform->addElement('selectgroups', 'mapping_'.$i, s($h), $headermapsto);
-                // Auto-map matching grade items.
-                $gradestring = '(' . get_string('real', 'grades') . ')';
-                if (strpos($h, $gradestring) !== false) {
-                    $trimheader = trim(explode($gradestring, $h)[0]);
-                    foreach ($gradeitems as $key => $g) {
-                        $g = trim($g);
-                        if ($g == $trimheader) {
+
+                // Attempt to auto-map column to grade item/feedback if they contain the type.
+                $realtype = get_string('real', 'grades');
+                $feedbacktype = get_string('feedback', 'grades');
+                // Ensure that the header string contains the real or feedback type strings before looping through the grade items.
+                if (strpos($h, $realtype) !== false || strpos($h, $feedbacktype) !== false) {
+                    foreach ($gradeitems as $key => $gradeitem) {
+                        $gradeitemstring = $this->get_formatted_column_name($gradeitem, $realtype);
+                        $feedbackstring = $this->get_formatted_column_name($gradeitem, $feedbacktype);
+
+                        if ($h === $gradeitemstring) {
+                            // Auto-map matching grade items.
                             $mform->setDefault('mapping_' . $i, $key);
+                            break;
+                        } else if ($h === $feedbackstring) {
+                            // Auto-map matching feedback items.
+                            $mform->setDefault('mapping_' . $i, 'feedback_' . $key);
+                            break;
                         }
                     }
                 }
-                // Auto-map matching feedback items.
-                $feedbackstring = '(' . get_string('feedback', 'grades') . ')';
-                if (strpos($h, $feedbackstring) !== false) {
-                    $trimheader = trim(explode($feedbackstring, $h)[0]);
-                    $trimheader = get_string('feedbackforgradeitems', 'grades', $trimheader);
-                    foreach ($feedbacks as $key => $f) {
-                        $f = trim($f);
-                        if ($f == $trimheader) {
-                            $mform->setDefault('mapping_' . $i, $key);
-                        }
-                    }
-                }
+
                 $i++;
             }
         }
@@ -148,5 +135,13 @@ class gradeimport_direct_mapping_form extends moodleform {
         $mform->setType('forceimport', PARAM_BOOL);
         $mform->setConstant('forceimport', $this->_customdata['forceimport']);
         $this->add_action_buttons(false, get_string('uploadgrades', 'grades'));
+    }
+
+    protected function get_formatted_column_name($gradeitem, $type) {
+        $params = (object)[
+            'name' => $gradeitem,
+            'extra' => $type
+        ];
+        return get_string('gradeexportcolumntype', 'grades', $params);
     }
 }
