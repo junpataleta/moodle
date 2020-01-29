@@ -1,4 +1,4 @@
-Description of PhpSpreadsheet 1.7.0 import into Moodle
+Description of PhpSpreadsheet 1.10.1 import into Moodle
 
 Last release package can be found in https://github.com/PHPOffice/PhpSpreadsheet/releases
 
@@ -26,7 +26,7 @@ CHANGES:
   - .scrutinizer.yml
   - .travis.yml
 
- * Add the Moodle hack in vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Shared/File/sys_get_temp_dir() because we
+ * Add the Moodle hack in \PhpOffice\PhpSpreadsheet\Shared\File::sysGetTempDir() because we
  can not guarantee sys_get_temp_dir() works everywhere:
 
      // Moodle hack!
