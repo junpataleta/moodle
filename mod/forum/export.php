@@ -119,7 +119,9 @@ if ($form->is_cancelled()) {
 
     $fields = ['id', 'discussion', 'parent', 'userid', 'created', 'modified', 'mailed', 'subject', 'message',
                 'messageformat', 'messagetrust', 'attachment', 'totalscore', 'mailnow', 'deleted', 'privatereplyto',
-                'wordcount', 'charcount'];
+                'wordcount', 'charcount', 'userfullname'];
+
+    $canviewfullname = has_capability('moodle/site:viewfullnames', $forum->get_context());
 
     $datamapper = $legacydatamapperfactory->get_post_data_mapper();
     $exportdata = new ArrayObject($datamapper->to_legacy_objects($posts));
@@ -132,7 +134,7 @@ if ($form->is_cancelled()) {
         $dataformat,
         $fields,
         $iterator,
-        function($exportdata) use ($fields, $striphtml, $humandates) {
+        function($exportdata) use ($fields, $striphtml, $humandates, $canviewfullname) {
             $data = $exportdata;
             if ($striphtml) {
                 // The following call to html_to_text uses the option that strips out
@@ -148,10 +150,15 @@ if ($form->is_cancelled()) {
                 $data->modified = userdate($data->modified);
             }
             foreach ($fields as $field) {
+                if ($field == 'userfullname') {
+                    $user = \core_user::get_user($data->userid);
+                    $data->userfullname = fullname($user, $canviewfullname);
+                }
                 // Convert any boolean fields to their integer equivalent for output.
                 if (is_bool($data->$field)) {
                     $data->$field = (int) $data->$field;
                 }
+
             }
             return $data;
         });
