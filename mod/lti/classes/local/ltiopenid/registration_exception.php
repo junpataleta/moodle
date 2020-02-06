@@ -15,20 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file returns an array of available public keys
+ * This library exposes functions for LTI Dynamic Registration.
  *
  * @package    mod_lti
- * @copyright  2019 Stephen Vickers
+ * @copyright  2020 Claude Vervoort (Cengage), Carlos Costa, Adrian Hutchinson (Macgraw Hill)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-use mod_lti\local\ltiopenid\jwks_helper;
+namespace mod_lti\local\ltiopenid;
 
-define('NO_DEBUG_DISPLAY', true);
-define('NO_MOODLE_COOKIES', true);
+/**
+ * Exception when transforming the registration to LTI config.
+ *
+ * Code is the HTTP Error code.
+ */
+class registration_exception extends \Exception {
+}
 
-require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/mod/lti/locallib.php');
-
-@header('Content-Type: application/json; charset=utf-8');
-
-echo json_encode(jwks_helper::get_jwks(), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
