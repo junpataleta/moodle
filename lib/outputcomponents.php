@@ -3647,7 +3647,7 @@ class custom_menu_item implements renderable, templatable {
         $syscontext = context_system::instance();
 
         $context = new stdClass();
-        $context->text = external_format_string($this->text, $syscontext->id);
+        $context->text = format_text($this->text, FORMAT_HTML, ['context' => $syscontext->id]);
         $context->url = $this->url ? $this->url->out() : null;
         $context->title = external_format_string($this->title, $syscontext->id);
         $context->sort = $this->sort;
