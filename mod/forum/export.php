@@ -117,9 +117,9 @@ if ($form->is_cancelled()) {
     $striphtml = !empty($data->striphtml);
     $humandates = !empty($data->humandates);
 
-    $fields = ['id', 'discussion', 'parent', 'userid', 'created', 'modified', 'mailed', 'subject', 'message',
+    $fields = ['id', 'discussion', 'parent', 'userid', 'userfullname', 'created', 'modified', 'mailed', 'subject', 'message',
                 'messageformat', 'messagetrust', 'attachment', 'totalscore', 'mailnow', 'deleted', 'privatereplyto',
-                'wordcount', 'charcount', 'userfullname'];
+                'wordcount', 'charcount'];
 
     $canviewfullname = has_capability('moodle/site:viewfullnames', $forum->get_context());
 
@@ -135,31 +135,38 @@ if ($form->is_cancelled()) {
         $fields,
         $iterator,
         function($exportdata) use ($fields, $striphtml, $humandates, $canviewfullname) {
-            $data = $exportdata;
+            $data = new stdClass();
+
+            foreach ($fields as $field) {
+                // Set data field's value from the export data's equivalent field by default.
+                $data->$field = $exportdata->$field ?? null;
+
+                if ($field == 'userfullname') {
+                    $user = \core_user::get_user($exportdata->userid);
+                    $data->userfullname = fullname($user, $canviewfullname);
+                }
+
+                // Convert any boolean fields to their integer equivalent for output.
+                if (is_bool($data->$field)) {
+                    $data->$field = (int) $data->$field;
+                }
+            }
+
             if ($striphtml) {
                 // The following call to html_to_text uses the option that strips out
                 // all URLs, but format_text complains if it finds @@PLUGINFILE@@ tokens.
                 // So, we need to replace @@PLUGINFILE@@ with a real URL, but it doesn't
                 // matter what. We use http://example.com/.
-                $data->message = str_replace('@@PLUGINFILE@@/', 'http://example.com/', $data->message);
-                $data->message = html_to_text(format_text($data->message, $data->messageformat), 0, false);
+                $data->message = str_replace('@@PLUGINFILE@@/', 'http://example.com/', $exportdata->message);
+                $data->message = html_to_text(format_text($exportdata->message, $exportdata->messageformat), 0, false);
                 $data->messageformat = FORMAT_PLAIN;
             }
-            if ($humandates) {
-                $data->created = userdate($data->created);
-                $data->modified = userdate($data->modified);
-            }
-            foreach ($fields as $field) {
-                if ($field == 'userfullname') {
-                    $user = \core_user::get_user($data->userid);
-                    $data->userfullname = fullname($user, $canviewfullname);
-                }
-                // Convert any boolean fields to their integer equivalent for output.
-                if (is_bool($data->$field)) {
-                    $data->$field = (int) $data->$field;
-                }
 
+            if ($humandates) {
+                $data->created = userdate($exportdata->created);
+                $data->modified = userdate($exportdata->modified);
             }
+
             return $data;
         });
     die;
