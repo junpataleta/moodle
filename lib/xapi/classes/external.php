@@ -26,15 +26,13 @@
 namespace core_xapi;
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir .'/externallib.php');
+require_once($CFG->libdir . '/externallib.php');
 
+use core_component;
 use external_api;
 use external_function_parameters;
-use external_value;
-use external_single_structure;
 use external_multiple_structure;
-use external_warnings;
-use core_component;
+use external_value;
 
 /**
  * This is the external API for generic xAPI handling.
@@ -66,10 +64,13 @@ class external extends external_api {
      * @return array(string)
      */
     public static function post_statement(string $component, $requestjson) {
-        $params = self::validate_parameters(self::post_statement_parameters(), array(
+        [
             'component' => $component,
             'requestjson' => $requestjson,
-        ));
+        ] = self::validate_parameters(self::post_statement_parameters(), [
+            'component' => $component,
+            'requestjson' => $requestjson,
+        ]);
 
         // Check that $component is a real component name.
         $dir = core_component::get_component_directory($component);
@@ -79,7 +80,7 @@ class external extends external_api {
 
         // Process request statements, statements could be send in several ways.
         $validator = new \core_xapi\xapi_validator();
-        $statements = $validator->get_statements_form_json($requestjson);
+        $statements = $validator->get_statements_from_json($requestjson);
         if (empty($statements)) {
             $lastrerror = $validator->get_last_error_msg();
             $lastcheck = $validator->get_last_check_index();
@@ -88,7 +89,7 @@ class external extends external_api {
         }
 
         // Get component xAPI statement handler class.
-        $xapihandler = \core_xapi\xapi_helper::get_xapi_handler($component);
+        $xapihandler = xapi_helper::get_xapi_handler($component);
         if (!$xapihandler) {
             throw new invalid_xapi_request_exception('Component not compatible.');
         }
@@ -98,7 +99,7 @@ class external extends external_api {
         // In case no statement is processed, an error must be returned.
         if (count(array_filter($result)) == 0) {
             if (count($result) == 1) {
-                $msg = 'Statement error: '.$xapihandler->get_last_error_msg();
+                $msg = 'Statement error: ' . $xapihandler->get_last_error_msg();
             } else {
                 $msg = 'No statement can be processed.';
             }

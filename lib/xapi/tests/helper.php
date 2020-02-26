@@ -24,6 +24,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace core_xapi;
+
+use core\event\base;
+use core\log\reader;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -36,7 +42,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 class core_xapi_test_helper {
 
-    /** @var \core\log\reader contains a valid logstore reader. */
+    /** @var reader contains a valid logstore reader. */
     private $store;
 
     /**
@@ -62,18 +68,18 @@ class core_xapi_test_helper {
     public function generate_statement(): stdClass {
         global $USER;
         $result = new stdClass();
-        $result->actor = \core_xapi\xapi_helper::xapi_agent($USER);
-        $result->verb = \core_xapi\xapi_helper::xapi_verb('cook');
-        $result->object = \core_xapi\xapi_helper::xapi_object('cake');
+        $result->actor = xapi_helper::xapi_agent($USER);
+        $result->verb = xapi_helper::xapi_verb('cook');
+        $result->object = xapi_helper::xapi_object('cake');
         return $result;
     }
 
     /**
      * Return the last log entry from standardlog.
      *
-     * @return \core\event\base|null The last log event or null if none found.
+     * @return base|null The last log event or null if none found.
      */
-    public function get_last_log_entry(): ?\core\event\base {
+    public function get_last_log_entry(): ?base {
         $records = $this->get_n_last_log_entries(1);
         if (empty($records)) {
             return null;
@@ -85,7 +91,7 @@ class core_xapi_test_helper {
      * Return the N last log entries from standardlog.
      *
      * @param int $limit The max number of entries returned.
-     * @return \core\event\base[] The last log event or null if none found.
+     * @return base[] The last log event or null if none found.
      */
     public function get_n_last_log_entries(int $limit): array {
         $select = "component = :component";

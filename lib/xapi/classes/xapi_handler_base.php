@@ -25,6 +25,10 @@
 
 namespace core_xapi;
 
+use core\event\base;
+use core_user;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -55,16 +59,16 @@ class xapi_handler_base {
     }
 
     /**
-     * Convert a statmenet object into a Moodle xAPI Event. If a statement is accepted
+     * Convert a statement object into a Moodle xAPI Event. If a statement is accepted
      * by validate_statement the component must provide a event to handle that statement,
      * otherwise the statement will be rejected.
      *
      * Note: this method must be overridden by the plugins which want to use xAPI.
      *
-     * @param \stdClass $statement
-     * @return ?\core\event\base a Moodle event to trigger
+     * @param stdClass $statement
+     * @return base|null a Moodle event to trigger
      */
-    public function statement_to_event( \stdClass $statement): ?\core\event\base {
+    public function statement_to_event(stdClass $statement): ?base {
         return null;
     }
 
@@ -133,10 +137,10 @@ class xapi_handler_base {
      *
      * Note: Group actors will only be available if is_group_actor_enabled.
      *
-     * @param \stdClass $statement The statement object.
+     * @param stdClass $statement The statement object.
      * @return bool True if all users are valid and $USER is in the list.
      */
-    private function check_statement_actor(\stdClass $statement): bool {
+    private function check_statement_actor(stdClass $statement): bool {
         global $USER;
         if ($this->is_group_actor_enabled()) {
             $users = $this->get_all_users($statement);
@@ -163,7 +167,7 @@ class xapi_handler_base {
      * @param string[] $validvalues Array of possible object IDs.
      * @return string|null The current object or null if it is not a valid one.
      */
-    public function check_valid_object(\stdClass $statement, array $validvalues): ?string {
+    public function check_valid_object(stdClass $statement, array $validvalues): ?string {
         $token = $this->get_object($statement->object);
         if (in_array($token, $validvalues)) {
             return $token;
@@ -179,7 +183,7 @@ class xapi_handler_base {
      * @param string[] Array of possible object IDs.
      * @return string|null The current verb or null if it is not a valid one.
      */
-    public function check_valid_verb(\stdClass $statement, array $validvalues): ?string {
+    public function check_valid_verb(stdClass $statement, array $validvalues): ?string {
         $token = $this->get_verb($statement->verb);
         if (in_array($token, $validvalues)) {
             return $token;
@@ -191,10 +195,10 @@ class xapi_handler_base {
     /**
      * Try to get a Moodle user from a xAPI element (typical the actor attribute).
      *
-     * @param \stdClass $actor the xAPI node to extract users (full statement or a actor/object node).
-     * @return \stdClass|null a Moodle user record or null if there isn't just one user.
+     * @param stdClass $actor the xAPI node to extract users (full statement or a actor/object node).
+     * @return stdClass|null a Moodle user record or null if there isn't just one user.
      */
-    public function get_user(\stdClass $actor): ?\stdClass {
+    public function get_user(stdClass $actor): ?stdClass {
         $users = $this->get_all_users($actor);
         if (empty($users) || count($users) != 1) {
             $this->lastrerror = "invalid Agent or Group entity";
@@ -206,11 +210,11 @@ class xapi_handler_base {
     /**
      * Try to get a list of Moodle users from a xAPI element (typical the actor attribute).
      *
-     * @param \stdClass $actor the xAPI node to extract users (full statement or a actor/object node).
-     * @return \stdClass[]|null array of Moodle user records or null if ANY of the
+     * @param stdClass $actor the xAPI node to extract users (full statement or a actor/object node).
+     * @return stdClass[]|null array of Moodle user records or null if ANY of the
      * users does not exist.
      */
-    public function get_all_users(\stdClass $actor): ?array {
+    public function get_all_users(stdClass $actor): ?array {
         if (isset($actor->actor)) {
             return $this->get_all_users($actor->actor);
         }
@@ -238,23 +242,23 @@ class xapi_handler_base {
      *
      * Note: for now, only 'mbox' and 'account' are supported
      *
-     * @param \stdClass $agent the xAPI agent structure.
-     * @return \stdClass|null user record if found, else null.
+     * @param stdClass $agent the xAPI agent structure.
+     * @return stdClass|null user record if found, else null.
      */
-    protected function get_user_from_agent(\stdClass $agent): ?\stdClass {
+    protected function get_user_from_agent(stdClass $agent): ?stdClass {
         global $CFG;
         if (!empty($agent->account)) {
             if ($agent->account->homePage != $CFG->wwwroot) {
                 return null;
             }
-            $key = 'account_'.$agent->account->name;
+            $key = 'account_' . $agent->account->name;
             if (isset(self::$entitiescache[$key])) {
                 return self::$entitiescache[$key];
             }
             if (!is_numeric($agent->account->name)) {
                 return null;
             }
-            self::$entitiescache[$key] = \core_user::get_user($agent->account->name);
+            self::$entitiescache[$key] = core_user::get_user($agent->account->name);
             if (empty(self::$entitiescache[$key])) {
                 self::$entitiescache[$key] = null;
             }
@@ -262,11 +266,11 @@ class xapi_handler_base {
         }
         if (!empty($agent->mbox)) {
             $mbox = str_replace('mailto:', '', $agent->mbox);
-            $key = 'mbox_'.$mbox;
+            $key = 'mbox_' . $mbox;
             if (isset(self::$entitiescache[$key])) {
                 return self::$entitiescache[$key];
             }
-            self::$entitiescache[$key] = \core_user::get_user_by_email($mbox);
+            self::$entitiescache[$key] = core_user::get_user_by_email($mbox);
             if (empty(self::$entitiescache[$key])) {
                 self::$entitiescache[$key] = null;
             }
@@ -280,15 +284,15 @@ class xapi_handler_base {
      *
      * NOTE: anonymous groups are not allowed so "member" attribute is ignored.
      *
-     * @param \stdClass $group a group xAPI structure.
+     * @param stdClass $group a group xAPI structure.
      * @return array[stdClass]|null array of users or null if ANY user does not exist.
      */
-    protected function get_users_from_agent_group(\stdClass $group): ?array {
-        $grouprecord = $this->get_group ($group);
+    protected function get_users_from_agent_group(stdClass $group): ?array {
+        $grouprecord = $this->get_group($group);
         if (!$grouprecord) {
             return null;
         }
-        $key = 'groupmembers_'.$group->account->name;
+        $key = 'groupmembers_' . $group->account->name;
         if (isset(self::$entitiescache[$key])) {
             return self::$entitiescache[$key];
         }
@@ -305,7 +309,7 @@ class xapi_handler_base {
      * @param stdClass $group a group xAPI structure.
      * @return stdClass|null group record of null if none found.
      */
-    public function get_group(\stdClass $group): ?\stdClass {
+    public function get_group(stdClass $group): ?stdClass {
         global $CFG;
         if (isset($group->actor)) {
             return $this->get_group($group->actor);
@@ -316,7 +320,7 @@ class xapi_handler_base {
         if ($group->account->homePage != $CFG->wwwroot) {
             return null;
         }
-        $key = 'group_'.$group->account->name;
+        $key = 'group_' . $group->account->name;
         if (!isset(self::$entitiescache[$key])) {
             self::$entitiescache[$key] = groups_get_group($group->account->name);
         }
@@ -333,14 +337,14 @@ class xapi_handler_base {
      * @param stdClass $object Statement object (or full statement).
      * @return string|null The original object ID used as a xAPI object or null.
      */
-    public function get_object(\stdClass $object): ?string {
+    public function get_object(stdClass $object): ?string {
         if (isset($object->object)) {
             return $this->get_object($object->object);
         }
         if (empty($object->id) || $object->objectType != "Activity") {
             return null;
         }
-        return \core_xapi\xapi_helper::extract_iri_value ($object->id, 'object');
+        return xapi_helper::extract_iri_value($object->id, 'object');
     }
 
     /**
@@ -349,14 +353,14 @@ class xapi_handler_base {
      * @param stdClass $verb Statement verb (or full statement).
      * @return string|null The original verb ID used as a xAPI verb or null.
      */
-    public function get_verb(\stdClass $verb): ?string {
+    public function get_verb(stdClass $verb): ?string {
         if (isset($verb->verb)) {
             return $this->get_verb($verb->verb);
         }
         if (empty($verb->id)) {
             return null;
         }
-        return \core_xapi\xapi_helper::extract_iri_value ($verb->id, 'verb');
+        return xapi_helper::extract_iri_value($verb->id, 'verb');
     }
 
     /**
@@ -367,10 +371,10 @@ class xapi_handler_base {
      * Note: it also converts stdClass to assoc array to make it compatible
      * with "other" field in the logstore
      *
-     * @param \stdClass $statement
+     * @param stdClass $statement
      * @return array the minimal statement needed to be stored a part from logstore data
      */
-    protected function minify_statement(\stdClass $statement): ?array {
+    protected function minify_statement(stdClass $statement): ?array {
         $result = clone($statement);
         $calculatedfields = ['actor', 'id', 'timestamp', 'stored', 'version'];
         foreach ($calculatedfields as $field) {

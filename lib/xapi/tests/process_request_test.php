@@ -22,13 +22,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace core_xapi;
+
+use externallib_advanced_testcase;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
-require_once($CFG->dirroot . '/lib/xapi/tests/fixtures/xapi_handler.php');
-require_once($CFG->dirroot . '/lib/xapi/tests/fixtures/xapi_test_statement_post.php');
-require_once($CFG->dirroot . '/lib/xapi/tests/helper.php');
 
 /**
  * Unit tests for xAPI statement processing webservice.
@@ -39,6 +41,8 @@ require_once($CFG->dirroot . '/lib/xapi/tests/helper.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class core_xapi_request_testcase extends externallib_advanced_testcase {
+
+    private $testhelper;
 
     public function setUp() {
         global $CFG;
@@ -52,7 +56,7 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
 
         // We enable group actors on the xapi_handler to test the single Agent scenarios.
         $CFG->xapitestforcegroupactors = true;
-        \core_xapi\xapi_handler_base::wipe_static_cache();
+        xapi_handler_base::wipe_static_cache();
     }
 
     /**
@@ -67,8 +71,8 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         // Worng json format.
         $json = '{\'This\' [] is not a JSON.}';
         try {
-            $result = \core_xapi\external::post_statement('core_xapi', $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: JSON parse, Syntax error.');
         }
 
@@ -76,8 +80,8 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement = $this->testhelper->generate_statement();
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('fake_component', $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('fake_component', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Component fake_component not available.');
         }
 
@@ -86,19 +90,19 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement->actor->objectType = 'potato_omelette';
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: unsupported actor potato_omelette.');
         }
 
         // Not supported Agent selectors (openid).
         $statement = $this->testhelper->generate_statement();
         unset($statement->actor->account);
-        $statement->actor->openid = $CFG->wwwroot.'/openid';
+        $statement->actor->openid = $CFG->wwwroot . '/openid';
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: unsupported Actor openid.');
         }
 
@@ -109,8 +113,8 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement->actor->mbox_sha1sum = sha1('potato-omelette@moodle.com');
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: unsupported Actor mbox_sha1sum.');
         }
 
@@ -119,31 +123,31 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement->actor->mbox = 'mailto:potato-omelette@moodle.com';
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: more than one Agent identifier found.');
         }
 
         // Not supported anonymous group Actor.
         $statement = $this->testhelper->generate_statement();
-        $group = (object) ['name' => 'Potato Omelette', 'id' => 32];
-        $statement->actor = \core_xapi\xapi_helper::xapi_group($group);
+        $group = (object)['name' => 'Potato Omelette', 'id' => 32];
+        $statement->actor = xapi_helper::xapi_group($group);
         unset($statement->actor->account);
-        $statement->actor->member = [\core_xapi\xapi_helper::xapi_agent($USER)];
+        $statement->actor->member = [xapi_helper::xapi_agent($USER)];
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: anonynous groups are not supported.');
         }
 
         // Invalid statement verb structure.
         $statement = $this->testhelper->generate_statement();
-        $statement->verb = \core_xapi\xapi_helper::xapi_agent($USER);
+        $statement->verb = xapi_helper::xapi_agent($USER);
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: missing verb id.');
         }
 
@@ -152,19 +156,19 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement->verb->id = 'potato-omelette';
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: verb id potato-omelette is not a valid IRI.');
         }
 
         // Not supported statement object options.
         $statement = $this->testhelper->generate_statement();
-        $statement->object = \core_xapi\xapi_helper::xapi_agent($USER);
+        $statement->object = xapi_helper::xapi_agent($USER);
         unset($statement->object->objectType);
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: missing Activity id.');
         }
 
@@ -173,8 +177,8 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement->object->id = 'potato-omelette';
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: Activity id potato-omelette is not a valid IRI.');
         }
 
@@ -182,11 +186,11 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement = $this->testhelper->generate_statement();
         $statement->object = new stdClass();
         $statement->object->objectType = 'StatementRef';
-        $statement->object->id = $CFG->wwwroot.'/xapi/potato-omelette';
+        $statement->object->id = $CFG->wwwroot . '/xapi/potato-omelette';
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: unsupported object type StatementRef.');
         }
 
@@ -194,11 +198,11 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement = $this->testhelper->generate_statement();
         $statement->object = $this->testhelper->generate_statement();
         $statement->object->objectType = 'SubStatement';
-        $statement->object->id = $CFG->wwwroot.'/xapi/potato-omelette';
+        $statement->object->id = $CFG->wwwroot . '/xapi/potato-omelette';
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: unsupported object type SubStatement.');
         }
 
@@ -208,8 +212,8 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement->object->definition->interactionType = 'potato-omelette';
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: definition unsupported potato-omelette.');
         }
 
@@ -218,19 +222,19 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement->actor->account->name = 'invalidID';
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: Agent user not found.');
         }
 
         // Non existent Group actor.
         $statement = $this->testhelper->generate_statement();
-        $group = (object) ['name' => 'Potato Omelette', 'id' => 0];
-        $statement->actor = \core_xapi\xapi_helper::xapi_group($group);
+        $group = (object)['name' => 'Potato Omelette', 'id' => 0];
+        $statement->actor = xapi_helper::xapi_group($group);
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #0 error: Group not found.');
         }
     }
@@ -260,130 +264,130 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         // Use an valid statement.
         $statement = $this->testhelper->generate_statement();
         $json = json_encode($statement);
-        $result = \core_xapi\external::post_statement('core_xapi',  $json);
+        $result = external::post_statement('core_xapi', $json);
         $log = $this->testhelper->get_last_log_entry();
         $this->assertFalse(empty($log));
         // Validate statement information.
         $value = $log->get_name();
         $this->assertEquals($value, 'xAPI test statement');
         $value = $log->get_description();
-        $this->assertEquals($value, 'User \''.$USER->id.'\' send a statement to component \'core_xapi\'.');
-        $this->assertTrue($log->compare_statement ($statement));
+        $this->assertEquals($value, 'User \'' . $USER->id . '\' send a statement to component \'core_xapi\'.');
+        $this->assertTrue($log->compare_statement($statement));
 
         // Use an valid statement with mbox user identification.
         $statement = $this->testhelper->generate_statement();
         unset($statement->actor->account);
-        $statement->actor->mbox = 'mailto:'.$user->email;
+        $statement->actor->mbox = 'mailto:' . $user->email;
         $json = json_encode($statement);
-        $result = \core_xapi\external::post_statement('core_xapi',  $json);
+        $result = external::post_statement('core_xapi', $json);
         $log = $this->testhelper->get_last_log_entry();
         $this->assertFalse(empty($log));
         // Validate statement information.
         $value = $log->get_name();
         $this->assertEquals($value, 'xAPI test statement');
         $value = $log->get_description();
-        $this->assertEquals($value, 'User \''.$USER->id.'\' send a statement to component \'core_xapi\'.');
-        $this->assertTrue($log->compare_statement ($statement));
+        $this->assertEquals($value, 'User \'' . $USER->id . '\' send a statement to component \'core_xapi\'.');
+        $this->assertTrue($log->compare_statement($statement));
 
         // Use statement with a group actor.
         $statement = $this->testhelper->generate_statement();
-        $statement->actor = \core_xapi\xapi_helper::xapi_group($group);
+        $statement->actor = xapi_helper::xapi_group($group);
         $json = json_encode($statement);
-        $result = \core_xapi\external::post_statement('core_xapi',  $json);
+        $result = external::post_statement('core_xapi', $json);
         $log = $this->testhelper->get_last_log_entry();
         $this->assertFalse(empty($log));
         // Validate statement information.
         $value = $log->get_name();
         $this->assertEquals($value, 'xAPI test statement');
         $value = $log->get_description();
-        $this->assertEquals($value, 'User \''.$USER->id.'\' send a statement to component \'core_xapi\'.');
-        $this->assertTrue($log->compare_statement ($statement));
+        $this->assertEquals($value, 'User \'' . $USER->id . '\' send a statement to component \'core_xapi\'.');
+        $this->assertTrue($log->compare_statement($statement));
 
         // Valid IRI verb statement.
         $statement = $this->testhelper->generate_statement();
-        $statement->verb = \core_xapi\xapi_helper::xapi_verb('http://adlnet.gov/expapi/verbs/answered');
-                $json = json_encode($statement);
-        $result = \core_xapi\external::post_statement('core_xapi',  $json);
+        $statement->verb = xapi_helper::xapi_verb('http://adlnet.gov/expapi/verbs/answered');
+        $json = json_encode($statement);
+        $result = external::post_statement('core_xapi', $json);
         $log = $this->testhelper->get_last_log_entry();
         $this->assertFalse(empty($log));
         // Validate statement information.
         $value = $log->get_name();
         $this->assertEquals($value, 'xAPI test statement');
         $value = $log->get_description();
-        $this->assertEquals($value, 'User \''.$USER->id.'\' send a statement to component \'core_xapi\'.');
-        $this->assertTrue($log->compare_statement ($statement));
+        $this->assertEquals($value, 'User \'' . $USER->id . '\' send a statement to component \'core_xapi\'.');
+        $this->assertTrue($log->compare_statement($statement));
 
         // Valid IRI object statement.
         $statement = $this->testhelper->generate_statement();
-        $statement->object = \core_xapi\xapi_helper::xapi_object('http://adlnet.gov/expapi/activities/example');
+        $statement->object = xapi_helper::xapi_object('http://adlnet.gov/expapi/activities/example');
         $json = json_encode($statement);
-        $result = \core_xapi\external::post_statement('core_xapi',  $json);
+        $result = external::post_statement('core_xapi', $json);
         $log = $this->testhelper->get_last_log_entry();
         $this->assertFalse(empty($log));
         // Validate statement information.
         $value = $log->get_name();
         $this->assertEquals($value, 'xAPI test statement');
         $value = $log->get_description();
-        $this->assertEquals($value, 'User \''.$USER->id.'\' send a statement to component \'core_xapi\'.');
-        $this->assertTrue($log->compare_statement ($statement));
+        $this->assertEquals($value, 'User \'' . $USER->id . '\' send a statement to component \'core_xapi\'.');
+        $this->assertTrue($log->compare_statement($statement));
 
         // Invalid user Agent (with group actors disabled).
         $statement = $this->testhelper->generate_statement();
-        $statement->actor = \core_xapi\xapi_helper::xapi_agent($user2);
+        $statement->actor = xapi_helper::xapi_agent($user2);
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement error: current user is not an actor of the statement');
         }
 
         // Invalid group.
         $statement = $this->testhelper->generate_statement();
-        $statement->actor = \core_xapi\xapi_helper::xapi_group($group2);
+        $statement->actor = xapi_helper::xapi_group($group2);
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement error: current user is not an actor of the statement');
         }
 
         // Invalid verb.
         $statement = $this->testhelper->generate_statement();
-        $statement->verb = \core_xapi\xapi_helper::xapi_verb('walk');
+        $statement->verb = xapi_helper::xapi_verb('walk');
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement error: invalid verb walk');
         }
 
         // Invalid IRI verb.
         $statement = $this->testhelper->generate_statement();
-        $statement->verb = \core_xapi\xapi_helper::xapi_verb('http://adlnet.gov/expapi/verbs/fight');
+        $statement->verb = xapi_helper::xapi_verb('http://adlnet.gov/expapi/verbs/fight');
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement error: invalid verb http://adlnet.gov/expapi/verbs/fight');
         }
 
         // Use an invalid xAPI object.
         $statement = $this->testhelper->generate_statement();
-        $statement->object = \core_xapi\xapi_helper::xapi_object('potato_omelette');
+        $statement->object = xapi_helper::xapi_object('potato_omelette');
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement error: invalid object potato_omelette');
         }
 
         // Invalid IRI object.
         $statement = $this->testhelper->generate_statement();
-        $statement->object = \core_xapi\xapi_helper::xapi_object('http://adlnet.gov/expapi/activities/wrong');
+        $statement->object = xapi_helper::xapi_object('http://adlnet.gov/expapi/activities/wrong');
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement error: invalid object http://adlnet.gov/expapi/activities/wrong');
         }
 
@@ -392,21 +396,21 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
 
         // Invalid user Agent (with group actors disabled).
         $statement = $this->testhelper->generate_statement();
-        $statement->actor = \core_xapi\xapi_helper::xapi_agent($user2);
+        $statement->actor = xapi_helper::xapi_agent($user2);
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement error: statement Agent is not the current user');
         }
 
         // Invalid actor group (with group actors disabled).
         $statement = $this->testhelper->generate_statement();
-        $statement->actor = \core_xapi\xapi_helper::xapi_group($group);
+        $statement->actor = xapi_helper::xapi_group($group);
         $json = json_encode($statement);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement error: statement Agent is not the current user');
         }
     }
@@ -430,7 +434,7 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statement = $this->testhelper->generate_statement();
         $statements = [$statement, $statement];
         $json = json_encode($statements);
-        $result = \core_xapi\external::post_statement('core_xapi',  $json);
+        $result = external::post_statement('core_xapi', $json);
         $this->assertEquals(count($result), 2);
         $this->assertTrue($result[0]);
         $this->assertTrue($result[1]);
@@ -442,19 +446,19 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
             $value = $log->get_name();
             $this->assertEquals($value, 'xAPI test statement');
             $value = $log->get_description();
-            $this->assertEquals($value, 'User \''.$USER->id.'\' send a statement to component \'core_xapi\'.');
-            $this->assertTrue($log->compare_statement ($statements[$num]));
+            $this->assertEquals($value, 'User \'' . $USER->id . '\' send a statement to component \'core_xapi\'.');
+            $this->assertTrue($log->compare_statement($statements[$num]));
             $num++;
         }
 
         // Both invalid statements.
         $statement = $this->testhelper->generate_statement();
-        $statement->verb = \core_xapi\xapi_helper::xapi_verb('walk');
+        $statement->verb = xapi_helper::xapi_verb('walk');
         $statements = [$statement, $statement];
         $json = json_encode($statements);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'No statement can be processed.');
         }
 
@@ -465,18 +469,18 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
         $statements = [$statement1, $statement2];
         $json = json_encode($statements);
         try {
-            $result = \core_xapi\external::post_statement('core_xapi',  $json);
-        } catch (\core_xapi\invalid_xapi_request_exception $e) {
+            $result = external::post_statement('core_xapi', $json);
+        } catch (invalid_xapi_request_exception $e) {
             $this->assertEquals($e->errorcode, 'Statement #1 error: unsupported actor potato_omelette.');
         }
 
         // One invalid statement.
         $statement1 = $this->testhelper->generate_statement();
-        $statement1->verb = \core_xapi\xapi_helper::xapi_verb('walk');
+        $statement1->verb = xapi_helper::xapi_verb('walk');
         $statement2 = $this->testhelper->generate_statement();
         $statements = [$statement1, $statement2];
         $json = json_encode($statements);
-        $result = \core_xapi\external::post_statement('core_xapi',  $json);
+        $result = external::post_statement('core_xapi', $json);
         $this->assertEquals(count($result), 2);
         $this->assertFalse($result[0]);
         $this->assertTrue($result[1]);
@@ -488,8 +492,8 @@ class core_xapi_request_testcase extends externallib_advanced_testcase {
             $value = $log->get_name();
             $this->assertEquals($value, 'xAPI test statement');
             $value = $log->get_description();
-            $this->assertEquals($value, 'User \''.$USER->id.'\' send a statement to component \'core_xapi\'.');
-            $this->assertTrue($log->compare_statement ($statement2));
+            $this->assertEquals($value, 'User \'' . $USER->id . '\' send a statement to component \'core_xapi\'.');
+            $this->assertTrue($log->compare_statement($statement2));
             $num++;
         }
     }

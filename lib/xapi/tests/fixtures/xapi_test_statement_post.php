@@ -24,7 +24,9 @@
 
 namespace core_xapi\event;
 
-use context_system;
+use core\event\base;
+use core_xapi\xapi_handler;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -36,7 +38,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2020 Ferran Recio
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class xapi_test_statement_post extends \core\event\base {
+class xapi_test_statement_post extends base {
 
     /**
      * Initialise the event data.
@@ -70,11 +72,11 @@ class xapi_test_statement_post extends \core\event\base {
      *
      * Note: similar checks for actor, verb, object (+ definition) and result for now.
      *
-     * @param \stdClass $statement An xAPI compatible statement.
+     * @param stdClass $statement An xAPI compatible statement.
      * @return bool True if the $statement represents this event.
      */
-    public function compare_statement(\stdClass $statement): bool {
-        $xapihandler = new \core_xapi\xapi_handler('core_xapi');
+    public function compare_statement(stdClass $statement): bool {
+        $xapihandler = new xapi_handler('core_xapi');
         // Check minified version.
         $calculatedfields = ['actor', 'id', 'timestamp', 'stored', 'version'];
         foreach ($calculatedfields as $field) {

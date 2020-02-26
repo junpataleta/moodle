@@ -26,6 +26,8 @@
 namespace core_xapi;
 
 use context_system;
+use core\event\base;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -43,10 +45,10 @@ class xapi_handler extends xapi_handler_base {
      * by validate_statement the component must provide a event to handle that statement,
      * otherwise the statement will be rejected
      *
-     * @param \stdClass $statement
-     * @return ?\core\event\base a Moodle event to trigger
+     * @param stdClass $statement
+     * @return base|null ?\core\event\base a Moodle event to trigger
      */
-    public function statement_to_event(\stdClass $statement): ?\core\event\base {
+    public function statement_to_event(stdClass $statement): ?base {
         // Validate verb.
         $validvalues = [
                 'cook',
@@ -95,10 +97,10 @@ class xapi_handler extends xapi_handler_base {
     /**
      * Testing method to make public minify statement for testing.
      *
-     * @param \stdClass $statement
+     * @param stdClass $statement
      * @return array the minimal statement needed to be stored a part from logstore data
      */
-    public function testing_minify_statement(\stdClass $statement) {
+    public function testing_minify_statement(stdClass $statement) {
         return $this->minify_statement ($statement);
     }
 }

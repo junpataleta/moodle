@@ -22,12 +22,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace core_xapi;
+
+use advanced_testcase;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/lib/xapi/tests/fixtures/xapi_handler.php');
-require_once($CFG->dirroot . '/lib/xapi/tests/fixtures/xapi_test_statement_post.php');
-require_once($CFG->dirroot . '/lib/xapi/tests/helper.php');
 
 /**
  * Contains test cases for testing xAPI statement handler base methods.
@@ -39,6 +40,8 @@ require_once($CFG->dirroot . '/lib/xapi/tests/helper.php');
  */
 class core_xapi_handler_base_testcase extends advanced_testcase {
 
+    private $testhelper;
+
     public function setUp() {
         $this->resetAfterTest();
         accesslib_clear_all_caches_for_unit_testing();
@@ -46,7 +49,7 @@ class core_xapi_handler_base_testcase extends advanced_testcase {
         $this->testhelper = new core_xapi_test_helper();
         $this->testhelper->init();
 
-        \core_xapi\xapi_handler_base::wipe_static_cache();
+        xapi_handler_base::wipe_static_cache();
     }
 
     /**
@@ -71,15 +74,15 @@ class core_xapi_handler_base_testcase extends advanced_testcase {
         $this->setUser($user);
 
         // Get component xAPI statement handler class.
-        $xapihandler = \core_xapi\xapi_helper::get_xapi_handler('core_xapi');
+        $xapihandler = xapi_helper::get_xapi_handler('core_xapi');
         $this->assertNotEmpty($xapihandler);
 
         // Get verb.
         $statement = $this->testhelper->generate_statement();
-        $statement->verb = \core_xapi\xapi_helper::xapi_verb('http://adlnet.gov/expapi/verbs/answered');
+        $statement->verb = xapi_helper::xapi_verb('http://adlnet.gov/expapi/verbs/answered');
         $this->assertEquals($xapihandler->get_verb($statement), 'http://adlnet.gov/expapi/verbs/answered');
         $this->assertEquals($xapihandler->get_verb($statement->verb), 'http://adlnet.gov/expapi/verbs/answered');
-        $statement->verb = \core_xapi\xapi_helper::xapi_verb('cook');
+        $statement->verb = xapi_helper::xapi_verb('cook');
         $this->assertEquals($xapihandler->get_verb($statement), 'cook');
         $this->assertEquals($xapihandler->get_verb($statement->verb), 'cook');
         unset($statement->verb->id);
@@ -87,51 +90,51 @@ class core_xapi_handler_base_testcase extends advanced_testcase {
 
         // Get object.
         $statement = $this->testhelper->generate_statement();
-        $statement->object = \core_xapi\xapi_helper::xapi_object('http://adlnet.gov/expapi/activities/example');
+        $statement->object = xapi_helper::xapi_object('http://adlnet.gov/expapi/activities/example');
         $this->assertEquals($xapihandler->get_object($statement), 'http://adlnet.gov/expapi/activities/example');
         $this->assertEquals($xapihandler->get_object($statement->object), 'http://adlnet.gov/expapi/activities/example');
-        $statement->object = \core_xapi\xapi_helper::xapi_object('paella');
+        $statement->object = xapi_helper::xapi_object('paella');
         $this->assertEquals($xapihandler->get_object($statement), 'paella');
         $this->assertEquals($xapihandler->get_object($statement->object), 'paella');
         $statement->object->objectType = 'wrong_type';
         $this->assertNull($xapihandler->get_object($statement));
-        $statement->object = \core_xapi\xapi_helper::xapi_object('paella');
+        $statement->object = xapi_helper::xapi_object('paella');
         unset($statement->object->id);
         $this->assertNull($xapihandler->get_object($statement));
 
         // Check valid objects.
         $statement = $this->testhelper->generate_statement();
         $objects = ['paella', 'http://adlnet.gov/expapi/activities/example'];
-        $statement->object = \core_xapi\xapi_helper::xapi_object($objects[0]);
+        $statement->object = xapi_helper::xapi_object($objects[0]);
         $this->assertEquals($xapihandler->check_valid_object($statement, $objects), $objects[0]);
-        $statement->object = \core_xapi\xapi_helper::xapi_object($objects[1]);
+        $statement->object = xapi_helper::xapi_object($objects[1]);
         $this->assertEquals($xapihandler->check_valid_object($statement, $objects), $objects[1]);
-        $statement->object = \core_xapi\xapi_helper::xapi_object('omelette');
+        $statement->object = xapi_helper::xapi_object('omelette');
         $this->assertNull($xapihandler->check_valid_object($statement, $objects));
 
         // Check valid verbs.
         $statement = $this->testhelper->generate_statement();
         $verbs = ['cook', 'http://adlnet.gov/expapi/activities/example'];
-        $statement->verb = \core_xapi\xapi_helper::xapi_verb($verbs[0]);
+        $statement->verb = xapi_helper::xapi_verb($verbs[0]);
         $this->assertEquals($xapihandler->check_valid_verb($statement, $verbs), $verbs[0]);
-        $statement->verb = \core_xapi\xapi_helper::xapi_verb($verbs[1]);
+        $statement->verb = xapi_helper::xapi_verb($verbs[1]);
         $this->assertEquals($xapihandler->check_valid_verb($statement, $verbs), $verbs[1]);
-        $statement->verb = \core_xapi\xapi_helper::xapi_verb('run');
+        $statement->verb = xapi_helper::xapi_verb('run');
         $this->assertNull($xapihandler->check_valid_verb($statement, $verbs));
 
         // Get user.
         $statement = $this->testhelper->generate_statement();
-        $statement->actor = \core_xapi\xapi_helper::xapi_agent($user);
+        $statement->actor = xapi_helper::xapi_agent($user);
         $value = $xapihandler->get_user($statement);
         $this->assertEquals($value->id, $user->id);
         $this->assertEquals($value->username, $user->username);
         $this->assertEquals($value->email, $user->email);
 
-        $statement->actor = \core_xapi\xapi_helper::xapi_agent($user);
+        $statement->actor = xapi_helper::xapi_agent($user);
         $statement->actor->account->name = -1;
         $this->assertNull($xapihandler->get_user($statement));
 
-        $statement->actor = \core_xapi\xapi_helper::xapi_agent($user);
+        $statement->actor = xapi_helper::xapi_agent($user);
         unset($statement->actor->account);
         $statement->actor->mbox = "mailto:$user->email";
         $value = $xapihandler->get_user($statement);
@@ -139,9 +142,9 @@ class core_xapi_handler_base_testcase extends advanced_testcase {
         $this->assertEquals($value->username, $user->username);
         $this->assertEquals($value->email, $user->email);
 
-        $statement->actor = \core_xapi\xapi_helper::xapi_group($group);
+        $statement->actor = xapi_helper::xapi_group($group);
         $this->assertNull($xapihandler->get_user($statement));
-        $statement->actor = \core_xapi\xapi_helper::xapi_group($group2);
+        $statement->actor = xapi_helper::xapi_group($group2);
         $value = $xapihandler->get_user($statement);
         $this->assertEquals($value->id, $user->id);
         $this->assertEquals($value->username, $user->username);
@@ -149,23 +152,23 @@ class core_xapi_handler_base_testcase extends advanced_testcase {
 
         // Get all users.
         $statement = $this->testhelper->generate_statement();
-        $statement->actor = \core_xapi\xapi_helper::xapi_agent($user);
+        $statement->actor = xapi_helper::xapi_agent($user);
         $values = $xapihandler->get_all_users($statement);
         $this->assertEquals(count($values), 1);
         $this->assertArrayHasKey($user->id, $values);
 
-        $statement->actor = \core_xapi\xapi_helper::xapi_agent($user);
+        $statement->actor = xapi_helper::xapi_agent($user);
         $statement->actor->account->name = -1;
         $this->assertNull($xapihandler->get_all_users($statement));
 
-        $statement->actor = \core_xapi\xapi_helper::xapi_agent($user);
+        $statement->actor = xapi_helper::xapi_agent($user);
         unset($statement->actor->account);
         $statement->actor->mbox = "mailto:$user->email";
         $values = $xapihandler->get_all_users($statement);
         $this->assertEquals(count($values), 1);
         $this->assertArrayHasKey($user->id, $values);
 
-        $statement->actor = \core_xapi\xapi_helper::xapi_group($group);
+        $statement->actor = xapi_helper::xapi_group($group);
         $values = $xapihandler->get_all_users($statement);
         $this->assertEquals(count($values), 2);
         $this->assertArrayHasKey($user->id, $values);
@@ -176,17 +179,17 @@ class core_xapi_handler_base_testcase extends advanced_testcase {
 
         // Get group.
         $statement = $this->testhelper->generate_statement();
-        $statement->actor = \core_xapi\xapi_helper::xapi_group($group);
+        $statement->actor = xapi_helper::xapi_group($group);
         $value = $xapihandler->get_group($statement);
         $this->assertEquals($value->id, $group->id);
         $value = $xapihandler->get_group($statement->actor);
         $this->assertEquals($value->id, $group->id);
 
-        $statement->actor = \core_xapi\xapi_helper::xapi_agent($user);
+        $statement->actor = xapi_helper::xapi_agent($user);
         $this->assertNull($xapihandler->get_group($statement));
         $this->assertNull($xapihandler->get_group($statement->actor));
 
-        $statement->actor = \core_xapi\xapi_helper::xapi_group($group);
+        $statement->actor = xapi_helper::xapi_group($group);
         $statement->actor->account->name = -1;
         $this->assertNull($xapihandler->get_group($statement));
         $this->assertNull($xapihandler->get_group($statement->actor));

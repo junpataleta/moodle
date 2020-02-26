@@ -25,6 +25,8 @@
 
 namespace core_xapi;
 
+use moodle_exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -33,5 +35,5 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2020 Ferran Recio
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class invalid_xapi_request_exception extends \moodle_exception {
+class invalid_xapi_request_exception extends moodle_exception {
 }

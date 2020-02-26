@@ -41,7 +41,7 @@ class xapi_validator {
     /** @var int index of the last statement checked. */
     private $lastcheck;
 
-    /** @var \core_xapi\xapi_handler_base to check users and groups. */
+    /** @var xapi_handler_base to check users and groups. */
     private $xapihandler;
 
     /**
@@ -51,7 +51,7 @@ class xapi_validator {
     public function __construct() {
         $this->lastrerror = '';
         $this->lastcheck = 0;
-        $this->xapihandler = new \core_xapi\xapi_handler_base('core_xapi');
+        $this->xapihandler = new xapi_handler_base('core_xapi');
     }
 
     /**
@@ -59,13 +59,13 @@ class xapi_validator {
      * @param string $requestjson json encoded statements structure
      * @return array(statements) | null
      */
-    public function get_statements_form_json($requestjson): ?array {
+    public function get_statements_from_json($requestjson): ?array {
         $request = json_decode($requestjson);
         if ($request === null) {
-            $this->lastrerror = 'JSON parse, '.json_last_error_msg();
+            $this->lastrerror = 'JSON parse, ' . json_last_error_msg();
             return null;
         }
-        $statements = $this->get_statements_form_request($request);
+        $statements = $this->get_statements_from_request($request);
         if (empty($statements)) {
             return null;
         }
@@ -77,12 +77,12 @@ class xapi_validator {
      * @param mixed $request json decoded statements structure
      * @return array(statements) | null
      */
-    public function get_statements_form_request($request): ?array {
+    public function get_statements_from_request($request): ?array {
         $result = array();
         if (is_array($request)) {
             $this->lastcheck = 0;
             foreach ($request as $key => $value) {
-                $statement = $this->get_statements_form_request ($value);
+                $statement = $this->get_statements_from_request($value);
                 if (empty($statement)) {
                     return null;
                 }
@@ -91,7 +91,7 @@ class xapi_validator {
             }
         } else {
             // Check if it's real statement or we need to go deeper in the structure.
-            if (!$this->validate_statement ($request)) {
+            if (!$this->validate_statement($request)) {
                 return null;
             }
             $result[] = $request;
@@ -138,7 +138,7 @@ class xapi_validator {
                 $this->lastrerror = "missing $required";
                 return false;
             }
-            $validatefunction = 'validate_'.$required;
+            $validatefunction = 'validate_' . $required;
             if (!$this->$validatefunction($statement->$required)) {
                 return false;
             }
