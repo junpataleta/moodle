@@ -54,7 +54,7 @@ define(['jquery', 'core/custom_interaction_events'], function($, CustomEvents) {
      * @param {Object} clearChoiceContainer The clear choice option container.
      */
     var hideClearChoiceOption = function(clearChoiceContainer) {
-        clearChoiceContainer.addClass('sr-only');
+        clearChoiceContainer.attr('hidden', true);
     };
 
     /**
@@ -63,7 +63,7 @@ define(['jquery', 'core/custom_interaction_events'], function($, CustomEvents) {
      * @param {Object} clearChoiceContainer The clear choice option container.
      */
     var showClearChoiceOption = function(clearChoiceContainer) {
-        clearChoiceContainer.removeClass('sr-only');
+        clearChoiceContainer.removeAttr('hidden');
     };
 
     /**
