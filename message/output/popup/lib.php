@@ -62,9 +62,11 @@ function message_popup_render_navbar_output(\renderer_base $renderer) {
     if (!empty($CFG->messaging)) {
         $unreadcount = \core_message\api::count_unread_conversations($USER);
         $requestcount = \core_message\api::get_received_contact_requests_count($USER->id);
+        $messagedrawer = \core_message\helper::render_messaging_widget(true, null, null);
         $context = [
             'userid' => $USER->id,
-            'unreadcount' => $unreadcount + $requestcount
+            'unreadcount' => $unreadcount + $requestcount,
+            'messagedrawerhtml' => $messagedrawer,
         ];
         $output .= $renderer->render_from_template('core_message/message_popover', $context);
     }
