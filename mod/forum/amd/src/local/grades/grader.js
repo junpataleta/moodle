@@ -159,6 +159,21 @@ const showUserSearchInput = (toggleSearchButton, searchContainer, searchInput) =
     toggleSearchButton.setAttribute('aria-expanded', 'true');
     toggleSearchButton.classList.add('expand');
     toggleSearchButton.classList.remove('collapse');
+
+    // Show hide user search icon to screen reader.
+    const searchIconHide = toggleSearchButton.querySelector(Selectors.regions.userSearchIconHide);
+    searchIconHide.setAttribute('aria-hidden', 'false');
+
+    // Hide show user search icon from screen reader.
+    const searchIconShow = toggleSearchButton.querySelector(Selectors.regions.userSearchIconShow);
+    searchIconShow.setAttribute('aria-hidden', 'true');
+
+    // Hide the grading info container from screen reader.
+    const gradingInfoContainer = searchContainer.parentElement.querySelector(Selectors.regions.gradingInfoContainer);
+    gradingInfoContainer.setAttribute('aria-hidden', 'true');
+
+    // Hide the search input to screen readers.
+    searchInput.setAttribute('aria-hidden', 'false');
     searchInput.focus();
 };
 
@@ -175,6 +190,21 @@ const hideUserSearchInput = (toggleSearchButton, searchContainer, searchInput) =
     toggleSearchButton.classList.add('collapse');
     toggleSearchButton.classList.remove('expand');
     toggleSearchButton.focus();
+
+    // Hide hide user search icon from screen reader.
+    const searchIconHide = toggleSearchButton.querySelector(Selectors.regions.userSearchIconHide);
+    searchIconHide.setAttribute('aria-hidden', 'true');
+
+    // Show show user search icon to screen reader.
+    const searchIconShow = toggleSearchButton.querySelector(Selectors.regions.userSearchIconShow);
+    searchIconShow.setAttribute('aria-hidden', 'false');
+
+    // Show the grading info container to screen reader.
+    const gradingInfoContainer = searchContainer.parentElement.querySelector(Selectors.regions.gradingInfoContainer);
+    gradingInfoContainer.setAttribute('aria-hidden', 'false');
+
+    // Hide the search input from screen readers.
+    searchInput.setAttribute('aria-hidden', 'true');
     searchInput.value = '';
 };
 
