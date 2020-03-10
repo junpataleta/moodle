@@ -45,12 +45,15 @@ export default {
         moduleContainer: getDataSelector('region', 'module_content_container'),
         moduleReplace: getDataSelector('region', 'module_content'),
         pickerRegion: getDataSelector('region', 'user_picker'),
+        gradingInfoContainer: getDataSelector('region', 'grading-info-container'),
         gradingPanel: getDataSelector('region', 'grade'),
         gradingPanelContainer: getDataSelector('region', 'grading-panel-container'),
         gradingPanelErrors: getDataSelector('region', 'grade-errors'),
         searchResultsContainer: getDataSelector('region', 'search-results-container'),
         statusContainer: getDataSelector('region', 'status-container'),
         userSearchContainer: getDataSelector('region', 'user-search-container'),
+        userSearchIconHide: getDataSelector('region', 'user-search-icon-hide'),
+        userSearchIconShow: getDataSelector('region', 'user-search-icon-show'),
         userSearchInput: getDataSelector('region', 'user-search-input')
     },
     values: {
