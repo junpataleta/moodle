@@ -79,7 +79,7 @@
                         <address tabindex="-1">
                             {{#html.authorsubheading}}{{{.}}}{{/html.authorsubheading}}
                             {{^html.authorsubheading}}
-                                <time>
+                                <time datetime="{{#userdate}} {{timecreated}}, %Y-%m-%dT%H:%M%z, calendartype_gregorian {{/userdate}}">
                                     {{#userdate}} {{timecreated}}, {{#str}} strftimedaydatetime, core_langconfig {{/str}} {{/userdate}}
                                 </time>
                             {{/html.authorsubheading}}
