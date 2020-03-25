@@ -257,7 +257,9 @@
                                         <div class="author-info align-middle">
                                             <div class="mb-1 line-height-3 text-truncate">{{fullname}}</div>
                                             <div class="line-height-3">
-                                                {{#userdate}}{{discussion.times.created}}, {{#str}}strftimedatemonthabbr, langconfig{{/str}}{{/userdate}}
+                                                <time datetime="{{#userdate}}{{discussion.times.created}}, %Y-%m-%dT%H:%M%z, calendartype_gregorian{{/userdate}}">
+                                                    {{#userdate}}{{discussion.times.created}}, {{#str}}strftimedatemonthabbr, langconfig{{/str}}{{/userdate}}
+                                                </time>
                                             </div>
                                         </div>
                                     </div>
@@ -277,7 +279,9 @@
                                             <div class="line-height-3">
                                                 {{#latestpostid}}
                                                     <a href="{{{discussion.urls.viewlatest}}}" title="{{#userdate}}{{discussion.times.modified}},{{#str}}strftimerecentfull{{/str}}{{/userdate}}">
-                                                        {{#userdate}}{{discussion.times.modified}}, {{#str}}strftimedatemonthabbr, langconfig{{/str}}{{/userdate}}
+                                                        <time datetime="{{#userdate}}{{discussion.times.modified}}, %Y-%m-%dT%H:%M%z, calendartype_gregorian{{/userdate}}">
+                                                            {{#userdate}}{{discussion.times.modified}}, {{#str}}strftimedatemonthabbr, langconfig{{/str}}{{/userdate}}
+                                                        </time>
                                                     </a>
                                                 {{/latestpostid}}
                                             </div>
