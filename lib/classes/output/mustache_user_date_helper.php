@@ -52,13 +52,20 @@ class mustache_user_date_helper {
      */
     public function transform($args, Mustache_LambdaHelper $helper) {
         // Split the text into an array of variables.
-        list($timestamp, $format) = explode(',', $args, 2);
+        $regex = '/(.*?),(.*?),?(\s*calendartype_[^,]+|$)/';
+        preg_match($regex, $args, $matches);
+        [, $timestamp, $format, $calendartype] = $matches;
+
         $timestamp = trim($timestamp);
         $format = trim($format);
+        $calendartype = trim($calendartype);
 
         $timestamp = $helper->render($timestamp);
         $format = $helper->render($format);
+        $calendartype = $helper->render($calendartype);
 
-        return userdate($timestamp, $format);
+        $calendartype = $calendartype ?: null;
+        $calendar  = \core_calendar\type_factory::get_calendar_instance($calendartype);
+        return $calendar->timestamp_to_date_string($timestamp, $format, 99, true, true);
     }
 }
