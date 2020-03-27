@@ -130,7 +130,9 @@ const getUpdateUserContentFunction = (root, getContentForUser, getGradeForUser, 
  */
 const showSearchResultContainer = (bodyContainer, userPickerContainer, searchResultsContainer) => {
     bodyContainer.classList.add('hidden');
+    bodyContainer.setAttribute('aria-hidden', 'true');
     userPickerContainer.classList.add('hidden');
+    userPickerContainer.setAttribute('aria-hidden', 'true');
     searchResultsContainer.classList.remove('hidden');
 };
 
@@ -143,7 +145,9 @@ const showSearchResultContainer = (bodyContainer, userPickerContainer, searchRes
  */
 const hideSearchResultContainer = (bodyContainer, userPickerContainer, searchResultsContainer) => {
     bodyContainer.classList.remove('hidden');
+    bodyContainer.setAttribute('aria-hidden', 'false');
     userPickerContainer.classList.remove('hidden');
+    bodyContainer.setAttribute('aria-hidden', 'false');
     searchResultsContainer.classList.add('hidden');
 };
 
@@ -160,17 +164,22 @@ const showUserSearchInput = (toggleSearchButton, searchContainer, searchInput) =
     toggleSearchButton.classList.add('expand');
     toggleSearchButton.classList.remove('collapse');
 
-    // Show hide user search icon to screen reader.
+    // Show 'hide user search' icon to screen reader.
     const searchIconHide = toggleSearchButton.querySelector(Selectors.regions.userSearchIconHide);
     searchIconHide.setAttribute('aria-hidden', 'false');
 
-    // Hide show user search icon from screen reader.
+    // Hide 'show user search' icon from screen reader.
     const searchIconShow = toggleSearchButton.querySelector(Selectors.regions.userSearchIconShow);
     searchIconShow.setAttribute('aria-hidden', 'true');
 
     // Hide the grading info container from screen reader.
     const gradingInfoContainer = searchContainer.parentElement.querySelector(Selectors.regions.gradingInfoContainer);
     gradingInfoContainer.setAttribute('aria-hidden', 'true');
+
+    // Hide the collapse grading drawer button from screen reader.
+    const collapseGradingDrawer = searchContainer.parentElement.querySelector(Selectors.buttons.collapseGradingDrawer);
+    collapseGradingDrawer.setAttribute('aria-hidden', 'true');
+    collapseGradingDrawer.setAttribute('tabindex', '-1');
 
     // Hide the search input to screen readers.
     searchInput.setAttribute('aria-hidden', 'false');
@@ -191,17 +200,22 @@ const hideUserSearchInput = (toggleSearchButton, searchContainer, searchInput) =
     toggleSearchButton.classList.remove('expand');
     toggleSearchButton.focus();
 
-    // Hide hide user search icon from screen reader.
+    // Hide 'hide user search' icon from screen reader.
     const searchIconHide = toggleSearchButton.querySelector(Selectors.regions.userSearchIconHide);
     searchIconHide.setAttribute('aria-hidden', 'true');
 
-    // Show show user search icon to screen reader.
+    // Show 'show user search' icon to screen reader.
     const searchIconShow = toggleSearchButton.querySelector(Selectors.regions.userSearchIconShow);
     searchIconShow.setAttribute('aria-hidden', 'false');
 
     // Show the grading info container to screen reader.
     const gradingInfoContainer = searchContainer.parentElement.querySelector(Selectors.regions.gradingInfoContainer);
     gradingInfoContainer.setAttribute('aria-hidden', 'false');
+
+    // Show the collapse grading drawer button from screen reader.
+    const collapseGradingDrawer = searchContainer.parentElement.querySelector(Selectors.buttons.collapseGradingDrawer);
+    collapseGradingDrawer.setAttribute('aria-hidden', 'false');
+    collapseGradingDrawer.setAttribute('tabindex', '0');
 
     // Hide the search input from screen readers.
     searchInput.setAttribute('aria-hidden', 'true');

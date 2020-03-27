@@ -36,6 +36,7 @@ export default {
     buttons: {
         toggleFullscreen: getDataSelector('action', 'togglefullscreen'),
         closeGrader: getDataSelector('action', 'closegrader'),
+        collapseGradingDrawer: getDataSelector('action', 'collapse-grading-drawer'),
         saveGrade: getDataSelector('action', 'savegrade'),
         selectUser: getDataSelector('action', 'select-user'),
         toggleSearch: getDataSelector('action', 'toggle-search')
