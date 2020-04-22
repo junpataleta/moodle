@@ -3646,8 +3646,39 @@ class custom_menu_item implements renderable, templatable {
 
         $syscontext = context_system::instance();
 
+        // Purify text if it contains HTML.
+        if (is_purify_html_necessary($this->text)) {
+            // Allow some inline HTML elements such as <abbr>, <b>, <big>, <em>, <i>, <small>, <strong>, <sub>, <sup>.
+            require_once($CFG->libdir.'/htmlpurifier/HTMLPurifier.safe-includes.php');
+
+            $config = HTMLPurifier_Config::createDefault();
+            // List of allowed inline elements and their allowed attributes.
+            $allowed = [
+                'abbr[title]',
+                'b',
+                'big',
+                'em',
+                'i[class|aria-hidden]',
+                'small',
+                'strong',
+                'sub',
+                'sup',
+            ];
+            $config->set('HTML.Allowed', implode(',', $allowed));
+
+            // Define desired ARIA attributes.
+            $htmldef = $config->getHTMLDefinition(true);
+            $htmldef->addAttribute('i', 'aria-hidden', 'Enum#true,false');
+
+            // Purify the custom menu HTML.
+            $purifier = new HTMLPurifier($config);
+            $text = $purifier->purify($this->text);
+        } else {
+            $text = external_format_string($this->text, $syscontext->id);
+        }
+
         $context = new stdClass();
-        $context->text = format_text($this->text, FORMAT_HTML, ['context' => $syscontext->id]);
+        $context->text = $text;
         $context->url = $this->url ? $this->url->out() : null;
         $context->title = external_format_string($this->title, $syscontext->id);
         $context->sort = $this->sort;
