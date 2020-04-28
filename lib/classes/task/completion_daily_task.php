@@ -98,42 +98,32 @@ class completion_daily_task extends scheduled_task {
             // for each participant in the query result. This isn't really a problem until you combine it with the fact
             // that the enrolment plugins can save the enrol start time in either timestart or timeenrolled.
             // The purpose of the loop is to find the earliest enrolment start time for each participant in each course.
-            $prev = null;
-            while ($rs->valid() || $prev) {
-                $current = $rs->current();
-                if (!isset($current->course)) {
-                    $current = false;
-                } else {
-                    // Not all enrol plugins fill out timestart correctly, so use whichever is non-zero.
-                    $current->timeenrolled = max($current->timecreated, $current->timeenrolled);
+            $enroltimes = [];
+            foreach ($rs as $record) {
+                if (!$record->timeenrolled) {
+                    $record->timeenrolled = $record->timecreated;
                 }
-
-                // If we are at the last record, or we aren't at the first and the record is for a diff user/course.
-                if ($prev && (!$rs->valid() ||
-                        ($current->course != $prev->course || $current->userid != $prev->userid))) {
-
-                    $completion = new \completion_completion();
-                    $completion->userid = $prev->userid;
-                    $completion->course = $prev->course;
-                    $completion->timeenrolled = (string) $prev->timeenrolled;
-                    $completion->timestarted = 0;
-                    $completion->reaggregate = time();
-                    if ($prev->completionid) {
-                        $completion->id = $prev->completionid;
-                    }
-                    $completion->mark_enrolled();
-
-                    if (debugging()) {
-                        mtrace('Marked started user ' . $prev->userid . ' in course ' . $prev->course);
-                    }
-                } else if ($prev && $current) {
-                    // Else, if this record is for the same user/course use oldest timeenrolled.
-                    $current->timeenrolled = min($current->timeenrolled, $prev->timeenrolled);
+                // If the record's enrolled time is already set and greater or equal than the currently registered data, skip it.
+                if (isset($enroltimes[$record->course][$record->userid]) &&
+                    $enroltimes[$record->course][$record->userid] >= $record->timeenrolled) {
+                    continue;
                 }
-                // Move current record to previous.
-                $prev = $current;
-                // Move to next record.
-                $rs->next();
+                $enroltimes[$record->course][$record->userid] = $record->timeenrolled;
+
+                $completion = new \completion_completion();
+                $completion->userid = $record->userid;
+                $completion->course = $record->course;
+                $completion->timeenrolled = (string) $record->timeenrolled;
+                $completion->timestarted = 0;
+                $completion->reaggregate = time();
+                if ($record->completionid) {
+                    $completion->id = $record->completionid;
+                }
+                $completion->mark_enrolled();
+
+                if (debugging()) {
+                    mtrace('Marked started user ' . $record->userid . ' in course ' . $record->course);
+                }
             }
             $rs->close();
         }
