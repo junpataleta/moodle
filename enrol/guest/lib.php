@@ -79,7 +79,7 @@ class enrol_guest_plugin extends enrol_plugin {
      * @param stdClass $instance
      * @param int $userid
      */
-    public function unenrol_user(stdClass $instance, $userid, $removeroles = true) {
+    public function unenrol_user(stdClass $instance, $userid) {
         // nothing to do, we never enrol here!
         return;
     }

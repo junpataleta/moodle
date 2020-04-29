@@ -112,23 +112,15 @@ if ($ADMIN->fulltree) {
         get_string('allowunenrol', 'enrol_imsenterprise'), get_string('allowunenrol_desc', 'enrol_imsenterprise'), 0));
 
     /* Action to take when a request to remove a user enrolment record is detected in the IMS file */
-    $imsunenrolaction = new enrol_imsenterprise_unenrol_behaviour();
-    $options = array(
-        $imsunenrolaction::ENROL_IMSENTERPRISE_REMOVE_ENROL_AND_ROLES => get_string('removeenrolmentandallroles',
-            'enrol_imsenterprise'),
-        $imsunenrolaction::ENROL_IMSENTERPRISE_DISABLE_ENROL_ONLY => get_string('disableenrolonly',
-            'enrol_imsenterprise'),
-        $imsunenrolaction::ENROL_IMSENTERPRISE_DISABLE_ENROL_REMOVE_ROLES  => get_string('disableenrolmentandremoveallroles',
-            'enrol_imsenterprise'),
-        $imsunenrolaction::ENROL_IMSENTERPRISE_REMOVE_ENROL_ONLY => get_string('removeenrolmentonly',
-            'enrol_imsenterprise'),
-    );
+    $options = array(ENROL_EXT_REMOVED_UNENROL        => get_string('extremovedunenrol', 'enrol'),
+        ENROL_EXT_REMOVED_KEEP           => get_string('extremovedkeep', 'enrol'),
+        ENROL_EXT_REMOVED_SUSPEND        => get_string('extremovedsuspend', 'enrol'),
+        ENROL_EXT_REMOVED_SUSPENDNOROLES => get_string('extremovedsuspendnoroles', 'enrol'));
 
     $settings->add(
-        new admin_setting_configselect('enrol_imsenterprise/imsunenrolaction',
-            get_string('unenrolaction', 'enrol_imsenterprise'),
-            get_string('unenrolaction_desc', 'enrol_imsenterprise'),
-            $imsunenrolaction::ENROL_IMSENTERPRISE_REMOVE_ENROL_AND_ROLES, $options)
+        new admin_setting_configselect('enrol_imsenterprise/unenrolaction',
+            get_string('extremovedaction', 'enrol'), get_string('extremovedaction_help', 'enrol'),
+            ENROL_EXT_REMOVED_UNENROL, $options)
     );
 
     if (!during_initial_install()) {
