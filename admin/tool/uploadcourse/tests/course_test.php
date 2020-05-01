@@ -1099,9 +1099,10 @@ class tool_uploadcourse_course_testcase extends advanced_testcase {
         // Perform upload.
         $mode = tool_uploadcourse_processor::MODE_UPDATE_ONLY;
         $updatemode = tool_uploadcourse_processor::UPDATE_ALL_WITH_DATA_ONLY;
+        $date = '2020-04-01 16:00';
         $dataupload = [
             'shortname' => $course->shortname,
-            'customfield_mydatefield' => '2020-04-01 16:00',
+            'customfield_mydatefield' => $date,
             'customfield_mytextfield' => 'Hello',
             'customfield_mytextareafield' => 'Is it me you\'re looking for?',
         ];
@@ -1112,7 +1113,8 @@ class tool_uploadcourse_course_testcase extends advanced_testcase {
 
         // Confirm presence of course custom fields.
         $data = \core_course\customfield\course_handler::create()->export_instance_data_object($course->id);
-        $this->assertEquals('Wednesday, 1 April 2020, 4:00 PM', $data->mydatefield, '', 0.0, 10, false, true);
+        $timestamp = strtotime($date);
+        $this->assertEquals(userdate($timestamp), $data->mydatefield);
         $this->assertEquals($dataupload['customfield_mytextfield'], $data->mytextfield);
         $this->assertContains($dataupload['customfield_mytextareafield'], $data->mytextareafield);
     }
