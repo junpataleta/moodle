@@ -78,8 +78,9 @@
         <thead>
           <tr>
                 {{# daynames }}
-                <th class="header text-xs-center" scope="col" aria-label="{{fullname}}">
-                    {{shortname}}
+                <th class="header text-xs-center" scope="col" aria-labelledby="weektitle-mini-{{date.year}}-{{date.mon}}-{{dayno}}">
+                    <span class="d-none" id="weektitle-mini-{{date.year}}-{{date.mon}}-{{dayno}}">{{fullname}}</span>
+                    <span aria-hidden="true">{{shortname}}</span>
                 </th>
                 {{/ daynames }}
             </tr>
@@ -127,8 +128,12 @@
 
                         This is the timestamp for this month.
                         }} data-day-timestamp="{{timestamp}}"{{!
+
+                        This is the title that screen-readers announce for this day.
+                        }} aria-labelledby="daytitle-mini-{{date.year}}-{{date.mon}}-{{mday}}"{{!
                     }}>{{!
-                        }}{{#popovertitle}}
+                        }}<span class="d-none" id="daytitle-mini-{{date.year}}-{{date.mon}}-{{mday}}">{{daytitle}}</span>
+                        {{#popovertitle}}
                             {{< core_calendar/minicalendar_day_link }}
                                 {{$day}}{{mday}}{{/day}}
                                 {{$url}}{{viewdaylink}}{{/url}}
@@ -145,7 +150,7 @@
                             {{/ core_calendar/minicalendar_day_link }}
                         {{/popovertitle}}{{!
                         }}{{^popovertitle}}
-                            {{mday}}
+                            <span aria-hidden="true">{{mday}}</span>
                         {{/popovertitle}}{{!
                     }}</td>
                 {{/days}}
