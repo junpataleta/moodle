@@ -78,8 +78,8 @@
         <thead>
           <tr>
                 {{# daynames }}
-                <th class="header text-xs-center" scope="col" aria-labelledby="weektitle-mini-{{date.year}}-{{date.mon}}-{{dayno}}">
-                    <span class="d-none" id="weektitle-mini-{{date.year}}-{{date.mon}}-{{dayno}}">{{fullname}}</span>
+                <th class="header text-xs-center" scope="col">
+                    <span class="sr-only">{{fullname}}</span>
                     <span aria-hidden="true">{{shortname}}</span>
                 </th>
                 {{/ daynames }}

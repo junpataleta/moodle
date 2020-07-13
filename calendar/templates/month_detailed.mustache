@@ -46,8 +46,8 @@
         <thead>
             <tr>
                 {{# daynames }}
-                <th class="header text-xs-center" aria-labelledby="weektitle-{{date.year}}-{{date.mon}}-{{dayno}}">
-                    <span class="d-none" id="weektitle-{{date.year}}-{{date.mon}}-{{dayno}}">{{fullname}}</span>
+                <th class="header text-xs-center">
+                    <span class="sr-only">{{fullname}}</span>
                     <span aria-hidden="true">{{shortname}}</span>
                 </th>
                 {{/ daynames }}
@@ -70,18 +70,20 @@
                         data-day-timestamp="{{timestamp}}"
                         data-drop-zone="month-view-day"
                         data-region="day"
-                        data-new-event-timestamp="{{neweventtimestamp}}"
-                        aria-labelledby="daytitle-{{date.year}}-{{date.mon}}-{{mday}}">
-                        <span class="d-none" id="daytitle-{{date.year}}-{{date.mon}}-{{mday}}">{{daytitle}}</span>
+                        data-new-event-timestamp="{{neweventtimestamp}}">
                         <div class="d-none d-md-block hidden-phone text-xs-center">
                             {{#hasevents}}
-                                <a data-action="view-day-link" href="#" class="aalink day" aria-label="{{viewdaylinktitle}}"
+                                <a data-action="view-day-link" href="#" class="aalink day"
                                     data-year="{{date.year}}" data-month="{{date.mon}}" data-day="{{mday}}"
                                     data-courseid="{{courseid}}" data-categoryid="{{categoryid}}"
-                                    data-timestamp="{{timestamp}}">{{mday}}</a>
+                                    data-timestamp="{{timestamp}}">
+                                    <span aria-hidden="true">{{mday}}</span>
+                                    <span class="sr-only">{{daytitle}}</span>
+                                </a>
                             {{/hasevents}}
                             {{^hasevents}}
                                 <span aria-hidden="true">{{mday}}</span>
+                                <span class="sr-only">{{daytitle}}</span>
                             {{/hasevents}}
                             {{#hasevents}}
                                 <div data-region="day-content">
