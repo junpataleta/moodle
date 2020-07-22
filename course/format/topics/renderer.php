@@ -45,7 +45,8 @@ class format_topics_renderer extends format_section_renderer_base {
         parent::__construct($page, $target);
 
         // Since format_topics_renderer::section_edit_control_items() only displays the 'Highlight' control when editing mode is on
-        // we need to be sure that the link 'Turn editing mode on' is available for a user who does not have any other managing capability.
+        // we need to be sure that the link 'Turn editing mode on' is available for a user who does not have any other managing
+        // capability.
         $page->set_other_editing_capability('moodle/course:setcurrentsection');
     }
 
