@@ -275,7 +275,7 @@ fieldset.coursesearchbox label {
     min-height: 2 * $input-padding-y-sm + 2 * $font-size-base;
 }
 
-.form-autocomplete-selection [role=listitem] {
+.form-autocomplete-selection [role=option] {
     cursor: pointer;
     white-space: inherit;
     word-break: break-word;
@@ -291,15 +291,14 @@ fieldset.coursesearchbox label {
     min-width: 206px;
     max-height: 20em;
     overflow: auto;
-    margin: 0;
-    padding: 0;
-    margin-top: 0.4em;
+    margin: $dropdown-spacer 0 0;
+    padding: $dropdown-padding-y 0;
     z-index: 1;
 }
 
 .form-autocomplete-suggestions li {
     list-style-type: none;
-    padding: 0.2em;
+    padding: $dropdown-item-padding-y $dropdown-item-padding-x;
     margin: 0;
     cursor: pointer;
     color: $body-color;
@@ -328,10 +327,6 @@ fieldset.coursesearchbox label {
     }
 }
 
-.form-autocomplete-selection:focus {
-    outline: 0;
-    box-shadow: $input-btn-focus-box-shadow;
-}
 /** Undo some bootstrap things */
 .form-autocomplete-selection + input.form-control {
     width: auto;

@@ -170,7 +170,8 @@ a.dropdown-item,
 a.dropdown-toggle,
 .modal-dialog[tabindex="0"],
 .moodle-dialogue-base .closebutton,
-button.close {
+button.close,
+.form-autocomplete-selection {
     &.focus,
     &:focus {
         outline: 0;
@@ -179,6 +180,12 @@ button.close {
     &:focus:hover {
         text-decoration: none;
     }
+}
+
+// Accessible focus styling for autocomplete elements.
+.form-autocomplete-suggestions li[aria-selected=true] {
+    outline: 0;
+    box-shadow: $input-btn-focus-box-shadow;
 }
 
 // Safari does not allow custom styling of checkboxes.
