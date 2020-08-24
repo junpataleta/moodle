@@ -3012,5 +3012,15 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2021052500.42);
     }
 
+    if ($oldversion < 2021052500.47) {
+        // This upgrade step will set userid to 0 to all shared events in moodle.
+        // Category, course, group, site and action events do not belong to the user who created them.
+        $DB->execute("UPDATE {event} SET userid = ? WHERE eventtype <> ?", [0, 'user']);
+
+        $DB->execute("UPDATE {event_subscriptions} SET userid = ? WHERE eventtype <> ?", [0, 'user']);
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2021052500.47);
+    }
+
     return true;
 }

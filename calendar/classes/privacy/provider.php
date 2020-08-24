@@ -99,33 +99,15 @@ class provider implements
 
         // Calendar Events can exist at Site, Course Category, Course, Course Group, User, or Course Modules contexts.
         $params = [
-            'sitecontext'        => CONTEXT_SYSTEM,
-            'categorycontext'    => CONTEXT_COURSECAT,
-            'coursecontext'      => CONTEXT_COURSE,
-            'groupcontext'       => CONTEXT_COURSE,
             'usercontext'        => CONTEXT_USER,
-            'cuserid'            => $userid,
-            'modulecontext'      => CONTEXT_MODULE,
-            'muserid'            => $userid
+            'userid'            => $userid,
         ];
 
         // Get contexts of Calendar Events for the owner.
         $sql = "SELECT ctx.id
                   FROM {context} ctx
-                  JOIN {event} e ON
-                       (e.eventtype = 'site' AND ctx.contextlevel = :sitecontext) OR
-                       (e.categoryid = ctx.instanceid AND e.eventtype = 'category' AND ctx.contextlevel = :categorycontext) OR
-                       (e.courseid = ctx.instanceid AND e.eventtype = 'course' AND ctx.contextlevel = :coursecontext) OR
-                       (e.courseid = ctx.instanceid AND e.eventtype = 'group' AND ctx.contextlevel = :groupcontext) OR
-                       (e.userid = ctx.instanceid AND e.eventtype = 'user' AND ctx.contextlevel = :usercontext)
-                 WHERE e.userid = :cuserid
-                 UNION
-                SELECT ctx.id
-                  FROM {context} ctx
-                  JOIN {course_modules} cm ON cm.id = ctx.instanceid AND ctx.contextlevel = :modulecontext
-                  JOIN {modules} m ON m.id = cm.module
-                  JOIN {event} e ON e.modulename = m.name AND e.courseid = cm.course AND e.instance = cm.instance
-                 WHERE e.userid = :muserid";
+                  JOIN {event} e ON (e.userid = ctx.instanceid AND e.eventtype = 'user' AND ctx.contextlevel = :usercontext)
+                 WHERE e.userid = :userid";
         $contextlist->add_from_sql($sql, $params);
 
         // Calendar Subscriptions can exist at Site, Course Category, Course, Course Group, or User contexts.
@@ -142,10 +124,6 @@ class provider implements
         $sql = "SELECT ctx.id
                   FROM {context} ctx
                   JOIN {event_subscriptions} s ON
-                       (s.eventtype = 'site' AND ctx.contextlevel = :sitecontext) OR
-                       (s.categoryid = ctx.instanceid AND s.eventtype = 'category' AND ctx.contextlevel = :categorycontext) OR
-                       (s.courseid = ctx.instanceid AND s.eventtype = 'course' AND ctx.contextlevel = :coursecontext) OR
-                       (s.courseid = ctx.instanceid AND s.eventtype = 'group' AND ctx.contextlevel = :groupcontext) OR
                        (s.userid = ctx.instanceid AND s.eventtype = 'user' AND ctx.contextlevel = :usercontext)
                  WHERE s.userid = :userid";
         $contextlist->add_from_sql($sql, $params);
@@ -654,10 +632,6 @@ class provider implements
         list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         $params = [
-            'sitecontext' => CONTEXT_SYSTEM,
-            'categorycontext' => CONTEXT_COURSECAT,
-            'coursecontext' => CONTEXT_COURSE,
-            'groupcontext' => CONTEXT_COURSE,
             'usercontext' => CONTEXT_USER,
             'userid' => $user->id
         ];
@@ -672,10 +646,6 @@ class provider implements
                        s.eventtype as eventtype
                   FROM {context} c
             INNER JOIN {event_subscriptions} s ON
-                       (s.eventtype = 'site' AND c.contextlevel = :sitecontext) OR
-                       (s.categoryid = c.instanceid AND s.eventtype = 'category' AND c.contextlevel = :categorycontext) OR
-                       (s.courseid = c.instanceid AND s.eventtype = 'course' AND c.contextlevel = :coursecontext) OR
-                       (s.courseid = c.instanceid AND s.eventtype = 'group' AND c.contextlevel = :groupcontext) OR
                        (s.userid = c.instanceid AND s.eventtype = 'user' AND c.contextlevel = :usercontext)
                  WHERE s.userid = :userid
                    AND c.id {$contextsql}";
