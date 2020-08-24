@@ -1720,7 +1720,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $timedurationuntil->add($interval);
         $formdata = [
             'id' => 0,
-            'userid' => $user->id,
+            'userid' => 0,
             'modulename' => '',
             'instance' => 0,
             'visible' => 1,
@@ -1781,7 +1781,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $timedurationuntil->add($interval);
         $formdata = [
             'id' => 0,
-            'userid' => $user->id,
+            'userid' => 0,
             'modulename' => '',
             'instance' => 0,
             'visible' => 1,
@@ -1827,7 +1827,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         );
 
         $event = $result['event'];
-        $this->assertEquals($user->id, $event['userid']);
+        $this->assertEquals(0, $event['userid']);
         $this->assertEquals($formdata['eventtype'], $event['eventtype']);
         $this->assertEquals($formdata['name'], $event['name']);
     }
@@ -1847,7 +1847,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $timedurationuntil->add($interval);
         $formdata = [
             'id' => 0,
-            'userid' => $user->id,
+            'userid' => 0,
             'modulename' => '',
             'instance' => 0,
             'visible' => 1,
@@ -1958,7 +1958,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         );
 
         $event = $result['event'];
-        $this->assertEquals($user->id, $event['userid']);
+        $this->assertEquals(0, $event['userid']);
         $this->assertEquals($formdata['eventtype'], $event['eventtype']);
         $this->assertEquals($formdata['name'], $event['name']);
         $this->assertEquals($formdata['courseid'], $event['course']['id']);
@@ -2046,7 +2046,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $timedurationuntil->add($interval);
         $formdata = [
             'id' => 0,
-            'userid' => $user->id,
+            'userid' => 0,
             'modulename' => '',
             'instance' => 0,
             'visible' => 1,
@@ -2162,7 +2162,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         );
 
         $event = $result['event'];
-        $this->assertEquals($user->id, $event['userid']);
+        $this->assertEquals(0, $event['userid']);
         $this->assertEquals($formdata['eventtype'], $event['eventtype']);
         $this->assertEquals($formdata['name'], $event['name']);
         $this->assertEquals($group->id, $event['groupid']);
@@ -2185,7 +2185,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $timedurationuntil->add($interval);
         $formdata = [
             'id' => 0,
-            'userid' => $user->id,
+            'userid' => 0,
             'modulename' => '',
             'instance' => 0,
             'visible' => 1,
@@ -2236,7 +2236,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         );
 
         $event = $result['event'];
-        $this->assertEquals($user->id, $event['userid']);
+        $this->assertEquals(0, $event['userid']);
         $this->assertEquals($formdata['eventtype'], $event['eventtype']);
         $this->assertEquals($formdata['name'], $event['name']);
         $this->assertEquals($group->id, $event['groupid']);
@@ -2259,7 +2259,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $timedurationuntil->add($interval);
         $formdata = [
             'id' => 0,
-            'userid' => $user->id,
+            'userid' => 0,
             'modulename' => '',
             'instance' => 0,
             'visible' => 1,
@@ -2309,7 +2309,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         );
 
         $event = $result['event'];
-        $this->assertEquals($user->id, $event['userid']);
+        $this->assertEquals(0, $event['userid']);
         $this->assertEquals($formdata['eventtype'], $event['eventtype']);
         $this->assertEquals($formdata['name'], $event['name']);
         $this->assertEquals($group->id, $event['groupid']);
