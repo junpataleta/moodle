@@ -106,21 +106,13 @@ class core_calendar_privacy_testcase extends provider_testcase {
         $this->create_test_calendar_subscription('course', 'https://calendar.google.com/', $user->id, 0, $course3->id);
         $this->create_test_standard_calendar_event('group', $user->id, time(), '', 0, $course3->id, $course3group->id);
 
-        // The user will be in these contexts.
-        $usercontextids = [
-            $usercontext->id,
-            $categorycontext->id,
-            $course1context->id,
-            $modulecontext->id,
-            $course3context->id
-        ];
         // Retrieve the user's context ids.
         $contextids = provider::get_contexts_for_userid($user->id);
 
         // Check the user context list and retrieved user context lists contains the same number of records.
-        $this->assertEquals(count($usercontextids), count($contextids->get_contextids()));
+        $this->assertEquals(1, count($contextids->get_contextids()));
         // There should be no difference between the contexts.
-        $this->assertEmpty(array_diff($usercontextids, $contextids->get_contextids()));
+        $this->assertEmpty(array_diff([$usercontext->id], $contextids->get_contextids()));
     }
 
     /**
@@ -404,10 +396,10 @@ class core_calendar_privacy_testcase extends provider_testcase {
         // Add 5 Calendar Events for User 1 for various contexts.
         $this->setUser($user1);
         $this->create_test_standard_calendar_event('user', $user1->id, time(), '');
-        $this->create_test_standard_calendar_event('site', $user1->id, time(), '', 0, 1);
-        $this->create_test_standard_calendar_event('category', $user1->id, time(), '', $category->id);
-        $this->create_test_standard_calendar_event('course', $user1->id, time(), '', 0, $course1->id);
-        $this->create_test_standard_calendar_event('course', $user1->id, time(), '', 0, $course2->id);
+        $this->create_test_standard_calendar_event('site', 0, time(), '', 0, 1);
+        $this->create_test_standard_calendar_event('category', 0, time(), '', $category->id);
+        $this->create_test_standard_calendar_event('course', 0, time(), '', 0, $course1->id);
+        $this->create_test_standard_calendar_event('course', 0, time(), '', 0, $course2->id);
 
         // Add 1 Calendar Subscription for User 1 at course context.
         $this->create_test_calendar_subscription('course', 'https://calendar.google.com/', $user1->id, 0, $course2->id);
@@ -415,8 +407,8 @@ class core_calendar_privacy_testcase extends provider_testcase {
         // Add 3 Calendar Events for User 2 for various contexts.
         $this->setUser($user2);
         $this->create_test_standard_calendar_event('user', $user2->id, time(), '');
-        $this->create_test_standard_calendar_event('category', $user2->id, time(), '', $category->id);
-        $this->create_test_standard_calendar_event('course', $user2->id, time(), '', 0, $course1->id);
+        $this->create_test_standard_calendar_event('category', 0, time(), '', $category->id);
+        $this->create_test_standard_calendar_event('course', 0, time(), '', 0, $course1->id);
 
         // Add 1 Calendar Subscription for User 2 at course context.
         $this->create_test_calendar_subscription('course', 'https://calendar.google.com/', $user2->id, 0, $course2->id);
@@ -430,9 +422,9 @@ class core_calendar_privacy_testcase extends provider_testcase {
 
         // Test all Calendar Events and Subscriptions for User 1 equals zero.
         $events = $DB->get_records('event', ['userid' => $user1->id]);
-        $this->assertCount(0, $events);
+        $this->assertCount(4, $events);
         $eventsubscriptions = $DB->get_records('event_subscriptions', ['userid' => $user1->id]);
-        $this->assertCount(0, $eventsubscriptions);
+        $this->assertCount(1, $eventsubscriptions);
 
         // Test all Calendar Events and Subscriptions for User 2 still exists and matches the same number created.
         $events = $DB->get_records('event', ['userid' => $user2->id]);
@@ -762,7 +754,7 @@ class core_calendar_privacy_testcase extends provider_testcase {
             'categoryid' => $categoryid,
             'courseid' => $courseid,
             'groupid' => $groupid,
-            'userid' => $userid,
+            'userid' => ($eventtype == 'user') ? $userid : 0,
             'modulename' => 0,
             'instance' => 0,
             'eventtype' => $eventtype,
@@ -792,7 +784,7 @@ class core_calendar_privacy_testcase extends provider_testcase {
             'categoryid' => 0,
             'courseid' => $courseid,
             'groupid' => 0,
-            'userid' => $userid,
+            'userid' => ($eventtype == 'user') ? $userid : 0,
             'modulename' => $modulename,
             'instance' => $instanceid,
             'eventtype' => $eventtype,
