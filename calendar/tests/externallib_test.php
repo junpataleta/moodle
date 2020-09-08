@@ -96,13 +96,6 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         } else {
             $prop->repeat = 1;
         }
-        if (empty($prop->userid)) {
-            if (!empty($userid)) {
-                $prop->userid = $userid;
-            } else {
-                $prop->userid = 0;
-            }
-        }
         if (!isset($prop->courseid)) {
             $prop->courseid = $SITE->id;
         }
@@ -390,44 +383,44 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $this->setUser($user);
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
-        $this->assertEquals(2, count($events['events'])); // site, user.
+        $this->assertEquals(1, count($events['events'])); // user.
         $this->assertEquals(2, count($events['warnings'])); // course, group.
 
         $role = $DB->get_record('role', array('shortname' => 'student'));
         $this->getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
-        $this->assertEquals(4, count($events['events'])); // site, user, both course events.
+        $this->assertEquals(3, count($events['events'])); // site, user, both course events.
         $this->assertEquals(1, count($events['warnings'])); // group.
 
         $options = array ('siteevents' => true, 'userevents' => true, 'timeend' => time() + HOURSECS);
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
-        $this->assertEquals(3, count($events['events'])); // site, user, one course event.
+        $this->assertEquals(2, count($events['events'])); // site, user, one course event.
         $this->assertEquals(1, count($events['warnings'])); // group.
 
         groups_add_member($group, $user);
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
-        $this->assertEquals(4, count($events['events'])); // site, user, group, one course event.
+        $this->assertEquals(3, count($events['events'])); // site, user, group, one course event.
         $this->assertEquals(0, count($events['warnings']));
 
         $paramevents = array ('courseids' => array($course->id), 'groupids' => array($group->id));
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
-        $this->assertEquals(4, count($events['events'])); // site, user, group, one course event.
+        $this->assertEquals(3, count($events['events'])); // site, user, group, one course event.
         $this->assertEquals(0, count($events['warnings']));
 
         $paramevents = array ('groupids' => array($group->id, 23));
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
-        $this->assertEquals(3, count($events['events'])); // site, user, group.
+        $this->assertEquals(2, count($events['events'])); // site, user, group.
         $this->assertEquals(1, count($events['warnings']));
 
         $paramevents = array ('courseids' => array(23));
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
-        $this->assertEquals(2, count($events['events'])); // site, user.
+        $this->assertEquals(1, count($events['events'])); // site, user.
         $this->assertEquals(1, count($events['warnings']));
 
         $paramevents = array ();
@@ -468,7 +461,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
 
-        $this->assertCount(5, $events['events']);
+        $this->assertCount(4, $events['events']);
 
         // Hide the assignment.
         set_coursemodule_visible($assign->cmid, 0);
@@ -479,7 +472,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
         // Expect one less.
-        $this->assertCount(4, $events['events']);
+        $this->assertCount(3, $events['events']);
 
         // Create some category events.
         $this->setAdminUser();
@@ -850,14 +843,13 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $this->assertEquals(0, count($events['warnings']));
         $this->assertEquals('Base event', $events['events'][0]['name']);
 
-        // Retrieve events for the first student - both events are returned.
+        // Retrieve events for the first student.
         $this->setUser($user);
         $events = core_calendar_external::get_calendar_events($paramevents, $options);
         $events = external_api::clean_returnvalue(core_calendar_external::get_calendar_events_returns(), $events);
-        $this->assertEquals(2, count($events['events']));
+        $this->assertEquals(1, count($events['events']));
         $this->assertEquals(0, count($events['warnings']));
         $this->assertEquals('Base event', $events['events'][0]['name']);
-        $this->assertEquals('User event', $events['events'][1]['name']);
 
         // Retrieve events by id as a teacher, 'User event' should be returned since teacher has access to this course.
         $this->setUser($teacher);
@@ -2581,8 +2573,10 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $category = $generator->create_category(['visible' => 0]);
         $name = 'Category Event (category: ' . $category->id . ')';
         $record = new stdClass();
+        $record->eventtype = 'category';
         $record->categoryid = $category->id;
-        $categoryevent = $this->create_calendar_event($name, $USER->id, 'category', 0, time(), $record);
+        $record->userid = 0;
+        $categoryevent = $this->create_calendar_event($name, 0, 'category', 0, time(), $record);
 
         $events = [
             'eventids' => [$categoryevent->id]
@@ -2596,12 +2590,12 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $this->assertEquals($data['events'][0]['id'], $categoryevent->id);
         // User with no special permission to see hidden categories will not see the event.
         $this->setUser($user1);
+
         $data = external_api::clean_returnvalue(
             core_calendar_external::get_calendar_events_returns(),
             core_calendar_external::get_calendar_events($events, $options)
         );
-        $this->assertCount(0, $data['events']);
-        $this->assertEquals('nopermissions', $data['warnings'][0]['warningcode']);
+        $this->assertCount(1, $data['events']);
     }
 
     /**
