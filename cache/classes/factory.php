@@ -26,6 +26,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core_cache\administration_helper;
+use core_cache\local\administration_display_helper;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -113,7 +116,8 @@ class cache_factory {
 
     /**
      * The current cache display helper.
-     * @var cache_administration_display_helper
+     *
+     * @var administration_display_helper
      */
     protected static $displayhelper = null;
 
@@ -141,8 +145,10 @@ class cache_factory {
                     self::$instance->set_state(self::STATE_STORES_DISABLED);
                 }
 
-            } else if (!empty($CFG->alternative_cache_factory_class) && $factoryclass = $CFG->alternative_cache_factory_class) {
+            } else if (!empty($CFG->alternative_cache_factory_class)) {
+                $factoryclass = $CFG->alternative_cache_factory_class;
                 self::$instance = new $factoryclass();
+
             } else {
                 // We're using the regular factory.
                 self::$instance = new cache_factory();
@@ -649,11 +655,11 @@ class cache_factory {
     /**
      * Returns an instance of the current display_helper.
      *
-     * @return cache_administration_helper
+     * @return administration_helper
      */
-    public static function get_administration_display_helper() : cache_administration_helper {
+    public static function get_administration_display_helper() : administration_helper {
         if (is_null(self::$displayhelper)) {
-            self::$displayhelper = new cache_administration_display_helper();
+            self::$displayhelper = new administration_display_helper();
         }
         return self::$displayhelper;
     }

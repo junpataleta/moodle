@@ -26,6 +26,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core_cache\administration_helper;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -826,10 +828,8 @@ class cache_helper {
      * @return string[]
      */
     public static function warnings(array $stores = null) {
-        global $CFG;
         if ($stores === null) {
-            require_once($CFG->dirroot.'/cache/locallib.php');
-            $stores = cache_administration_helper::get_store_instance_summaries();
+            $stores = administration_helper::get_store_instance_summaries();
         }
         $warnings = array();
         foreach ($stores as $store) {

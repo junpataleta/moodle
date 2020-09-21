@@ -55,7 +55,7 @@ if (!empty($action) && confirm_sesskey()) {
 
 // Add cache store warnings to the list of notifications.
 // Obviously as these are warnings they are show as failures.
-foreach (cache_helper::warnings(cache_administration_helper::get_store_instance_summaries()) as $warning) {
+foreach (cache_helper::warnings(\core_cache\administration_helper::get_store_instance_summaries()) as $warning) {
     $notifications[] = array($warning, false);
 }
 

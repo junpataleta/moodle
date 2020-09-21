@@ -1061,9 +1061,9 @@ $CFG->admin = 'admin';
 //=========================================================================
 //
 // Alternative cache config.
-// Since 4.0 it is possible to override the cache_factory class with an alternative caching factory.
+// Since 3.10 it is possible to override the cache_factory class with an alternative caching factory.
 // This overridden factory can provide alternative classes for caching such as cache_config,
-// cache_config_writer and cache_administration_display_helper.
+// cache_config_writer and core_cache\administration_display_helper.
 // The autoloaded factory class name can be specified to use.
 //
 //      $CFG->alternative_cache_factory_class = 'tool_alternativecache_cache_factory';

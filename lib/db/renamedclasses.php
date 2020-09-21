@@ -42,4 +42,6 @@ $renamedclasses = array(
     'core\\analytics\\target\\course_completion' => 'core_course\\analytics\\target\\course_completion',
     'core\\analytics\\target\\course_gradetopass' => 'core_course\\analytics\\target\\course_gradetopass',
     'core\\analytics\\target\\no_teaching' => 'core_course\\analytics\\target\\no_teaching',
+    // Since Moodle 3.10.
+    'cache_administration_helper' => 'core_cache\\administration_helper',
 );

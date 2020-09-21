@@ -18,7 +18,7 @@
  * Cache administration helper.
  *
  * This file is part of Moodle's cache API, affectionately called MUC.
- * It contains the components that are requried in order to use caching.
+ * It contains the components that are required in order to use caching.
  *
  * @package    core
  * @category   cache
@@ -27,6 +27,21 @@
  * @copyright  2012 Sam Hemelryk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace core_cache;
+
+use cache_config;
+use cache_definition;
+use cache_factory;
+use cache_helper;
+use cache_is_key_aware;
+use cache_is_lockable;
+use cache_is_searchable;
+use cache_store;
+use context;
+use core_cache_renderer;
+use core_component;
+use lang_string;
+use pix_icon;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -42,13 +57,13 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2012 Sam Hemelryk
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class cache_administration_helper extends cache_helper {
+abstract class administration_helper extends cache_helper {
 
     /**
      * Returns an array containing all of the information about stores a renderer needs.
      * @return array
      */
-    public static function get_store_instance_summaries() : array {
+    public static function get_store_instance_summaries(): array {
         $return = array();
         $default = array();
         $instance = cache_config::instance();
@@ -114,10 +129,11 @@ abstract class cache_administration_helper extends cache_helper {
      * @return array for each store, an array containing various information about each store.
      *     See the code below for details
      */
-    public static function get_store_plugin_summaries() : array {
+    public static function get_store_plugin_summaries(): array {
         $return = array();
         $plugins = core_component::get_plugin_list_with_file('cachestore', 'lib.php', true);
         foreach ($plugins as $plugin => $path) {
+            /* @var cache_store $class */
             $class = 'cachestore_'.$plugin;
             $return[$plugin] = array(
                 'name' => get_string('pluginname', 'cachestore_'.$plugin),
@@ -157,7 +173,7 @@ abstract class cache_administration_helper extends cache_helper {
      * @return array for each store, an array containing various information about each store.
      *     See the code below for details
      */
-    public static function get_definition_summaries() : array {
+    public static function get_definition_summaries(): array {
         $factory = cache_factory::instance();
         $config = $factory->create_config_instance();
         $storenames = array();
@@ -173,6 +189,7 @@ abstract class cache_administration_helper extends cache_helper {
         foreach ($config->get_definitions() as $key => $definition) {
             $definitions[$key] = cache_definition::load($definition['component'].'/'.$definition['area'], $definition);
         }
+        $return = [];
         foreach ($definitions as $id => $definition) {
             $mappings = array();
             foreach (cache_helper::get_stores_suitable_for_definition($definition) as $store) {
@@ -199,7 +216,7 @@ abstract class cache_administration_helper extends cache_helper {
      *
      * @return array An array containing sub-arrays, one for each mode.
      */
-    public static function get_default_mode_stores() : array {
+    public static function get_default_mode_stores(): array {
         global $OUTPUT;
         $instance = cache_config::instance();
         $adequatestores = cache_helper::get_stores_suitable_for_mode_default();
@@ -238,7 +255,7 @@ abstract class cache_administration_helper extends cache_helper {
      *
      * @return array array of lock summaries.
      */
-    public static function get_lock_summaries() : array {
+    public static function get_lock_summaries(): array {
         $locks = array();
         $instance = cache_config::instance();
         $stores = $instance->get_all_stores();
@@ -273,7 +290,7 @@ abstract class cache_administration_helper extends cache_helper {
      * @param bool $isselectedoptions Set to true if the strings will be used to view the selected options.
      * @return array An array of lang_string's.
      */
-    public static function get_definition_sharing_options(int $sharingoption, bool $isselectedoptions = true) : array {
+    public static function get_definition_sharing_options(int $sharingoption, bool $isselectedoptions = true): array {
         $options = array();
         $prefix = ($isselectedoptions) ? 'sharingselected' : 'sharing';
         if ($sharingoption & cache_definition::SHARING_ALL) {
@@ -301,7 +318,7 @@ abstract class cache_administration_helper extends cache_helper {
      *      2. An array of suitable stores
      *      3. An array of default stores
      */
-    public static function get_definition_store_options(string $component, string $area) : array {
+    public static function get_definition_store_options(string $component, string $area): array {
         $factory = cache_factory::instance();
         $definition = $factory->create_definition($component, $area);
         $config = cache_config::instance();
@@ -331,7 +348,7 @@ abstract class cache_administration_helper extends cache_helper {
      * @param array $plugindetails array of store plugin details.
      * @return array array of actions.
      */
-    public function get_store_plugin_actions(string $name, array $plugindetails) : array {
+    public function get_store_plugin_actions(string $name, array $plugindetails): array {
         return array();
     }
 
@@ -342,7 +359,7 @@ abstract class cache_administration_helper extends cache_helper {
      * @param array $storedetails array of store instance details.
      * @return array array of actions.
      */
-    public function get_store_instance_actions(string $name, array $storedetails) : array {
+    public function get_store_instance_actions(string $name, array $storedetails): array {
         return array();
     }
 
@@ -353,7 +370,7 @@ abstract class cache_administration_helper extends cache_helper {
      * @param array $definitionsummary the definition summary.
      * @return array array of actions.
      */
-    public function get_definition_actions(context $context, array $definitionsummary) : array {
+    public function get_definition_actions(context $context, array $definitionsummary): array {
         return array();
     }
 
@@ -362,7 +379,7 @@ abstract class cache_administration_helper extends cache_helper {
      *
      * @return array array of locks that are addable.
      */
-    public function get_addable_lock_options() : array {
+    public function get_addable_lock_options(): array {
         return array();
     }
 
@@ -373,7 +390,7 @@ abstract class cache_administration_helper extends cache_helper {
      * @param array $forminfo empty array to be set by actions.
      * @return array array of form info.
      */
-    public abstract function perform_cache_actions(string $action, array $forminfo) : array;
+    public abstract function perform_cache_actions(string $action, array $forminfo): array;
 
     /**
      * This function must be implemented to display the cache admin page.
@@ -381,5 +398,5 @@ abstract class cache_administration_helper extends cache_helper {
      * @param core_cache_renderer $renderer the renderer used to generate the page.
      * @return string the HTML for the page.
      */
-    public abstract function generate_admin_page(core_cache_renderer $renderer) : string;
+    public abstract function generate_admin_page(core_cache_renderer $renderer): string;
 }
