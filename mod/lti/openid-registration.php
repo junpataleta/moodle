@@ -48,7 +48,7 @@ if (!($authheader && substr($authheader, 0, 7) == 'Bearer ')) {
         $typeid = lti_add_type($type, clone $config);
         $message = json_encode(registration_helper::config_to_registration($config, $typeid));
         header('Content-Type: application/json; charset=utf-8');
-    } catch (LTIRegistrationException $e) {
+    } catch (\mod_lti\local\ltiopenid\registration_exception $e) {
         $code = $e->getCode();
         $message = $e->getMessage();
     }

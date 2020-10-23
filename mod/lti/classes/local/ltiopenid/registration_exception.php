@@ -30,4 +30,3 @@ namespace mod_lti\local\ltiopenid;
  */
 class registration_exception extends \Exception {
 }
-

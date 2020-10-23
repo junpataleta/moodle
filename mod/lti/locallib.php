@@ -4472,4 +4472,3 @@ function lti_new_access_token($typeid, $scopes) {
     return $newtoken;
 
 }
-

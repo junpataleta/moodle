@@ -41,10 +41,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
-
-global $CFG;
-
 use mod_lti\local\ltiopenid\registration_exception;
 use mod_lti\local\ltiopenid\registration_helper;
 
