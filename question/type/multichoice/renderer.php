@@ -105,11 +105,11 @@ abstract class qtype_multichoice_renderer_base extends qtype_with_combined_feedb
             $radiobuttons[] = $hidden . html_writer::empty_tag('input', $inputattributes) .
                     html_writer::tag('label',
                         html_writer::span($this->number_in_style($value, $question->answernumbering), 'answernumber') .
-                        html_writer::tag('div',
-                        $question->format_text(
-                                    $ans->answer, $ans->answerformat,
-                                    $qa, 'question', 'answer', $ansid),
-                        array('class' => 'flex-fill ml-1')),
+                        html_writer::span(
+                            $question->make_html_inline($question->format_text(
+                                $ans->answer, $ans->answerformat,
+                                $qa, 'question', 'answer', $ansid)),
+                            'flex-fill ml-1'),
                         array('for' => $inputattributes['id'], 'class' => 'd-flex w-100'));
 
             // Param $options->suppresschoicefeedback is a hack specific to the
