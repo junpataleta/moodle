@@ -37,39 +37,15 @@ import {enter, space} from 'core/key_codes';
 export const init = () => {
     const pendingPromise = new Pending();
 
-    // Event listener for click.
-    document.addEventListener('click', (e) => {
-        handleEventTriggering(e);
-    });
-
-    // Event listener for pressing enter or space.
-    document.addEventListener('keydown', (e) => {
-        if (e.which === enter || e.which === space) {
-            handleEventTriggering(e);
+    // Event listener for clicking or pressing enter or space on the link.
+    jQuery('[data-downloadcourse]').on('click keydown', (e) => {
+        if (e.type === 'click' || e.which === enter || e.which === space) {
+            e.preventDefault();
+            displayDownloadConfirmation(e.currentTarget);
         }
     });
 
     pendingPromise.resolve();
-};
-
-/**
- * Determines whether the download modal was the event target and if so, triggers the download modal.
- *
- * @param {Event} e The event that was triggered.
- */
-const handleEventTriggering = (e) => {
-     let downloadModalTrigger = null;
-
-    if (e.target.closest('[data-downloadcourse]')) {
-        downloadModalTrigger = e.target.closest('[data-downloadcourse]');
-    } else if (e.target.firstElementChild && e.target.firstElementChild.closest('[data-downloadcourse]')) {
-        downloadModalTrigger = e.target.firstElementChild.closest('[data-downloadcourse]');
-    }
-
-    if (downloadModalTrigger) {
-        e.preventDefault();
-        displayDownloadConfirmation(downloadModalTrigger);
-    }
 };
 
 /**
