@@ -31,9 +31,8 @@ class mod_data_export_form extends moodleform {
     }
 
     function definition() {
-        global $CFG;
         $mform =& $this->_form;
-        $mform->addElement('header', 'notice', get_string('chooseexportformat', 'data'));
+        $mform->addElement('header', 'exportformat', get_string('chooseexportformat', 'data'));
         $choices = csv_import_reader::get_delimiter_list();
         $key = array_search(';', $choices);
         if (! $key === FALSE) {
@@ -43,7 +42,8 @@ class mod_data_export_form extends moodleform {
         $typesarray = array();
         $str = get_string('csvwithselecteddelimiter', 'data');
         $typesarray[] = $mform->createElement('radio', 'exporttype', null, $str . '&nbsp;', 'csv');
-        $typesarray[] = $mform->createElement('select', 'delimiter_name', null, $choices);
+        $typesarray[] = $mform->createElement('select', 'delimiter_name', null, $choices,
+            ['aria-label' => get_string('fielddelimiter', 'data')]);
         //temporarily commenting out Excel export option. See MDL-19864
         //$typesarray[] = $mform->createElement('radio', 'exporttype', null, get_string('excel', 'data'), 'xls');
         $typesarray[] = $mform->createElement('radio', 'exporttype', null, get_string('ods', 'data'), 'ods');
@@ -57,15 +57,15 @@ class mod_data_export_form extends moodleform {
         } else {
             $mform->setDefault('delimiter_name', 'comma');
         }
-        $mform->addElement('header', 'notice', get_string('chooseexportfields', 'data'));
+        $mform->addElement('header', 'exportfields', get_string('chooseexportfields', 'data'));
         $numfieldsthatcanbeselected = 0;
         foreach($this->_datafields as $field) {
             if($field->text_export_supported()) {
                 $numfieldsthatcanbeselected++;
-                $html = '<div title="' . s($field->field->description) . '" ' .
-                        'class="d-inline-block">' . $field->field->name . '</div>';
-                $name = ' (' . $field->name() . ')';
-                $mform->addElement('advcheckbox', 'field_' . $field->field->id, $html, $name, array('group' => 1));
+                $description = get_string('fieldtypedescription', 'data',
+                    (object)['description' => s($field->field->description), 'type' => $field->name()]);
+                $mform->addElement('advcheckbox', 'field_' . $field->field->id, $field->field->name, $description,
+                    array('group' => 1));
                 $mform->setDefault('field_' . $field->field->id, 1);
             } else {
                 $a = new stdClass();
