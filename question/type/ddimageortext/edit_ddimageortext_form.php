@@ -116,7 +116,7 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
     protected function definition_draggable_items($mform, $itemrepeatsatstart) {
         $mform->addElement('header', 'draggableitemheader',
                                 get_string('draggableitems', 'qtype_ddimageortext'));
-        $mform->addElement('advcheckbox', 'shuffleanswers', ' ',
+        $mform->addElement('advcheckbox', 'shuffleanswers', '',
                                 get_string('shuffleimages', 'qtype_'.$this->qtype()));
         $mform->setDefault('shuffleanswers', 0);
         $this->repeat_elements($this->draggable_item($mform), $itemrepeatsatstart,
@@ -143,8 +143,7 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
                                                 get_string('group', 'qtype_gapselect'),
                                                 $options,
                                                 array('class' => 'draggroup'));
-        $grouparray[] = $mform->createElement('advcheckbox', 'infinite', ' ',
-                get_string('infinite', 'qtype_ddimageortext'));
+        $grouparray[] = $mform->createElement('advcheckbox', 'infinite', '', get_string('infinite', 'qtype_ddimageortext'));
         $draggableimageitem[] = $mform->createElement('group', 'drags',
                 get_string('draggableitemheader', 'qtype_ddimageortext', '{no}'), $grouparray);
 
