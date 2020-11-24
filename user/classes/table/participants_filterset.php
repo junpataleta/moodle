@@ -27,7 +27,6 @@ declare(strict_types=1);
 
 namespace core_user\table;
 
-use core_table\local\filter\boolean_filter;
 use core_table\local\filter\filterset;
 use core_table\local\filter\integer_filter;
 use core_table\local\filter\string_filter;
@@ -75,5 +74,12 @@ class participants_filterset extends filterset {
             'roles' => integer_filter::class,
             'status' => integer_filter::class,
         ];
+    }
+
+    public function get_join_type(): int {
+        if ($this->jointype === null) {
+            $this->jointype = self::JOINTYPE_ALL;
+        }
+        return $this->jointype;
     }
 }
