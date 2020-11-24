@@ -27,7 +27,6 @@ declare(strict_types=1);
 
 namespace core_user\table;
 
-use core_table\local\filter\boolean_filter;
 use core_table\local\filter\filterset;
 use core_table\local\filter\integer_filter;
 use core_table\local\filter\string_filter;
@@ -40,6 +39,9 @@ use core_table\local\filter\string_filter;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class participants_filterset extends filterset {
+    /** @var int The default filter type (ALL) */
+    const JOINTYPE_DEFAULT = 2;
+
     /**
      * Get the required filters.
      *
