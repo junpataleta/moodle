@@ -99,10 +99,6 @@ class provider implements
 
         // Calendar Events can exist at Site, Course Category, Course, Course Group, User, or Course Modules contexts.
         $params = [
-            'sitecontext'        => CONTEXT_SYSTEM,
-            'categorycontext'    => CONTEXT_COURSECAT,
-            'coursecontext'      => CONTEXT_COURSE,
-            'groupcontext'       => CONTEXT_COURSE,
             'usercontext'        => CONTEXT_USER,
             'cuserid'            => $userid,
             'modulecontext'      => CONTEXT_MODULE,
@@ -113,10 +109,6 @@ class provider implements
         $sql = "SELECT ctx.id
                   FROM {context} ctx
                   JOIN {event} e ON
-                       (e.eventtype = 'site' AND ctx.contextlevel = :sitecontext) OR
-                       (e.categoryid = ctx.instanceid AND e.eventtype = 'category' AND ctx.contextlevel = :categorycontext) OR
-                       (e.courseid = ctx.instanceid AND e.eventtype = 'course' AND ctx.contextlevel = :coursecontext) OR
-                       (e.courseid = ctx.instanceid AND e.eventtype = 'group' AND ctx.contextlevel = :groupcontext) OR
                        (e.userid = ctx.instanceid AND e.eventtype = 'user' AND ctx.contextlevel = :usercontext)
                  WHERE e.userid = :cuserid
                  UNION
@@ -130,10 +122,6 @@ class provider implements
 
         // Calendar Subscriptions can exist at Site, Course Category, Course, Course Group, or User contexts.
         $params = [
-            'sitecontext'       => CONTEXT_SYSTEM,
-            'categorycontext'   => CONTEXT_COURSECAT,
-            'coursecontext'     => CONTEXT_COURSE,
-            'groupcontext'      => CONTEXT_COURSE,
             'usercontext'       => CONTEXT_USER,
             'userid'            => $userid
         ];
@@ -142,10 +130,6 @@ class provider implements
         $sql = "SELECT ctx.id
                   FROM {context} ctx
                   JOIN {event_subscriptions} s ON
-                       (s.eventtype = 'site' AND ctx.contextlevel = :sitecontext) OR
-                       (s.categoryid = ctx.instanceid AND s.eventtype = 'category' AND ctx.contextlevel = :categorycontext) OR
-                       (s.courseid = ctx.instanceid AND s.eventtype = 'course' AND ctx.contextlevel = :coursecontext) OR
-                       (s.courseid = ctx.instanceid AND s.eventtype = 'group' AND ctx.contextlevel = :groupcontext) OR
                        (s.userid = ctx.instanceid AND s.eventtype = 'user' AND ctx.contextlevel = :usercontext)
                  WHERE s.userid = :userid";
         $contextlist->add_from_sql($sql, $params);

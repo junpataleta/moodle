@@ -927,6 +927,7 @@ class core_calendar_local_api_testcase extends advanced_testcase {
         $event = create_event([
             'name' => 'Test event',
             'userid' => $user->id,
+            'courseid' => 0,
             'eventtype' => 'user',
             'repeats' => 0,
             'timestart' => $originalstarttime->getTimestamp(),

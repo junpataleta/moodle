@@ -234,7 +234,7 @@ class api {
      * modified, the time of day for the event will be left as is.
      *
      * @param event_interface $event The existing event to modify
-     * @param DateTimeInterface $startdate The new date to use for the start day
+     * @param \DateTimeInterface $startdate The new date to use for the start day
      * @return event_interface The new event with updated start date
      */
     public static function update_event_start_day(

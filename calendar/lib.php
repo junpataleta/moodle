@@ -235,9 +235,18 @@ class calendar_event {
             $data->eventtype = 'user';
         }
 
-        // Default to the current user.
+        // Set course ID to the site ID for site events if not provided.
+        if (empty($data->courseid) && $data->eventtype === 'site') {
+            $data->courseid = SITEID;
+        }
+
+        // Default to the current user if userid is not provided for user events. Set to 0, otherwise.
         if (empty($data->userid)) {
-            $data->userid = $USER->id;
+            if ($data->eventtype === 'user') {
+                $data->userid = $USER->id;
+            } else {
+                $data->userid = 0;
+            }
         }
 
         if (!empty($data->timeduration) && is_array($data->timeduration)) {
@@ -500,19 +509,19 @@ class calendar_event {
                         $this->properties->courseid = SITEID;
                         $this->properties->course = SITEID;
                         $this->properties->groupid = 0;
-                        $this->properties->userid = $USER->id;
+                        $this->properties->userid = 0;
                         break;
                     case 'course':
                         $this->properties->groupid = 0;
-                        $this->properties->userid = $USER->id;
+                        $this->properties->userid = 0;
                         break;
                     case 'category':
                         $this->properties->groupid = 0;
                         $this->properties->category = 0;
-                        $this->properties->userid = $USER->id;
+                        $this->properties->userid = 0;
                         break;
                     case 'group':
-                        $this->properties->userid = $USER->id;
+                        $this->properties->userid = 0;
                         break;
                     default:
                         // We should NEVER get here, but just incase we do lets fail gracefully.
@@ -2776,7 +2785,12 @@ function calendar_add_subscription($sub) {
         // User events.
         $sub->courseid = 0;
     }
-    $sub->userid = $USER->id;
+
+    if ($sub->eventtype === 'user') {
+        $sub->userid = $USER->id;
+    } else {
+        $sub->userid = 0;
+    }
 
     // File subscriptions never update.
     if (empty($sub->url)) {
@@ -3264,6 +3278,8 @@ function calendar_get_calendar_context($subscription) {
     // Determine context based on calendar type.
     if ($subscription->eventtype === 'site') {
         $context = \context_course::instance(SITEID);
+    } else if ($subscription->eventtype === 'category') {
+        $context = \context_coursecat::instance($subscription->categoryid);
     } else if ($subscription->eventtype === 'group' || $subscription->eventtype === 'course') {
         $context = \context_course::instance($subscription->courseid);
     } else {
