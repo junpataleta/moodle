@@ -235,9 +235,18 @@ class calendar_event {
             $data->eventtype = 'user';
         }
 
-        // Default to the current user.
+        // Set course ID to the site ID for site events if not provided.
+        if (empty($data->courseid) && $data->eventtype === 'site') {
+            $data->courseid = SITEID;
+        }
+
+        // Default to the current user if userid is not provided for user events. Set to 0, otherwise.
         if (empty($data->userid)) {
-            $data->userid = $USER->id;
+            if ($data->eventtype === 'user') {
+                $data->userid = $USER->id;
+            } else {
+                $data->userid = 0;
+            }
         }
 
         if (!empty($data->timeduration) && is_array($data->timeduration)) {
@@ -489,6 +498,36 @@ class calendar_event {
             }
 
             if ($usingeditor) {
+                switch ($this->properties->eventtype) {
+                    case 'user':
+                        $this->properties->courseid = 0;
+                        $this->properties->course = 0;
+                        $this->properties->groupid = 0;
+                        $this->properties->userid = $USER->id;
+                        break;
+                    case 'site':
+                        $this->properties->courseid = SITEID;
+                        $this->properties->course = SITEID;
+                        $this->properties->groupid = 0;
+                        $this->properties->userid = 0;
+                        break;
+                    case 'course':
+                        $this->properties->groupid = 0;
+                        $this->properties->userid = 0;
+                        break;
+                    case 'category':
+                        $this->properties->groupid = 0;
+                        $this->properties->category = 0;
+                        $this->properties->userid = 0;
+                        break;
+                    case 'group':
+                        $this->properties->userid = 0;
+                        break;
+                    default:
+                        // We should NEVER get here, but just incase we do lets fail gracefully.
+                        $usingeditor = false;
+                        break;
+                }
 
                 // If we are actually using the editor, we recalculate the context because some default values
                 // were set when calculate_context() was called from the constructor.
@@ -501,8 +540,6 @@ class calendar_event {
                 $this->properties->format = $this->properties->description['format'];
                 $this->properties->description = $this->properties->description['text'];
             }
-
-            $this->set_default_event_ids();
 
             // Insert the event into the database.
             $this->properties->id = $DB->insert_record('event', $this->properties);
@@ -630,8 +667,6 @@ class calendar_event {
                     $sqlset .= ', location = ?';
                     $params[] = $this->properties->location;
                 }
-
-                $this->set_default_event_ids();
 
                 // Update all.
                 $sql = "UPDATE {event}
@@ -843,40 +878,6 @@ class calendar_event {
 
         // Finally return the properties.
         return $properties;
-    }
-
-    /**
-     * Set the default event ids.
-     */
-    protected function set_default_event_ids(): void {
-        global $USER;
-
-        switch ($this->properties->eventtype) {
-            case 'user':
-                $this->properties->courseid = 0;
-                $this->properties->course = 0;
-                $this->properties->groupid = 0;
-                $this->properties->userid = (!empty($this->properties->userid)) ? $this->properties->userid : $USER->id;
-                break;
-            case 'site':
-                $this->properties->courseid = SITEID;
-                $this->properties->course = SITEID;
-                $this->properties->groupid = 0;
-                $this->properties->userid = 0;
-                break;
-            case 'course':
-                $this->properties->groupid = 0;
-                $this->properties->userid = 0;
-                break;
-            case 'category':
-                $this->properties->groupid = 0;
-                $this->properties->category = 0;
-                $this->properties->userid = 0;
-                break;
-            case 'group':
-                $this->properties->userid = 0;
-                break;
-        }
     }
 
     /**
@@ -2787,7 +2788,7 @@ function calendar_add_subscription($sub) {
     }
 
     // Only subscriptions for user type should store user id, shared events (course,site...) should have userid set to 0.
-    $sub->userid = ($sub->eventtype == 'user') ? $USER->id : 0;
+    $sub->userid = ($sub->eventtype === 'user') ? $USER->id : 0;
 
     // File subscriptions never update.
     if (empty($sub->url)) {
