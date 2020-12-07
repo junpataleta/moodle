@@ -74,14 +74,10 @@ class core_calendar_privacy_testcase extends provider_testcase {
 
         // Get contexts.
         $usercontext = context_user::instance($user->id);
-        $categorycontext = context_coursecat::instance($category->id);
-        $course1context = context_course::instance($course1->id);
-        $course2context = context_course::instance($course2->id);
-        $course3context = context_course::instance($course3->id);
 
         // Add Category Calendar Events for Category.
-        $this->create_test_standard_calendar_event('category', $user->id, time(), '', $category->id);
-        $this->create_test_standard_calendar_event('category', $user->id, time(), '', $category->id);
+        $this->create_test_standard_calendar_event('category', 0, time(), '', $category->id);
+        $this->create_test_standard_calendar_event('category', 0, time(), '', $category->id);
 
         // Add User Calendar Events for User.
         $this->create_test_standard_calendar_event('user', $user->id, time(), '');
@@ -89,30 +85,44 @@ class core_calendar_privacy_testcase extends provider_testcase {
         $this->create_test_standard_calendar_event('user', $user->id, time(), '', 0, $course2->id);
 
         // Add a Course Calendar Event for Course 1.
-        $this->create_test_standard_calendar_event('course', $user->id, time(), '', 0, $course1->id);
+        $this->create_test_standard_calendar_event('course', 0, time(), '', 0, $course1->id);
 
         // Add a Course Assignment Action Calendar Event for Course 2.
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_assign');
+        $assigngenerator = $this->getDataGenerator()->get_plugin_generator('mod_assign');
         $params['course'] = $course2->id;
         $params['assignsubmission_onlinetext_enabled'] = 1;
-        $instance = $generator->create_instance($params);
-        $cm = get_coursemodule_from_instance('assign', $instance->id);
-        $modulecontext = context_module::instance($cm->id);
-        $assign = new assign($modulecontext, $cm, $course2);
-        $this->create_test_action_calendar_event('duedate', $course2->id, $instance->id, 'assign', $user->id, time());
-        $this->create_test_action_calendar_event('gradingduedate', $course2->id, $instance->id, 'assign', $user->id, time());
+        $assign1 = $assigngenerator->create_instance($params);
+        $assign1cm = get_coursemodule_from_instance('assign', $assign1->id);
+        $assign1context = context_module::instance($assign1cm->id);
+        $this->create_test_action_calendar_event('duedate', $course2->id, $assign1->id, 'assign', 0, time());
+        $this->create_test_action_calendar_event('gradingduedate', $course2->id, $assign1->id, 'assign', 0, time());
+
+        // Add a due date event similar to a user override in another assign instance.
+        $assign2 = $assigngenerator->create_instance($params);
+        $assign2cm = get_coursemodule_from_instance('assign', $assign2->id);
+        $assign2context = context_module::instance($assign2cm->id);
+        $this->create_test_action_calendar_event('duedate', $course2->id, $assign2->id, 'assign', $user->id, time());
+        $this->create_test_action_calendar_event('gradingduedate', $course2->id, $assign2->id, 'assign', $user->id, time());
 
         // Add a Calendar Subscription and Group Calendar Event to Course 3.
-        $this->create_test_calendar_subscription('course', 'https://calendar.google.com/', $user->id, 0, $course3->id);
-        $this->create_test_standard_calendar_event('group', $user->id, time(), '', 0, $course3->id, $course3group->id);
+        $this->create_test_calendar_subscription('course', 'https://calendar.google.com/', 0, 0, $course3->id);
+        $this->create_test_standard_calendar_event('group', 0, time(), '', 0, $course3->id, $course3group->id);
+
+        // The user will be in these contexts.
+        $usercontextids = [
+            $usercontext->id,
+            $assign2context->id,
+        ];
 
         // Retrieve the user's context ids.
         $contextids = provider::get_contexts_for_userid($user->id);
 
         // Check the user context list and retrieved user context lists contains the same number of records.
-        $this->assertEquals(1, count($contextids->get_contextids()));
+        $this->assertCount(count($usercontextids), $contextids->get_contextids());
         // There should be no difference between the contexts.
-        $this->assertEmpty(array_diff([$usercontext->id], $contextids->get_contextids()));
+        $this->assertEmpty(array_diff($usercontextids, $contextids->get_contextids()));
+        // Check that the module context for the assignment without user override event is not included.
+        $this->assertNotContains($assign1context->id, $contextids->get_contextids());
     }
 
     /**
@@ -781,7 +791,7 @@ class core_calendar_privacy_testcase extends provider_testcase {
             'categoryid' => 0,
             'courseid' => $courseid,
             'groupid' => 0,
-            'userid' => 0,
+            'userid' => $userid,
             'modulename' => $modulename,
             'instance' => $instanceid,
             'eventtype' => $eventtype,
