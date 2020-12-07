@@ -100,22 +100,27 @@ class provider implements
         // Calendar Events can exist at Site, Course Category, Course, Course Group, User, or Course Modules contexts.
         $params = [
             'usercontext'        => CONTEXT_USER,
-            'userid'            => $userid,
+            'cuserid'            => $userid,
+            'modulecontext'      => CONTEXT_MODULE,
+            'muserid'            => $userid,
         ];
 
         // Get contexts of Calendar Events for the owner.
         $sql = "SELECT ctx.id
                   FROM {context} ctx
                   JOIN {event} e ON (e.userid = ctx.instanceid AND e.eventtype = 'user' AND ctx.contextlevel = :usercontext)
-                 WHERE e.userid = :userid";
+                 WHERE e.userid = :cuserid
+                 UNION
+                SELECT ctx.id
+                  FROM {context} ctx
+                  JOIN {course_modules} cm ON cm.id = ctx.instanceid AND ctx.contextlevel = :modulecontext
+                  JOIN {modules} m ON m.id = cm.module
+                  JOIN {event} e ON e.modulename = m.name AND e.courseid = cm.course AND e.instance = cm.instance
+                 WHERE e.userid = :muserid";
         $contextlist->add_from_sql($sql, $params);
 
         // Calendar Subscriptions can exist at Site, Course Category, Course, Course Group, or User contexts.
         $params = [
-            'sitecontext'       => CONTEXT_SYSTEM,
-            'categorycontext'   => CONTEXT_COURSECAT,
-            'coursecontext'     => CONTEXT_COURSE,
-            'groupcontext'      => CONTEXT_COURSE,
             'usercontext'       => CONTEXT_USER,
             'userid'            => $userid
         ];
