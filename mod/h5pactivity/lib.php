@@ -541,3 +541,320 @@ function h5pactivity_dndupload_handle($uploadinfo): int {
 
     return h5pactivity_add_instance($h5p, null);
 }
+
+/**
+ * Print recent activity from all h5pactivities in a given course
+ *
+ * This is used by the recent activity block
+ * @param mixed $course the course to print activity for
+ * @param bool $viewfullnames boolean to determine whether to show full names or not
+ * @param int $timestart the time the rendering started
+ * @return bool true if activity was printed, false otherwise.
+ */
+function h5pactivity_print_recent_activity($course, $viewfullnames, $timestart) {
+    global $CFG, $DB, $OUTPUT;
+
+    $dbparams = [$timestart, $course->id, 'h5pactivity'];
+    $namefields = user_picture::fields('u', null, 'userid');
+
+    $sql = "SELECT h5pa.id, h5pa.timemodified, cm.id as cmid, $namefields
+              FROM {h5pactivity_attempts} h5pa
+              JOIN {h5pactivity} h5p      ON h5p.id = h5pa.h5pactivityid
+              JOIN {course_modules} cm ON cm.instance = h5p.id
+              JOIN {modules} md        ON md.id = cm.module
+              JOIN {user} u            ON u.id = h5pa.userid
+              WHERE h5pa.timemodified > ?
+              AND h5p.course = ?
+              AND md.name = ?
+              ORDER BY h5pa.timemodified ASC";
+
+    if (!$submissions = $DB->get_records_sql($sql, $dbparams)) {
+        return false;
+    }
+
+    $modinfo = get_fast_modinfo($course);
+    $show    = [];
+    $grader  = [];
+
+    $cms = $modinfo->get_cms();
+    $groupinfo = ['groups' => [], 'usersgroups' => [], 'hascommongroup' => null];
+
+    foreach ($submissions as $submission) {
+        if (!array_key_exists($submission->cmid, $cms)) {
+            continue;
+        }
+        $cm = $cms[$submission->cmid];
+        if (!$cm->uservisible) {
+            continue;
+        }
+
+        if (iscurrentuser($submission->userid)) {
+            $show[] = $submission;
+            continue;
+        }
+
+        $context = context_module::instance($submission->cmid);
+        // The act of submitting of attempt may be considered private -
+        // only graders will see it if specified.
+        if (!array_key_exists($cm->id, $grader)) {
+            $grader[$cm->id] = has_capability('mod/h5pactivity:reviewattempts', $context);
+        }
+        if (!$grader[$cm->id]) {
+            continue;
+        }
+
+        $groupinfo = getgroupinfo($submission->userid, $modinfo, $course, $context,
+            $cm, $groupinfo['groups'], $groupinfo['usersgroups']);
+
+        if (!$groupinfo['hascommongroup']) {
+            continue;
+        }
+        $show[] = $submission;
+    }
+
+    if (empty($show)) {
+        return false;
+    }
+
+    echo $OUTPUT->heading(get_string('newsubmissions', 'h5pactivity') . ':', 6);
+
+    foreach ($show as $submission) {
+        $cm = $cms[$submission->cmid];
+        $link = $CFG->wwwroot.'/mod/h5pactivity/view.php?id='.$cm->id;
+        print_recent_activity_note($submission->timemodified,
+            $submission,
+            $cm->name,
+            $link,
+            false,
+            $viewfullnames);
+    }
+
+    return true;
+}
+
+/**
+ * Returns all h5pactivities since a given time.
+ *
+ * @param array $activities The activity information is returned in this array
+ * @param int $index The current index in the activities array
+ * @param int $timestart The earliest activity to show
+ * @param int $courseid Limit the search to this course
+ * @param int $cmid The course module id
+ * @param int $userid Optional user id
+ * @param int $groupid Optional group id
+ * @return void
+ */
+function h5pactivity_get_recent_mod_activity(&$activities,
+                                        &$index,
+                                        $timestart,
+                                        $courseid,
+                                        $cmid,
+                                        $userid=0,
+                                        $groupid=0) {
+    global $CFG, $DB;
+
+    $course = get_course($courseid);
+    $modinfo = get_fast_modinfo($course);
+
+    $cm = $modinfo->get_cm($cmid);
+    $params = [];
+    if ($userid) {
+        $userselect = 'AND u.id = :userid';
+        $params['userid'] = $userid;
+    } else {
+        $userselect = '';
+    }
+
+    if ($groupid) {
+        $groupselect = 'AND gm.groupid = :groupid';
+        $groupjoin   = 'JOIN {groups_members} gm ON  gm.userid=u.id';
+        $params['groupid'] = $groupid;
+    } else {
+        $groupselect = '';
+        $groupjoin   = '';
+    }
+
+    $params['cminstance'] = $cm->instance;
+    $params['timestart'] = $timestart;
+
+    $userfields = user_picture::fields('u', null, 'userid');
+
+    if (!$submissions = $DB->get_records_sql('SELECT h5pa.id, h5pa.timemodified, ' . $userfields .
+                                                  ' FROM {h5pactivity_attempts} h5pa
+                                                    JOIN {h5pactivity} h5p ON h5p.id = h5pa.h5pactivityid
+                                                    JOIN {user} u ON u.id = h5pa.userid ' . $groupjoin .
+                                                 ' WHERE h5pa.timemodified > :timestart
+                                                         AND h5p.id = :cminstance' . $userselect . ' ' . $groupselect .
+                                              ' ORDER BY h5pa.timemodified ASC', $params)) {
+        return;
+    }
+
+    $cmcontext      = context_module::instance($cm->id);
+    $grader          = has_capability('mod/h5pactivity:reviewattempts', $cmcontext);
+    $viewfullnames   = has_capability('moodle/site:viewfullnames', $cmcontext);
+
+    $show = [];
+    $groupinfo = ['groups' => [], 'usersgroups' => [], 'hascommongroup' => null];
+
+    foreach ($submissions as $submission) {
+
+        if (iscurrentuser($submission->userid)) {
+            $show[] = $submission;
+            continue;
+        }
+        // The act of submitting of attempt may be considered private -
+        // only graders will see it if specified.
+        if (!$grader) {
+            continue;
+        }
+
+        $groupinfo = getgroupinfo($submission->userid, $modinfo, $course, $cmcontext,
+            $cm, $groupinfo['groups'], $groupinfo['usersgroups']);
+
+        if (!$groupinfo['hascommongroup']) {
+            continue;
+        }
+        $show[] = $submission;
+    }
+
+    if (empty($show)) {
+        return;
+    }
+
+    if ($grader) {
+        require_once($CFG->libdir.'/gradelib.php');
+        $userids = [];
+        foreach ($show as $id => $submission) {
+            $userids[] = $submission->userid;
+        }
+        $grades = grade_get_grades($courseid, 'mod', 'h5pactivity', $cm->instance, $userids);
+    }
+
+    $aname = format_string($cm->name, true);
+    foreach ($show as $submission) {
+        $activity = new stdClass();
+
+        $activity->type         = 'h5pactivity';
+        $activity->cmid         = $cm->id;
+        $activity->name         = $aname;
+        $activity->sectionnum   = $cm->sectionnum;
+        $activity->timestamp    = $submission->timemodified;
+        $activity->user         = new stdClass();
+        if ($grader) {
+            $activity->grade = $grades->items[0]->grades[$submission->userid]->str_long_grade;
+        }
+
+        $userfields = explode(',', user_picture::fields());
+        foreach ($userfields as $userfield) {
+            if ($userfield == 'id') {
+                // Aliased in SQL above.
+                $activity->user->{$userfield} = $submission->userid;
+            } else {
+                $activity->user->{$userfield} = $submission->{$userfield};
+            }
+        }
+        $activity->user->fullname = fullname($submission, $viewfullnames);
+
+        $activities[$index++] = $activity;
+    }
+
+    return;
+}
+
+/**
+ * Print recent activity from all h5pactivities in a given course
+ *
+ * This is used by course/recent.php
+ * @param stdClass $activity
+ * @param int $courseid
+ * @param bool $detail
+ * @param array $modnames
+ */
+function h5pactivity_print_recent_mod_activity($activity, $courseid, $detail, $modnames) {
+    global $CFG, $OUTPUT;
+
+    $modinfo = [];
+    if ($detail) {
+        $modinfo['modname'] = $activity->name;
+        $modinfo['modurl'] = $CFG->wwwroot . '/mod/h5pactivity/view.php?id=' . $activity->cmid;
+        $modinfo['modicon'] = $OUTPUT->image_icon('icon', $modnames[$activity->type], 'h5pactivity');
+    }
+
+    $userpicture = $OUTPUT->user_picture($activity->user);
+
+    $template = ['userpicture' => $userpicture,
+        'userdate' => userdate($activity->timestamp),
+        'modinfo' => $modinfo,
+        'userurl' => $CFG->wwwroot . '/user/view.php?id=' . $activity->user->id . '&course=' . $courseid,
+        'fullname' => $activity->user->fullname];
+    if (isset($activity->grade)) {
+        $template['grade'] = $activity->grade;
+    }
+
+    echo $OUTPUT->render_from_template('mod_h5pactivity/reviewattempts', $template);
+}
+
+/**
+ * Provide group information for a user
+ *
+ * @param int $userid User ID
+ * @param course_modinfo $modinfo Module info
+ * @param stdClass $course Course object
+ * @param context $context Context object
+ * @param cm_info $cm The cm object
+ * @param array $groups All groups in this cm
+ * @param array $usersgroups User groups in this cm
+ * @return array
+ */
+function getgroupinfo($userid, $modinfo, $course, $context,
+                      $cm, $groups, $usersgroups) {
+
+    $groupmode = groups_get_activity_groupmode($cm, $course);
+    $accessallgroups = has_capability('moodle/site:accessallgroups', $context);
+
+    if ($groupmode == SEPARATEGROUPS && !$accessallgroups) {
+
+        if (isguestuser()) {
+            // Shortcut - guest user does not belong into any group.
+            return ['groups' => [], 'usersgroups' => [], 'hascommongroup' => false];
+        }
+
+        if (!isset($groups[$cm->groupingid])) {
+            $groups[$cm->groupingid] = $modinfo->get_groups($cm->groupingid);
+            if (!$groups[$cm->groupingid]) {
+                return ['groups' => [], 'usersgroups' => [], 'hascommongroup' => false];
+            }
+        }
+
+        if (!isset($usersgroups[$cm->groupingid][$userid])) {
+            $usersgroups[$cm->groupingid][$userid] =
+                groups_get_all_groups($course->id, $userid, $cm->groupingid);
+        }
+
+        if (is_array($usersgroups[$cm->groupingid][$userid])) {
+            $usersgroups = array_keys($usersgroups[$cm->groupingid][$userid]);
+            $intersect = array_intersect($usersgroups, $groups[$cm->groupingid]);
+            if (empty($intersect)) {
+                return ['groups' => $groups, 'usersgroups' => $usersgroups, 'hascommongroup' => false];
+            }
+        }
+        return ['groups' => $groups, 'usersgroups' => $usersgroups, 'hascommongroup' => true];
+    } else {
+        return ['groups' => [], 'usersgroups' => [], 'hascommongroup' => true];
+    }
+}
+
+/**
+ * Check if userid belongs to current user.
+ *
+ * @param int $userid user id
+ * @return bool
+ */
+function iscurrentuser($userid) {
+    global $USER;
+
+    if ($userid == $USER->id) {
+        return true;
+    }
+    return false;
+}

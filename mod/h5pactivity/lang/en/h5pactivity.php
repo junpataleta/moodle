@@ -94,6 +94,7 @@ Any question attempts are marked automatically, and the grade is recorded in the
 $string['modulename_link'] = 'mod/h5pactivity/view';
 $string['modulenameplural'] = 'H5P';
 $string['myattempts'] = 'My attempts';
+$string['newsubmissions'] = 'H5P submitted';
 $string['no_compatible_track'] = 'This interaction ({$a}) does not provide tracking information or the tracking
         provided is not compatible with the current activity version.';
 $string['noparticipants'] = 'No participants to display';
