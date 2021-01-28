@@ -230,10 +230,12 @@
                             {{#forum.state.groupmode}}
                                 <td class="group align-middle fit-content limit-width px-3">
                                     {{#discussion.group}}
-                                        <img alt="{{#str}} pictureof, core, {{name}} {{/str}}"
-                                             class="border rounded h-auto rounded-circle grouppicture"
-                                             src="{{{urls.picture}}}"
-                                             title="{{#str}} pictureof, core, {{name}} {{/str}}">
+                                        {{#urls.picture}}
+                                            <img alt="{{#str}} pictureof, core, {{name}} {{/str}}"
+                                                 class="border rounded h-auto rounded-circle grouppicture"
+                                                 src="{{{.}}}"
+                                                 title="{{#str}} pictureof, core, {{name}} {{/str}}">
+                                        {{/urls.picture}}
                                         {{#urls.userlist}}
                                             <a href="{{{urls.userlist}}}" aria-label='{{#str}} memberofgroup, group, {{name}}{{/str}}'
                                                title='{{#str}} memberofgroup, group, {{name}}{{/str}}'>
