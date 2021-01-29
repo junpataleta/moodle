@@ -1155,6 +1155,9 @@ class restore_create_included_users extends restore_execution_step {
  */
 class restore_groups_structure_step extends restore_structure_step {
 
+    /** @var int[] Contains old IDs of groups that have picture to be restored. */
+    protected $oldidswithicons = [];
+
     protected function define_structure() {
 
         $paths = array(); // Add paths here
@@ -1190,6 +1193,15 @@ class restore_groups_structure_step extends restore_structure_step {
         $oldid = $data->id;    // need this saved for later
 
         $restorefiles = false; // Only if we end creating the group
+
+        // This is for backwards compatibility with old backups. If the backup data for a group contains a non-empty value of
+        // hidepicture, then we'll exclude this group's picture from being restored.
+        if (empty($data->hidepicture)) {
+            $this->oldidswithicons[] = $oldid;
+        } else {
+            // Delete the group picture if hidepicture is set to 1 in the backup data.
+            unset($data->picture);
+        }
 
         // Search if the group already exists (by name & description) in the target course
         $description_clause = '';
@@ -1271,8 +1283,15 @@ class restore_groups_structure_step extends restore_structure_step {
     }
 
     protected function after_execute() {
-        // Add group related files, matching with "group" mappings
-        $this->add_related_files('group', 'icon', 'group');
+        // Add group related files, matching with "group" mappings.
+
+        // Add group pictures to be restored individually. Old group backup data may contain group pictures with hidepicture
+        // defined and set to 1 which means such group pictures need to be excluded from being restored. So we're only restoring
+        // group pictures for old IDs that were included in process_group().
+        foreach ($this->oldidswithicons as $olditemid) {
+            $this->add_related_files('group', 'icon', 'group', null, $olditemid);
+        }
+
         $this->add_related_files('group', 'description', 'group');
         // Add grouping related files, matching with "grouping" mappings
         $this->add_related_files('grouping', 'description', 'grouping');
