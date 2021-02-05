@@ -39,6 +39,7 @@ if ($f) {  // Two ways to specify the module
     $cm = get_coursemodule_from_id('folder', $id, 0, true, MUST_EXIST);
     $folder = $DB->get_record('folder', array('id'=>$cm->instance), '*', MUST_EXIST);
 }
+$cm = \cm_info::create($cm);
 
 $course = $DB->get_record('course', array('id'=>$cm->course), '*', MUST_EXIST);
 
@@ -75,7 +76,7 @@ $output = $PAGE->get_renderer('mod_folder');
 echo $output->header();
 
 echo $output->heading(format_string($folder->name), 2);
-
+echo $OUTPUT->activity_information($cm);
 echo $output->display_folder($folder);
 
 echo $output->footer();
