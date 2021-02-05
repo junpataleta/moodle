@@ -1,0 +1,47 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core_course/completion_automatic
+
+    Template for displaying an automatic completion rule and its status.
+
+    Example context (json):
+    {
+        "complete": 1,
+        "description": "Must be viewed"
+    }
+}}
+<span role="listitem">
+    {{#statuscomplete}}
+        <span class="p-2 badge badge-success rounded">
+            <strong>{{#str}}completion_automatic:done, core_course{{/str}}</strong>
+            <span class="font-weight-normal">{{description}}</span>
+        </span>
+    {{/statuscomplete}}
+    {{#statuscompletefail}}
+        <span class="p-2 badge badge-warning rounded">
+            <strong>{{#str}}completion_automatic:failed, core_course{{/str}}</strong>
+            <span class="font-weight-normal">{{description}}</span>
+        </span>
+    {{/statuscompletefail}}
+    {{#statusincomplete}}
+        <span class="p-2 badge badge-pill badge-light rounded">
+            <strong>{{#str}}completion_automatic:todo, core_course{{/str}}</strong>
+            <span class="font-weight-normal">{{description}}</span>
+        </span>
+    {{/statusincomplete}}
+</span>
