@@ -900,6 +900,42 @@ class core_renderer extends renderer_base {
     }
 
     /**
+     * Returns information about an activity.
+     *
+     * @return string the activity information HTML.
+     */
+    public function activity_information(cm_info $cm): string {
+        $course = $cm->get_course();
+
+        $completioninfo = new completion_info($course);
+        $hascompletion = $completioninfo->is_enabled($cm);
+        if (!$hascompletion) {
+            return '';
+        }
+        $completiondata = $completioninfo->get_data($cm);
+
+        $completion = new stdClass();
+        $completion->hascompletion = $hascompletion;
+        $completion->ismanual = $cm->completion == COMPLETION_TRACKING_MANUAL;
+        $completion->isdone = $completiondata->completionstate == COMPLETION_COMPLETE;
+        if (!$completion->ismanual) {
+            // TODO get automatic completion conditions
+        }
+
+        // TODO get activity dates for the module.
+        $activitydates = null;
+
+        // Return nothing if there's nothing to render.
+        if (empty($activitydates) && !$hascompletion) {
+            return '';
+        }
+
+        $activityinfo = new \core_course\output\activity_information($cm->id, $activitydates, $completion);
+        $renderer = $this->page->get_renderer('core', 'course');
+        return $renderer->render($activityinfo);
+    }
+
+    /**
      * Returns standard navigation between activities in a course.
      *
      * @return string the navigation HTML.
