@@ -913,13 +913,17 @@ class core_renderer extends renderer_base {
             return '';
         }
         $completiondata = $completioninfo->get_data($cm);
-
         $completion = new stdClass();
         $completion->hascompletion = $hascompletion;
         $completion->ismanual = $cm->completion == COMPLETION_TRACKING_MANUAL;
         $completion->isdone = $completiondata->completionstate == COMPLETION_COMPLETE;
         if (!$completion->ismanual) {
-            // TODO get automatic completion conditions
+            $cmdetailsclass = "\\mod_{$cm->modname}\\completion\\{$cm->modname}_completion_details";
+            if (class_exists($cmdetailsclass)) {
+                /** @var \core_completion\cm_completion_details $cmdetails */
+                $cmdetails = new $cmdetailsclass($cm);
+                $completion->details = $cmdetails->get_details();
+            }
         }
 
         // TODO get activity dates for the module.

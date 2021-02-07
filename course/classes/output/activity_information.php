@@ -79,6 +79,7 @@ class activity_information implements renderable, templatable {
         $data->hascompletion = $this->completiondata->hascompletion ?? null;
         $data->ismanual = $this->completiondata->ismanual ?? null;
         $data->isdone = $this->completiondata->isdone ?? null;
+        $data->completiondetails = $this->completiondata->details ?? null;
 
         return $data;
     }

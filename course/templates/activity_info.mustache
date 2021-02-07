@@ -46,7 +46,9 @@
                 {{> core_course/completion_manual }}
             {{/ismanual}}
             {{^ismanual}}
-
+                {{#completiondetails}}
+                    {{> core_course/completion_automatic }}
+                {{/completiondetails}}
             {{/ismanual}}
         {{/hascompletion}}
     </div>
