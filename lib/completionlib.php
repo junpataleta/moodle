@@ -26,6 +26,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core_completion\activity_custom_completion;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -681,14 +683,24 @@ class completion_info {
         }
 
         if (plugin_supports('mod', $cm->modname, FEATURE_COMPLETION_HAS_RULES)) {
-            $function = $cm->modname.'_get_completion_state';
-            if (!function_exists($function)) {
-                $this->internal_systemerror("Module {$cm->modname} claims to support
+            $cmcompletionclass = activity_custom_completion::get_cm_completion_class($cm->modname);
+            if ($cmcompletionclass) {
+                /** @var activity_custom_completion $cmcompletion */
+                $cmcompletion = new $cmcompletionclass($cm, $userid);
+                if ($cmcompletion->get_overall_completion_state() == COMPLETION_INCOMPLETE) {
+                    return COMPLETION_INCOMPLETE;
+                }
+            } else {
+                // Fallback to the get_completion_state callback.
+                $function = $cm->modname.'_get_completion_state';
+                if (!function_exists($function)) {
+                    $this->internal_systemerror("Module {$cm->modname} claims to support
                     FEATURE_COMPLETION_HAS_RULES but does not have required
                     {$cm->modname}_get_completion_state function");
-            }
-            if (!$function($this->course, $cm, $userid, COMPLETION_AND)) {
-                return COMPLETION_INCOMPLETE;
+                }
+                if (!$function($this->course, $cm, $userid, COMPLETION_AND)) {
+                    return COMPLETION_INCOMPLETE;
+                }
             }
         }
 
@@ -953,7 +965,7 @@ class completion_info {
      * Obtains completion data for a particular activity and user (from the
      * completion cache if available, or by SQL query)
      *
-     * @param stcClass|cm_info $cm Activity; only required field is ->id
+     * @param stdClass|cm_info $cm Activity; only required field is ->id
      * @param bool $wholecourse If true (default false) then, when necessary to
      *   fill the cache, retrieves information from the entire course not just for
      *   this one activity
@@ -962,10 +974,12 @@ class completion_info {
      *   testing and so that it can be called recursively from within
      *   get_fast_modinfo. (Needs only list of all CMs with IDs.)
      *   Otherwise the method calls get_fast_modinfo itself.
-     * @return object Completion data (record from course_modules_completion)
+     * @return object Completion data. Record from course_modules_completion plus other completion statuses such as
+     *                  - Completion status for 'must-receive-grade' completion rule.
+     *                  - Custom completion statuses defined by the activity module plugin.
      */
     public function get_data($cm, $wholecourse = false, $userid = 0, $modinfo = null) {
-        global $USER, $CFG, $DB;
+        global $USER, $DB;
         $completioncache = cache::make('core', 'completion');
 
         // Get user ID
@@ -990,6 +1004,13 @@ class completion_info {
                 }
             }
         }
+
+        // Some call completion_info::get_data and pass $cm as an object with ID only. Make sure course is set as well.
+        if ($cm instanceof stdClass && !isset($cm->course)) {
+            $cm->course = $this->course_id;
+        }
+        // Make sure we're working on a cm_info object.
+        $cm = cm_info::create($cm);
 
         // Not there, get via SQL
         if ($usecache && $wholecourse) {
@@ -1027,6 +1048,10 @@ class completion_info {
                     $data['overrideby'] = null;
                     $data['timemodified'] = 0;
                 }
+                // Make sure we're working on a cm_info object.
+                $cminfo = cm_info::create($othercm);
+                // Add the other completion data for this user in this module instance.
+                $data += $this->get_other_cm_completion_data($cminfo, $userid);
                 $cacheddata[$othercm->id] = $data;
             }
 
@@ -1050,6 +1075,8 @@ class completion_info {
                 $data['overrideby'] = null;
                 $data['timemodified'] = 0;
             }
+            // Fill the other completion data for this user in this module instance.
+            $data += $this->get_other_cm_completion_data($cm, $userid);
 
             // Put in cache
             $cacheddata[$cm->id] = $data;
@@ -1060,6 +1087,48 @@ class completion_info {
             $completioncache->set($key, $cacheddata);
         }
         return (object)$cacheddata[$cm->id];
+    }
+
+    /**
+     * Adds the user's custom completion data on the given course module.
+     *
+     * @param cm_info $cm The course module information.
+     * @param int $userid The user ID.
+     * @return array The additional completion data.
+     */
+    protected function get_other_cm_completion_data(cm_info $cm, int $userid): array {
+        $data = [];
+
+        // Include in the completion info the grade completion, if necessary.
+        if (!is_null($cm->completiongradeitemnumber)) {
+            $data['completiongrade'] = $this->get_grade_completion($cm, $userid);
+        }
+
+        // Custom activity module completion data.
+
+        // Return early if the plugin does not define custom completion rules.
+        if (empty($cm->customdata['customcompletionrules'])) {
+            return [];
+        }
+
+        // Return early if the activity modules doe not implement the activity_custom_completion class.
+        $cmcompletionclass = activity_custom_completion::get_cm_completion_class($cm->modname);
+        if (!$cmcompletionclass) {
+            return [];
+        }
+
+        /** @var activity_custom_completion $customcmcompletion */
+        $customcmcompletion = new $cmcompletionclass($cm, $userid);
+        foreach ($cm->customdata['customcompletionrules'] as $rule => $enabled) {
+            if (!$enabled) {
+                // Skip inactive completion rules.
+                continue;
+            }
+            // Get this custom completion rule's completion state.
+            $data['customcompletion'][$rule] = $customcmcompletion->get_state($rule);
+        }
+
+        return $data;
     }
 
     /**
@@ -1089,11 +1158,17 @@ class completion_info {
         }
         $transaction->allow_commit();
 
-        $cmcontext = context_module::instance($data->coursemoduleid, MUST_EXIST);
-        $coursecontext = $cmcontext->get_parent_context();
+        $cmcontext = context_module::instance($data->coursemoduleid);
 
         $completioncache = cache::make('core', 'completion');
         if ($data->userid == $USER->id) {
+            // Fetch other completion data to cache (e.g. require grade completion status, custom completion rule statues).
+            $cminfo = cm_info::create($cm); // Make sure we're working on a cm_info object.
+            $otherdata = $this->get_other_cm_completion_data($cminfo, $data->userid);
+            foreach ($otherdata as $key => $value) {
+                $data->$key = $value;
+            }
+
             // Update module completion in user's cache.
             if (!($cachedata = $completioncache->get($data->userid . '_' . $cm->course))
                     || $cachedata['cacherev'] != $this->course->cacherev) {
