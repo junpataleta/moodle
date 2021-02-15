@@ -37,6 +37,9 @@ use completion_info;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cm_completion_details {
+    /** @var completion_info The completion info instance for this cm's course. */
+    protected $completioninfo = null;
+
     /** @var cm_info The course module information. */
     protected $cminfo = null;
 
@@ -46,10 +49,12 @@ class cm_completion_details {
     /**
      * Constructor.
      *
+     * @param completion_info $completioninfo The completion info instance for this cm's course.
      * @param cm_info $cminfo The course module information.
      * @param int $userid The user ID.
      */
-    public function __construct(cm_info $cminfo, int $userid = 0) {
+    public function __construct(completion_info $completioninfo, cm_info $cminfo, int $userid = 0) {
+        $this->completioninfo = $completioninfo;
         $this->cminfo = $cminfo;
         $this->userid = $userid;
     }
@@ -65,8 +70,7 @@ class cm_completion_details {
             return [];
         }
 
-        $completioninfo = new completion_info($this->cminfo->get_course());
-        $completiondata = $completioninfo->get_data($this->cminfo, false, $this->userid);
+        $completiondata = $this->completioninfo->get_data($this->cminfo, false, $this->userid);
 
         $details = [];
 
@@ -114,8 +118,7 @@ class cm_completion_details {
      * @return int The overall completion state for this course module.
      */
     public function get_overall_completion(): int {
-        $completioninfo = new completion_info($this->cminfo->get_course());
-        $completiondata = $completioninfo->get_data($this->cminfo, false, $this->userid);
+        $completiondata = $this->completioninfo->get_data($this->cminfo, false, $this->userid);
         return (int)$completiondata->completionstate;
     }
 
