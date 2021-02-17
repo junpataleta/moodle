@@ -17,21 +17,29 @@
 {{!
     @template core_course/completion_manual
 
-    Template for displaying the activity's dates.
+    Template for displaying the manual completion button.
 
     Example context (json):
     {
-        "cmid": 1,
-        "isdone": true
+        "cmid": 0,
+        "overallcomplete": true
+        "overallincomplete": false
     }
 }}
-<span>
-    {{#overallcomplete}}
-        <button class="btn btn-outline-success" data-action="manual:undo" data-cmid="{{cmid}}">
-            <i class="fa fa-check" aria-hidden="true"></i> {{#str}} completion_manual:done, core_course {{/str}}
-        </button>
-    {{/overallcomplete}}
-    {{#overallincomplete}}
-        <button class="btn btn-outline-secondary" data-action="manual:mark-done" data-cmid="{{cmid}}">{{#str}} completion_manual:markdone, core_course {{/str}}</button>
-    {{/overallincomplete}}
-</span>
+{{#overallcomplete}}
+    <button class="btn btn-outline-success" data-action="toggle-manual-completion" data-toggletype="manual:undo" data-cmid="{{cmid}}">
+        <i class="fa fa-check" aria-hidden="true"></i> {{#str}} completion_manual:done, core_course {{/str}}
+    </button>
+{{/overallcomplete}}
+{{#overallincomplete}}
+    <button class="btn btn-outline-secondary" data-action="toggle-manual-completion" data-toggletype="manual:mark-done" data-cmid="{{cmid}}">
+        {{#str}} completion_manual:markdone, core_course {{/str}}
+    </button>
+{{/overallincomplete}}
+
+{{#js}}
+    require(['core_course/manual_completion_toggle'], function(toggle) {
+        const manualToggleButton = document.querySelector(toggle.SELECTORS.MANUAL_TOGGLE);
+        toggle.registerEventListener(manualToggleButton)
+    });
+{{/js}}
