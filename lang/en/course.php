@@ -47,6 +47,7 @@ $string['completion_automatic:failed'] = 'Failed:';
 $string['completion_automatic:todo'] = 'To do:';
 $string['completion_manual:done'] = 'Done';
 $string['completion_manual:markdone'] = 'Mark as done';
+$string['completionrequirements'] = 'Completion requirements for this activity';
 $string['coursealreadyfinished'] = 'Course already finished';
 $string['coursenotyetstarted'] = 'The course has not yet started';
 $string['coursenotyetfinished'] = 'The course has not yet finished';

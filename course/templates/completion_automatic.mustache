@@ -21,29 +21,30 @@
 
     Example context (json):
     {
-        "complete": 1,
-        "description": "Must be viewed"
+        "statuscomplete": 1,
+        "description": "Viewed",
+        "istrackeduser": true
     }
 }}
-<span role="listitem">
+{{#istrackeduser}}
     {{#statuscomplete}}
-        <span class="p-2 badge badge-success rounded">
-            <strong>{{#str}}completion_automatic:done, core_course{{/str}}</strong>
-            <span class="font-weight-normal">{{description}}</span>
-        </span>
+        <span class="p-2 badge badge-success rounded" role="listitem">
+        <strong>{{#str}}completion_automatic:done, core_course{{/str}}</strong> <span class="font-weight-normal">{{description}}</span>
+    </span>
     {{/statuscomplete}}
-    {{#istrackeduser}}
-        {{#statuscompletefail}}
-            <span class="p-2 badge badge-warning rounded">
-            <strong>{{#str}}completion_automatic:failed, core_course{{/str}}</strong>
-            <span class="font-weight-normal">{{description}}</span>
-        </span>
-        {{/statuscompletefail}}
-        {{#statusincomplete}}
-            <span class="p-2 badge badge-pill badge-light rounded">
-            <strong>{{#str}}completion_automatic:todo, core_course{{/str}}</strong>
-            <span class="font-weight-normal">{{description}}</span>
-        </span>
-        {{/statusincomplete}}
-    {{/istrackeduser}}
-</span>
+    {{#statuscompletefail}}
+    <span class="p-2 badge badge-warning rounded" role="listitem">
+        <strong>{{#str}}completion_automatic:failed, core_course{{/str}}</strong> <span class="font-weight-normal">{{description}}</span>
+    </span>
+    {{/statuscompletefail}}
+    {{#statusincomplete}}
+    <span class="p-2 badge badge-pill badge-light rounded" role="listitem">
+        <strong>{{#str}}completion_automatic:todo, core_course{{/str}}</strong> <span class="font-weight-normal">{{description}}</span>
+    </span>
+    {{/statusincomplete}}
+{{/istrackeduser}}
+{{^istrackeduser}}
+    <span class="p-2 badge badge-light rounded" role="listitem">
+        <span class="font-weight-normal">{{description}}</span>
+    </span>
+{{/istrackeduser}}

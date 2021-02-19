@@ -37,11 +37,15 @@
             {{#str}} completion_manual:markdone, core_course {{/str}}
         </button>
     {{/overallincomplete}}
-{{/istrackeduser}}
-
-{{#js}}
-    require(['core_course/manual_completion_toggle'], function(toggle) {
+    {{#js}}
+        require(['core_course/manual_completion_toggle'], function(toggle) {
         const manualToggleButton = document.querySelector(toggle.SELECTORS.MANUAL_TOGGLE);
         toggle.registerEventListener(manualToggleButton)
-    });
-{{/js}}
+        });
+    {{/js}}
+{{/istrackeduser}}
+{{^istrackeduser}}
+    <button class="btn btn-outline-secondary" disabled>
+        {{#str}} completion_manual:markdone, core_course {{/str}}
+    </button>
+{{/istrackeduser}}

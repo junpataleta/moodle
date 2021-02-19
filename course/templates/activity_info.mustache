@@ -43,7 +43,7 @@
     <div>
         {{#hascompletion}}
             {{#isautomatic}}
-                <div role="list">
+                <div data-region ="completionrequirements" role="list" aria-label="{{#str}}completionrequirements, core_course{{/str}}">
                     {{#completiondetails}}
                         {{> core_course/completion_automatic }}
                     {{/completiondetails}}
