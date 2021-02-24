@@ -36,24 +36,23 @@
 }}
 <table class="h5pactivity-recent">
     <tbody>
-    <tr>
-        <td class="userpicture">{{{userpicture}}}</td>
-        <td>
-            <div class="title">
-                {{#modinfo}}
-                    {{{modicon}}}<a href="{{{modurl}}}">{{{modname}}}</a>
-                {{/modinfo}}
-            </div>
-            {{#grade}}
-                <div class="grade">
-                    {{#str}}grade{{/str}}: {{{grade}}}
+        <tr>
+            <td class="userpicture">{{{userpicture}}}</td>
+            <td>
+                <div class="title">
+                    {{#modinfo}}
+                        {{{modicon}}}<a href="{{modurl}}">{{modname}}</a>
+                    {{/modinfo}}
                 </div>
-            {{/grade}}
-            <div class="user">
-                <a href="{{{userurl}}}">{{{fullname}}}</a> - {{{userdate}}}
-            </div>
-        </td>
-    </tr>
-
+                {{#grade}}
+                    <div class="grade">
+                        {{#str}}grade{{/str}}: {{grade}}
+                    </div>
+                {{/grade}}
+                <div class="user">
+                    <a href="{{userurl}}">{{fullname}}</a> - {{#userdate}}{{submissiontimestamp}}, {{#str}}strftimerecentfull {{/str}}{{/userdate}}
+                </div>
+            </td>
+        </tr>
     </tbody>
 </table>

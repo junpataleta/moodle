@@ -552,21 +552,21 @@ function h5pactivity_dndupload_handle($uploadinfo): int {
  * @return bool true if activity was printed, false otherwise.
  */
 function h5pactivity_print_recent_activity($course, $viewfullnames, $timestart) {
-    global $CFG, $DB, $OUTPUT;
-
+    global $DB, $OUTPUT, $USER;
+    $timestart = time() - WEEKSECS;
     $dbparams = [$timestart, $course->id, 'h5pactivity'];
     $namefields = user_picture::fields('u', null, 'userid');
 
     $sql = "SELECT h5pa.id, h5pa.timemodified, cm.id as cmid, $namefields
               FROM {h5pactivity_attempts} h5pa
-              JOIN {h5pactivity} h5p      ON h5p.id = h5pa.h5pactivityid
+              JOIN {h5pactivity} h5p ON h5p.id = h5pa.h5pactivityid
               JOIN {course_modules} cm ON cm.instance = h5p.id
-              JOIN {modules} md        ON md.id = cm.module
-              JOIN {user} u            ON u.id = h5pa.userid
-              WHERE h5pa.timemodified > ?
-              AND h5p.course = ?
-              AND md.name = ?
-              ORDER BY h5pa.timemodified ASC";
+              JOIN {modules} md ON md.id = cm.module
+              JOIN {user} u ON u.id = h5pa.userid
+             WHERE h5pa.timemodified > ?
+                   AND h5p.course = ?
+                   AND md.name = ?
+          ORDER BY h5pa.timemodified ASC";
 
     if (!$submissions = $DB->get_records_sql($sql, $dbparams)) {
         return false;
@@ -588,7 +588,7 @@ function h5pactivity_print_recent_activity($course, $viewfullnames, $timestart) 
             continue;
         }
 
-        if (iscurrentuser($submission->userid)) {
+        if ($USER->id == $submission->userid) {
             $show[] = $submission;
             continue;
         }
@@ -603,10 +603,9 @@ function h5pactivity_print_recent_activity($course, $viewfullnames, $timestart) 
             continue;
         }
 
-        $groupinfo = getgroupinfo($submission->userid, $modinfo, $course, $context,
-            $cm, $groupinfo['groups'], $groupinfo['usersgroups']);
+        $groupinfo = h5pactivity_is_in_common_group($submission->userid, $modinfo, $course, $context, $cm);
 
-        if (!$groupinfo['hascommongroup']) {
+        if (!$groupinfo) {
             continue;
         }
         $show[] = $submission;
@@ -620,13 +619,8 @@ function h5pactivity_print_recent_activity($course, $viewfullnames, $timestart) 
 
     foreach ($show as $submission) {
         $cm = $cms[$submission->cmid];
-        $link = $CFG->wwwroot.'/mod/h5pactivity/view.php?id='.$cm->id;
-        print_recent_activity_note($submission->timemodified,
-            $submission,
-            $cm->name,
-            $link,
-            false,
-            $viewfullnames);
+        $link = new moodle_url('/mod/h5pactivity/view.php', ['id' => $cm->id]);
+        print_recent_activity_note($submission->timemodified, $submission, $cm->name, $link->out(false), false, $viewfullnames);
     }
 
     return true;
@@ -644,14 +638,8 @@ function h5pactivity_print_recent_activity($course, $viewfullnames, $timestart) 
  * @param int $groupid Optional group id
  * @return void
  */
-function h5pactivity_get_recent_mod_activity(&$activities,
-                                        &$index,
-                                        $timestart,
-                                        $courseid,
-                                        $cmid,
-                                        $userid=0,
-                                        $groupid=0) {
-    global $CFG, $DB;
+function h5pactivity_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid=0, $groupid=0) {
+    global $CFG, $DB, $USER;
 
     $course = get_course($courseid);
     $modinfo = get_fast_modinfo($course);
@@ -679,13 +667,17 @@ function h5pactivity_get_recent_mod_activity(&$activities,
 
     $userfields = user_picture::fields('u', null, 'userid');
 
-    if (!$submissions = $DB->get_records_sql('SELECT h5pa.id, h5pa.timemodified, ' . $userfields .
-                                                  ' FROM {h5pactivity_attempts} h5pa
-                                                    JOIN {h5pactivity} h5p ON h5p.id = h5pa.h5pactivityid
-                                                    JOIN {user} u ON u.id = h5pa.userid ' . $groupjoin .
-                                                 ' WHERE h5pa.timemodified > :timestart
-                                                         AND h5p.id = :cminstance' . $userselect . ' ' . $groupselect .
-                                              ' ORDER BY h5pa.timemodified ASC', $params)) {
+    $sql = "SELECT h5pa.id, h5pa.timemodified, $userfields
+              FROM {h5pactivity_attempts} h5pa
+              JOIN {h5pactivity} h5p ON h5p.id = h5pa.h5pactivityid
+              JOIN {user} u ON u.id = h5pa.userid
+                   $groupjoin
+             WHERE h5pa.timemodified > :timestart
+                   AND h5p.id = :cminstance
+                   $userselect  
+                   $groupselect
+          ORDER BY h5pa.timemodified ASC";
+    if (!$submissions = $DB->get_records_sql($sql, $params)) {
         return;
     }
 
@@ -698,7 +690,7 @@ function h5pactivity_get_recent_mod_activity(&$activities,
 
     foreach ($submissions as $submission) {
 
-        if (iscurrentuser($submission->userid)) {
+        if ($USER->id == $submission->userid) {
             $show[] = $submission;
             continue;
         }
@@ -708,10 +700,9 @@ function h5pactivity_get_recent_mod_activity(&$activities,
             continue;
         }
 
-        $groupinfo = getgroupinfo($submission->userid, $modinfo, $course, $cmcontext,
-            $cm, $groupinfo['groups'], $groupinfo['usersgroups']);
+        $groupinfo = h5pactivity_is_in_common_group($submission->userid, $modinfo, $course, $cmcontext, $cm);
 
-        if (!$groupinfo['hascommongroup']) {
+        if (!$groupinfo) {
             continue;
         }
         $show[] = $submission;
@@ -758,7 +749,6 @@ function h5pactivity_get_recent_mod_activity(&$activities,
         $activities[$index++] = $activity;
     }
 
-    return;
 }
 
 /**
@@ -771,21 +761,23 @@ function h5pactivity_get_recent_mod_activity(&$activities,
  * @param array $modnames
  */
 function h5pactivity_print_recent_mod_activity($activity, $courseid, $detail, $modnames) {
-    global $CFG, $OUTPUT;
+    global $OUTPUT;
 
     $modinfo = [];
     if ($detail) {
         $modinfo['modname'] = $activity->name;
-        $modinfo['modurl'] = $CFG->wwwroot . '/mod/h5pactivity/view.php?id=' . $activity->cmid;
+        $modurl = new moodle_url('/mod/h5pactivity/view.php', ['id' => $activity->cmid]);
+        $modinfo['modurl'] = $modurl->out(false);
         $modinfo['modicon'] = $OUTPUT->image_icon('icon', $modnames[$activity->type], 'h5pactivity');
     }
 
     $userpicture = $OUTPUT->user_picture($activity->user);
 
+    $userurl = new moodle_url('/user/view.php', ['id' => $activity->user->id, 'course' => $courseid]);
     $template = ['userpicture' => $userpicture,
-        'userdate' => userdate($activity->timestamp),
+        'submissiontimestamp' => $activity->timestamp,
         'modinfo' => $modinfo,
-        'userurl' => $CFG->wwwroot . '/user/view.php?id=' . $activity->user->id . '&course=' . $courseid,
+        'userurl' => $userurl->out(false),
         'fullname' => $activity->user->fullname];
     if (isset($activity->grade)) {
         $template['grade'] = $activity->grade;
@@ -802,12 +794,9 @@ function h5pactivity_print_recent_mod_activity($activity, $courseid, $detail, $m
  * @param stdClass $course Course object
  * @param context $context Context object
  * @param cm_info $cm The cm object
- * @param array $groups All groups in this cm
- * @param array $usersgroups User groups in this cm
- * @return array
+ * @return bool
  */
-function getgroupinfo($userid, $modinfo, $course, $context,
-                      $cm, $groups, $usersgroups) {
+function h5pactivity_is_in_common_group(int $userid, course_modinfo $modinfo, stdClass $course, context $context, cm_info $cm): bool {
 
     $groupmode = groups_get_activity_groupmode($cm, $course);
     $accessallgroups = has_capability('moodle/site:accessallgroups', $context);
@@ -816,45 +805,26 @@ function getgroupinfo($userid, $modinfo, $course, $context,
 
         if (isguestuser()) {
             // Shortcut - guest user does not belong into any group.
-            return ['groups' => [], 'usersgroups' => [], 'hascommongroup' => false];
+            return false;
         }
 
-        if (!isset($groups[$cm->groupingid])) {
-            $groups[$cm->groupingid] = $modinfo->get_groups($cm->groupingid);
-            if (!$groups[$cm->groupingid]) {
-                return ['groups' => [], 'usersgroups' => [], 'hascommongroup' => false];
-            }
+        $groups = $modinfo->get_groups($cm->groupingid);
+        if (!$groups) {
+            return false;
         }
 
-        if (!isset($usersgroups[$cm->groupingid][$userid])) {
-            $usersgroups[$cm->groupingid][$userid] =
-                groups_get_all_groups($course->id, $userid, $cm->groupingid);
-        }
+        $usersgroups = groups_get_all_groups($course->id, $userid, $cm->groupingid);
 
-        if (is_array($usersgroups[$cm->groupingid][$userid])) {
-            $usersgroups = array_keys($usersgroups[$cm->groupingid][$userid]);
-            $intersect = array_intersect($usersgroups, $groups[$cm->groupingid]);
+        if (is_array($usersgroups)) {
+            $usersgroups = array_keys($usersgroups);
+            $intersect = array_intersect($usersgroups, $groups);
             if (empty($intersect)) {
-                return ['groups' => $groups, 'usersgroups' => $usersgroups, 'hascommongroup' => false];
+                return false;
             }
         }
-        return ['groups' => $groups, 'usersgroups' => $usersgroups, 'hascommongroup' => true];
-    } else {
-        return ['groups' => [], 'usersgroups' => [], 'hascommongroup' => true];
-    }
-}
 
-/**
- * Check if userid belongs to current user.
- *
- * @param int $userid user id
- * @return bool
- */
-function iscurrentuser($userid) {
-    global $USER;
-
-    if ($userid == $USER->id) {
         return true;
     }
-    return false;
+
+    return true;
 }
