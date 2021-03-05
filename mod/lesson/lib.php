@@ -1542,7 +1542,7 @@ function lesson_get_coursemodule_info($coursemodule) {
     global $DB;
 
     $dbparams = ['id' => $coursemodule->instance];
-    $fields = 'id, name, intro, introformat, completionendreached, completiontimespent';
+    $fields = 'id, name, intro, introformat, completionendreached, completiontimespent, available, deadline';
     if (!$lesson = $DB->get_record('lesson', $dbparams, $fields)) {
         return false;
     }
@@ -1559,6 +1559,14 @@ function lesson_get_coursemodule_info($coursemodule) {
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
         $result->customdata['customcompletionrules']['completionendreached'] = $lesson->completionendreached;
         $result->customdata['customcompletionrules']['completiontimespent'] = $lesson->completiontimespent;
+    }
+
+    // Populate some other values that can be used in calendar or on dashboard.
+    if ($lesson->available) {
+        $result->customdata['available'] = $lesson->available;
+    }
+    if ($lesson->deadline) {
+        $result->customdata['deadline'] = $lesson->deadline;
     }
 
     return $result;
