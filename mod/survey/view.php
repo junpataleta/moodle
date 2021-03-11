@@ -31,6 +31,8 @@ if (! $cm = get_coursemodule_from_id('survey', $id)) {
     print_error('invalidcoursemodule');
 }
 
+$cm = cm_info::create($cm);
+
 if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
     print_error('coursemisconf');
 }
@@ -71,6 +73,7 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($survey->name));
 
+echo $OUTPUT->activity_information($cm);
 // Check to see if groups are being used in this survey.
 if ($groupmode = groups_get_activity_groupmode($cm)) {   // Groups are being used.
     $currentgroup = groups_get_activity_group($cm);
