@@ -244,6 +244,12 @@ class mod_assign_renderer extends plugin_renderer_base {
 
         $o .= $this->output->header();
         $o .= $this->output->heading($heading);
+
+        // Show the activity information output component.
+        $modinfo = get_fast_modinfo($header->assign->course);
+        $cm = $modinfo->get_cm($header->coursemoduleid);
+        $o .= $this->output->activity_information($cm);
+
         if ($header->preface) {
             $o .= $header->preface;
         }
