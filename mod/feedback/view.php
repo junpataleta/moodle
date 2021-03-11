@@ -77,6 +77,7 @@ if ($courseid) {
 $preview = html_writer::link($previewlnk, $previewimg);
 
 echo $OUTPUT->heading(format_string($feedback->name) . $preview);
+echo $OUTPUT->activity_information($cm);
 
 // Print the tabs.
 require('tabs.php');
