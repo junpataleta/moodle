@@ -46,6 +46,7 @@ if (!empty($id)) {
 } else {
     print_error('invalidid', 'glossary');
 }
+$cm = cm_info::create($cm);
 
 require_course_login($course->id, true, $cm);
 $context = context_module::instance($cm->id);
@@ -297,7 +298,7 @@ if ($tab == GLOSSARY_APPROVAL_VIEW) {
     echo $OUTPUT->header();
 }
 echo $OUTPUT->heading(format_string($glossary->name), 2);
-
+echo $OUTPUT->activity_information($cm);
 /// All this depends if whe have $showcommonelements
 if ($showcommonelements) {
 /// To calculate available options
