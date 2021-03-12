@@ -852,7 +852,6 @@ class core_course_renderer extends plugin_renderer_base {
      * {@link core_course_renderer::course_section_cm_name()}
      * {@link core_course_renderer::course_section_cm_text()}
      * {@link core_course_renderer::course_section_cm_availability()}
-     * {@link core_course_renderer::course_section_cm_completion()}
      * {@link course_get_cm_edit_actions()}
      * {@link core_course_renderer::course_section_cm_edit_actions()}
      *

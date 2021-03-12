@@ -83,7 +83,6 @@ class cm_format implements renderable, templatable {
      */
     public function export_for_template(\renderer_base $output): stdClass {
         $format = $this->format;
-        $course = $format->get_course();
         $mod = $this->mod;
         $displayoptions = $this->displayoptions;
 
@@ -93,9 +92,7 @@ class cm_format implements renderable, templatable {
             'altcontent' => $output->course_section_cm_text($mod, $displayoptions),
             'availability' => $output->course_section_cm_availability($mod, $displayoptions),
             'url' => $mod->url,
-            'completion' => $output->course_section_cm_completion(
-                $course, $this->completioninfo, $mod, $displayoptions
-            ),
+            'activityinfo' => $output->activity_information($mod),
         ];
 
         if (!empty($mod->indent)) {
@@ -125,7 +122,7 @@ class cm_format implements renderable, templatable {
             $data->moveicon = course_get_cm_move($mod, $returnsection);
         }
 
-        if (!empty($data->completion) || !empty($data->extras)) {
+        if (!empty($data->extras)) {
             $data->hasextras = true;
         }
 
