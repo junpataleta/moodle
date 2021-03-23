@@ -128,6 +128,8 @@ class activity_information implements renderable, templatable {
             $data->accessibledescription = get_string($setbylangkey, 'course', $setbydata);
         }
 
+        $data->withavailability = $this->completiondata->withavailability;
+
         return $data;
     }
 }
