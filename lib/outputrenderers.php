@@ -913,7 +913,7 @@ class core_renderer extends renderer_base {
      * @throws coding_exception
      */
     public function activity_information(cm_info $cm, ?int $userid = 0): string {
-        global $USER;
+        global $CFG, $USER;
 
         // Default to the currently logged in user if user ID's not set.
         if (empty($userid)) {
@@ -944,6 +944,11 @@ class core_renderer extends renderer_base {
             $completiondetails = $cmdetails->get_details();
         }
 
+        $withavailability = false;
+        if ($hascompletion && !$cmdetails->is_automatic()) {
+            $withavailability = !empty($CFG->enableavailability) && core_availability\info::completion_value_used($course, $cm->id);
+        }
+
         // Build the object containing this course module's completion data.
         $completion = (object)[
             'hascompletion' => $hascompletion,
@@ -952,6 +957,7 @@ class core_renderer extends renderer_base {
             'details' => $completiondetails,
             'overallstatus' => $cmdetails->get_overall_completion(),
             'overrideby' => $overridebyname,
+            'withavailability' => $withavailability,
         ];
 
         $activitydates = [];
