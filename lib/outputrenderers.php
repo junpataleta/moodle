@@ -936,7 +936,11 @@ class core_renderer extends renderer_base {
         }
 
         $completiondetails = [];
-        if ($course->showcompletionconditions == COMPLETION_SHOW_CONDITIONS) {
+        $ismodulecontext = $this->page->context->contextlevel == CONTEXT_MODULE;
+        // Show automatic completion details, if:
+        // 1. We're in the view page of the activity where we're in the module's context; or
+        // 2. When showcompletionconditions course setting is enabled.
+        if ($ismodulecontext || $course->showcompletionconditions == COMPLETION_SHOW_CONDITIONS) {
             $completiondetails = $cmdetails->get_details();
         }
 
@@ -951,7 +955,10 @@ class core_renderer extends renderer_base {
         ];
 
         $activitydates = [];
-        if ($course->showactivitydates == 1) {
+        // Show activity dates if:
+        // 1. We're in the view page of the activity where we're in the module's context; or
+        // 2. When showactivitydates course setting is enabled.
+        if ($ismodulecontext == CONTEXT_MODULE || $course->showactivitydates == 1) {
             // Get activity dates for the module.
             $activitydates = activity_dates::get_dates_for_module($cm, $userid);
         }

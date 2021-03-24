@@ -28,6 +28,7 @@ Feature: Allow teachers to edit the visibility of activity dates in a course
     And I follow "Test choice"
     Then I should see "Opened:" in the "[data-region=activity-information]" "css_element"
     And I should see "Closes:" in the "[data-region=activity-information]" "css_element"
+    # TODO: Check activity dates display on course homepage.
 
   Scenario: Activity dates setting can be disabled to hidden activity dates in a course
     Given I log in as "teacher1"
@@ -37,7 +38,11 @@ Feature: Allow teachers to edit the visibility of activity dates in a course
       | Show activity dates | No |
     And I click on "Save and display" "button"
     And I follow "Test choice"
-    Then I should not see "Opened:"
+    # Activity dates are always shown in the module's view page.
+    Then I should see "Opened:"
+    And I should see "Closes:"
+    And I am on "Course 1" course homepage
+    And I should not see "Opened:"
     And I should not see "Closes:"
 
   Scenario: Default activity dates setting default value can changed to No
