@@ -27,6 +27,7 @@ Feature: Allow teachers to edit the visibility of completion conditions in a cou
     And I am on "Course 1" course homepage
     When I follow "Test choice auto"
     Then I should see "Make a choice" in the "[data-region=completionrequirements]" "css_element"
+    # TODO: Check completion conditions display on course homepage.
 
   Scenario: Completion condition displaying setting can be disabled at course level
     Given I log in as "teacher1"
@@ -36,7 +37,8 @@ Feature: Allow teachers to edit the visibility of completion conditions in a cou
       | Show completion conditions | No |
     And I click on "Save and display" "button"
     And I follow "Test choice auto"
-    Then I should not see "Make a choice" in the "[data-region=completionrequirements]" "css_element"
+     # Completion conditions are always shown in the module's view page.
+    Then I should see "Make a choice" in the "[data-region=completionrequirements]" "css_element"
     And I am on "Course 1" course homepage
     And I follow "Test choice manual"
     And I should see "Mark as done"
