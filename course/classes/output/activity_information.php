@@ -82,6 +82,7 @@ class activity_information implements renderable, templatable {
         $data->cmid = $this->cmid;
         $data->activityname = $this->activityname;
         $data->activitydates = $this->activitydates;
+        $data->hasdates = !empty($this->activitydates);
         $data->hascompletion = $this->completiondata->hascompletion;
         $data->isautomatic = $this->completiondata->isautomatic;
         $data->overrideby = $this->completiondata->overrideby;
