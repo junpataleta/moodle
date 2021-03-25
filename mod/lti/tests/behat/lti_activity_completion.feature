@@ -1,5 +1,5 @@
-@mod @mod_lti
-Feature: View activity completion
+@mod @mod_lti @core_completion
+Feature: View activity completion information in the LTI activity
   In order to have visibility of LTI completion requirements
   As a student
   I need to be able to view my LTI completion progress
@@ -55,7 +55,7 @@ Feature: View activity completion
     When I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Music history"
-    Then I should see "To do: Receive a grade" in the "[data-region=completionrequirements]" "css_element"
+    Then I should see "Done: Receive a grade" in the "[data-region=completionrequirements]" "css_element"
     And I should see "Done: View" in the "[data-region=completionrequirements]" "css_element"
 
   @javascript
