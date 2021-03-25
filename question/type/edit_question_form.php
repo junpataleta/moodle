@@ -429,9 +429,11 @@ abstract class question_edit_form extends question_wizard_form {
             $element->setValue(array('text' => get_string($feedbackname.'default', 'question')));
 
             if ($withshownumpartscorrect && $feedbackname == 'partiallycorrectfeedback') {
-                $mform->addElement('advcheckbox', 'shownumcorrect',
-                        get_string('options', 'question'),
-                        get_string('shownumpartscorrectwhenfinished', 'question'));
+                $options = [
+                    $mform->createElement('advcheckbox', 'shownumcorrect',
+                        get_string('shownumpartscorrectwhenfinished', 'question')),
+                ];
+                $mform->addGroup($options, 'partiallycorrectfeedbackoptions', get_string('options', 'question'), null, false);
                 $mform->setDefault('shownumcorrect', true);
             }
         }
