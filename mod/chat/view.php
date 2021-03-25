@@ -104,6 +104,7 @@ if ($currentgroup) {
 }
 
 echo $OUTPUT->heading(format_string($chat->name), 2);
+echo $OUTPUT->activity_information(cm_info::create($cm));
 
 if ($chat->intro) {
     echo $OUTPUT->box(format_module_intro('chat', $chat, $cm->id), 'generalbox', 'intro');
