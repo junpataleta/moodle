@@ -69,6 +69,7 @@ $PAGE->set_context($context);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($moduleinstance->name));
+echo $OUTPUT->activity_information($cm);
 
 $instance = $manager->get_instance();
 if (!empty($instance->intro)) {
