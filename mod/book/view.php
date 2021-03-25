@@ -207,6 +207,7 @@ book_view($book, $chapter, $islastchapter, $course, $cm, $context);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($book->name));
+echo $OUTPUT->activity_information(cm_info::create($cm));
 
 // Info box.
 if ($book->intro) {
