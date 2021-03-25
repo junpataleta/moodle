@@ -75,6 +75,7 @@ $output = $PAGE->get_renderer('mod_folder');
 echo $output->header();
 
 echo $output->heading(format_string($folder->name), 2);
+echo $output->activity_information(cm_info::create($cm));
 
 echo $output->display_folder($folder);
 
