@@ -70,6 +70,8 @@ if (!$imscp->structure) {
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($imscp->name));
+echo $OUTPUT->activity_information(cm_info::create($cm));
+
 // Info box.
 if ($imscp->intro) {
     echo $OUTPUT->box(format_module_intro('imscp', $imscp, $cm->id), 'generalbox', 'intro');
