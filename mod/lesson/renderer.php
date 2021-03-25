@@ -57,7 +57,7 @@ class mod_lesson_renderer extends plugin_renderer_base {
 
         if (has_capability('mod/lesson:manage', $context)) {
             $output .= $this->output->heading_with_help($activityname, 'overview', 'lesson');
-            $output.= $this->output->activity_information(cm_info::create($cm));
+            $output .= $this->output->activity_information(cm_info::create($cm));
 
             // Info box.
             if ($lesson->intro) {
@@ -71,7 +71,7 @@ class mod_lesson_renderer extends plugin_renderer_base {
             }
         } else {
             $output .= $this->output->heading($activityname);
-            $output.= $this->output->activity_information(cm_info::create($cm));
+            $output .= $this->output->activity_information(cm_info::create($cm));
 
             // Info box.
             if ($lesson->intro) {

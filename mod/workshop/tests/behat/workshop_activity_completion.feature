@@ -1,5 +1,5 @@
-@mod @mod_workshop
-Feature: View activity completion
+@mod @mod_workshop @core_completion
+Feature: View activity completion information in the Workshop activity
   In order to have visibility of lesson completion requirements
   As a student
   I need to be able to view my lesson completion progress

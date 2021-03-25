@@ -1,5 +1,5 @@
-@mod @mod_url
-Feature: View activity completion
+@mod @mod_url @core_completion
+Feature: View activity completion information in the Wiki activity
   In order to have visibility of URL completion requirements
   As a student
   I need to be able to view my URL completion progress
