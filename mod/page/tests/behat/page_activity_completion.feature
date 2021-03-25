@@ -1,5 +1,5 @@
-@mod @mod_page
-Feature: View activity completion
+@mod @mod_page @core_completion
+Feature: View activity completion information in the Page resource
   In order to have visibility of page completion requirements
   As a student
   I need to be able to view my page completion progress
