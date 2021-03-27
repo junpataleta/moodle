@@ -958,6 +958,7 @@ class core_renderer extends renderer_base {
             'overallstatus' => $cmdetails->get_overall_completion(),
             'overrideby' => $overridebyname,
             'withavailability' => $withavailability,
+            'uservisible' => $cm->uservisible,
         ];
 
         $activitydates = [];
