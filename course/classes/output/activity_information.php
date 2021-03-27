@@ -105,7 +105,8 @@ class activity_information implements renderable, templatable {
                     'condition' => $detail->description,
                     'setby' => $data->overrideby,
                 ];
-                $detail->accessibledescription = get_string('completion_setby:auto', 'course', $setbydata);
+                $overridestatus = $detail->statuscomplete ? 'done' : 'todo';
+                $detail->accessibledescription = get_string('completion_setby:auto:' . $overridestatus, 'course', $setbydata);
             }
 
             // We don't need the status in the template.
@@ -130,6 +131,7 @@ class activity_information implements renderable, templatable {
         }
 
         $data->withavailability = $this->completiondata->withavailability;
+        $data->uservisible = $this->completiondata->uservisible;
 
         return $data;
     }
