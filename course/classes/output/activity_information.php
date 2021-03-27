@@ -130,6 +130,7 @@ class activity_information implements renderable, templatable {
         }
 
         $data->withavailability = $this->completiondata->withavailability;
+        $data->uservisible = $this->completiondata->uservisible;
 
         return $data;
     }
