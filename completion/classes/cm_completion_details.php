@@ -83,7 +83,7 @@ class cm_completion_details {
                     $status = COMPLETION_COMPLETE;
                 }
             } else {
-                $status = COMPLETION_COMPLETE;
+                $status = $completiondata->completionstate;
             }
 
             $details['completionview'] = (object)[
@@ -97,7 +97,7 @@ class cm_completion_details {
             if (!$hasoverride) {
                 $status = $completiondata->completiongrade ?? COMPLETION_INCOMPLETE;
             } else {
-                $status = COMPLETION_COMPLETE;
+                $status = $completiondata->completionstate;
             }
 
             $details['completionusegrade'] = (object)[
@@ -117,7 +117,7 @@ class cm_completion_details {
         $cmcompletion = new $cmcompletionclass($this->cminfo, $this->userid);
         foreach ($completiondata->customcompletion as $rule => $status) {
             $details[$rule] = (object)[
-                'status' => !$hasoverride ? $status : COMPLETION_COMPLETE,
+                'status' => !$hasoverride ? $status : $completiondata->completionstate,
                 'description' => $cmcompletion->get_custom_rule_description($rule),
             ];
         }
