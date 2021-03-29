@@ -80,7 +80,7 @@
         }
         $record = NULL;
     }
-
+    $cm = cm_info::create($cm);
     require_course_login($course, true, $cm);
 
     require_once($CFG->dirroot . '/comment/lib.php');
@@ -267,6 +267,7 @@
     }
 
     echo $OUTPUT->heading(format_string($data->name), 2);
+    echo $OUTPUT->activity_information($cm);
 
     // Do we need to show a link to the RSS feed for the records?
     //this links has been Settings (database activity administration) block
