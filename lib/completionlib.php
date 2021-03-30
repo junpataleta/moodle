@@ -698,6 +698,10 @@ class completion_info {
                     FEATURE_COMPLETION_HAS_RULES but does not have required
                     {$cminfo->modname}_get_completion_state function");
                 }
+                $cmcompletionclass = "mod_{$cminfo->modname}\\completion\\custom_completion";
+                debugging("*_get_completion_state() callback functions such as $function have been deprecated and should no " .
+                    "longer be used. Please implement the custom completion class $cmcompletionclass which extends " .
+                    "\core_completion\activity_custom_completion.", DEBUG_DEVELOPER);
                 if (!$function($this->course, $cminfo, $userid, COMPLETION_AND)) {
                     return COMPLETION_INCOMPLETE;
                 }
