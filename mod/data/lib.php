@@ -4470,40 +4470,6 @@ function data_update_completion_state($data, $course, $cm) {
 }
 
 /**
- * Obtains the automatic completion state for this database item based on any conditions
- * on its settings. The call for this is in completion lib where the modulename is appended
- * to the function name. This is why there are unused parameters.
- *
- * @since Moodle 3.3
- * @param stdClass $course Course
- * @param cm_info|stdClass $cm course-module
- * @param int $userid User ID
- * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
- * @return bool True if completed, false if not, $type if conditions not set.
- */
-function data_get_completion_state($course, $cm, $userid, $type) {
-    global $DB, $PAGE;
-    $result = $type; // Default return value
-    // Get data details.
-    if (isset($PAGE->cm->id) && $PAGE->cm->id == $cm->id) {
-        $data = $PAGE->activityrecord;
-    } else {
-        $data = $DB->get_record('data', array('id' => $cm->instance), '*', MUST_EXIST);
-    }
-    // If completion option is enabled, evaluate it and return true/false.
-    if ($data->completionentries) {
-        $numentries = data_numentries($data, $userid);
-        // Check the number of entries required against the number of entries already made.
-        if ($numentries >= $data->completionentries) {
-            $result = true;
-        } else {
-            $result = false;
-        }
-    }
-    return $result;
-}
-
-/**
  * Mark the activity completed (if required) and trigger the course_module_viewed event.
  *
  * @param  stdClass $data       data object
