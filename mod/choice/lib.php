@@ -888,33 +888,6 @@ function choice_extend_settings_navigation(settings_navigation $settings, naviga
 }
 
 /**
- * Obtains the automatic completion state for this choice based on any conditions
- * in forum settings.
- *
- * @param object $course Course
- * @param object $cm Course-module
- * @param int $userid User ID
- * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
- * @return bool True if completed, false if not, $type if conditions not set.
- */
-function choice_get_completion_state($course, $cm, $userid, $type) {
-    global $CFG,$DB;
-
-    // Get choice details
-    $choice = $DB->get_record('choice', array('id'=>$cm->instance), '*',
-            MUST_EXIST);
-
-    // If completion option is enabled, evaluate it and return true/false
-    if($choice->completionsubmit) {
-        return $DB->record_exists('choice_answers', array(
-                'choiceid'=>$choice->id, 'userid'=>$userid));
-    } else {
-        // Completion option is not enabled so just return $type
-        return $type;
-    }
-}
-
-/**
  * Return a list of page types
  * @param string $pagetype current page type
  * @param stdClass $parentcontext Block's parent context
