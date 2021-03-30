@@ -512,32 +512,6 @@ function feedback_print_recent_mod_activity($activity, $courseid, $detail, $modn
 }
 
 /**
- * Obtains the automatic completion state for this feedback based on the condition
- * in feedback settings.
- *
- * @param object $course Course
- * @param object $cm Course-module
- * @param int $userid User ID
- * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
- * @return bool True if completed, false if not, $type if conditions not set.
- */
-function feedback_get_completion_state($course, $cm, $userid, $type) {
-    global $CFG, $DB;
-
-    // Get feedback details
-    $feedback = $DB->get_record('feedback', array('id'=>$cm->instance), '*', MUST_EXIST);
-
-    // If completion option is enabled, evaluate it and return true/false
-    if ($feedback->completionsubmit) {
-        $params = array('userid'=>$userid, 'feedback'=>$feedback->id);
-        return $DB->record_exists('feedback_completed', $params);
-    } else {
-        // Completion option is not enabled so just return $type
-        return $type;
-    }
-}
-
-/**
  * Print a detailed representation of what a  user has done with
  * a given particular instance of this module, for user activity reports.
  *
