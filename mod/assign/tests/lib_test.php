@@ -178,6 +178,8 @@ class mod_assign_lib_testcase extends advanced_testcase {
 
     /**
      * Ensure that assign_get_completion_state reflects the correct status at each point.
+     *
+     * @todo MDL-71196 Remove in Moodle 4.3
      */
     public function test_assign_get_completion_state() {
         global $DB;
