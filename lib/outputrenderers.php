@@ -36,7 +36,6 @@
  */
 
 use core\activity_dates;
-use core\user_fields;
 use core_completion\cm_completion_details;
 use core_course\output\activity_information;
 
@@ -924,51 +923,29 @@ class core_renderer extends renderer_base {
         $course = $cm->get_course();
         $completioninfo = new completion_info($course);
         $cmdetails = new cm_completion_details($completioninfo, $cm, $userid);
-        $hascompletion = $cmdetails->has_completion();
 
-        // Fetch the name of the user who has overridden this activity completion for the user.
-        $overrideby = $cmdetails->overridden_by();
-        $overridebyname = null;
-        if (!empty($overrideby)) {
-            $userfields = user_fields::for_name();
-            $overridebyrecord = core_user::get_user($overrideby, 'id ' . $userfields->get_sql()->selects, MUST_EXIST);
-            $overridebyname = fullname($overridebyrecord);
-        }
-
-        $completiondetails = [];
         $ismodulecontext = $this->page->context->contextlevel == CONTEXT_MODULE;
+
         // Show automatic completion details, if:
         // 1. We're in the view page of the activity where we're in the module's context; or
         // 2. When showcompletionconditions course setting is enabled.
-        if ($ismodulecontext || $course->showcompletionconditions == COMPLETION_SHOW_CONDITIONS) {
-            $completiondetails = $cmdetails->get_details();
-        }
-
-        // Build the object containing this course module's completion data.
-        $completion = (object)[
-            'hascompletion' => $hascompletion,
-            'istrackeduser' => $completioninfo->is_tracked_user($userid),
-            'isautomatic' => $cmdetails->is_automatic(),
-            'details' => $completiondetails,
-            'overallstatus' => $cmdetails->get_overall_completion(),
-            'overrideby' => $overridebyname,
-        ];
+        $showcompletiondetails = $ismodulecontext || $course->showcompletionconditions == COMPLETION_SHOW_CONDITIONS;
 
         $activitydates = [];
         // Show activity dates if:
         // 1. We're in the view page of the activity where we're in the module's context; or
         // 2. When showactivitydates course setting is enabled.
-        if ($ismodulecontext == CONTEXT_MODULE || $course->showactivitydates == 1) {
+        if ($ismodulecontext || !empty($course->showactivitydates)) {
             // Get activity dates for the module.
             $activitydates = activity_dates::get_dates_for_module($cm, $userid);
         }
 
         // Return nothing if there's nothing to render.
-        if (empty($activitydates) && !$hascompletion) {
+        if (empty($activitydates) && !$cmdetails->has_completion()) {
             return '';
         }
 
-        $activityinfo = new activity_information($cm->id, $cm->name, $completion, $activitydates);
+        $activityinfo = new activity_information($cm, $cmdetails, $showcompletiondetails, $activitydates);
         $renderer = $this->page->get_renderer('core', 'course');
         return $renderer->render($activityinfo);
     }
