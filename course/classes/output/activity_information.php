@@ -25,6 +25,10 @@ namespace core_course\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+use cm_info;
+use core_completion\cm_completion_details;
+use core_user;
+use core_user\fields;
 use renderable;
 use renderer_base;
 use stdClass;
@@ -39,34 +43,31 @@ use templatable;
  */
 class activity_information implements renderable, templatable {
 
-    /** @var int The course module ID. */
-    protected $cmid = null;
+    /** @var cm_info The course module information. */
+    protected $cminfo = null;
 
-    /** @var string The activity name. */
-    protected $activityname = null;
-
-    /**
-     * @var array The action link object for the prev link.
-     */
+    /** @var array The array of relevant dates for this activity. */
     protected $activitydates = null;
 
-    /**
-     * @var stdClass The action link object for the next link.
-     */
-    protected $completiondata = null;
+    /** @var cm_completion_details The user's completion details for this activity. */
+    protected $cmcompletion = null;
+
+    /** @var bool Whether to we need to include completion details when exporting or not. */
+    protected $includecompletiondetails = true;
 
     /**
      * Constructor.
      *
-     * @param int $cmid The course module ID.
-     * @param string $activityname The activity name.
-     * @param stdClass $completiondata The completion data.
+     * @param cm_info $cminfo The course module information.
+     * @param cm_completion_details $cmcompletion The custom completion details for the user in this module.
+     * @param bool $includecompletiondetails Whether to we need to include completion details when exporting or not.
      * @param array $activitydates The activity dates.
      */
-    public function __construct(int $cmid, string $activityname, stdClass $completiondata, array $activitydates = []) {
-        $this->cmid = $cmid;
-        $this->activityname = $activityname;
-        $this->completiondata = $completiondata;
+    public function __construct(cm_info $cminfo, cm_completion_details $cmcompletion, bool $includecompletiondetails,
+            array $activitydates = []) {
+        $this->cminfo = $cminfo;
+        $this->includecompletiondetails = $includecompletiondetails;
+        $this->cmcompletion = $cmcompletion;
         $this->activitydates = $activitydates;
     }
 
@@ -79,19 +80,60 @@ class activity_information implements renderable, templatable {
     public function export_for_template(renderer_base $output): stdClass {
         $data = new stdClass();
 
-        $data->cmid = $this->cmid;
-        $data->activityname = $this->activityname;
+        $data->cmid = $this->cminfo->id;
+        $data->activityname = $this->cminfo->name;
         $data->activitydates = $this->activitydates;
-        $data->hascompletion = $this->completiondata->hascompletion;
-        $data->isautomatic = $this->completiondata->isautomatic;
-        $data->overrideby = $this->completiondata->overrideby;
+        $this->build_completion_data($data);
+
+        return $data;
+    }
+
+    /**
+     * Builds the completion data for export.
+     *
+     * @param stdClass $data
+     */
+    protected function build_completion_data(stdClass $data): void {
+        $data->hascompletion = $this->cmcompletion->has_completion();
+        $data->isautomatic = $this->cmcompletion->is_automatic();
+
+        // Get the name of the user overriding the completion condition, if available.
+        $data->overrideby = null;
+        $overrideby = $this->cmcompletion->overridden_by();
+        $overridebyname = null;
+        if (!empty($overrideby)) {
+            $userfields = fields::for_name();
+            $overridebyrecord = core_user::get_user($overrideby, 'id ' . $userfields->get_sql()->selects, MUST_EXIST);
+            $data->overrideby = fullname($overridebyrecord);
+        }
+
         // We'll show only the completion conditions and not the completion status if we're not tracking completion for this user
         // (e.g. a teacher, admin).
-        $data->istrackeduser = $this->completiondata->istrackeduser;
+        $data->istrackeduser = $this->cmcompletion->is_tracked_user();
 
-        // Automatic completion details.
+        // Overall completion states.
+        $overallcompletion = $this->cmcompletion->get_overall_completion();
+        $data->overallcomplete = $overallcompletion == COMPLETION_COMPLETE;
+        $data->overallincomplete = $overallcompletion == COMPLETION_INCOMPLETE;
+
+        // Set an accessible description for manual completions with overridden completion state.
+        if (!$data->isautomatic && $data->overrideby) {
+            $setbydata = (object)[
+                'activityname' => $data->activityname,
+                'setby' => $data->overrideby,
+            ];
+            $setbylangkey = $data->overallcomplete ? 'completion_setby:manual:done' : 'completion_setby:manual:markdone';
+            $data->accessibledescription = get_string($setbylangkey, 'course', $setbydata);
+        }
+
+        // Build automatic completion details.
         $details = [];
-        foreach ($this->completiondata->details as $key => $detail) {
+        if (!$this->includecompletiondetails) {
+            // Return early if we don't need to show the completion details.
+            return;
+        }
+
+        foreach ($this->cmcompletion->get_details() as $key => $detail) {
             // Set additional attributes for the template.
             $detail->key = $key;
             $detail->statuscomplete = in_array($detail->status, [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS]);
@@ -113,21 +155,5 @@ class activity_information implements renderable, templatable {
             $details[] = $detail;
         }
         $data->completiondetails = $details;
-
-        // Overall completion states.
-        $data->overallcomplete = $this->completiondata->overallstatus == COMPLETION_COMPLETE;
-        $data->overallincomplete = $this->completiondata->overallstatus == COMPLETION_INCOMPLETE;
-
-        // Set an accessible description for manual completions with overridden completion state.
-        if (!$data->isautomatic && $data->overrideby) {
-            $setbydata = (object)[
-                'activityname' => $data->activityname,
-                'setby' => $data->overrideby,
-            ];
-            $setbylangkey = $data->overallcomplete ? 'completion_setby:manual:done' : 'completion_setby:manual:markdone';
-            $data->accessibledescription = get_string($setbylangkey, 'course', $setbydata);
-        }
-
-        return $data;
     }
 }

@@ -162,4 +162,13 @@ class cm_completion_details {
         $completiondata = $this->completioninfo->get_data($this->cminfo);
         return isset($completiondata->overrideby) ? (int)$completiondata->overrideby : null;
     }
+
+    /**
+     * Checks whether completion is being tracked for this user.
+     *
+     * @return bool
+     */
+    public function is_tracked_user(): bool {
+        return $this->completioninfo->is_tracked_user($this->userid);
+    }
 }
