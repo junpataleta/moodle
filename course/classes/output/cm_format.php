@@ -83,19 +83,27 @@ class cm_format implements renderable, templatable {
         $displayoptions = $this->displayoptions;
         $course = $mod->get_course();
 
-        $completiondetails = cm_completion_details::get_instance($mod, $USER->id, $course->showcompletionconditions);
+        $completiondetails = null;
+        if ($course->showcompletionconditions == COMPLETION_SHOW_CONDITIONS) {
+            $completiondetails = cm_completion_details::get_instance($mod, $USER->id, true);
+        }
         $activitydates = [];
         if ($course->showactivitydates) {
             $activitydates = activity_dates::get_dates_for_module($mod, $USER->id);
         }
-        $activityinfo = new activity_information($mod, $completiondetails, $activitydates);
+        $activityinfodata = null;
+        if ($completiondetails || $activitydates) {
+            $activityinfo = new activity_information($mod, $completiondetails, $activitydates);
+            $activityinfodata = $activityinfo->export_for_template($output);
+        }
+
         $data = (object)[
             'cmname' => $output->course_section_cm_name($mod, $displayoptions),
             'afterlink' => $mod->afterlink,
             'altcontent' => $output->course_section_cm_text($mod, $displayoptions),
             'availability' => $output->course_section_cm_availability($mod, $displayoptions),
             'url' => $mod->url,
-            'activityinfo' => $activityinfo->export_for_template($output),
+            'activityinfo' => $activityinfodata,
         ];
 
         if (!empty($mod->indent)) {
