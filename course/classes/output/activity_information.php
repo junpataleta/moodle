@@ -60,10 +60,10 @@ class activity_information implements renderable, templatable {
      * Constructor.
      *
      * @param cm_info $cminfo The course module information.
-     * @param cm_completion_details $cmcompletion The course module information.
-     * @param array $activitydates The activity dates.
+     * @param cm_completion_details|null $cmcompletion The course module information.
+     * @param array|null $activitydates The activity dates.
      */
-    public function __construct(cm_info $cminfo, cm_completion_details $cmcompletion, array $activitydates) {
+    public function __construct(cm_info $cminfo, ?cm_completion_details $cmcompletion, ?array $activitydates) {
         $this->cminfo = $cminfo;
         $this->cmcompletion = $cmcompletion;
         $this->activitydates = $activitydates;
@@ -76,7 +76,11 @@ class activity_information implements renderable, templatable {
      * @return stdClass
      */
     public function export_for_template(renderer_base $output): stdClass {
-        $data = $this->build_completion_data();
+        if ($this->cmcompletion) {
+            $data = $this->build_completion_data();
+        } else {
+            $data = new stdClass();
+        }
 
         $data->cmid = $this->cminfo->id;
         $data->activityname = $this->cminfo->name;
