@@ -89,11 +89,12 @@ class cmitem implements renderable, templatable {
         $data = new stdClass();
         $data->cms = [];
 
+        $enablecompletion = $course->enablecompletion == 1;
         $showactivityconditions = $course->showcompletionconditions == COMPLETION_SHOW_CONDITIONS;
         $showactivitydates = !empty($course->showactivitydates);
 
         // This will apply styles to the course homepage when the activity information output component is displayed.
-        $hasinfo = $showactivityconditions || $showactivitydates;
+        $hasinfo = ($showactivityconditions && $enablecompletion) || $showactivitydates;
 
         $item = new $this->cmclass($format, $this->section, $mod, $this->displayoptions);
         return (object)[
