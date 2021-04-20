@@ -31,6 +31,12 @@ define('CHAT_EVENT_TYPE_CHATTIME', 'chattime');
 
 // Gap between sessions. 5 minutes or more of idleness between messages in a chat means the messages belong in different sessions.
 define('CHAT_SESSION_GAP', 300);
+// Publish the specified time only.
+define('CHAT_SCHEDULE_SINGLE', 1);
+// Repeat chat session at the same time daily.
+define('CHAT_SCHEDULE_DAILY', 2);
+// Repeat chat session at the same time weekly.
+define('CHAT_SCHEDULE_WEEKLY', 3);
 
 // The HTML head for the message window to start with (<!-- nix --> is used to get some browsers starting with output.
 global $CHAT_HTMLHEAD;
@@ -117,6 +123,10 @@ function chat_add_instance($chat) {
 
     $chat->timemodified = time();
 
+    [$schedule, $chattime] = chat_calculate_next_chat_time($chat->schedule, $chat->chattime);
+    $chat->schedule = $schedule;
+    $chat->chattime = $chattime;
+
     $returnid = $DB->insert_record("chat", $chat);
 
     if ($chat->schedule > 0) {
@@ -159,6 +169,9 @@ function chat_update_instance($chat) {
 
     $chat->timemodified = time();
     $chat->id = $chat->instance;
+    [$schedule, $chattime] = chat_calculate_next_chat_time($chat->schedule, $chat->chattime);
+    $chat->schedule = $schedule;
+    $chat->chattime = $chattime;
 
     $DB->update_record("chat", $chat);
 
@@ -637,6 +650,43 @@ function chat_delete_old_users() {
 }
 
 /**
+ * Calculate next chat session time based on schedule.
+ *
+ * @param int $schedule
+ * @param int $chattime
+ *
+ * @return array return schedule and chat time
+ */
+function chat_calculate_next_chat_time(?int $schedule, ?int $chattime) {
+    $timenow = time();
+
+    switch ($schedule) {
+        case CHAT_SCHEDULE_SINGLE: {
+            if ($timenow > $chattime) {
+                // if the chattime is in the past
+                // turn off schedule and remove chattime
+                $schedule = 0;
+            }
+            break;
+        }
+        case CHAT_SCHEDULE_DAILY: { // Repeat daily.
+            while ($chattime <= $timenow) {
+                $chattime += 24 * 3600;
+            }
+            break;
+        }
+        case CHAT_SCHEDULE_WEEKLY: { // Repeat weekly.
+            while ($chattime <= $timenow) {
+                $chattime += 7 * 24 * 3600;
+            }
+            break;
+        }
+    }
+
+    return [$schedule, $chattime];
+}
+
+/**
  * Updates chat records so that the next chat time is correct
  *
  * @global object
@@ -661,29 +711,20 @@ function chat_update_chat_times($chatid=0) {
         }
     }
 
+    $courseids = [];
     foreach ($chats as $chat) {
-        switch ($chat->schedule) {
-            case 1: // Single event - turn off schedule and disable.
-                $chat->chattime = 0;
-                $chat->schedule = 0;
-                break;
-            case 2: // Repeat daily.
-                while ($chat->chattime <= $timenow) {
-                    $chat->chattime += 24 * 3600;
-                }
-                break;
-            case 3: // Repeat weekly.
-                while ($chat->chattime <= $timenow) {
-                    $chat->chattime += 7 * 24 * 3600;
-                }
-                break;
+        $originalchattime = $chat->chattime;
+        [$schedule, $chattime] = chat_calculate_next_chat_time($chat->schedule, $chat->chattime);
+        $chat->schedule = $schedule;
+        $chat->chattime = $chattime;
+        if ($originalchattime != $chat->chattime) {
+            $courseids[] = $chat->course;
         }
         $DB->update_record("chat", $chat);
-
         $event = new stdClass(); // Update calendar too.
 
-        $cond = "modulename='chat' AND instance = :chatid AND timestart <> :chattime";
-        $params = array('chattime' => $chat->chattime, 'chatid' => $chat->id);
+        $cond = "modulename='chat' AND eventtype = :eventtype AND instance = :chatid AND timestart <> :chattime";
+        $params = ['chattime' => $chat->chattime, 'eventtype' => CHAT_EVENT_TYPE_CHATTIME, 'chatid' => $chat->id];
 
         if ($event->id = $DB->get_field_select('event', 'id', $cond, $params)) {
             $event->timestart = $chat->chattime;
@@ -691,6 +732,11 @@ function chat_update_chat_times($chatid=0) {
             $calendarevent = calendar_event::load($event->id);
             $calendarevent->update($event, false);
         }
+    }
+
+    $courseids = array_unique($courseids);
+    foreach ($courseids as $courseid) {
+        rebuild_course_cache($courseid, true);
     }
 }
 
@@ -1535,4 +1581,40 @@ function chat_get_session_messages($chatid, $group = false, $start = 0, $end = 0
     }
 
     return $DB->get_records_select('chat_messages', $select, $params, $sort);
+}
+
+/**
+ * Add a get_coursemodule_info function in case chat instance wants to add 'extra' information
+ * for the course (see resource).
+ *
+ * Given a course_module object, this function returns any "extra" information that may be needed
+ * when printing this activity in a course listing.  See get_array_of_activities() in course/lib.php.
+ *
+ * @param stdClass $coursemodule The coursemodule object (record).
+ * @return cached_cm_info An object on information that the courses
+ *                        will know about (most noticeably, an icon).
+ */
+function chat_get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    $dbparams = ['id' => $coursemodule->instance];
+    $fields = 'id, name, intro, introformat, chattime, schedule';
+    if (!$chat = $DB->get_record('chat', $dbparams, $fields)) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+    $result->name = $chat->name;
+    if ($coursemodule->showdescription) {
+        // Convert intro to html. Do not filter cached version, filters run at display time.
+        $result->content = format_module_intro('chat', $chat, $coursemodule->id, false);
+    }
+
+    // Populate some other values that can be used in calendar or on dashboard.
+    if ($chat->chattime) {
+        $result->customdata['chattime'] = $chat->chattime;
+        $result->customdata['schedule'] = $chat->schedule;
+    }
+
+    return $result;
 }
