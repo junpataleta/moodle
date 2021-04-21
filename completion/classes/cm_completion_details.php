@@ -49,6 +49,15 @@ class cm_completion_details {
     /** @var bool Whether to return automatic completion details. */
     protected $returndetails = true;
 
+    /** @var string|null Activity custom completion class name. */
+    protected $cmcompletionclass = null;
+
+    /** @var activity_custom_completion Activity custom completion object. */
+    protected $cmcompletion = null;
+
+    /** @var bool Whether the manual completion is allowed or not. */
+    protected $ismanualcompletionallowed = true;
+
     /**
      * Constructor.
      *
@@ -62,6 +71,11 @@ class cm_completion_details {
         $this->cminfo = $cminfo;
         $this->userid = $userid;
         $this->returndetails = $returndetails;
+        $this->cmcompletionclass = activity_custom_completion::get_cm_completion_class($this->cminfo->modname);
+        if ($this->cmcompletionclass) {
+            $this->cmcompletion = new $this->cmcompletionclass($this->cminfo, $this->userid);
+            $this->ismanualcompletionallowed = $this->cmcompletion->always_show_manual_completion();
+        }
     }
 
     /**
@@ -116,16 +130,12 @@ class cm_completion_details {
             ];
         }
 
-        // Check if this activity has custom_completion class implemented.
-        $cmcompletionclass = activity_custom_completion::get_cm_completion_class($this->cminfo->modname);
-        if ($cmcompletionclass) {
+        if ($this->cmcompletion) {
             if (isset($completiondata->customcompletion)) {
-                /** @var activity_custom_completion $cmcompletion */
-                $cmcompletion = new $cmcompletionclass($this->cminfo, $this->userid);
                 foreach ($completiondata->customcompletion as $rule => $status) {
                     $details[$rule] = (object)[
                         'status' => !$hasoverride ? $status : $completiondata->completionstate,
-                        'description' => $cmcompletion->get_custom_rule_description($rule),
+                        'description' => $this->cmcompletion->get_custom_rule_description($rule),
                     ];
                 }
             }
@@ -191,6 +201,15 @@ class cm_completion_details {
      */
     public function is_tracked_user(): bool {
         return $this->completioninfo->is_tracked_user($this->userid);
+    }
+
+    /**
+     * Allow the manual completion or not.
+     *
+     * @return bool
+     */
+    public function is_manual_completion_allowed(): bool {
+        return $this->ismanualcompletionallowed;
     }
 
     /**

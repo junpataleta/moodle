@@ -139,6 +139,16 @@ abstract class activity_custom_completion {
     }
 
     /**
+     * Always show the manual completion or not.
+     * The default value is True. Activities that need to hide the manual completion button need to override this function.
+     *
+     * @return bool
+     */
+    public function always_show_manual_completion(): bool {
+        return true;
+    }
+
+    /**
      * Fetches the module's custom completion class implementation if it's available.
      *
      * @param string $modname The activity module name. Usually from cm_info::modname.

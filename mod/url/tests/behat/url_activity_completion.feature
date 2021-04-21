@@ -116,3 +116,25 @@ Feature: View activity completion information in the URL resource
     Then the manual completion button of "Music history" is displayed as "Mark as done"
     And I toggle the manual completion state of "Music history"
     And the manual completion button of "Music history" is displayed as "Done"
+
+  Scenario Outline: Manual completion button will not be shown in the course page for Automatic and Embed display modes
+    Given I am on "Course 1" course homepage with editing mode on
+    And I add a "URL" to section "1" and I fill the form with:
+      | Name                | Music history                                        |
+      | External URL        | https://moodle.org/                                  |
+      | id_display          | <display>                                            |
+      | Completion tracking | Students can manually mark the activity as completed |
+    # Teacher view.
+    And the manual completion button for "Music history" should not exist
+    And I log out
+    # Student view.
+    When I log in as "student1"
+    And I am on "Course 1" course homepage
+    Then the manual completion button for "Music history" should not exist
+    And I follow "Music history"
+    And the manual completion button for "Music history" should exist
+
+    Examples:
+      | display   |
+      | Automatic |
+      | Embed     |
