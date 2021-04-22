@@ -2364,6 +2364,15 @@ function create_course($data, $editoroptions = NULL) {
         $data->summary_format = FORMAT_HTML;
     }
 
+    // Get default completion settings as a fallback in case the enablecompletion field is not set.
+    $courseconfig = get_config('moodlecourse');
+    $defaultcompletion = !empty($CFG->enablecompletion) ? $courseconfig->enablecompletion : COMPLETION_DISABLED;
+    $enablecompletion = $data->enablecompletion ?? $defaultcompletion;
+    // Unset showcompletionconditions when completion tracking is not enabled for the course.
+    if ($enablecompletion == COMPLETION_DISABLED) {
+        unset($data->showcompletionconditions);
+    }
+
     if (!isset($data->visible)) {
         // data not from form, add missing visibility info
         $data->visible = $category->visible;
@@ -2540,6 +2549,11 @@ function update_course($data, $editoroptions = NULL) {
         if (!$newcourseformat->supports_news()) {
             $data->newsitems = 0;
         }
+    }
+
+    // Set showcompletionconditions to null when completion tracking has been disabled for the course.
+    if (isset($data->enablecompletion) && $data->enablecompletion == COMPLETION_DISABLED) {
+        $data->showcompletionconditions = null;
     }
 
     // Update custom fields if there are any of them in the form.
