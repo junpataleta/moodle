@@ -49,14 +49,8 @@ class cm_completion_details {
     /** @var bool Whether to return automatic completion details. */
     protected $returndetails = true;
 
-    /** @var string|null Activity custom completion class name. */
-    protected $cmcompletionclass = null;
-
     /** @var activity_custom_completion Activity custom completion object. */
     protected $cmcompletion = null;
-
-    /** @var bool Whether the manual completion is allowed or not. */
-    protected $ismanualcompletionallowed = true;
 
     /**
      * Constructor.
@@ -71,10 +65,10 @@ class cm_completion_details {
         $this->cminfo = $cminfo;
         $this->userid = $userid;
         $this->returndetails = $returndetails;
-        $this->cmcompletionclass = activity_custom_completion::get_cm_completion_class($this->cminfo->modname);
-        if ($this->cmcompletionclass) {
-            $this->cmcompletion = new $this->cmcompletionclass($this->cminfo, $this->userid);
-            $this->ismanualcompletionallowed = $this->cmcompletion->always_show_manual_completion();
+
+        $cmcompletionclass = activity_custom_completion::get_cm_completion_class($this->cminfo->modname);
+        if ($cmcompletionclass) {
+            $this->cmcompletion = new $cmcompletionclass($this->cminfo, $this->userid);
         }
     }
 
@@ -152,7 +146,6 @@ class cm_completion_details {
             }
         }
 
-
         return $details;
     }
 
@@ -208,8 +201,26 @@ class cm_completion_details {
      *
      * @return bool
      */
-    public function is_manual_completion_allowed(): bool {
-        return $this->ismanualcompletionallowed;
+    public function show_manual_completion(): bool {
+        global $PAGE;
+
+        // Always show manual completion in course module's view page.
+        if ($PAGE->context->contextlevel == CONTEXT_MODULE) {
+            return true;
+        }
+
+        // Otherwise, check with showcompletionconditions setting or the activity's manual_completion_always_shown() implementation.
+        $course = $this->cminfo->get_course();
+        if ($course->showcompletionconditions == COMPLETION_SHOW_CONDITIONS) {
+            return true;
+        }
+
+        // Check whether this activity can override the course's showcompletionconditions setting.
+        if ($this->cmcompletion) {
+            return $this->cmcompletion->manual_completion_always_shown();
+        }
+
+        return false;
     }
 
     /**

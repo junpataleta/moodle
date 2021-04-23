@@ -22,7 +22,7 @@ Feature: View activity completion information for the resource
     And I expand all fieldsets
     And I set the following fields to these values:
       | Enable completion tracking | Yes |
-      | Show completion conditions | Yes |
+      | Show completion conditions | No |
     And I press "Save and display"
 
   @javascript

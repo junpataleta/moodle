@@ -139,13 +139,14 @@ abstract class activity_custom_completion {
     }
 
     /**
-     * Always show the manual completion or not.
-     * The default value is True. Activities that need to hide the manual completion button need to override this function.
+     * Show the manual completion or not regardless of the course's showcompletionconditions setting.
+     * The default value is false. Activity plguins that need to always show the manual completion button need to override
+     * this function.
      *
      * @return bool
      */
-    public function always_show_manual_completion(): bool {
-        return true;
+    public function manual_completion_always_shown(): bool {
+        return false;
     }
 
     /**

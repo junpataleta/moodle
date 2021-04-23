@@ -20,8 +20,6 @@ namespace mod_resource\completion;
 
 use core_completion\activity_custom_completion;
 
-require_once($CFG->dirroot . '/mod/resource/locallib.php');
-
 /**
  * Activity custom completion subclass for the resource.
  *
@@ -69,19 +67,14 @@ class custom_completion extends activity_custom_completion {
      *
      * @return bool
      */
-    public function always_show_manual_completion(): bool {
-        global $DB, $PAGE;
-
-        if ($PAGE->context->contextlevel == CONTEXT_COURSE) {
-            // We just want to control the course page only.
-            $resource = $DB->get_record('resource', ['id' => $this->cm->instance], 'display', MUST_EXIST);
-            $displaytype = resource_get_final_display_type($resource);
-            $displaytypes = [RESOURCELIB_DISPLAY_OPEN, RESOURCELIB_DISPLAY_DOWNLOAD, RESOURCELIB_DISPLAY_POPUP];
-            if (!in_array($displaytype, $displaytypes)) {
-                // Only show the 'Mark as done' button for this resource if the display is set to open or popup or force download.
-                return false;
-            }
-        }
-        return parent::always_show_manual_completion();
+    public function manual_completion_always_shown(): bool {
+        $display = $this->cm->customdata['display'] ?? null;
+        $displaytypes = [
+            RESOURCELIB_DISPLAY_NEW,
+            RESOURCELIB_DISPLAY_OPEN,
+            RESOURCELIB_DISPLAY_DOWNLOAD,
+            RESOURCELIB_DISPLAY_POPUP
+        ];
+        return in_array($display, $displaytypes);
     }
 }

@@ -235,13 +235,14 @@ function url_get_coursemodule_info($coursemodule) {
     } else if ($display == RESOURCELIB_DISPLAY_NEW) {
         $fullurl = "$CFG->wwwroot/mod/url/view.php?id=$coursemodule->id&amp;redirect=1";
         $info->onclick = "window.open('$fullurl'); return false;";
-
     }
 
     if ($coursemodule->showdescription) {
         // Convert intro to html. Do not filter cached version, filters run at display time.
         $info->content = format_module_intro('url', $url, $coursemodule->id, false);
     }
+
+    $info->customdata['display'] = $display;
 
     return $info;
 }

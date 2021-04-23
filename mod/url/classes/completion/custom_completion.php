@@ -20,8 +20,6 @@ namespace mod_url\completion;
 
 use core_completion\activity_custom_completion;
 
-require_once($CFG->dirroot . '/mod/url/locallib.php');
-
 /**
  * Activity custom completion subclass for the url resource.
  *
@@ -69,20 +67,10 @@ class custom_completion extends activity_custom_completion {
      *
      * @return bool
      */
-    public function always_show_manual_completion(): bool {
-        global $DB, $PAGE;
-
-        if ($PAGE->context->contextlevel == CONTEXT_COURSE) {
-            // We just want to control the course page only.
-            $url = $DB->get_record('url', ['id' => $this->cm->instance], 'display,externalurl', MUST_EXIST);
-            $displaytype = url_get_final_display_type($url);
-            if ($displaytype != RESOURCELIB_DISPLAY_OPEN && $displaytype != RESOURCELIB_DISPLAY_POPUP) {
-                // Only show the 'Mark as done' button for this resource if the display is set to open or popup.
-                return false;
-            }
-        }
-
-        return parent::always_show_manual_completion();
+    public function manual_completion_always_shown(): bool {
+        $display = $this->cm->customdata['display'] ?? null;
+        $displaytypes = [RESOURCELIB_DISPLAY_OPEN, RESOURCELIB_DISPLAY_POPUP];
+        return in_array($display, $displaytypes);
     }
 
 }
