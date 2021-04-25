@@ -667,7 +667,12 @@ function chat_update_chat_times($chatid=0) {
         }
     }
 
+    // List of courses with caches that need rebuilding.
+    $courseids = [];
+
     foreach ($chats as $chat) {
+        $originalchattime = $chat->chattime;
+        $originalschedule = $chat->schedule;
         switch ($chat->schedule) {
             case CHAT_SCHEDULE_SINGLE: // Single event - turn off schedule and disable.
                 $chat->chattime = 0;
@@ -675,27 +680,35 @@ function chat_update_chat_times($chatid=0) {
                 break;
             case CHAT_SCHEDULE_DAILY: // Repeat daily.
                 while ($chat->chattime <= $timenow) {
-                    $chat->chattime += 24 * 3600;
+                    $chat->chattime += DAYSECS;
                 }
                 break;
             case CHAT_SCHEDULE_WEEKLY: // Repeat weekly.
                 while ($chat->chattime <= $timenow) {
-                    $chat->chattime += 7 * 24 * 3600;
+                    $chat->chattime += WEEKSECS;
                 }
                 break;
         }
-        $DB->update_record("chat", $chat);
+        // Update chat instance if chat time or schedule has changed.
+        if ($originalchattime != $chat->chattime || $originalschedule != $chat->schedule) {
+            // Fetch course module info of this chat instance.
+            $modinfo = get_fast_modinfo($chat->course);
+            $chatcms = $modinfo->get_instances_of('chat');
+            $cm = $chatcms[$chat->id];
+            // Fill in instance data and course module data for use in the update_instance() function.
+            $chat->instance = $chat->id;
+            $chat->coursemodule = $cm->id;
+            // Update the chat instance.
+            chat_update_instance($chat);
+            $courseids[] = $chat->course;
+        }
+    }
 
-        $event = new stdClass(); // Update calendar too.
-
-        $cond = "modulename='chat' AND instance = :chatid AND timestart <> :chattime";
-        $params = array('chattime' => $chat->chattime, 'chatid' => $chat->id);
-
-        if ($event->id = $DB->get_field_select('event', 'id', $cond, $params)) {
-            $event->timestart = $chat->chattime;
-            $event->timesort = $chat->chattime;
-            $calendarevent = calendar_event::load($event->id);
-            $calendarevent->update($event, false);
+    // Rebuild course cache if chat times have been updated.
+    if ($courseids) {
+        $courseids = array_unique($courseids);
+        foreach ($courseids as $courseid) {
+            rebuild_course_cache($courseid, true);
         }
     }
 }

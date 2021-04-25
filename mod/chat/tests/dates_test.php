@@ -27,8 +27,6 @@ declare(strict_types=1);
 
 namespace mod_chat;
 
-require_once(dirname(__DIR__) . '/lib.php');
-
 use advanced_testcase;
 use cm_info;
 use core\activity_dates;
@@ -43,19 +41,22 @@ class dates_test extends advanced_testcase {
      * @return array[]
      */
     public function get_dates_for_module_provider(): array {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/chat/lib.php');
+
         $now = time();
         $past = $now - DAYSECS;
         $future = $now + DAYSECS;
 
         $dailynextchattime = $past + 2 * DAYSECS;
         $weeklynextchattime = $past + 7 * DAYSECS;
-        $label = 'Next chat time';
+        $label = get_string('chattime', 'chat');
         return [
             'chattime in the past' => [
-                $past, CHAT_SCHEDULE_SINGLE, []
+                $past, CHAT_SCHEDULE_SINGLE, false, []
             ],
             'chattime in the future' => [
-                $future, CHAT_SCHEDULE_SINGLE, [
+                $future, CHAT_SCHEDULE_SINGLE, false, [
                     [
                         'label' => $label,
                         'timestamp' => $future
@@ -63,7 +64,7 @@ class dates_test extends advanced_testcase {
                 ]
             ],
             'future chattime weekly' => [
-                $future, CHAT_SCHEDULE_WEEKLY, [
+                $future, CHAT_SCHEDULE_WEEKLY, false, [
                     [
                         'label' => $label,
                         'timestamp' => $future
@@ -71,7 +72,7 @@ class dates_test extends advanced_testcase {
                 ]
             ],
             'future chattime daily' => [
-                $future, CHAT_SCHEDULE_DAILY, [
+                $future, CHAT_SCHEDULE_DAILY, false, [
                     [
                         'label' => $label,
                         'timestamp' => $future
@@ -79,7 +80,7 @@ class dates_test extends advanced_testcase {
                 ]
             ],
             'past chattime daily' => [
-                $past, CHAT_SCHEDULE_DAILY, [
+                $past, CHAT_SCHEDULE_DAILY, true, [
                     [
                         'label' => $label,
                         'timestamp' => $dailynextchattime
@@ -87,7 +88,7 @@ class dates_test extends advanced_testcase {
                 ]
             ],
             'past chattime weekly' => [
-                $past, CHAT_SCHEDULE_WEEKLY, [
+                $past, CHAT_SCHEDULE_WEEKLY, true, [
                     [
                         'label' => $label,
                         'timestamp' => $weeklynextchattime
@@ -105,7 +106,7 @@ class dates_test extends advanced_testcase {
      * @param int|null $schedule
      * @param array $expected The expected value of calling get_dates_for_module()
      */
-    public function test_get_dates_for_module(?int $chattime, ?int $schedule, array $expected) {
+    public function test_get_dates_for_module(?int $chattime, ?int $schedule, $updatechattimes, array $expected) {
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course();
@@ -119,6 +120,9 @@ class dates_test extends advanced_testcase {
 
         $this->setUser($user);
 
+        if ($updatechattimes) {
+            chat_update_chat_times($modchat->id);
+        }
         $cm = get_coursemodule_from_instance('chat', $modchat->id);
         $cm = cm_info::create($cm);
 
