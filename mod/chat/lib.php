@@ -122,10 +122,7 @@ function chat_add_instance($chat) {
     global $DB;
 
     $chat->timemodified = time();
-
-    [$schedule, $chattime] = chat_calculate_next_chat_time($chat->schedule, $chat->chattime);
-    $chat->schedule = $schedule;
-    $chat->chattime = $chattime;
+    $chat->chattime = chat_calculate_next_chat_time($chat->schedule, $chat->chattime);
 
     $returnid = $DB->insert_record("chat", $chat);
 
@@ -169,9 +166,7 @@ function chat_update_instance($chat) {
 
     $chat->timemodified = time();
     $chat->id = $chat->instance;
-    [$schedule, $chattime] = chat_calculate_next_chat_time($chat->schedule, $chat->chattime);
-    $chat->schedule = $schedule;
-    $chat->chattime = $chattime;
+    $chat->chattime = chat_calculate_next_chat_time($chat->schedule, $chat->chattime);
 
     $DB->update_record("chat", $chat);
 
@@ -652,38 +647,30 @@ function chat_delete_old_users() {
 /**
  * Calculate next chat session time based on schedule.
  *
- * @param int $schedule
- * @param int $chattime
+ * @param int $schedule The chat schedule.
+ * @param int $chattime The original chat time.
  *
- * @return array return schedule and chat time
+ * @return int return schedule and chat time
  */
-function chat_calculate_next_chat_time(?int $schedule, ?int $chattime) {
+function chat_calculate_next_chat_time(int $schedule, int $chattime): int {
     $timenow = time();
 
     switch ($schedule) {
-        case CHAT_SCHEDULE_SINGLE: {
-            if ($timenow > $chattime) {
-                // if the chattime is in the past
-                // turn off schedule and remove chattime
-                $schedule = 0;
-            }
-            break;
-        }
         case CHAT_SCHEDULE_DAILY: { // Repeat daily.
             while ($chattime <= $timenow) {
-                $chattime += 24 * 3600;
+                $chattime += DAYSECS;
             }
             break;
         }
         case CHAT_SCHEDULE_WEEKLY: { // Repeat weekly.
             while ($chattime <= $timenow) {
-                $chattime += 7 * 24 * 3600;
+                $chattime += WEEKSECS;
             }
             break;
         }
     }
 
-    return [$schedule, $chattime];
+    return $chattime;
 }
 
 /**
@@ -714,9 +701,13 @@ function chat_update_chat_times($chatid=0) {
     $courseids = [];
     foreach ($chats as $chat) {
         $originalchattime = $chat->chattime;
-        [$schedule, $chattime] = chat_calculate_next_chat_time($chat->schedule, $chat->chattime);
-        $chat->schedule = $schedule;
-        $chat->chattime = $chattime;
+        if ($chat->schedule == CHAT_SCHEDULE_SINGLE) {
+            // Single event - turn off schedule and disable.
+            $chat->chattime = 0;
+            $chat->schedule = 0;
+        } else {
+            $chat->chattime = chat_calculate_next_chat_time($chat->schedule, $chat->chattime);
+        }
         if ($originalchattime != $chat->chattime) {
             $courseids[] = $chat->course;
         }

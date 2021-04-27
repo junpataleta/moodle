@@ -158,7 +158,7 @@ $string['serverip'] = 'Server ip';
 $string['servermax'] = 'Max users';
 $string['serverport'] = 'Server port';
 $string['sessions'] = 'Chat sessions';
-$string['sessionstart'] = 'The next chat session will start on {$a->date}, ({$a->fromnow} from now)';
+$string['sessionstartsin'] = 'The next chat session will start {$a} from now';
 $string['strftimemessage'] = '%H:%M';
 $string['studentseereports'] = 'Everyone can view past sessions';
 $string['studentseereports_help'] = 'If set to No, only users have mod/chat:readlog capability are able to see the chat logs';
@@ -175,3 +175,6 @@ $string['usingchat_help'] = 'The chat module contains some features to make chat
 * Beeps - You can send a sound to other participants by clicking the "beep" link next to their name. A useful shortcut to beep all the people in the chat at once is to type "beep all".
 * HTML - If you know some HTML code, you can use it in your text to do things like insert images, play sounds or create different coloured text';
 $string['viewreport'] = 'View past chat sessions';
+
+// Deprecated since Moodle 3.11
+$string['sessionstart'] = 'The next chat session will start on {$a->date}, ({$a->fromnow} from now)';

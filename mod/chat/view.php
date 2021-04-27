@@ -121,6 +121,12 @@ if (has_capability('mod/chat:chat', $context)) {
     // Print the main part of the page.
     echo $OUTPUT->box_start('generalbox', 'enterlink');
 
+    $now = time();
+    $chattime = $chat->chattime ?? 0;
+    $span = $chattime - $now;
+    if (!empty($chat->schedule) && $span > 0) {
+        echo html_writer::tag('p', get_string('sessionstartsin', 'chat', format_time($span)));
+    }
     $params['id'] = $chat->id;
     $chattarget = new moodle_url("/mod/chat/gui_$CFG->chat_method/index.php", $params);
     echo '<p>';
