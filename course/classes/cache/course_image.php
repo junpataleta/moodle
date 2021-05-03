@@ -56,7 +56,7 @@ class course_image implements cache_data_source {
      * @return string|bool Returns course image url as a string or false if the image is not exist
      */
     public function load_for_cache($key) {
-        $course = get_fast_modinfo($key)->get_course();
+        $course = get_course($key);
         return $this->get_image_url_from_overview_files($course);
     }
 
