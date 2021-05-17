@@ -744,19 +744,30 @@ class completion_info {
      *
      * @param cm_info $cm The course module information.
      * @param int $userid The user ID.
+     * @param bool $throwerrors Whether errors will be thrown when grade inconsistencies are found.
      * @return int The completion state.
      */
-    public function get_grade_completion(cm_info $cm, int $userid): int {
+    public function get_grade_completion(cm_info $cm, int $userid, bool $throwerrors = true): int {
         global $CFG;
 
         require_once($CFG->libdir . '/gradelib.php');
-        $item = grade_item::fetch([
-            'courseid' => $cm->course,
-            'itemtype' => 'mod',
-            'itemmodule' => $cm->modname,
-            'iteminstance' => $cm->instance,
-            'itemnumber' => $cm->completiongradeitemnumber
-        ]);
+        try {
+            $item = grade_item::fetch([
+                'courseid' => $cm->course,
+                'itemtype' => 'mod',
+                'itemmodule' => $cm->modname,
+                'iteminstance' => $cm->instance,
+                'itemnumber' => $cm->completiongradeitemnumber
+            ]);
+        } catch (moodle_exception $exception) {
+            if ($throwerrors) {
+                throw $exception;
+            } else {
+                $item = null;
+                debugging($exception->getMessage(), DEBUG_DEVELOPER);
+            }
+        }
+
         if ($item) {
             // Fetch 'grades' (will be one or none).
             $grades = grade_grade::fetch_users_grades($item, [$userid], false);
@@ -765,13 +776,22 @@ class completion_info {
                 return COMPLETION_INCOMPLETE;
             }
             if (count($grades) > 1) {
-                $this->internal_systemerror("Unexpected result: multiple grades for
-                        item '{$item->id}', user '{$userid}'");
+                $message = "Unexpected result: multiple grades for item '{$item->id}', user '{$userid}'";
+                if ($throwerrors) {
+                    $this->internal_systemerror($message);
+                } else {
+                    debugging($message, DEBUG_DEVELOPER);
+                }
             }
             return self::internal_get_grade_state($item, reset($grades));
         } else {
-            $this->internal_systemerror("Cannot find grade item for '{$cm->modname}'
-                    cm '{$cm->id}' matching number '{$cm->completiongradeitemnumber}'");
+            $message = "Cannot find grade item for '{$cm->modname}' 
+                cm '{$cm->id}' matching number '{$cm->completiongradeitemnumber}'";
+            if ($throwerrors) {
+                $this->internal_systemerror($message);
+            } else {
+                debugging($message, DEBUG_DEVELOPER);
+            }
         }
 
         return COMPLETION_INCOMPLETE;
@@ -1133,7 +1153,7 @@ class completion_info {
 
         // Include in the completion info the grade completion, if necessary.
         if (!is_null($cm->completiongradeitemnumber)) {
-            $data['completiongrade'] = $this->get_grade_completion($cm, $userid);
+            $data['completiongrade'] = $this->get_grade_completion($cm, $userid, false);
         }
 
         // Custom activity module completion data.
