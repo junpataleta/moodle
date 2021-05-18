@@ -750,13 +750,27 @@ class completion_info {
         global $CFG;
 
         require_once($CFG->libdir . '/gradelib.php');
-        $item = grade_item::fetch([
+        $items = grade_item::fetch_all([
             'courseid' => $cm->course,
             'itemtype' => 'mod',
             'itemmodule' => $cm->modname,
             'iteminstance' => $cm->instance,
             'itemnumber' => $cm->completiongradeitemnumber
         ]);
+
+        $item = null;
+        if (!empty($items)) {
+            if (count($items) > 1) {
+                // Duplicate grade items found. We can't reliably determine the grade completion state. Show debugging instead.
+                $itemids = implode(", ", array_column($items, 'id'));
+                debugging("Grade completion cannot be reliably determined. Duplicate grade items found for '{$cm->modname}' 
+                    cm '{$cm->id}! Item IDs: {$itemids}.");
+                return COMPLETION_UNKNOWN;
+            } else {
+                $item = reset($items);
+            }
+        }
+
         if ($item) {
             // Fetch 'grades' (will be one or none).
             $grades = grade_grade::fetch_users_grades($item, [$userid], false);
@@ -770,7 +784,8 @@ class completion_info {
             }
             return self::internal_get_grade_state($item, reset($grades));
         } else {
-            $this->internal_systemerror("Cannot find grade item for '{$cm->modname}'
+            // Show debugging when the grade item is not found.
+            debugging("Cannot find grade item for '{$cm->modname}'
                     cm '{$cm->id}' matching number '{$cm->completiongradeitemnumber}'");
         }
 
