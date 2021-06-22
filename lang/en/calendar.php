@@ -31,7 +31,6 @@ $string['calendar'] = 'Calendar';
 $string['calendarheading'] = '{$a} Calendar';
 $string['calendarpreferences'] = 'Calendar preferences';
 $string['calendartypes'] = 'Calendar types';
-$string['calendarurl'] = 'Calendar URL: {$a}';
 $string['category'] = 'Category';
 $string['categoryevent'] = 'Category event';
 $string['clickhide'] = 'click to hide';
@@ -274,6 +273,9 @@ $string['when'] = 'When';
 $string['whendate'] = 'When: {$a}';
 $string['yesterday'] = 'Yesterday';
 $string['youcandeleteallrepeats'] = 'This event is part of a repeating event series. You can delete this event only, or all {$a} events in the series at once.';
+
+// Deprecated since Moodle 4.0.
+$string['calendarurl'] = 'Calendar URL: {$a}';
 
 // Deprecated since Moodle 3.8.
 $string['global'] = 'Global';
