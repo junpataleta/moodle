@@ -56,10 +56,10 @@ class block_calendar_month extends block_base {
 
         $renderer = $this->page->get_renderer('core_calendar');
         $this->content->text .= $renderer->render_from_template($template, $data);
-
         if ($this->page->course->id != SITEID) {
             $this->content->text .= $renderer->event_filter();
         }
+        $this->content->footer .= $renderer->render_from_template('core_calendar/footer_options_mini', $data);
 
         return $this->content;
     }
