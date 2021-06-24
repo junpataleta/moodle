@@ -31,6 +31,7 @@ $string['calendar'] = 'Calendar';
 $string['calendarexporturl'] = 'Calendar URL';
 $string['calendarheading'] = '{$a} Calendar';
 $string['calendarpreferences'] = 'Calendar preferences';
+$string['calendarsubscriptions'] = 'Calendar subscriptions';
 $string['calendartypes'] = 'Calendar types';
 $string['category'] = 'Category';
 $string['categoryevent'] = 'Category event';
