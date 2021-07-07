@@ -21,53 +21,25 @@
  * @copyright  2021 Bas Brands <bas@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-import Tooltip from 'theme_boost/bootstrap/tooltip';
-import $ from 'jquery';
-import Clipboard from 'tool_componentlibrary/clipboard';
-import {get_strings as getStrings} from 'core/str';
+import 'core/copy_to_clipboard';
 import selectors from 'tool_componentlibrary/selectors';
 import Templates from 'core/templates';
+
+let idCounter = 0;
 
 /**
  * Initialise the clipboard button on all reusable code.
  */
 export const clipboardWrapper = async() => {
-    const strings = await getStrings([
-        {
-            key: 'copied',
-            component: 'tool_componentlibrary'
-        },
-        {
-            key: 'copytoclipboard',
-            component: 'tool_componentlibrary'
-        },
-    ]);
-
-    const {html, js} = await Templates.renderForPromise('tool_componentlibrary/clipboardbutton', {});
-    document.querySelectorAll(selectors.clipboardcontent)
-        .forEach(element => {
-            Templates.prependNodeContents(element, html, js);
-        });
-
-    const clClipboard = new Clipboard(selectors.clipboardbutton, {
-        target: (trigger) => {
-            return trigger.parentNode.nextElementSibling;
+    document.querySelectorAll(selectors.clipboardcontent).forEach(element => {
+        if (!element.id) {
+            element.id = `tool_componentlibrary_content-${idCounter++}`;
         }
-    });
-
-    clClipboard.on('success', e => {
-        // Hide the original tooltip
-        $(e.trigger).tooltip('dispose');
-
-        // Show an new tooltip with the Copied string.
-        const tooltipBtn = new Tooltip(e.trigger);
-        e.trigger.setAttribute('data-original-title', strings[0]);
-        tooltipBtn.show();
-        setTimeout(() => {
-            tooltipBtn.dispose();
-        }, 3000);
-        e.clearSelection();
-        e.trigger.setAttribute('data-original-title', strings[1]);
+        Templates.renderForPromise('tool_componentlibrary/clipboardbutton', {clipboardtarget: `#${element.id} code`})
+        .then(({html, js}) => {
+            Templates.prependNodeContents(element, html, js);
+            return;
+        })
+        .catch();
     });
 };
