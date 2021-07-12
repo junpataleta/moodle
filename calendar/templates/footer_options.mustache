@@ -26,14 +26,9 @@
     }
 }}
 <div class="bottom">
-    {{#exportcalendarlink}}
-        <span class="export-link">
-            <a href="{{.}}" title={{#quote}}{{#str}}exportcalendar, calendar{{/str}}{{/quote}}>{{#str}}exportcalendar, calendar{{/str}}</a>
+    {{#footerlinks}}
+        <span class="footer-link">
+            <a href="{{url}}">{{linkname}}</a>
         </span>
-    {{/exportcalendarlink}}
-    {{#managesubscriptionlink}}
-        <span class="export-link">
-            <a href="{{.}}" title={{#quote}}{{#str}}managesubscriptions, calendar{{/str}}{{/quote}}>{{#str}}managesubscriptions, calendar{{/str}}</a>
-        </span>
-    {{/managesubscriptionlink}}
+    {{/footerlinks}}
 </div>

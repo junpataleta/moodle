@@ -59,7 +59,15 @@ class block_calendar_month extends block_base {
         if ($this->page->course->id != SITEID) {
             $this->content->text .= $renderer->event_filter();
         }
-        $this->content->footer .= $renderer->render_from_template('core_calendar/footer_options_mini', $data);
+
+        // Render the calendar footer links.
+        $footeroptions = [
+            'showexportlink' => false,
+            'showfullcalendarlink' => true,
+            'subscriptionlabel' => get_string('calendarsubscriptions', 'calendar'),
+        ];
+        [$footerdata, $footertemplate] = calendar_get_footer_options($calendar, $footeroptions);
+        $this->content->footer .= $renderer->render_from_template($footertemplate, $footerdata);
 
         return $this->content;
     }

@@ -53,17 +53,38 @@ class footer_options_exporter extends exporter {
      */
     protected $token;
 
+    protected $showexportlink;
+
+    protected $showfullcalendarlink;
+
+    protected $subscriptionlabel;
+
     /**
      * Constructor for month_exporter.
      *
      * @param \calendar_information $calendar The calendar being represented
      * @param int $userid The user id
      * @param string $token The user sha1 token.
+     * @param array $options Display options for the footer. If an option is not set, a default value will be provided.
+     *                      It consists of:
+     *                      - showexportlink - bool - Whether to show the export link or not. Defaults to true.
+     *                      - showfullcalendarlink - bool - Whether to show the full calendar link or not. Defaults to false.
+     *                      - subscriptionlabel - string - Label for the manage subscriptions link.
+     * @throws \coding_exception
      */
-    public function __construct(\calendar_information $calendar, $userid, $token) {
+    public function __construct(\calendar_information $calendar, $userid, $token, $options = []) {
         $this->calendar = $calendar;
         $this->userid = $userid;
         $this->token = $token;
+
+        // Whether to show the export URL. Defaults to true.
+        $this->showexportlink = $options['showexportlink'] ?? true;
+
+        // Whether to show the link to the full calendar. Defaults to false.
+        $this->showfullcalendarlink = $options['showfullcalendarlink'] ?? false;
+
+        // Get the label for the link to manage subscriptions page.
+        $this->subscriptionlabel = $options['subscriptionlabel'] ?? get_string('managesubscriptions', 'calendar');
     }
 
     /**
@@ -116,14 +137,51 @@ class footer_options_exporter extends exporter {
 
         $values = new stdClass();
 
+        $values->footerlinks = [];
+
+        if ($this->showfullcalendarlink) {
+            $values->footerlinks[] = (object)[
+                'url' => $this->get_full_calendar_url(),
+                'linkname' => get_string('fullcalendar', 'calendar'),
+            ];
+        }
+
         if (!empty($CFG->enablecalendarexport)) {
-            $values->exportcalendarlink = $this->get_export_calendar_link();
+            if ($this->showexportlink) {
+                $values->footerlinks[] = (object)[
+                    'url' => $this->get_export_calendar_link(),
+                    'linkname' => get_string('exportcalendar', 'calendar'),
+                ];
+            }
+
             if ($managesubscriptionlink = $this->get_manage_subscriptions_link()) {
-                $values->managesubscriptionlink = $managesubscriptionlink;
+                $values->footerlinks[] = (object)[
+                    'url' => $managesubscriptionlink,
+                    'linkname' => $this->subscriptionlabel,
+                ];
             }
         }
 
         return (array) $values;
+    }
+
+    /**
+     * Get the link to the full calendar.
+     *
+     * @return string
+     */
+    protected function get_full_calendar_url() {
+        $url = new moodle_url('/calendar/view.php', [
+            'view' => 'month',
+            'time' => $this->calendar->time,
+        ]);
+
+        if ($this->calendar->course && SITEID !== $this->calendar->course->id) {
+            $url->param('course', $this->calendar->course->id);
+        } else if ($this->calendar->categoryid) {
+            $url->param('category', $this->calendar->categoryid);
+        }
+        return $url->out();
     }
 
     /**
@@ -133,12 +191,17 @@ class footer_options_exporter extends exporter {
      */
     public static function define_other_properties() {
         return array(
-            'exportcalendarlink' => [
-                'type' => PARAM_URL
-            ],
-            'managesubscriptionlink' => [
-                'type' => PARAM_URL,
-                'default' => null,
+            'footerlinks' => [
+                'type' => [
+                    'url' => [
+                        'type' => PARAM_URL,
+                    ],
+                    'linkname' => [
+                        'type' => PARAM_TEXT,
+                    ],
+                ],
+                'multiple' => true,
+                'optional' => true,
             ],
         );
     }
