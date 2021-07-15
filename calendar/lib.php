@@ -3679,6 +3679,10 @@ function calendar_get_timestamp($d, $m, $y, $time = 0) {
  * Get the calendar footer options.
  *
  * @param calendar_information $calendar The calendar information object.
+ * @param array $options Display options for the footer. If an option is not set, a default value will be provided.
+ *                      It consists of:
+ *                      - showexportlink - bool - Whether to show the export link or not. Defaults to true.
+ *                      - showfullcalendarlink - bool - Whether to show the full calendar link or not. Defaults to false.
  * @return array The data for template and template name.
  */
 function calendar_get_footer_options($calendar, array $options = []) {

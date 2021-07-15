@@ -64,11 +64,6 @@ class footer_options_exporter extends exporter {
     protected $showfullcalendarlink;
 
     /**
-     * @var string Get the subscription label, default to 'Manage subscriptions' if not set.
-     */
-    protected $subscriptionlabel;
-
-    /**
      * Constructor for month_exporter.
      *
      * @param \calendar_information $calendar The calendar being represented
@@ -78,7 +73,6 @@ class footer_options_exporter extends exporter {
      *                      It consists of:
      *                      - showexportlink - bool - Whether to show the export link or not. Defaults to true.
      *                      - showfullcalendarlink - bool - Whether to show the full calendar link or not. Defaults to false.
-     *                      - subscriptionlabel - string - Label for the manage subscriptions link.
      */
     public function __construct(\calendar_information $calendar, $userid, $token, array $options = []) {
         $this->calendar = $calendar;
@@ -86,7 +80,6 @@ class footer_options_exporter extends exporter {
         $this->token = $token;
         $this->showexportlink = $options['showexportlink'] ?? true;
         $this->showfullcalendarlink = $options['showfullcalendarlink'] ?? false;
-        $this->subscriptionlabel = $options['subscriptionlabel'] ?? get_string('managesubscriptions', 'calendar');
     }
 
     /**
@@ -158,7 +151,7 @@ class footer_options_exporter extends exporter {
             if ($managesubscriptionlink = $this->get_manage_subscriptions_link()) {
                 $values->footerlinks[] = (object)[
                     'url' => $managesubscriptionlink,
-                    'linkname' => $this->subscriptionlabel,
+                    'linkname' => get_string('managesubscriptions', 'calendar'),
                 ];
             }
         }
