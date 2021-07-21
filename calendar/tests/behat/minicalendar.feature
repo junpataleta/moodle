@@ -18,7 +18,7 @@ Feature: Open calendar popup
 
   @javascript
   Scenario: I view calendar details of a day with multiple events
-    Given I follow "This month"
+    Given I follow "Full calendar"
     And I create a calendar event:
       | Type of event     | site |
       | Event title       | Event 1:1 |
@@ -36,7 +36,7 @@ Feature: Open calendar popup
 
   @javascript
   Scenario: I view calendar details for today
-    Given I follow "This month"
+    Given I follow "Full calendar"
     When I create a calendar event:
       | Type of event     | site |
       | Event title       | Today's event |

@@ -13117,15 +13117,17 @@ input[disabled] {
 
 .calendar-controls .previous {
   text-align: left;
-  border: 1px solid transparent; }
+  border: 1px solid transparent;
+  width: 25%; }
 
 .calendar-controls .current {
   text-align: center;
-  width: 76%; }
+  width: 50%; }
 
 .calendar-controls .next {
   text-align: right;
-  border: 1px solid transparent; }
+  border: 1px solid transparent;
+  width: 25%; }
 
 .calendar-controls .drop-target {
   box-sizing: border-box;
@@ -13139,18 +13141,13 @@ input[disabled] {
 .maincalendar {
   vertical-align: top;
   padding: 0; }
-  .maincalendar span.footer-link:after {
-    content: "\2022";
-    color: #0f6fc5; }
-  .maincalendar span.footer-link:last-child:after {
-    content: none; }
   .maincalendar .bottom {
     text-align: left;
     padding: 20px 0 0 20px; }
-    .maincalendar .bottom span.export-link:after {
+    .maincalendar .bottom span.footer-link:after {
       content: "\2022";
       color: #0f6fc5; }
-    .maincalendar .bottom span.export-link:last-child:after {
+    .maincalendar .bottom span.footer-link:last-child:after {
       content: none; }
   .maincalendar .heightcontainer {
     height: 100%;
@@ -13205,11 +13202,6 @@ input[disabled] {
       height: 5em; }
     .maincalendar .calendarmonth .clickable:hover {
       box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12); }
-  .maincalendar .calendar-controls .previous,
-  .maincalendar .calendar-controls .next {
-    width: 30%; }
-  .maincalendar .calendar-controls .current {
-    width: 39.95%; }
   .maincalendar .controls {
     width: 98%;
     margin: 10px auto; }
@@ -13315,24 +13307,6 @@ input[disabled] {
     font-weight: inherit;
     line-height: inherit;
     text-align: center; }
-
-.block .calendar-controls .previous,
-.block .calendar-controls .current,
-.block .calendar-controls .next {
-  display: block;
-  float: left; }
-
-.block .calendar-controls .previous {
-  text-align: left;
-  width: 25%; }
-
-.block .calendar-controls .current {
-  text-align: center;
-  width: 50%; }
-
-.block .calendar-controls .next {
-  text-align: right;
-  width: 25%; }
 
 .block .calendar_filters ul {
   list-style: none;

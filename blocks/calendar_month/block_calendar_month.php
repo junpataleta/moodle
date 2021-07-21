@@ -45,7 +45,6 @@ class block_calendar_month extends block_base {
         }
 
         $this->content = new stdClass;
-        $this->content->text = '';
         $this->content->footer = '';
 
         $renderer = $this->page->get_renderer('core_calendar');

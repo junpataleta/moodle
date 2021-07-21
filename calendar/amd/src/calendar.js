@@ -176,13 +176,12 @@ define([
         // Listen the click on the day link to render the day view.
         root.on('click', SELECTORS.VIEW_DAY_LINK, function(e) {
             const viewingFullCalendar = document.getElementById(CalendarSelectors.fullCalendarView);
-
-                var dayLink = $(e.target);
-                var year = dayLink.data('year'),
-                    month = dayLink.data('month'),
-                    day = dayLink.data('day'),
-                    courseId = dayLink.data('courseid'),
-                    categoryId = dayLink.data('categoryid');
+            var dayLink = $(e.target);
+            var year = dayLink.data('year'),
+                month = dayLink.data('month'),
+                day = dayLink.data('day'),
+                courseId = dayLink.data('courseid'),
+                categoryId = dayLink.data('categoryid');
             const url = '?view=day&time=' + dayLink.data('timestamp');
             if (viewingFullCalendar) {
                 CalendarViewManager.refreshDayContent(root, year, month, day, courseId, categoryId, root,

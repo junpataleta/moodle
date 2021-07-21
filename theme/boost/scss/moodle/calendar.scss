@@ -98,16 +98,18 @@ $calendarEventColor: #0d5ca1 !default;
     .previous {
         text-align: left;
         border: 1px solid transparent;
+        width: 25%;
     }
 
     .current {
         text-align: center;
-        width: 76%;
+        width: 50%;
     }
 
     .next {
         text-align: right;
         border: 1px solid transparent;
+        width: 25%;
     }
 
     .drop-target {
@@ -128,20 +130,11 @@ $calendarEventColor: #0d5ca1 !default;
     vertical-align: top;
     padding: 0;
 
-    @include footer-links;
-
     .bottom {
         text-align: left;
         padding: 20px 0 0 20px;
 
-        span.export-link:after {
-            content: "\2022";
-            color: $blue;
-        }
-
-        span.export-link:last-child:after {
-            content: none;
-        }
+        @include footer-links;
     }
 
     .heightcontainer {
@@ -225,17 +218,6 @@ $calendarEventColor: #0d5ca1 !default;
 
         .clickable:hover {
             box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14), 0 3px 1px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12);
-        }
-    }
-
-    .calendar-controls {
-        .previous,
-        .next {
-            width: 30%;
-        }
-
-        .current {
-            width: 39.95%;
         }
     }
 
@@ -425,30 +407,6 @@ $calendarEventColor: #0d5ca1 !default;
             font-weight: inherit;
             line-height: inherit;
             text-align: center;
-        }
-    }
-
-    .calendar-controls {
-        .previous,
-        .current,
-        .next {
-            display: block;
-            float: left;
-        }
-
-        .previous {
-            text-align: left;
-            width: 25%;
-        }
-
-        .current {
-            text-align: center;
-            width: 50%;
-        }
-
-        .next {
-            text-align: right;
-            width: 25%;
         }
     }
 

@@ -130,7 +130,7 @@ Feature: Enable the calendar block in a course and test it's functionality
     And I press "Save and display"
     And I turn editing mode on
     And I add the "Calendar" block
-    And I click on "This month" "link"
+    And I click on "Full calendar" "link"
     And I click on "New event" "button"
     And I set the following fields to these values:
       | id_eventtype | Group |
@@ -170,7 +170,7 @@ Feature: Enable the calendar block in a course and test it's functionality
       | id_eventtype | Course |
       | id_name | Course Event 1 |
     And I am on "Course 1" course homepage
-    And I click on "This month" "link"
+    And I click on "Full calendar" "link"
     And I click on "New event" "button"
     And I set the following fields to these values:
       | id_eventtype | Group |
