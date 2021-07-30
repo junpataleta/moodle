@@ -26,10 +26,13 @@ class grade_export_xml extends grade_export {
     /**
      * Ensure we produce correctly formed XML content by encoding idnumbers appropriately
      *
-     * @param string $idnumber
+     * @param string|null $idnumber
      * @return string
      */
-    private static function xml_export_idnumber(string $idnumber): string {
+    private static function xml_export_idnumber(?string $idnumber): string {
+        if (empty($idnumber)) {
+            return '';
+        }
         return htmlspecialchars($idnumber, ENT_QUOTES | ENT_XML1);
     }
 
