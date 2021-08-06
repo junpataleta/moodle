@@ -3528,7 +3528,7 @@ pre {
   border: 0; }
 
 .table-striped tbody tr:nth-of-type(odd) {
-  background-color: rgba(0, 0, 0, 0.05); }
+  background-color: rgba(0, 0, 0, 0.017); }
 
 .table-hover tbody tr:hover {
   color: #212529;
@@ -13670,7 +13670,7 @@ body:not(.editing) .sitetopic ul.section {
 
 .editing .section .activity:hover,
 .editing .section .activity.action-menu-shown {
-  background-color: rgba(0, 0, 0, 0.05); }
+  background-color: rgba(0, 0, 0, 0.017); }
 
 .course-content .current {
   position: relative; }
@@ -14058,7 +14058,7 @@ span.editinstructions {
   padding-bottom: 0.5rem; }
 
 .courses .coursebox.even {
-  background-color: rgba(0, 0, 0, 0.05); }
+  background-color: rgba(0, 0, 0, 0.017); }
 
 .courses > .paging.paging-morelink {
   text-align: center;
@@ -15992,7 +15992,7 @@ a.ygtvspacer:hover {
     text-align: left;
     font-weight: normal; }
   #categoryquestions > tbody > tr.r1 {
-    background-color: rgba(0, 0, 0, 0.05); }
+    background-color: rgba(0, 0, 0, 0.017); }
   #categoryquestions > tbody > tr.highlight {
     border: 1px solid #008196; }
   #categoryquestions .checkbox {
@@ -17829,7 +17829,7 @@ div#dock {
   width: 100%; }
 
 .path-mod-survey .surveytable > tbody > tr:nth-of-type(even) {
-  background-color: rgba(0, 0, 0, 0.05); }
+  background-color: rgba(0, 0, 0, 0.017); }
 
 .path-mod-survey .surveytable .rblock label {
   text-align: center; }
@@ -18318,7 +18318,7 @@ div#dock {
   /* Striped rows like a table */ }
   .path-backup .mform .root_setting:nth-of-type(odd),
   .path-backup .mform .grouped_settings:nth-of-type(odd) {
-    background-color: rgba(0, 0, 0, 0.05); }
+    background-color: rgba(0, 0, 0, 0.017); }
   .path-backup .mform .root_setting:nth-of-type(even),
   .path-backup .mform .grouped_settings:nth-of-type(even) {
     background-color: #fff; }
@@ -18451,7 +18451,7 @@ div#dock {
   .generaltable tbody + tbody {
     border-top: 2px solid #dee2e6; }
   .generaltable tbody tr:nth-of-type(odd) {
-    background-color: rgba(0, 0, 0, 0.05); }
+    background-color: rgba(0, 0, 0, 0.017); }
   .generaltable.table-sm th,
   .generaltable.table-sm td {
     padding: 0.3rem; }
@@ -18893,7 +18893,7 @@ p.arrow_button {
   padding-left: 269px; }
 
 .path-grade-edit-tree .setup-grades.generaltable .levelodd {
-  background-color: rgba(0, 0, 0, 0.05); }
+  background-color: rgba(0, 0, 0, 0.017); }
 
 /**
  * Grader report.
@@ -18925,7 +18925,7 @@ p.arrow_button {
 .path-grade-report-user .user-grade {
   border: none; }
   .path-grade-report-user .user-grade.generaltable .levelodd {
-    background-color: rgba(0, 0, 0, 0.05); }
+    background-color: rgba(0, 0, 0, 0.017); }
   .path-grade-report-user .user-grade .column-contributiontocoursetotal,
   .path-grade-report-user .user-grade .column-range,
   .path-grade-report-user .user-grade .column-percentage,
