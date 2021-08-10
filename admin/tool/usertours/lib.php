@@ -85,3 +85,18 @@ function tool_usertours_get_fontawesome_icon_map() {
         'tool_usertours:t/filler' => 'fa-spacer',
     ];
 }
+
+/**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function tool_usertours_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'tool_usertours:t/export' => 'fa-download',
+            'tool_usertours:i/reload' => 'fa-refresh',
+            'tool_usertours:t/filler' => 'fa-spacer',
+        ],
+    ];
+}

@@ -490,3 +490,17 @@ function enrol_guest_get_fontawesome_icon_map() {
         'enrol_guest:withoutpassword' => 'fa-unlock-alt',
     ];
 }
+
+/**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function enrol_guest_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'enrol_guest:withpassword' => 'fa-key',
+            'enrol_guest:withoutpassword' => 'fa-unlock-alt',
+        ],
+    ];
+}

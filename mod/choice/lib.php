@@ -1299,6 +1299,20 @@ function mod_choice_get_fontawesome_icon_map() {
 }
 
 /**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function mod_choice_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'mod_choice:row' => 'fa-info',
+            'mod_choice:column' => 'fa-columns',
+        ],
+    ];
+}
+
+/**
  * Add a get_coursemodule_info function in case any choice type wants to add 'extra' information
  * for the course (see resource).
  *

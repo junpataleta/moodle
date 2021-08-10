@@ -86,3 +86,28 @@ function tool_brickfield_get_fontawesome_icon_map() {
         manager::PLUGINNAME . ':f/text' => 'fa-font',
     ];
 }
+
+/**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function tool_brickfield_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            manager::PLUGINNAME . ':f/award' => 'fa-tachometer',
+            manager::PLUGINNAME . ':f/done' => 'fa-check-circle-o',
+            manager::PLUGINNAME . ':f/done2' => 'fa-check-square-o',
+            manager::PLUGINNAME . ':f/error' => 'fa-times-circle-o',
+            manager::PLUGINNAME . ':f/find' => 'fa-bar-chart',
+            manager::PLUGINNAME . ':f/total' => 'fa-calculator',
+            manager::PLUGINNAME . ':f/form' => 'fa-pencil-square-o',
+            manager::PLUGINNAME . ':f/image' => 'fa-image',
+            manager::PLUGINNAME . ':f/layout' => 'fa-th-large',
+            manager::PLUGINNAME . ':f/link' => 'fa-link',
+            manager::PLUGINNAME . ':f/media' => 'fa-play-circle-o',
+            manager::PLUGINNAME . ':f/table' => 'fa-table',
+            manager::PLUGINNAME . ':f/text' => 'fa-font',
+        ],
+    ];
+}

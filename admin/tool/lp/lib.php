@@ -219,6 +219,19 @@ function tool_lp_get_fontawesome_icon_map() {
 }
 
 /**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function tool_lp_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'tool_lp:url' => 'fa-external-link'
+        ],
+    ];
+}
+
+/**
  * Render a short bit of information about a competency.
  *
  * @param \core_competency\competency $competency The competency to show.

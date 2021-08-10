@@ -1308,6 +1308,19 @@ function mod_lesson_get_fontawesome_icon_map() {
     ];
 }
 
+/**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function mod_lesson_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'mod_lesson:e/copy' => 'fa-clone',
+        ],
+    ];
+}
+
 /*
  * Check if the module has any update that affects the current user since a given time.
  *

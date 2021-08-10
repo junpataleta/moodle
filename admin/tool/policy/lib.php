@@ -213,6 +213,23 @@ function tool_policy_get_fontawesome_icon_map() {
 }
 
 /**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function tool_policy_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'tool_policy:agreed' => 'fa-check text-success',
+            'tool_policy:declined' => 'fa-times text-danger',
+            'tool_policy:pending' => 'fa-clock-o text-warning',
+            'tool_policy:partial' => 'fa-exclamation-triangle text-warning',
+            'tool_policy:level' => 'fa-level-up fa-rotate-90 text-muted',
+        ],
+    ];
+}
+
+/**
  * Serve the new group form as a fragment.
  *
  * @param array $args List of named arguments for the fragment loader.

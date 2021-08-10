@@ -51,3 +51,17 @@ function qtype_ddmarker_get_fontawesome_icon_map() {
         'qtype_ddmarker:grid' => 'fa-th',
     ];
 }
+
+/**
+ * Get icon mapping for Font Awesome.
+ *
+ * @return string[]
+ */
+function qtype_ddmarker_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'qtype_ddmarker:crosshairs' => 'fa-crosshairs',
+            'qtype_ddmarker:grid' => 'fa-th',
+        ],
+    ];
+}

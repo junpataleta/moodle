@@ -135,3 +135,17 @@ function atto_recordrtc_get_fontawesome_icon_map() {
         'atto_recordrtc:i/videortc' => 'fa-video-camera'
     ];
 }
+
+/**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function atto_recordrtc_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'atto_recordrtc:i/audiortc' => 'fa-microphone',
+            'atto_recordrtc:i/videortc' => 'fa-video-camera'
+        ],
+    ];
+}

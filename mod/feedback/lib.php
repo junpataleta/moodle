@@ -2937,6 +2937,20 @@ function mod_feedback_get_fontawesome_icon_map() {
 }
 
 /**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function mod_feedback_get_icon_font_map() {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'mod_feedback:required' => 'fa-exclamation-circle',
+            'mod_feedback:notrequired' => 'fa-question-circle-o',
+        ],
+    ];
+}
+
+/**
  * Check if the module has any update that affects the current user since a given time.
  *
  * @param  cm_info $cm course module data

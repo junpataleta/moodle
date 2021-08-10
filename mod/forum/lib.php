@@ -6446,6 +6446,23 @@ function mod_forum_get_fontawesome_icon_map() {
 }
 
 /**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function mod_forum_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'mod_forum:i/pinned' => 'fa-map-pin',
+            'mod_forum:t/selected' => 'fa-check',
+            'mod_forum:t/subscribed' => 'fa-envelope-o',
+            'mod_forum:t/unsubscribed' => 'fa-envelope-open-o',
+            'mod_forum:t/star' => 'fa-star',
+        ],
+    ];
+}
+
+/**
  * Callback function that determines whether an action event should be showing its item count
  * based on the event type and the item count.
  *

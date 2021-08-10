@@ -33,3 +33,17 @@ function customfield_date_get_fontawesome_icon_map() {
         'customfield_date:notchecked' => 'fa-square-o',
     ];
 }
+
+/**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function customfield_date_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'customfield_date:checked' => 'fa-check-square-o',
+            'customfield_date:notchecked' => 'fa-square-o',
+        ],
+    ];
+}

@@ -1015,3 +1015,17 @@ function gradingform_guide_get_fontawesome_icon_map(): array {
         'gradingform_guide:plus' => 'fa-plus',
     ];
 }
+
+/**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function gradingform_guide_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'gradingform_guide:info' => 'fa-info-circle',
+            'gradingform_guide:plus' => 'fa-plus',
+        ],
+    ];
+}

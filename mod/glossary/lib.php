@@ -4194,6 +4194,20 @@ function mod_glossary_get_fontawesome_icon_map() {
 }
 
 /**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function mod_glossary_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'mod_glossary:export' => 'fa-download',
+            'mod_glossary:minus' => 'fa-minus',
+        ],
+    ];
+}
+
+/**
  * This function receives a calendar event and returns the action associated with it, or null if there is none.
  *
  * This is used by block_myoverview in order to display the event appropriately. If null is returned then the event

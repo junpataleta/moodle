@@ -51,3 +51,16 @@ function atto_collapse_get_fontawesome_icon_map() {
         'atto_collapse:icon' => 'fa-level-down'
     ];
 }
+
+/**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function atto_collapse_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'atto_collapse:icon' => 'fa-level-down'
+        ],
+    ];
+}

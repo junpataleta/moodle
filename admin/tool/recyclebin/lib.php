@@ -206,3 +206,16 @@ function tool_recyclebin_get_fontawesome_icon_map() {
         'tool_recyclebin:trash' => 'fa-trash'
     ];
 }
+
+/**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function tool_recyclebin_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'tool_recyclebin:trash' => 'fa-trash'
+        ],
+    ];
+}

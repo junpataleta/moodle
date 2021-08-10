@@ -2071,6 +2071,22 @@ function mod_workshop_get_fontawesome_icon_map() {
 }
 
 /**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function mod_workshop_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'mod_workshop:userplan/task-info' => 'fa-info text-info',
+            'mod_workshop:userplan/task-todo' => 'fa-square-o',
+            'mod_workshop:userplan/task-done' => 'fa-check text-success',
+            'mod_workshop:userplan/task-fail' => 'fa-remove text-danger',
+        ],
+    ];
+}
+
+/**
  * Check if the module has any update that affects the current user since a given time.
  *
  * @param  cm_info $cm course module data

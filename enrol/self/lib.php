@@ -1059,3 +1059,17 @@ function enrol_self_get_fontawesome_icon_map() {
         'enrol_self:withoutkey' => 'fa-sign-in',
     ];
 }
+
+/**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function enrol_self_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'enrol_self:withkey' => 'fa-key',
+            'enrol_self:withoutkey' => 'fa-sign-in',
+        ],
+    ];
+}

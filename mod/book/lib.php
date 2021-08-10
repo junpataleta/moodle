@@ -733,6 +733,24 @@ function mod_book_get_fontawesome_icon_map() {
 }
 
 /**
+ * Get icon mapping for Fork Awesome.
+ *
+ * @return string[]
+ */
+function mod_book_get_icon_font_map(): array {
+    return [
+        \core\output\icon_system_font::FORKAWESOME => [
+            'mod_book:chapter' => 'fa-bookmark-o',
+            'mod_book:nav_prev' => 'fa-arrow-left',
+            'mod_book:nav_sep' => 'fa-minus',
+            'mod_book:add' => 'fa-plus',
+            'mod_book:nav_next' => 'fa-arrow-right',
+            'mod_book:nav_exit' => 'fa-arrow-up',
+        ],
+    ];
+}
+
+/**
  * This function receives a calendar event and returns the action associated with it, or null if there is none.
  *
  * This is used by block_myoverview in order to display the event appropriately. If null is returned then the event
