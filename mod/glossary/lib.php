@@ -4182,18 +4182,6 @@ function glossary_check_updates_since(cm_info $cm, $from, $filter = array()) {
 }
 
 /**
- * Get icon mapping for font-awesome.
- *
- * @return array
- */
-function mod_glossary_get_fontawesome_icon_map() {
-    return [
-        'mod_glossary:export' => 'fa-download',
-        'mod_glossary:minus' => 'fa-minus'
-    ];
-}
-
-/**
  * Get icon mapping for Fork Awesome.
  *
  * @return string[]

@@ -61,3 +61,26 @@ function data_get_completion_state($course, $cm, $userid, $type) {
     }
     return $result;
 }
+
+/**
+ * Get icon mapping for font-awesome.
+ *
+ * @deprecated since Moodle 4.0
+ */
+function mod_data_get_fontawesome_icon_map() {
+    debugging(__FUNCTION__ . ' has been deprecated and should not be used anymore.', DEBUG_DEVELOPER);
+    return [
+        'mod_data:field/checkbox' => 'fa-check-square-o',
+        'mod_data:field/date' => 'fa-calendar-o',
+        'mod_data:field/file' => 'fa-file',
+        'mod_data:field/latlong' => 'fa-globe',
+        'mod_data:field/menu' => 'fa-bars',
+        'mod_data:field/multimenu' => 'fa-bars',
+        'mod_data:field/number' => 'fa-hashtag',
+        'mod_data:field/picture' => 'fa-picture-o',
+        'mod_data:field/radiobutton' => 'fa-circle-o',
+        'mod_data:field/textarea' => 'fa-font',
+        'mod_data:field/text' => 'fa-i-cursor',
+        'mod_data:field/url' => 'fa-link',
+    ];
+}

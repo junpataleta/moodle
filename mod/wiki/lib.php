@@ -36,6 +36,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(__DIR__ . '/deprecatedlib.php');
+
 /**
  * Given an object containing all the necessary data,
  * (defined by the form in mod.html) this function
@@ -776,15 +778,6 @@ function wiki_check_updates_since(cm_info $cm, $from, $filter = array()) {
         }
     }
     return $updates;
-}
-
-/**
- * Get icon mapping for font-awesome.
- */
-function mod_wiki_get_fontawesome_icon_map() {
-    return [
-        'mod_wiki:attachment' => 'fa-paperclip',
-    ];
 }
 
 /**

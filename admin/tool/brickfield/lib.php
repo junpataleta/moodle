@@ -23,6 +23,8 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once(__DIR__ . '/deprecatedlib.php');
+
 use tool_brickfield\accessibility;
 use tool_brickfield\manager;
 use tool_brickfield\registration;
@@ -63,28 +65,6 @@ function tool_brickfield_extend_navigation_course(\navigation_node $navigation, 
         null,
         new pix_icon('i/report', '')
     );
-}
-
-/**
- * Get icon mapping for font-awesome.
- * @return string[]
- */
-function tool_brickfield_get_fontawesome_icon_map() {
-    return [
-        manager::PLUGINNAME . ':f/award' => 'fa-tachometer',
-        manager::PLUGINNAME . ':f/done' => 'fa-check-circle-o',
-        manager::PLUGINNAME . ':f/done2' => 'fa-check-square-o',
-        manager::PLUGINNAME . ':f/error' => 'fa-times-circle-o',
-        manager::PLUGINNAME . ':f/find' => 'fa-bar-chart',
-        manager::PLUGINNAME . ':f/total' => 'fa-calculator',
-        manager::PLUGINNAME . ':f/form' => 'fa-pencil-square-o',
-        manager::PLUGINNAME . ':f/image' => 'fa-image',
-        manager::PLUGINNAME . ':f/layout' => 'fa-th-large',
-        manager::PLUGINNAME . ':f/link' => 'fa-link',
-        manager::PLUGINNAME . ':f/media' => 'fa-play-circle-o',
-        manager::PLUGINNAME . ':f/table' => 'fa-table',
-        manager::PLUGINNAME . ':f/text' => 'fa-font',
-    ];
 }
 
 /**

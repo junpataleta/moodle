@@ -26,6 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(__DIR__ . '/deprecatedlib.php');
+
 /**
  * Set params for this plugin.
  *
@@ -124,16 +126,6 @@ function atto_recordrtc_strings_for_js() {
                );
 
     $PAGE->requires->strings_for_js($strings, 'atto_recordrtc');
-}
-
-/**
- * Map icons for font-awesome themes.
- */
-function atto_recordrtc_get_fontawesome_icon_map() {
-    return [
-        'atto_recordrtc:i/audiortc' => 'fa-microphone',
-        'atto_recordrtc:i/videortc' => 'fa-video-camera'
-    ];
 }
 
 /**

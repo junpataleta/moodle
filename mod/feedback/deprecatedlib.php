@@ -52,3 +52,16 @@ function feedback_get_completion_state($course, $cm, $userid, $type) {
         return $type;
     }
 }
+
+/**
+ * Get icon mapping for font-awesome.
+ *
+ * @deprecated since Moodle 4.0
+ */
+function mod_feedback_get_fontawesome_icon_map() {
+    debugging(__FUNCTION__ . ' has been deprecated and should not be used anymore.', DEBUG_DEVELOPER);
+    return [
+        'mod_feedback:required' => 'fa-exclamation-circle',
+        'mod_feedback:notrequired' => 'fa-question-circle-o',
+    ];
+}

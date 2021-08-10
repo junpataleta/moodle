@@ -59,3 +59,17 @@ function glossary_get_completion_state($course, $cm, $userid, $type) {
 
     return $result;
 }
+
+/**
+ * Get icon mapping for font-awesome.
+ *
+ * @deprecated since Moodle 4.0
+ * @return array
+ */
+function mod_glossary_get_fontawesome_icon_map() {
+    debugging(__FUNCTION__ . ' has been deprecated and should not be used anymore.', DEBUG_DEVELOPER);
+    return [
+        'mod_glossary:export' => 'fa-download',
+        'mod_glossary:minus' => 'fa-minus'
+    ];
+}

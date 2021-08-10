@@ -137,3 +137,28 @@ function scorm_get_completion_state($course, $cm, $userid, $type) {
 
     return $result;
 }
+
+/**
+ * Get icon mapping for font-awesome.
+ *
+ * @deprecated since Moodle 4.0
+ */
+function mod_scorm_get_fontawesome_icon_map() {
+    debugging(__FUNCTION__ . ' has been deprecated and should not be used anymore.', DEBUG_DEVELOPER);
+    return [
+        'mod_scorm:assetc' => 'fa-file-archive-o',
+        'mod_scorm:asset' => 'fa-file-archive-o',
+        'mod_scorm:browsed' => 'fa-book',
+        'mod_scorm:completed' => 'fa-check-square-o',
+        'mod_scorm:failed' => 'fa-times',
+        'mod_scorm:incomplete' => 'fa-pencil-square-o',
+        'mod_scorm:minus' => 'fa-minus',
+        'mod_scorm:notattempted' => 'fa-square-o',
+        'mod_scorm:passed' => 'fa-check',
+        'mod_scorm:plus' => 'fa-plus',
+        'mod_scorm:popdown' => 'fa-window-close-o',
+        'mod_scorm:popup' => 'fa-window-restore',
+        'mod_scorm:suspend' => 'fa-pause',
+        'mod_scorm:wait' => 'fa-clock-o',
+    ];
+}

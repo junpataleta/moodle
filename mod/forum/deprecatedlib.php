@@ -1734,3 +1734,20 @@ WHERE
 
     return $result;
 }
+
+/**
+ * Get icon mapping for font-awesome.
+ *
+ * @deprecated since Moodle 4.0
+ * @return  array
+ */
+function mod_forum_get_fontawesome_icon_map() {
+    debugging(__FUNCTION__ . ' has been deprecated and should not be used anymore.', DEBUG_DEVELOPER);
+    return [
+        'mod_forum:i/pinned' => 'fa-map-pin',
+        'mod_forum:t/selected' => 'fa-check',
+        'mod_forum:t/subscribed' => 'fa-envelope-o',
+        'mod_forum:t/unsubscribed' => 'fa-envelope-open-o',
+        'mod_forum:t/star' => 'fa-star',
+    ];
+}

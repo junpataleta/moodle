@@ -53,3 +53,16 @@ function choice_get_completion_state($course, $cm, $userid, $type) {
         return $type;
     }
 }
+
+/**
+ * Get icon mapping for font-awesome.
+ *
+ * @deprecated since Moodle 4.0
+ */
+function mod_choice_get_fontawesome_icon_map() {
+    debugging(__FUNCTION__ . ' has been deprecated and should not be used anymore.', DEBUG_DEVELOPER);
+    return [
+        'mod_choice:row' => 'fa-info',
+        'mod_choice:column' => 'fa-columns',
+    ];
+}

@@ -1289,16 +1289,6 @@ function mod_choice_core_calendar_event_timestart_updated(\calendar_event $event
 }
 
 /**
- * Get icon mapping for font-awesome.
- */
-function mod_choice_get_fontawesome_icon_map() {
-    return [
-        'mod_choice:row' => 'fa-info',
-        'mod_choice:column' => 'fa-columns',
-    ];
-}
-
-/**
  * Get icon mapping for Fork Awesome.
  *
  * @return string[]

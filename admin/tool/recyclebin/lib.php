@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once(__DIR__ . '/deprecatedlib.php');
+
 /**
  * Adds a recycle bin link to the course admin menu.
  *
@@ -196,15 +198,6 @@ function tool_recyclebin_pre_course_category_delete($category) {
     // It may have been enabled, then disabled later on, so may still have content.
     $categorybin = new \tool_recyclebin\category_bin($category->id);
     $categorybin->delete_all_items();
-}
-
-/**
- * Map icons for font-awesome themes.
- */
-function tool_recyclebin_get_fontawesome_icon_map() {
-    return [
-        'tool_recyclebin:trash' => 'fa-trash'
-    ];
 }
 
 /**

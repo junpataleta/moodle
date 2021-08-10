@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once(__DIR__ . '/deprecatedlib.php');
+
 /**
  * Self enrolment plugin implementation.
  * @author Petr Skoda
@@ -1048,16 +1050,6 @@ class enrol_self_plugin extends enrol_plugin {
 
         return $contact;
     }
-}
-
-/**
- * Get icon mapping for font-awesome.
- */
-function enrol_self_get_fontawesome_icon_map() {
-    return [
-        'enrol_self:withkey' => 'fa-key',
-        'enrol_self:withoutkey' => 'fa-sign-in',
-    ];
 }
 
 /**

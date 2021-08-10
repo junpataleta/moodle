@@ -1300,15 +1300,6 @@ function lesson_update_media_file($lessonid, $context, $draftitemid) {
 }
 
 /**
- * Get icon mapping for font-awesome.
- */
-function mod_lesson_get_fontawesome_icon_map() {
-    return [
-        'mod_lesson:e/copy' => 'fa-clone',
-    ];
-}
-
-/**
  * Get icon mapping for Fork Awesome.
  *
  * @return string[]

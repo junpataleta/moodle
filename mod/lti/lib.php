@@ -48,6 +48,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once(__DIR__ . '/deprecatedlib.php');
+
 /**
  * List of features supported in URL module
  * @param string $feature FEATURE_xx constant for requested feature
@@ -739,15 +741,6 @@ function lti_check_updates_since(cm_info $cm, $from, $filter = array()) {
     }
 
     return $updates;
-}
-
-/**
- * Get icon mapping for font-awesome.
- */
-function mod_lti_get_fontawesome_icon_map() {
-    return [
-        'mod_lti:warning' => 'fa-exclamation text-warning',
-    ];
 }
 
 /**

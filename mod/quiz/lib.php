@@ -1991,15 +1991,6 @@ function quiz_check_updates_since(cm_info $cm, $from, $filter = array()) {
 }
 
 /**
- * Get icon mapping for font-awesome.
- */
-function mod_quiz_get_fontawesome_icon_map() {
-    return [
-        'mod_quiz:navflagged' => 'fa-flag',
-    ];
-}
-
-/**
  * Get icon mapping for Fork Awesome.
  *
  * @return string[]

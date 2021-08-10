@@ -27,6 +27,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(__DIR__ . '/deprecatedlib.php');
+
 /**
  * Class enrol_guest_plugin
  *
@@ -479,16 +481,6 @@ class enrol_guest_plugin extends enrol_plugin {
     }
 
 
-}
-
-/**
- * Get icon mapping for font-awesome.
- */
-function enrol_guest_get_fontawesome_icon_map() {
-    return [
-        'enrol_guest:withpassword' => 'fa-key',
-        'enrol_guest:withoutpassword' => 'fa-unlock-alt',
-    ];
 }
 
 /**

@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(__DIR__ . '/deprecatedlib.php');
+
 use tool_usertours\helper;
 
 /**
@@ -73,17 +75,6 @@ function tool_usertours_extend_navigation_user() {
  */
 function tool_usertours_before_footer() {
     \tool_usertours\helper::bootstrap();
-}
-
-/**
- * Map icons for font-awesome themes.
- */
-function tool_usertours_get_fontawesome_icon_map() {
-    return [
-        'tool_usertours:t/export' => 'fa-download',
-        'tool_usertours:i/reload' => 'fa-refresh',
-        'tool_usertours:t/filler' => 'fa-spacer',
-    ];
 }
 
 /**

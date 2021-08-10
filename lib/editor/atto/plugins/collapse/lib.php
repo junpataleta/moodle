@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(__DIR__ . '/deprecatedlib.php');
+
 /**
  * Initialise the js strings required for this module.
  */
@@ -41,15 +43,6 @@ function atto_collapse_params_for_js($elementid, $options, $fpoptions) {
     // Pass the number of visible groups as a param.
     $params = array('showgroups' => get_config('atto_collapse', 'showgroups'));
     return $params;
-}
-
-/**
- * Map icons for font-awesome themes.
- */
-function atto_collapse_get_fontawesome_icon_map() {
-    return [
-        'atto_collapse:icon' => 'fa-level-down'
-    ];
 }
 
 /**

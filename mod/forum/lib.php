@@ -6431,21 +6431,6 @@ function forum_can_create_attachment($forum, $context) {
 }
 
 /**
- * Get icon mapping for font-awesome.
- *
- * @return  array
- */
-function mod_forum_get_fontawesome_icon_map() {
-    return [
-        'mod_forum:i/pinned' => 'fa-map-pin',
-        'mod_forum:t/selected' => 'fa-check',
-        'mod_forum:t/subscribed' => 'fa-envelope-o',
-        'mod_forum:t/unsubscribed' => 'fa-envelope-open-o',
-        'mod_forum:t/star' => 'fa-star',
-    ];
-}
-
-/**
  * Get icon mapping for Fork Awesome.
  *
  * @return string[]

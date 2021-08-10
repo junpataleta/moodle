@@ -15,27 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Customfield date plugin
+ * List of deprecated mod_book functions.
  *
- * @package   customfield_date
- * @copyright 2018 Daniel Neis Araujo <daniel@moodle.com>
+ * @package   mod_book
+ * @copyright 2021 Jun Pataleta
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-require_once(__DIR__ . '/deprecatedlib.php');
-
 /**
- * Get icon mapping for Fork Awesome.
+ * Get icon mapping for font-awesome.
  *
- * @return string[]
+ * @deprecated since Moodle 4.0
  */
-function customfield_date_get_icon_font_map(): array {
+function mod_book_get_fontawesome_icon_map() {
+    debugging(__FUNCTION__ . ' has been deprecated and should not be used anymore.', DEBUG_DEVELOPER);
     return [
-        \core\output\icon_system_font::FORKAWESOME => [
-            'customfield_date:checked' => 'fa-check-square-o',
-            'customfield_date:notchecked' => 'fa-square-o',
-        ],
+        'mod_book:chapter' => 'fa-bookmark-o',
+        'mod_book:nav_prev' => 'fa-arrow-left',
+        'mod_book:nav_sep' => 'fa-minus',
+        'mod_book:add' => 'fa-plus',
+        'mod_book:nav_next' => 'fa-arrow-right',
+        'mod_book:nav_exit' => 'fa-arrow-up',
     ];
 }

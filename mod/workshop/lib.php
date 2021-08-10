@@ -29,6 +29,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/calendar/lib.php');
+require_once(__DIR__ . '/deprecatedlib.php');
 
 define('WORKSHOP_EVENT_TYPE_SUBMISSION_OPEN',   'opensubmission');
 define('WORKSHOP_EVENT_TYPE_SUBMISSION_CLOSE',  'closesubmission');
@@ -2056,18 +2057,6 @@ function workshop_reset_userdata(stdClass $data) {
     }
 
     return $status;
-}
-
-/**
- * Get icon mapping for font-awesome.
- */
-function mod_workshop_get_fontawesome_icon_map() {
-    return [
-        'mod_workshop:userplan/task-info' => 'fa-info text-info',
-        'mod_workshop:userplan/task-todo' => 'fa-square-o',
-        'mod_workshop:userplan/task-done' => 'fa-check text-success',
-        'mod_workshop:userplan/task-fail' => 'fa-remove text-danger',
-    ];
 }
 
 /**

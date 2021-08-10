@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(__DIR__ . '/deprecatedlib.php');
+
 /**
  * This function extends the user navigation.
  *
@@ -207,15 +209,6 @@ function tool_lp_coursemodule_edit_post_actions($data, $course) {
     }
 
     return $data;
-}
-
-/**
- * Map icons for font-awesome themes.
- */
-function tool_lp_get_fontawesome_icon_map() {
-    return [
-        'tool_lp:url' => 'fa-external-link'
-    ];
 }
 
 /**
