@@ -26,12 +26,11 @@
 namespace core\external\output\icon_system;
 
 use external_api;
+use external_description;
 use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
-use core\output\icon_system_fontawesome;
-use theme_config;
 
 /**
  * Web service to load font awesome icon maps.
@@ -46,9 +45,10 @@ class load_fontawesome_map extends external_api {
     /**
      * Description of the parameters suitable for the `execute` function.
      *
+     * @deprecated Since Moodle 4.0
      * @return external_function_parameters
      */
-    public static function execute_parameters() {
+    public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'themename' => new external_value(PARAM_ALPHANUMEXT, 'The theme to fetch the map for'),
         ]);
@@ -57,35 +57,18 @@ class load_fontawesome_map extends external_api {
     /**
      * Return a mapping of icon names to icons.
      *
+     * @deprecated Since Moodle 4.0
      * @param   string $themename The theme to fetch icons for
      * @return  array the mapping
      */
-    public static function execute(string $themename) {
-        [
-            'themename' => $themename,
-        ] = self::validate_parameters(self::execute_parameters(), [
-            'themename' => $themename,
-        ]);
-
-        $theme = theme_config::load($themename);
-        $instance = icon_system_fontawesome::instance($theme->get_icon_system());
-
-        $result = [];
-        foreach ($instance->get_icon_name_map() as $from => $to) {
-            [$component, $pix] = explode(':', $from);
-            $result[] = [
-                'component' => $component,
-                'pix' => $pix,
-                'to' => $to,
-            ];
-        }
-
-        return $result;
+    public static function execute(string $themename): array {
+        return load_icon_font_map::execute($themename);
     }
 
     /**
      * Description of the return value for the `execute` function.
      *
+     * @deprecated Since Moodle 4.0
      * @return external_description
      */
     public static function execute_returns() {
@@ -94,5 +77,15 @@ class load_fontawesome_map extends external_api {
             'pix' => new external_value(PARAM_RAW, 'Value to map the icon from.'),
             'to' => new external_value(PARAM_RAW, 'Value to map the icon to.'),
         ]));
+    }
+
+    /**
+     * The load_fontawesome_map::execute() has been replaced with
+     * @return bool
+     * @see load_icon_font_map::execute()
+     *
+     */
+    public static function execute_is_deprecated(): bool {
+        return true;
     }
 }

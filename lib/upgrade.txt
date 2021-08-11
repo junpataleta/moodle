@@ -58,6 +58,8 @@ information provided here is intended especially for developers.
   completion_info::internal_set_data() to reaggregate completions that have been marked for instant course completion.
 * The following functions have been finally deprecated and can not be used anymore:
   - generate_uuid
+* Font Awesome has been removed and is now replaced by Fork Awesome. Plugins implementing the get_fontawesome_icon_map callback
+  should implement the new mapping function get_icon_font_map callback instead.
 
 === 3.11.2 ===
 * For security reasons, filelib has been updated so all requests now use emulated redirects.

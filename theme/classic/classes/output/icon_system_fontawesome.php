@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Class overriding some of the Moodle default FontAwesome icons.
  *
+ * @deprecated since Moodle 4.0
  * @package    theme_classic
  * @copyright  2019 Moodle
  * @author     Bas Brands <bas@moodle.com>
@@ -38,7 +39,7 @@ class icon_system_fontawesome extends \core\output\icon_system_fontawesome {
     /**
      * Change the core icon map.
      *
-     * @return Array replaced icons.
+     * @return array replaced icons.
      */
     public function get_core_icon_map() {
         $iconmap = parent::get_core_icon_map();
