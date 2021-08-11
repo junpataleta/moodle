@@ -26,6 +26,8 @@
  * @category output
  */
 
+use core\output\icon_system_font;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/outputcomponents.php');
@@ -1539,6 +1541,25 @@ class theme_config {
             }
         }
         return \core\output\icon_system::STANDARD;
+    }
+
+    /**
+     * Get the icon font name to use.
+     *
+     * @return string
+     */
+    public function get_icon_font_name() {
+
+        // Getting all the candidate functions.
+        if (isset($this->iconfontname) && icon_system_font::is_valid_icon_font($this->iconfontname)) {
+            return $this->iconfontname;
+        }
+        foreach ($this->parent_configs as $parentconfig) {
+            if (isset($parentconfig->iconfontname) && icon_system_font::is_valid_icon_font($parentconfig->iconfontname)) {
+                return $parentconfig->iconfontname;
+            }
+        }
+        return icon_system_font::get_default_icon_font();
     }
 
     /**

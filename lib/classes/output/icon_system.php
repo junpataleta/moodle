@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * Possible icon styles are:
  *   1. standard - image tags are generated which point to pix icons stored in a plugin pix folder.
- *   2. fontawesome - font awesome markup is generated with the name of the icon mapped from the moodle icon name.
+ *   2. forkawesome - Fork Awesome markup is generated with the name of the icon mapped from the moodle icon name.
  *   3. inline - inline tags are used for svg and png so no separate page requests are made (at the expense of page size).
  *
  * @package    core
@@ -52,9 +52,13 @@ abstract class icon_system {
      * @const FONTAWESOME Default icon system.
      */
     const FONTAWESOME = '\\core\\output\\icon_system_fontawesome';
+    /**
+     * @const FONT Default icon font system.
+     */
+    const FONT = '\\core\\output\\icon_system_font';
 
     /**
-     * @var \core\output\icon_system $instance The cached default instance
+     * @var icon_system $instance The cached default instance
      */
     private static $instance = null;
 
@@ -73,7 +77,7 @@ abstract class icon_system {
      * Factory method
      *
      * @param string $type Either a specific type, or null to get the default type.
-     * @return \core\output\icon_system
+     * @return icon_system
      */
     public final static function instance($type = null) {
         global $PAGE;
