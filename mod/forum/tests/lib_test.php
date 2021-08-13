@@ -510,6 +510,121 @@ class mod_forum_lib_testcase extends advanced_testcase {
     }
 
     /**
+     * Test the logic in the forum_tp_get_course_unread_posts() function when private replies are present.
+     */
+    public function test_forum_tp_get_course_unread_posts_with_private_replies() {
+        global $USER;
+
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+
+        // Create 3 students.
+        $s1 = $generator->create_user(['trackforums' => 1]);
+        $s2 = $generator->create_user(['trackforums' => 1]);
+        $s3 = $generator->create_user(['trackforums' => 1]);
+
+        // Create our course.
+        $course = $generator->create_course();
+
+        // Create the forum.
+        $forum = $generator->create_module('forum', ['course' => $course->id]);
+        $forumgenerator = $generator->get_plugin_generator('mod_forum');
+
+        // Create discussion by s1.
+        $discussiondata = (object)[
+            'course' => $course->id,
+            'forum' => $forum->id,
+            'userid' => $s1->id,
+        ];
+        $discussion1 = $forumgenerator->create_discussion($discussiondata);
+
+        // Create discussion by s2.
+        $discussiondata = (object)[
+            'course' => $course->id,
+            'forum' => $forum->id,
+            'userid' => $s2->id,
+        ];
+        $discussion2 = $forumgenerator->create_discussion($discussiondata);
+
+        // Create discussion by s3.
+        $discussiondata = (object)[
+            'course' => $course->id,
+            'forum' => $forum->id,
+            'userid' => $s3->id,
+        ];
+        $discussion3 = $forumgenerator->create_discussion($discussiondata);
+
+        // Log in as admin.
+        $this->setAdminUser();
+
+        // Post a normal reply to s1's discussion as admin.
+        $replydata = (object)[
+            'course' => $course->id,
+            'forum' => $forum->id,
+            'discussion' => $discussion1->id,
+            'userid' => $USER->id,
+        ];
+        $forumgenerator->create_post($replydata);
+
+        // Post a private reply to s1's discussion as admin.
+        $replydata = (object)[
+            'course' => $course->id,
+            'forum' => $forum->id,
+            'discussion' => $discussion1->id,
+            'userid' => $USER->id,
+            'privatereplyto' => $s1->id,
+        ];
+        $forumgenerator->create_post($replydata);
+        // Post another private reply to s1 as admin.
+        $forumgenerator->create_post($replydata);
+
+        // Post a normal reply to s2's discussion as admin.
+        $replydata = (object)[
+            'course' => $course->id,
+            'forum' => $forum->id,
+            'discussion' => $discussion2->id,
+            'userid' => $USER->id,
+        ];
+        $forumgenerator->create_post($replydata);
+
+        // Post a private reply to s2's discussion as admin.
+        $replyrecord2 = (object)[
+            'course' => $course->id,
+            'forum' => $forum->id,
+            'discussion' => $discussion1->id,
+            'userid' => $USER->id,
+            'privatereplyto' => $s2->id,
+        ];
+        $forumgenerator->create_post($replyrecord2);
+
+        // Post a normal reply to s3's discussion as admin.
+        $replydata = (object)[
+            'course' => $course->id,
+            'forum' => $forum->id,
+            'discussion' => $discussion3->id,
+            'userid' => $USER->id,
+        ];
+        $forumgenerator->create_post($replydata);
+
+        // Let's count!
+        // S1 should see 8 unread posts 3 discussions posts + 2 private replies + 3 normal replies.
+        $result = forum_tp_get_course_unread_posts($s1->id, $course->id);
+        $unreadcounts = reset($result);
+        $this->assertEquals(8, $unreadcounts->unread);
+
+        // S2 should see 7 unread posts 3 discussions posts + 1 private reply + 3 normal replies.
+        $result = forum_tp_get_course_unread_posts($s2->id, $course->id);
+        $unreadcounts = reset($result);
+        $this->assertEquals(7, $unreadcounts->unread);
+
+        // S3 should see 6 unread posts 3 discussions posts + 3 normal replies. No private replies.
+        $result = forum_tp_get_course_unread_posts($s3->id, $course->id);
+        $unreadcounts = reset($result);
+        $this->assertEquals(6, $unreadcounts->unread);
+    }
+
+    /**
      * Test the logic in the test_forum_tp_get_untracked_forums() function.
      */
     public function test_forum_tp_get_untracked_forums() {
