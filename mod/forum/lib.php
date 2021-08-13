@@ -4563,7 +4563,7 @@ function forum_tp_get_course_unread_posts($userid, $courseid) {
 
     $now = floor(time() / 60) * 60; // DB cache friendliness.
     $cutoffdate = $now - ($CFG->forum_oldpostdays * 24 * 60 * 60);
-    $params = array($userid, $userid, $courseid, $cutoffdate, $userid);
+    $params = array($userid, $userid, $courseid, $cutoffdate, $userid, $userid);
 
     if (!empty($CFG->forum_enabletimedposts)) {
         $timedsql = "AND d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)";
@@ -4592,6 +4592,7 @@ function forum_tp_get_course_unread_posts($userid, $courseid) {
                    LEFT JOIN {forum_track_prefs} tf ON (tf.userid = ? AND tf.forumid = f.id)
              WHERE f.course = ?
                    AND p.modified >= ? AND r.id is NULL
+                   AND (p.privatereplyto = 0 OR p.privatereplyto = ?) 
                    $trackingsql
                    $timedsql
           GROUP BY f.id";
