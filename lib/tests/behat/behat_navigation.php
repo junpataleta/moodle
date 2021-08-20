@@ -959,15 +959,19 @@ class behat_navigation extends behat_base {
                 array_shift($parentnodes);
             } else if (count($menubuttons) > 0) {
                 try {
-                    $this->execute('behat_general::i_click_on', [$menubuttons[1], 'NodeElement']);
+                    $menubuttons[0]->isVisible();
+                    try {
+                        $this->execute('behat_general::i_click_on', [$menubuttons[1], 'NodeElement']);
+                    } catch (Exception $e) {
+                        $this->execute('behat_general::i_click_on', [$menubuttons[0], 'NodeElement']);
+                    }
+                    $moreitemxpath = '//ul[@data-region=\'moredropdown\']/li/a[contains(normalize-space(.), ' . $tabname . ')]';
+                    if ($morenode = $this->getSession()->getPage()->find('xpath', $moreitemxpath)) {
+                        $this->execute('behat_general::i_click_on', [$morenode, 'NodeElement']);
+                        $xpath .= '//div[contains(@class,\'active\')]';
+                        array_shift($parentnodes);
+                    }
                 } catch (Exception $e) {
-                    $this->execute('behat_general::i_click_on', [$menubuttons[0], 'NodeElement']);
-                }
-                $moreitemxpath = '//ul[@data-region=\'moredropdown\']/li/a[contains(normalize-space(.), ' . $tabname . ')]';
-                if ($morenode = $this->getSession()->getPage()->find('xpath', $moreitemxpath)) {
-                    $this->execute('behat_general::i_click_on', [$morenode, 'NodeElement']);
-                    $xpath .= '//div[contains(@class,\'active\')]';
-                    array_shift($parentnodes);
                 }
             }
         }
