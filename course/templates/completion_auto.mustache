@@ -1,0 +1,61 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core_course/completion_auto
+
+    Template for displaying the manual completion button.
+
+    Example context (json):
+    {
+        "cmid": 0,
+        "overallcomplete": true,
+        "overallincomplete": false
+    }
+}}
+{{#istrackeduser}}
+    {{#overallcomplete}}
+        <button class="btn btn-icon icon-size-4 text-info" disabled {{!
+        }}{{#accessibledescription}}{{!
+            }}title="{{.}}" {{!
+            }}aria-label="{{.}}" {{!
+        }}{{/accessibledescription}}{{!
+        }}{{^accessibledescription}}{{!
+            }}title="{{#str}}completion_automatic:aria:activitydone, course, {{activityname}} {{/str}}" {{!
+            }}aria-label="{{#str}}completion_automatic:aria:activitydone, course, {{activityname}} {{/str}}" {{!
+        }}{{/accessibledescription}}>
+            <i class="fa fa-check-circle-o" aria-hidden="true"></i>
+        </button>
+    {{/overallcomplete}}
+    {{#overallincomplete}}
+        <button class="btn btn-icon icon-size-4 text-info" disabled {{!
+        }}{{#accessibledescription}}{{!
+            }}title="{{.}}" {{!
+            }}aria-label="{{.}}" {{!
+        }}{{/accessibledescription}}{{!
+        }}{{^accessibledescription}}{{!
+            }}title="{{#str}}completion_automatic:aria:activitynotdone, course, {{activityname}} {{/str}}" {{!
+            }}aria-label="{{#str}}completion_automatic:aria:activitynotdone, course, {{activityname}} {{/str}}" {{!
+        }}{{/accessibledescription}}>
+            <i class="fa fa-circle-o" aria-hidden="true"></i>
+        </button>
+    {{/overallincomplete}}
+{{/istrackeduser}}
+{{^istrackeduser}}
+    <button class="btn btn-icon icon-size-4 text-info" disabled title="{{#str}}completion_automatic:aria:automatictracking, course, {{activityname}} {{/str}}">
+        <i class="fa fa-check-circle-o" aria-hidden="true"></i>
+    </button>
+{{/istrackeduser}}

@@ -50,8 +50,20 @@
         <div>
             {{! Display the link to the module (or do nothing if module has no url). }}
             {{#hasname}}
-            <div class="activityinstance">
-                {{{cmname}}} {{{afterlink}}}
+            <div class="activityinstance align-middle">
+                {{#activityinfo}}
+                    {{#hascompletion}}
+                        {{#uservisible}}
+                            {{#isautomatic}}
+                                {{> core_course/completion_auto}}
+                            {{/isautomatic}}
+                            {{^isautomatic}}
+                                {{> core_course/completion_manual_checked}}
+                            {{/isautomatic}}
+                        {{/uservisible}}
+                    {{/hascompletion}}
+                {{/activityinfo}}
+                <span class="align-middle">{{{cmname}}} {{{afterlink}}}</span>
             </div>
             {{/hasname}}
             {{! If there is content but NO link (eg label), then display the
