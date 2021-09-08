@@ -1064,11 +1064,12 @@ class completion_info {
         if ($usecache && $wholecourse) {
             // Get whole course data for cache
             $alldatabycmc = $DB->get_records_sql("SELECT cm.id AS cmid, cmc.*
-                                                        FROM {course_modules} cm
-                                                   LEFT JOIN {course_modules_completion} cmc ON cmc.coursemoduleid = cm.id
-                                                             AND cmc.userid = ?
-                                                   LEFT JOIN {modules} m ON m.id = cm.module
-                                                       WHERE m.visible = 1 AND cm.course = ?", [$userid, $this->course->id]);
+                                                    FROM {course_modules} cm
+                                                    JOIN {modules} m
+                                                      ON m.id = cm.module
+                                               LEFT JOIN {course_modules_completion} cmc 
+                                                      ON cmc.coursemoduleid = cm.id AND cmc.userid = ?
+                                                   WHERE m.visible = 1 AND cm.course = ?", [$userid, $this->course->id]);
 
             // Reindex by course module id.
             foreach ($alldatabycmc as $data) {
