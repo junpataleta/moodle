@@ -89,11 +89,13 @@ Feature: Basic recycle bin functionality
 
   @javascript
   Scenario: Deleting a single item from the recycle bin
-    Given I log in as "teacher1"
+    Given the following "activity" exists:
+      | activity         | assign       |
+      | course           | C1           |
+      | name             | Test assign  |
+      | intro            | Test         |
+    And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assign |
-      | Description | Test |
     And I delete "Test assign" activity
     And I run all adhoc tasks
     And I navigate to "Recycle bin" in current page administration
