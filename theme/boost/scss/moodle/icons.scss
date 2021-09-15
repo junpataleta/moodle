@@ -101,15 +101,7 @@ $iconsizes: map-merge((
     margin-left: 0.5rem;
 }
 
-.course-content-link {
-    padding: 0;
-    border: none;
-    background: none;
-}
-
 .icons-collapse-expand {
-    display: flex;
-    align-items: center;
     .expanded-icon {
         display: flex;
         align-items: center;
