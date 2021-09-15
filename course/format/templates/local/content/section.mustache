@@ -81,8 +81,6 @@
     class="section main {{#onlysummary}} section-summary {{/onlysummary}} clearfix
             {{#ishidden}} hidden {{/ishidden}} {{#iscurrent}} current {{/iscurrent}}
             {{#isstealth}} orphaned {{/isstealth}}"
-    role="region"
-    aria-labelledby="sectionid-{{id}}-title"
     data-sectionid="{{num}}"
     data-sectionreturnid="{{sectionreturnid}}"
     data-for="section"
@@ -97,14 +95,10 @@
     {{/controlmenu}}
     </div>
     {{#header}} {{> core_courseformat/local/content/section/header }} {{/header}}
-    {{^iscoursedisplaymultipage}}
-        {{^sitehome}}
-        <div id="coursecontentcollapse{{num}}"
-             class="course-content-item-content collapse {{#isactive}}show{{/isactive}}"
-             aria-labelledby="coursecontentsection{{num}}">
-        {{/sitehome}}
-    {{/iscoursedisplaymultipage}}
-    <div class="content">
+    <div id="coursecontentcollapse{{num}}"
+         class="content {{^iscoursedisplaymultipage}}
+             {{^sitehome}}course-content-item-content collapse {{#isactive}}show{{/isactive}}{{/sitehome}}
+         {{/iscoursedisplaymultipage}}">
         {{#availability}}
             {{> core_courseformat/local/content/section/availability }}
         {{/availability}}
@@ -117,5 +111,4 @@
         {{#cmlist}} {{> core_courseformat/local/content/section/cmlist }} {{/cmlist}}
         {{{cmcontrols}}}
     </div>
-    {{^iscoursedisplaymultipage}}{{^sitehome}}</div>{{/sitehome}}{{/iscoursedisplaymultipage}}
 </li>

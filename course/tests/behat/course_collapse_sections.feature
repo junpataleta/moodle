@@ -100,7 +100,7 @@ Feature: Collapse course sections
   Scenario: Expand/collapse sections for Weeks format.
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
-    When I navigate to "Edit settings" in current page administration
+    When I navigate to "Settings" in current page administration
     And I expand all fieldsets
     And I set the following fields to these values:
       | Format      | Weekly format     |
@@ -148,7 +148,7 @@ Feature: Collapse course sections
   Scenario: Users don't see chevron on one section per page for Topics format
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
-    When I navigate to "Edit settings" in current page administration
+    When I navigate to "Settings" in current page administration
     And I expand all fieldsets
     And I set the following fields to these values:
       | Course layout | Show one section per page |
@@ -170,7 +170,7 @@ Feature: Collapse course sections
   Scenario: Users don't see chevron on one section per page for Weeks format
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
-    When I navigate to "Edit settings" in current page administration
+    When I navigate to "Settings" in current page administration
     And I expand all fieldsets
     And I set the following fields to these values:
       | Format      | Weekly format     |
