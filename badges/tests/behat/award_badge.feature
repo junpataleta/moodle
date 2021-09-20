@@ -21,7 +21,6 @@ Feature: Award badges
     And I am on "Course 1" course homepage
     # Create course badge 1.
     And I navigate to "Badges > Add a new badge" in current page administration
-    And I follow "Add a new badge"
     And I set the following fields to these values:
       | Name | Course Badge 1 |
       | Description | Course badge 1 description |
@@ -38,7 +37,6 @@ Feature: Award badges
     # Badge #2
     And I am on "Course 1" course homepage
     And I navigate to "Badges > Add a new badge" in current page administration
-    And I follow "Add a new badge"
     And I set the following fields to these values:
       | Name | Course Badge 2 |
       | Description | Course badge 2 description |
@@ -57,6 +55,7 @@ Feature: Award badges
     # Award course badge 1 to student 1.
     And I set the field "potentialrecipients[]" to "Student 1 (student1@example.com)"
     When I press "Award badge"
+    And I follow "Manage badges"
     And I follow "Course Badge 1"
     And I follow "Recipients (1)"
     Then I should see "Recipients (1)"
@@ -84,7 +83,7 @@ Feature: Award badges
     And I should see "Add a new badge"
     # Teacher 1 should NOT have access to manage/create site badges in the Site badges section.
     When I am on homepage
-    And I press "Customise this page"
+    And I turn editing mode on
    # TODO MDL-57120 site "Badges" link not accessible without navigation block.
     And I add the "Navigation" block if not present
     And I click on "Site pages" "list_item" in the "Navigation" "block"
@@ -149,6 +148,7 @@ Feature: Award badges
     And I press "Award badge"
     And I set the field "potentialrecipients[]" to "student 1 (student1@example.com)"
     And I press "Award badge"
+    And I navigate to "Badges > Manage badges" in site administration
     When I follow "Site Badge"
     Then I should see "Recipients (2)"
     And I log out
@@ -158,24 +158,9 @@ Feature: Award badges
 
   @javascript
   Scenario: Award course badge
-    Given the following "users" exist:
-      | username | firstname | lastname | email |
-      | teacher1 | Teacher | 1 | teacher1@example.com |
-      | student1 | Student | 1 | student1@example.com |
-      | student2 | Student | 2 | student2@example.com |
-    And the "multilang" filter is "on"
-    And the "multilang" filter applies to "content and headings"
-    And the following "courses" exist:
-      | fullname | shortname | category | groupmode |
-      | <span class="multilang" lang="en">Course 1</span><span class="multilang" lang="de">Kurs 1</span> | C1 | 0 | 1 |
-    And the following "course enrolments" exist:
-      | user | course | role |
-      | teacher1 | C1 | editingteacher |
-      | student1 | C1 | student |
-      | student2 | C1 | student |
-    And I am on the "C1" "Course" page logged in as "teacher1"
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
     And I navigate to "Badges > Add a new badge" in current page administration
-    And I follow "Add a new badge"
     And I set the following fields to these values:
       | Name | Course Badge |
       | Description | Course badge description |
@@ -192,43 +177,21 @@ Feature: Award badges
     And I press "Award badge"
     And I set the field "potentialrecipients[]" to "Student 1 (student1@example.com)"
     When I press "Award badge"
+    And I follow "Manage badges"
     And I follow "Course Badge"
     Then I should see "Recipients (2)"
     And I log out
     And I log in as "student1"
     And I follow "Profile" in the user menu
     And I click on "Course 1" "link" in the "region-main" "region"
-    And I click on "Course Badge" "link"
-    And "Course 1" "text" should appear after "Badge details" "text"
-    And "Kurs 1" "text" should not exist
+    And I should see "Course Badge"
 
   @javascript
   Scenario: Award badge on activity completion
-    Given the following "courses" exist:
-      | fullname | shortname | category |
-      | Course 1 | C1 | 0 |
-    And the following "users" exist:
-      | username | firstname | lastname | email |
-      | teacher1 | Teacher | Frist | teacher1@example.com |
-      | student1 | Student | First | student1@example.com |
-    And the following "course enrolments" exist:
-      | user | course | role |
-      | teacher1 | C1 | editingteacher |
-      | student1 | C1 | student |
-    And I log in as "teacher1"
+    Given I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I navigate to "Edit settings" in current page administration
-    And I set the following fields to these values:
-      | Enable completion tracking | Yes |
-    And I press "Save and display"
-    And I turn editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | id_completion | 1                     |
-    And I am on "Course 1" course homepage
+    And I change window size to "large"
     And I navigate to "Badges > Add a new badge" in current page administration
-    And I follow "Add a new badge"
     And I set the following fields to these values:
       | Name | Course Badge |
       | Description | Course badge description |
@@ -252,29 +215,8 @@ Feature: Award badges
 
   @javascript
   Scenario: Award badge on course completion
-    Given the following "courses" exist:
-      | fullname | shortname | category |
-      | Course 1 | C1 | 0 |
-    And the following "users" exist:
-      | username | firstname | lastname | email |
-      | teacher1 | Teacher | Frist | teacher1@example.com |
-      | student1 | Student | First | student1@example.com |
-    And the following "course enrolments" exist:
-      | user | course | role |
-      | teacher1 | C1 | editingteacher |
-      | student1 | C1 | student |
-    And I log in as "teacher1"
+    Given I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I navigate to "Edit settings" in current page administration
-    And I set the following fields to these values:
-      | Enable completion tracking | Yes |
-    And I press "Save and display"
-    And I turn editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | id_completion | 1                     |
     And I navigate to "Course completion" in current page administration
     And I set the field "id_overall_aggregation" to "2"
     And I click on "Condition: Activity completion" "link"
@@ -282,7 +224,6 @@ Feature: Award badges
     And I press "Save changes"
     And I am on "Course 1" course homepage
     And I navigate to "Badges > Add a new badge" in current page administration
-    And I follow "Add a new badge"
     And I set the following fields to these values:
       | Name | Course Badge |
       | Description | Course badge description |
@@ -331,7 +272,6 @@ Feature: Award badges
     And I am on "Course 1" course homepage
     # Create course badge 1.
     And I navigate to "Badges > Add a new badge" in current page administration
-    And I follow "Add a new badge"
     And I set the following fields to these values:
       | Name | Course Badge 1 |
       | Description | Course badge description |
@@ -350,13 +290,13 @@ Feature: Award badges
     # Award course badge 1 to student 1.
     And I set the field "potentialrecipients[]" to "Student 1 (student1@example.com)"
     When I press "Award badge"
+    And I follow "Manage badges"
     And I follow "Course Badge 1"
     And I follow "Recipients (1)"
     Then I should see "Recipients (1)"
     # Add course badge 2.
     And I am on "Course 1" course homepage
     And I navigate to "Badges > Add a new badge" in current page administration
-    And I follow "Add a new badge"
     And I set the following fields to these values:
       | Name | Course Badge 2 |
       | Description | Course badge description |
@@ -375,6 +315,7 @@ Feature: Award badges
     # Award course badge 2 to student 2.
     And I set the field "potentialrecipients[]" to "Student 2 (student2@example.com)"
     When I press "Award badge"
+    And I follow "Manage badges"
     And I follow "Course Badge 2"
     And I follow "Recipients (1)"
     Then I should see "Recipients (1)"
@@ -412,7 +353,6 @@ Feature: Award badges
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I navigate to "Badges > Add a new badge" in current page administration
-    And I follow "Add a new badge"
     And I set the following fields to these values:
       | Name | Course Badge |
       | Description | Course badge description |
@@ -429,6 +369,7 @@ Feature: Award badges
     And I press "Award badge"
     And I set the field "potentialrecipients[]" to "Student 1 (student1@example.com)"
     When I press "Award badge"
+    And I follow "Manage badges"
     And I follow "Course Badge"
     Then I should see "Recipients (2)"
     And I follow "Recipients (2)"
@@ -437,5 +378,6 @@ Feature: Award badges
     And I press "Revoke badge"
     And I set the field "existingrecipients[]" to "Student 1 (student1@example.com)"
     When I press "Revoke badge"
+    And I follow "Manage badges"
     And I follow "Course Badge"
     Then I should see "Recipients (0)"
