@@ -889,3 +889,8 @@ $string['xml'] = 'XML';
 $string['yes'] = 'Yes';
 $string['yourgrade'] = 'Your grade';
 
+// Deprecated since Moodle 4.0.
+$string['showgrade'] = 'Show grades';
+$string['showgrade_help'] = 'Whether to show a column for grades.';
+$string['showpercentage'] = 'Show percentage';
+$string['showpercentage_help'] = 'Whether to show the percentage value of each grade item.';

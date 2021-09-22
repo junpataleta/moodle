@@ -3,6 +3,10 @@ mybadges,core_badges
 myfiles,core
 myfilesmanage,core
 mypreferences,core_grades
+showgrade,core_grades
+showgrade_help,core_grades
+showpercentage,core_grades
+showpercentage_help,core_grades
 myprofile,core
 viewallmyentries,core_blog
 messagecontactrequestsnotification,core_message
