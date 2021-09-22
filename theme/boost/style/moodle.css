@@ -17122,6 +17122,9 @@ fieldset.coursesearchbox label {
 .availability-field .availability-plugincontrols .availability-group select {
   max-width: 12rem; }
 
+.availability-field .availability-plugincontrols.availability_date .error-date {
+  margin-left: 91px; }
+
 /* Custom styles for autocomplete form element */
 /* These styles reserve a standard amount of space in the DOM to avoid flicker when the original select element is replaced */
 [data-fieldtype=autocomplete] select,
@@ -17294,6 +17297,10 @@ textarea[data-auto-rows] {
 
 .input-group.form-inset.form-inset-right .form-inset-item {
   right: 0; }
+
+@media (max-width: 576px) {
+  .availability-field .availability-plugincontrols.availability_date .error-date {
+    margin-left: 50px; } }
 
 .pagelayout-login #region-main {
   border: 0;
