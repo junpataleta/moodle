@@ -293,7 +293,7 @@ if ($action === 'delete') {
 
         $table->head = array();
         $table->align = array('right', 'left');
-        $table->attributes['class'] = 'generaltable';
+        $table->attributes['class'] = 'table table-striped';
 
         if (empty($userstats->gradeinfo)) {
             $table->align = array("center");
