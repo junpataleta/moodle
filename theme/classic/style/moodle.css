@@ -19579,7 +19579,7 @@ body {
   text-decoration: none; }
   .content-item-container:hover {
     color: #fff;
-    background-color: #79b5e6; }
+    background-color: #0f6fc5; }
     .content-item-container:hover .content-item-footer .timestamp {
       color: #fff; }
   .content-item-container.unread {
@@ -19587,7 +19587,7 @@ body {
     background-color: #f4f4f4; }
     .content-item-container.unread:hover {
       color: #fff;
-      background-color: #79b5e6; }
+      background-color: #0f6fc5; }
     .content-item-container.unread .content-item-body .notification-message {
       font-weight: 600; }
   .content-item-container .context-link {
@@ -19603,14 +19603,17 @@ body {
       font-size: 10px;
       line-height: 10px;
       margin: 0;
-      color: #666;
+      color: inherit;
       margin-left: 24px; }
   .content-item-container .view-more {
+    color: inherit;
     position: absolute;
     bottom: 5px;
     right: 5px;
     font-size: 12px;
     line-height: 12px; }
+    .content-item-container .view-more:hover {
+      color: inherit; }
   .content-item-container.notification .content-item-body .notification-image {
     display: inline-block;
     width: 24px;
