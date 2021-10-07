@@ -15965,6 +15965,12 @@ a.ygtvspacer:hover {
     .message-app .list-group .list-group-item {
       border-left: 0;
       border-right: 0; }
+      .message-app .list-group .list-group-item:hover {
+        color: #fff;
+        background-color: #0f6fc5; }
+        .message-app .list-group .list-group-item:hover .badge-primary {
+          background-color: white;
+          color: #0f6fc5; }
       .message-app .list-group .list-group-item:first-child {
         border-top: 0; }
       .message-app .list-group .list-group-item:last-child {

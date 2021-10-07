@@ -541,6 +541,14 @@ $message-day-color: color-yiq($message-app-bg) !default;
         .list-group-item {
             border-left: 0;
             border-right: 0;
+            &:hover {
+                color: #fff;
+                background-color: #0f6fc5;
+                .badge-primary {
+                    background-color: white;
+                    color: #0f6fc5;
+                }
+            }
             &:first-child {
                 border-top: 0;
             }
