@@ -254,6 +254,10 @@
     margin-top: 0;
 }
 
+#page-mod-quiz-view #page .quizattemptsummary td a {
+    color: #0f6cbf;
+}
+
 #page-mod-quiz-view table.quizattemptsummary tr.bestrow td {
     border-color: #bce8f1;
     background-color: #d9edf7;
