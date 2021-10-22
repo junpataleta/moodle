@@ -110,7 +110,7 @@ class controller {
      * @return bool true if language succesfull installed
      */
     public function uninstall_language($lang) {
-        global $CFG;
+        global $CFG, $SESSION;
 
         $dest1 = $CFG->dataroot.'/lang/'.$lang;
         $dest2 = $CFG->dirroot.'/lang/'.$lang;
@@ -124,6 +124,14 @@ class controller {
         }
 
         if ($rm1 or $rm2) {
+            // Set the default site language to en if the deleted language pack is the default site language.
+            if ($CFG->lang === $lang) {
+                set_config('lang', 'en');
+            }
+            // Use the default language pack if the deleted language pack is the current language of the user session.
+            if (isset($SESSION->lang) && $SESSION->lang === $lang) {
+                $SESSION->lang = $CFG->lang;
+            }
             $this->info[] = get_string('langpackremoved', 'tool_langimport', $lang);
             event\langpack_removed::event_with_langcode($lang)->trigger();
             return true;
