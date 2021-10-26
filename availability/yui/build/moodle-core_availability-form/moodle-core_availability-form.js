@@ -971,7 +971,16 @@ M.core_availability.Item.prototype.fillErrors = function(errors) {
     // If any errors were added, add the marker to this item.
     var errorLabel = this.node.one('> .badge-warning');
     if (errors.length !== before && !errorLabel.get('firstChild')) {
-        errorLabel.appendChild(document.createTextNode(M.util.get_string('invalid', 'availability')));
+        var errorString = '';
+        var langString = errors.pop().split(':');
+        var component = langString[0];
+        var identifier = langString[1];
+        var undefinedString = '[[' + identifier + ',' + component + ']]';
+        errorString = M.util.get_string(identifier, component);
+        if (errorString === undefinedString) {
+            errorString = M.util.get_string('invalid', 'availability');
+        }
+        errorLabel.appendChild(document.createTextNode(errorString));
     } else if (errors.length === before && errorLabel.get('firstChild')) {
         errorLabel.get('firstChild').remove();
     }

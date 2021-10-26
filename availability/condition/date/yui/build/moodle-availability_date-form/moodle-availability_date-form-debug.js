@@ -202,28 +202,10 @@ M.availability_date.form.checkConditionDate = function(currentNode) {
                     error = true;
                 }
             }
-            // We add an error text and return true if catch error.
-            if (error && !currentNode.one('div > .badge-warning')) {
-                currentNode.appendChild(Y.Node.create('<div class="error-date"><span class="badge badge-warning"/></div>'));
-                var errorLabel = currentNode.one('div > .badge-warning');
-                if (!errorLabel.get('firstChild')) {
-                    errorLabel.appendChild(document.createTextNode(M.util.get_string('error_dateconflict', 'availability_date')));
-                }
-            } else if (error === false) {
-                // Remove the warning if the date is not conflict.
-                if (currentNode.one('div > .badge-warning')) {
-                    currentNode.one('> .error-date').remove();
-                }
-            }
             return error;
         });
-        return error;
-    } else {
-        if (currentNode.one('div > .badge-warning')) {
-            currentNode.one('div > .badge-warning').remove();
-        }
-        return error;
     }
+    return error;
 };
 
 M.availability_date.form.fillErrors = function(errors, node) {
