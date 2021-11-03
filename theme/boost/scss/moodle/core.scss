@@ -228,7 +228,7 @@ button.close,
 }
 
 .highlight {
-    color: #007c90;
+    color: map-get($theme-colors, 'info');
 }
 
 .fitem.advanced .text-info {

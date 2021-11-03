@@ -377,7 +377,7 @@ class lesson_page_type_multichoice extends lesson_page {
                     $data = "<input type=\"checkbox\" readonly=\"readonly\" name=\"answer[$i]\" value=\"0\" disabled=\"disabled\" />";
                 }
                 if (($answer->score > 0 && $this->lesson->custom) || ($this->lesson->jumpto_is_correct($this->properties->id, $answer->jumpto) && !$this->lesson->custom)) {
-                    $data = "<div class=highlight>".$data.' '.format_text($answer->answer,$answer->answerformat,$formattextdefoptions)."</div>";
+                    $data = "<div class=\"text-success\">".$data.' '.format_text($answer->answer,$answer->answerformat,$formattextdefoptions)."</div>";
                 } else {
                     $data .= format_text($answer->answer,$answer->answerformat,$formattextdefoptions);
                 }
@@ -406,7 +406,7 @@ class lesson_page_type_multichoice extends lesson_page {
                     $data = "<input type=\"checkbox\" readonly=\"readonly\" name=\"answer[$i]\" value=\"0\" disabled=\"disabled\" />";
                 }
                 if (($answer->score > 0 && $this->lesson->custom) || ($this->lesson->jumpto_is_correct($this->properties->id, $answer->jumpto) && !$this->lesson->custom)) {
-                    $data = "<div class=\"highlight\">".$data.' '.format_text($answer->answer,FORMAT_MOODLE,$formattextdefoptions)."</div>";
+                    $data = "<div class=\"text-success\">".$data.' '.format_text($answer->answer,FORMAT_MOODLE,$formattextdefoptions)."</div>";
                 } else {
                     $data .= format_text($answer->answer,$answer->answerformat,$formattextdefoptions);
                 }

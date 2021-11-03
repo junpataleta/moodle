@@ -10076,7 +10076,7 @@ button.close:focus:hover,
   color: #357a32; }
 
 .highlight {
-  color: #007c90; }
+  color: #008196; }
 
 .fitem.advanced .text-info {
   font-weight: bold; }
@@ -19588,6 +19588,8 @@ body {
     background-color: #0f6fc5; }
     .content-item-container:hover .content-item-footer .timestamp {
       color: #fff; }
+    .content-item-container:hover .view-more {
+      color: inherit; }
   .content-item-container.unread {
     margin: 0;
     background-color: #f4f4f4; }
@@ -19612,7 +19614,6 @@ body {
       color: inherit;
       margin-left: 24px; }
   .content-item-container .view-more {
-    color: inherit;
     position: absolute;
     bottom: 5px;
     right: 5px;
