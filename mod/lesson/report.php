@@ -319,7 +319,7 @@ if ($action === 'delete') {
     foreach ($answerpages as $page) {
         $table->align = array('left', 'left');
         $table->size = array('70%', null);
-        $table->attributes['class'] = 'generaltable';
+        $table->attributes['class'] = 'table table-striped';
         unset($table->data);
         if ($page->grayout) { // set the color of text
             $fontstart = html_writer::start_tag('span', array('class' => 'dimmed_text'));

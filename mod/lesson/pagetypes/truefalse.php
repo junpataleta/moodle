@@ -259,6 +259,8 @@ class lesson_page_type_truefalse extends lesson_page {
 
         foreach ($answers as $answer) {
             $answer = parent::rewrite_answers_urls($answer);
+            $answertext = format_text($answer->answer, $answer->answerformat, $formattextdefoptions);
+            $correctresponsetext = html_writer::div(get_string('correctresponse', 'lesson'), 'badge badge-success');
             if ($this->properties->qoption) {
                 if ($useranswer == null) {
                     $userresponse = array();
@@ -293,9 +295,9 @@ class lesson_page_type_truefalse extends lesson_page {
                     $data = "<input type=\"checkbox\" readonly=\"readonly\" name=\"answer[$i]\" value=\"0\" disabled=\"disabled\" />";
                 }
                 if (($answer->score > 0 && $this->lesson->custom) || ($this->lesson->jumpto_is_correct($this->properties->id, $answer->jumpto) && !$this->lesson->custom)) {
-                    $data .= "<div class=\"bg-info text-white\">".format_text($answer->answer, $answer->answerformat, $formattextdefoptions)."</div>";
+                    $data .= html_writer::div("$answertext", 'text-success') . $correctresponsetext;
                 } else {
-                    $data .= format_text($answer->answer, $answer->answerformat, $formattextdefoptions);
+                    $data .= $answertext;
                 }
             } else {
                 if ($useranswer != null and $answer->id == $useranswer->answerid) {
@@ -322,9 +324,9 @@ class lesson_page_type_truefalse extends lesson_page {
                     $data = "<input type=\"checkbox\" readonly=\"readonly\" name=\"answer[$i]\" value=\"0\" disabled=\"disabled\" />";
                 }
                 if (($answer->score > 0 && $this->lesson->custom) || ($this->lesson->jumpto_is_correct($this->properties->id, $answer->jumpto) && !$this->lesson->custom)) {
-                    $data .= "<div class=\"bg-info text-white\">".format_text($answer->answer, $answer->answerformat, $formattextdefoptions)."</div>";
+                    $data .= html_writer::div($answertext, 'text-success') . $correctresponsetext;
                 } else {
-                    $data .= format_text($answer->answer, $answer->answerformat, $formattextdefoptions);
+                    $data .= $answertext;
                 }
             }
             if (isset($pagestats[$this->properties->id][$answer->id])) {
