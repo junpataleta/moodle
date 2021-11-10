@@ -25,7 +25,7 @@ Feature: Restrict activity availability through date conditions
       | assignsubmission_onlinetext_enabled | 1                                     |
       | assignsubmission_file_enabled       | 0                                     |
     And I am on the "Test assignment 1" "assign activity" page logged in as "teacher1"
-    And I navigate to "Settings" in current page administration
+    And I navigate to "Edit settings" in current page administration
     And I expand all fieldsets
 
   @javascript
