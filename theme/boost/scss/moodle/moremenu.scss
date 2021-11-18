@@ -99,6 +99,7 @@
             }
         }
         &:before {
+            font-family: FontAwesome;
             content: $fa-var-check;
         }
     }

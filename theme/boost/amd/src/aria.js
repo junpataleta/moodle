@@ -263,27 +263,12 @@ const tabElementFix = () => {
     });
 
     document.addEventListener('click', e => {
-        if (e.target.matches('[role="tablist"] [role="tab"]') ||
-            (e.target.closest('.secondary-navigation') && e.target.matches('[role="menuitem"]'))) {
-            if (location.hash === '') {
-                return;
-            }
-            let tabs = [];
-            if (e.target.closest('[role="menubar"]')) {
-                tabs = e.target.closest('[role="menubar"]').querySelectorAll('[role="menuitem"]');
-            } else if (e.target.closest('[role="tablist"]').querySelectorAll('[role="tab"]')) {
-                tabs = e.target.closest('[role="tablist"]').querySelectorAll('[role="tab"]');
-            }
+        if (e.target.matches('[role="tablist"] [role="tab"]')) {
+            const tabs = e.target.closest('[role="tablist"]').querySelectorAll('[role="tab"]');
             e.preventDefault();
             $(e.target).tab('show');
             tabs.forEach(tab => {
-                // If the hash matches with the tab just activate it.
-                if (location.hash === tab.getAttribute('href')) {
-                    tab.classList.add('active');
-                    tab.setAttribute('aria-selected', 'true');
-                } else {
-                    tab.tabIndex = -1;
-                }
+                tab.tabIndex = -1;
             });
             e.target.tabIndex = 0;
         }

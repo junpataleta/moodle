@@ -21017,6 +21017,7 @@ div.editor_atto_toolbar button .icon {
         color: #fff; }
     .moremenu .dropdown-item[aria-current="true"]:before,
     .moremenu .dropdown-item.active:before {
+      font-family: FontAwesome;
       content: ""; }
 
 .primary-navigation .navigation {
