@@ -42,7 +42,7 @@ const rememberTabs = () => {
     });
     const hash = window.location.hash;
     if (hash) {
-        const tab = document.querySelector('.nav-link[href="' + hash + '"]');
+        const tab = document.querySelector(`[href="${hash}"]`);
         if (tab) {
             tab.click();
         }
