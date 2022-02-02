@@ -317,3 +317,38 @@
         @extend .align-top;
     }
 }
+
+#page-user-contactsitesupport {
+    .secondary-navigation {
+        display: none;
+    }
+
+    textarea {
+        width: 50%;
+    }
+
+    .supporticon {
+        i {
+            font-size: 64px;
+        }
+
+    }
+
+    .supportmessagecontainer {
+        background-color: $gray-100;
+        margin: auto;
+        width: 50%;
+        height: 400px;
+        text-align: center;
+        .supportmessage {
+            margin-top: 50px;
+        }
+        .supportmessagetitle {
+            font-size: x-large;
+        }
+        .supportmessagealt {
+            width: 60%;
+            margin: auto;
+        }
+    }
+}

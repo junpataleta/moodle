@@ -17149,6 +17149,29 @@ body.path-question-type .mform fieldset.hidden {
 [data-filterverb="2"] [data-filterverbfor="2"] {
   display: block; }
 
+#page-user-contactsitesupport .secondary-navigation {
+  display: none; }
+
+#page-user-contactsitesupport textarea {
+  width: 50%; }
+
+#page-user-contactsitesupport .supporticon i {
+  font-size: 64px; }
+
+#page-user-contactsitesupport .supportmessagecontainer {
+  background-color: #f8f9fa;
+  margin: auto;
+  width: 50%;
+  height: 400px;
+  text-align: center; }
+  #page-user-contactsitesupport .supportmessagecontainer .supportmessage {
+    margin-top: 50px; }
+  #page-user-contactsitesupport .supportmessagecontainer .supportmessagetitle {
+    font-size: x-large; }
+  #page-user-contactsitesupport .supportmessagecontainer .supportmessagealt {
+    width: 60%;
+    margin: auto; }
+
 .search-results .result {
   margin-left: 0;
   margin-right: 0; }
