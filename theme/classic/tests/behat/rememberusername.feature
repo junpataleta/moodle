@@ -1,4 +1,4 @@
-@core @core_auth @theme_classic
+@theme_classic
 Feature: Whilst using classic,
   Test the 'remember username' feature works.
   In order to see my saved username on the login form
