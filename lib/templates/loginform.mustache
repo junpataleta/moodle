@@ -33,7 +33,6 @@
     * instructions - Instructions,
     * instructionsformat - Format of instructions,
     * loginurl - Login url,
-    * rememberusername - Remeber username?,
     * signupurl - Signup url,
     * cookieshelpiconformatted - Formatted html of cookies help icon,
     * errorformatted - Formatted error,
@@ -84,7 +83,6 @@
         "instructions": "For full access to this site, you first need to create an account.",
         "instructionsformat": "1",
         "loginurl": "http://localhost/stable_master/login/index.php",
-        "rememberusername": true,
         "signupurl": "http://localhost/stable_master/login/signup.php",
         "cookieshelpiconformatted": "",
         "errorformatted": "",
@@ -148,15 +146,6 @@
                 !}}placeholder="{{#cleanstr}}password{{/cleanstr}}" {{!
                 !}}autocomplete="current-password">
         </div>
-        {{#rememberusername}}
-            <div class="login-form-rememberusername form-group">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" name="rememberusername" id="rememberusername" class="custom-control-input" value="1"
-                        {{#username}}checked{{/username}} />
-                    <label class="custom-control-label" for="rememberusername">{{#str}} rememberusername, admin {{/str}}</label>
-                </div>
-            </div>
-        {{/rememberusername}}
         <div class="login-form-submit form-group">
             <button class="btn btn-primary btn-lg" type="submit" id="loginbtn">{{#str}}login{{/str}}</button>
         </div>
