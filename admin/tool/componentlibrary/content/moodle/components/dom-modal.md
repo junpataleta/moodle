@@ -19,7 +19,7 @@ Modals are configured using a set of specific data-attributes.
 
 ## Source files
 
-* `lib/amd/src/utility.js`
+* `lib/amd/src/utility.js` ({{< jsdoc module="core/utility" >}})
 * `lib/templates/modal.mustache`
 
 ## Usage
