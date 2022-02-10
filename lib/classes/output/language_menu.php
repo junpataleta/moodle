@@ -114,7 +114,6 @@ class language_menu implements \renderable, \templatable {
         return [
             'title' => $activelanguage,
             'items' => $nodes,
-            'automatedtesting' => defined('BEHAT_SITE_RUNNING'),
         ];
     }
 
@@ -140,7 +139,6 @@ class language_menu implements \renderable, \templatable {
                 ['data-lang' => $node['url']->get_param('lang')]);
             $langmenu->add($lang);
         }
-        print_object($languagedata);
         return $langmenu->export_for_template($output);
     }
 

@@ -1734,6 +1734,13 @@ class core_renderer extends renderer_base {
         }
         $context = $menu->export_for_template($this);
 
+        // Regardless of the calling action menu we need to check if we are currently testing so we can use dropdowns properly.
+        $automatedtesting = false;
+        if(defined('BEHAT_SITE_RUNNING') || defined('BEHAT_TEST')) {
+            $automatedtesting = true;
+        }
+        $context->automatedtesting = $automatedtesting;
+
         return $this->render_from_template('core/action_menu', $context);
     }
 
