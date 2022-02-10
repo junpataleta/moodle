@@ -435,7 +435,7 @@ function enrol_add_course_navigation(navigation_node $coursenode, $course) {
 
     // List all participants - allows assigning roles, groups, etc.
     // Have this available even in the site context as the page is still accessible from the frontpage.
-    if (course_can_view_participants($coursecontext)) {
+    if (has_capability('moodle/course:enrolreview', $coursecontext)) {
         $url = new moodle_url('/user/index.php', array('id' => $course->id));
         $usersnode->add(get_string('enrolledusers', 'enrol'), $url, navigation_node::TYPE_SETTING,
             null, 'review', new pix_icon('i/enrolusers', ''));
