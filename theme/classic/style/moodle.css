@@ -20329,7 +20329,8 @@ span[data-flexitour="container"][x-placement="right"], span[data-flexitour="cont
   #page.drawers div[role="main"] {
     padding-left: 15px;
     padding-right: 15px; }
-  #page.drawers .activity-header {
+  #page.drawers .activity-header,
+  #page.drawers .overflow-select {
     margin-left: 15px;
     margin-right: 15px; }
 
