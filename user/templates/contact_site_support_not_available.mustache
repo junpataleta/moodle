@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template user/contact_site_support_not_available
+    @template core_user/contact_site_support_not_available
 
     Fallback for the contact support page if smtp is not configured.
 
@@ -24,14 +24,16 @@
         "supportemail": "<a href=\"mailto:supportemail@mail.com\">"
     }
 }}
-<div class="supportmessagecontainer rounded text-dark p-5">
-    <div class="supportmessage m-y-5">
-        <div class="supporticon border border-light">{{#pix}}t/life-ring, core{{/pix}}</div>
-        <div class="p-3 supportmessagetitle">{{#str}}supportmessagenotsent, user{{/str}}</div>
+<div class="card">
+    <div class="card-body bg-light text-center">
+        <div class="supporticon mt-6">{{#pix}}t/life-ring, core{{/pix}}</div>
+        <div class="my-3 p-3 h3 font-weight-normal">{{#str}}supportmessagenotsent, user{{/str}}</div>
         {{#supportemail}}
-            <div class="supportmessagealt mt-1 rounded border border-dark p-3">
+        <div class="mb-6 p-3">
+            <span class="w-75 rounded border p-3">
                 {{#str}}supportmessagealternative, user, {{{supportemail}}}{{/str}}
-            </div>
+            </span>
+        </div>
         {{/supportemail}}
     </div>
 </div>
