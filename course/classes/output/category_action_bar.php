@@ -56,7 +56,7 @@ class category_action_bar extends manage_categories_action_bar {
     protected function get_category_select(\renderer_base $output): ?object {
         global $CFG;
         if (!$this->searchvalue && !core_course_category::is_simple_site()) {
-            $categories = core_course_category::make_categories_list(array('moodle/category:manage', 'moodle/course:create'));
+            $categories = core_course_category::make_categories_list();
             if (count($categories) > 1) {
                 foreach ($categories as $id => $cat) {
                     $url = new moodle_url($this->page->url, ['categoryid' => $id]);
@@ -74,7 +74,7 @@ class category_action_bar extends manage_categories_action_bar {
                 }
 
                 $select = new \url_select($options, $currenturl, null);
-                $select->set_label(get_string('category'), ['class' => 'sr-only']);
+                $select->set_label(get_string('categories'), ['class' => 'sr-only']);
                 return $select->export_for_template($output);
             }
         }
