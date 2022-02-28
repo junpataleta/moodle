@@ -29,8 +29,6 @@ Feature: Test category management actions
     And I should see "Cat 1"
     And I press "Cancel"
     # Redirect
-    And I should see "Cat 1" in the "h2" "css_element"
-    And I go to the courses management page
     And I should see the "Course categories and courses" management page
     And I click on "edit" action for "Cat 1" in management category listing
     # Redirect
@@ -41,9 +39,6 @@ Feature: Test category management actions
       | Category ID number | CAT1e |
     And I press "Save changes"
     # Redirect
-    And I should see "Category 1 (edited)" in the "h2" "css_element"
-    And I go to the courses management page
-    And I click on "Category 1 (edited)" "link"
     And I should see the "Course categories and courses" management page
     And I should see "Category 1 (edited)" in the "#category-listing" "css_element"
     And I should see "Category 1 (edited)" in the "#course-listing h3" "css_element"
@@ -272,7 +267,7 @@ Feature: Test category management actions
     And I should see "Permissions in Category: Cat 1"
     And I click on "Back to Category: Cat 1" "link"
     # Redirect
-    And I should see "Cat 1" in the "h2" "css_element"
+    And I should see "Cat 1" in the "h1" "css_element"
 
   Scenario: Test clicking to manage cohorts for a category through the management interface.
     Given the following "categories" exist:
@@ -325,9 +320,6 @@ Feature: Test category management actions
       | Category ID number | TC2 |
     And I press "Create category"
     # Redirect
-    And I should see "Test category 2" in the "h2" "css_element"
-    And I click on "Actions menu" "button"
-    And I click on "Manage courses" "link"
     And I should see the "Course categories and courses" management page
     And I should see "Test category 2" in the "#course-listing h3" "css_element"
     And I should see category listing "Cat 1" before "Test category 2"
@@ -341,9 +333,6 @@ Feature: Test category management actions
       | Category ID number | TC3 |
     And I press "Create category"
     # Redirect
-    And I should see "Test category 3" in the "h2" "css_element"
-    And I click on "Actions menu" "button"
-    And I click on "Manage courses" "link"
     And I should see the "Course categories and courses" management page
     And I should see "Test category 3" in the "#course-listing h3" "css_element"
     And I should see category listing "Cat 1" before "Test category 2"
@@ -499,5 +488,5 @@ Feature: Test category management actions
       | Category ID number ||
     And I press "Save changes"
     # Redirect
-    Then I should see "Category 1 (edited)" in the "h2" "css_element"
-    And I should not see "CAT1" in the "h2" "css_element"
+    Then I should see "Category 1 (edited)" in the "#category-listing" "css_element"
+    And I should not see "CAT1" in the "#course-listing" "css_element"

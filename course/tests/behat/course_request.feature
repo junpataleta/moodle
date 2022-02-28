@@ -89,7 +89,7 @@ Feature: Users can request and approve courses
     And I log in as "user2"
     And I am on course index
     And I follow "English category"
-    And I should not see "More"
+    And I should not see "More" in the "region-main" "region"
     And I should not see "Courses pending approval"
     And I am on course index
     And I follow "Science category"
