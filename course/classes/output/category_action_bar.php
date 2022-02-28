@@ -54,7 +54,6 @@ class category_action_bar extends manage_categories_action_bar {
      * @return object|null The content required to render the url_select
      */
     protected function get_category_select(\renderer_base $output): ?object {
-        global $CFG;
         if (!$this->searchvalue && !core_course_category::is_simple_site()) {
             $categories = core_course_category::make_categories_list();
             if (count($categories) > 1) {
@@ -63,18 +62,9 @@ class category_action_bar extends manage_categories_action_bar {
                     $options[$url->out()] = $cat;
                 }
                 $currenturl = new moodle_url($this->page->url, ['categoryid' => $this->category->id]);
-                if (isset($categories[$this->category->id])) {
-                    // Get the category title if set.
-                    $this->heading = $categories[$this->category->id];
-                } else if (isset($categories[$CFG->defaultrequestcategory])) {
-                    // Try and get the default category.
-                    $this->heading = $categories[$CFG->defaultrequestcategory];
-                } else {
-                    $this->heading = array_shift($categories);
-                }
-
                 $select = new \url_select($options, $currenturl, null);
                 $select->set_label(get_string('categories'), ['class' => 'sr-only']);
+                $select->class .= ' text-truncate w-100';
                 return $select->export_for_template($output);
             }
         }
@@ -169,14 +159,12 @@ class category_action_bar extends manage_categories_action_bar {
      *              - categoryselect A list of available categories to be fed into a urlselect
      *              - search The course search form
      *              - additionaloptions Additional actions that can be performed in a category
-     *              - heading The heading to be displayed.
      */
     public function export_for_template(\renderer_base $output): array {
         return [
             'categoryselect' => $this->get_category_select($output),
             'search' => $this->get_search_form(),
-            'additionaloptions' => $this->get_additional_category_options(),
-            'heading' => $this->heading,
+            'additionaloptions' => $this->get_additional_category_options()
         ];
     }
 

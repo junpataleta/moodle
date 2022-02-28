@@ -115,6 +115,7 @@ class manage_categories_action_bar implements \renderable {
 
             $select = new \url_select($options, $currenturl, null);
             $select->set_label(get_string('category'), ['class' => 'sr-only']);
+            $select->class .= ' text-truncate w-100';
             return $select->export_for_template($output);
         }
 
