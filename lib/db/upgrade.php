@@ -4112,30 +4112,19 @@ privatefiles,moodle|/user/files.php';
     if ($oldversion < 2022022200.01) {
         // Get all processor and existing preferences.
         $processors = $DB->get_records('message_processors');
+        $providers = $DB->get_records('message_providers', null, '', 'id, name, component');
         $existingpreferences = get_config('message');
 
         foreach ($processors as $processor) {
-            $providers = $DB->get_records_sql('SELECT DISTINCT component FROM {message_providers}');
-
-            $transaction = $DB->start_delegated_transaction();
             foreach ($providers as $provider) {
-                // Load message providers from files.
-                $defpath = core_component::get_component_directory($provider->component).'/db/messages.php';
-                $messageproviders =[];
-                if (file_exists($defpath)) {
-                    require($defpath);
-                }
-                foreach ($messageproviders as $messagename => $fileprovider) {
-                    // Setting default preference name.
-                    $componentproviderbase = $provider->component.'_'.$messagename;
-                    $preferencename = $processor->name.'_provider_'.$componentproviderbase.'_locked';
-                    // If we do not have this setting yet, set it to 0.
-                    if (!isset($existingpreferences->{$preferencename})) {
-                        set_config($preferencename, 0, 'message');
-                    }
+                // Setting default preference name.
+                $componentproviderbase = $provider->component . '_' . $provider->name;
+                $preferencename = $processor->name.'_provider_'.$componentproviderbase.'_locked';
+                // If we do not have this setting yet, set it to 0.
+                if (!isset($existingpreferences->{$preferencename})) {
+                    set_config($preferencename, 0, 'message');
                 }
             }
-            $transaction->allow_commit();
         }
 
         upgrade_main_savepoint(true, 2022022200.01);
