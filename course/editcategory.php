@@ -89,7 +89,7 @@ $mform->set_data(file_prepare_standard_editor(
     $itemid
 ));
 
-$manageurl = new moodle_url('/course/index.php');
+$manageurl = new moodle_url('/course/management.php');
 if ($mform->is_cancelled()) {
     if ($id) {
         $manageurl->param('categoryid', $id);
