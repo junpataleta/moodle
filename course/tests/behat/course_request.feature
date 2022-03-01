@@ -24,7 +24,7 @@ Feature: Users can request and approve courses
     And I log out
     When I log in as "user1"
     And I am on course index
-    And I click on "Actions menu" "button"
+    And I click on "Actions" "button"
     And I click on "Request a course" "link"
     And I set the following fields to these values:
       | Course full name  | My new course |
@@ -38,7 +38,7 @@ Feature: Users can request and approve courses
     And I log out
     And I log in as "user2"
     And I am on course index
-    And I click on "Actions menu" "button"
+    And I click on "Actions" "button"
     And I click on "Courses pending approval" "link"
     And I should see "Category 1" in the "My new course" "table_row"
     And I click on "Approve" "button" in the "My new course" "table_row"
@@ -77,7 +77,7 @@ Feature: Users can request and approve courses
     And I log in as "user1"
     And I am on course index
     And I follow "English category"
-    And I click on "Actions menu" "button"
+    And I click on "Actions" "button"
     And I click on "Request a course" "link"
     And I should see "English category" in the ".form-autocomplete-selection" "css_element"
     And I set the following fields to these values:
@@ -93,7 +93,7 @@ Feature: Users can request and approve courses
     And I should not see "Courses pending approval"
     And I am on course index
     And I follow "Science category"
-    And I click on "Actions menu" "button"
+    And I click on "Actions" "button"
     And I click on "Courses pending approval" "link"
     And I should not see "Mynewcourse"
     And I press "Back to course listing"
@@ -101,7 +101,7 @@ Feature: Users can request and approve courses
     And I log in as "user3"
     And I am on course index
     And I follow "English category"
-    And I click on "Actions menu" "button"
+    And I click on "Actions" "button"
     And I click on "Courses pending approval" "link"
     And I should see "English category" in the "Mynewcourse" "table_row"
     And I click on "Approve" "button" in the "Mynewcourse" "table_row"

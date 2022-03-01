@@ -86,28 +86,30 @@
         }
     }
 }}
-<div class="container-fluid pl-0 pb-2" id="action_bar">
-    <div class="row pl-0 ml-0">
+<div class="container-fluid tertiary-navigation" id="action_bar">
+    <div class="row">
         {{#categoryselect}}
-            <div class="col-xs-4 pr-1 mr-3">
+            <div class="navitem">
                 {{> core/url_select }}
             </div>
         {{/categoryselect}}
         {{#search}}
-            <div class="col-xs-4 pr-1 mr-3">
+            <div class="navitem">
                 {{> core/search_input }}
             </div>
         {{/search}}
         {{#additionaloptions}}
-            <div class="col-xs-4 pr-1 ml-auto">
-                <button aria-label="{{#str}}actionsmenu{{/str}}" class="btn btn-secondary dropdown-toggle" id="dropdown-actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{#str}}moremenu{{/str}}
-                </button>
+            <div class="ml-auto d-flex">
+                <div class="navitem dropdown">
+                    <button aria-label="{{#str}}actions{{/str}}" class="btn btn-secondary dropdown-toggle" id="dropdown-actions" data-toggle="dropdown" aria-haspopup="true" aria-controls="moreactionsmenu">
+                        {{#str}}moremenu{{/str}}
+                    </button>
 
-                <div class="dropdown-menu" aria-labelledby="dropdown-actions">
-                    {{#options}}
-                        <a class="dropdown-item" {{#attributes}}{{name}}="{{value}}"{{/attributes}} href="{{url}}">{{string}}</a>
-                    {{/options}}
+                    <div id="moreactionsmenu" class="dropdown-menu" aria-labelledby="dropdown-actions" role="menu">
+                        {{#options}}
+                            <a role="menuitem" class="dropdown-item" {{#attributes}}{{name}}="{{value}}"{{/attributes}} href="{{url}}" tabindex="-1">{{string}}</a>
+                        {{/options}}
+                    </div>
                 </div>
             </div>
         {{/additionaloptions}}
