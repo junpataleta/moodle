@@ -3140,7 +3140,8 @@ class MoodleQuickForm_Renderer extends HTML_QuickForm_Renderer_Tableless{
         }
         if (!empty($this->_collapsibleElements)) {
             if (count($this->_collapsibleElements) > 1) {
-                $this->_collapseButtons = $OUTPUT->render_from_template('core_form/collapsesections', (object)[]);
+                $this->_collapseButtons = $OUTPUT->render_from_template('core_form/collapsesections',
+                    (object)['formid' => $formid]);
             }
             $PAGE->requires->yui_module('moodle-form-shortforms', 'M.form.shortforms', array(array('formid' => $formid)));
         }
