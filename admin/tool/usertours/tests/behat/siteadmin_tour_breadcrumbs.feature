@@ -1,6 +1,8 @@
 @tool @tool_usertours @javascript
 Feature: Verify the breadcrumbs in user tours site administration pages
+  Whenever I navigate to user tours page in site administration
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

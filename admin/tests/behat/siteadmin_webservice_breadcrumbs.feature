@@ -1,6 +1,8 @@
 @core @core_admin @javascript
 Feature: Verify the breadcrumbs in external webservice site administration pages
+  Whenever I navigate to external webservice page in site administration
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

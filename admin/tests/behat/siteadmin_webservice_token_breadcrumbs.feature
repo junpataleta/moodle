@@ -1,6 +1,8 @@
 @core @core_admin @javascript
 Feature: Verify the breadcrumbs in webservice tokens site administration pages
+  Whenever I navigate to manage tokens page in site administration
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

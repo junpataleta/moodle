@@ -1,6 +1,8 @@
 @core @core_user @javascript
 Feature: Verify the breadcrumbs in users account and cohort site administration pages
+  Whenever I navigate to pages under users tab in site administration
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

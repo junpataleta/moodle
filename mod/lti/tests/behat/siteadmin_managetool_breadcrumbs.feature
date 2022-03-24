@@ -1,6 +1,8 @@
 @mod @mod_lti @javascript
 Feature: Verify the breadcrumbs in manage tools site administration pages
+  Whenever I navigate to manage tools page in site administration
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

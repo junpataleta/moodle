@@ -1,6 +1,8 @@
 @tool @tool_filetypes @javascript
 Feature: Verify the breadcrumbs in server filetypes site administration pages
+  Whenever I navigate to file types page in site administration
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

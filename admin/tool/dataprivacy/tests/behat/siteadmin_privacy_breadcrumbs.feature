@@ -1,6 +1,8 @@
 @core @tool @tool_dataprivacy @javascript
 Feature: Verify the breadcrumbs in different privacy site administration pages
+  Whenever I navigate to data registry page in site administration
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

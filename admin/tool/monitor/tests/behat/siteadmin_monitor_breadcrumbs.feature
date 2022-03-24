@@ -1,6 +1,11 @@
 @tool @tool_monitor @javascript
 Feature: Verify the breadcrumbs in different event monitor site administration pages
+  Whenever I navigate to event monitoring page in site administration
   As an admin
+  The breadcrumbs should be visible
+  Whenever I land on pages to add a new rule, edit rule or delete rule
+  As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

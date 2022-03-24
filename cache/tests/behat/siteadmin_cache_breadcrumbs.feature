@@ -1,6 +1,8 @@
 @core @core_cache @javascript
 Feature: Verify the breadcrumbs in different cache site administration pages
+  Whenever I navigate to caching configuration page in site administration
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

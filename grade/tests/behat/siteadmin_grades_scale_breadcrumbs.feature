@@ -1,6 +1,8 @@
 @core_grades @javascript
 Feature: Verify the breadcrumbs in grade scales site administration pages
+  Whenever I navigate to grade scales page in site administration
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

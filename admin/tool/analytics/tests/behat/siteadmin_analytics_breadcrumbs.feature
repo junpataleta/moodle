@@ -1,6 +1,8 @@
 @core @tool @tool_analytics @javascript
 Feature: Verify the breadcrumbs in analytics site administration pages
+  Whenever I navigate to analytics page in site administration to create, import, edit or restore models
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"

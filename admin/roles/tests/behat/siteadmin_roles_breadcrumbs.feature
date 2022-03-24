@@ -1,6 +1,8 @@
 @core @core_admin @core_admin_roles @javascript
 Feature: Verify the breadcrumbs in define roles site administration pages
+  Whenever I navigate to define roles page in site administration
   As an admin
+  The breadcrumbs should be visible
 
   Background:
     Given I log in as "admin"
