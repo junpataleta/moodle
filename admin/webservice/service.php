@@ -108,7 +108,7 @@ if ($mform->is_cancelled()) {
     redirect($returnurl);
 }
 
-if ($id === 0) {
+if ($id == 0) {
     $PAGE->navbar->add(get_string('addexternalservice', 'webservice'), $PAGE->url);
 } else {
     $PAGE->navbar->add(get_string('editexternalservice', 'webservice'), $PAGE->url);

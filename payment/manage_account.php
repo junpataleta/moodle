@@ -48,7 +48,7 @@ if ($restore && $account->get('archived') && confirm_sesskey()) {
 
 $PAGE->set_secondary_active_tab('siteadminnode');
 $PAGE->set_primary_active_tab('siteadminnode');
-if ($id === 0) {
+if ($id == 0) {
     $PAGE->navbar->add(get_string('createaccount', 'payment'), $PAGE->url);
 } else {
     $PAGE->navbar->add(get_string('editpaymentaccount', 'payment'), $PAGE->url);

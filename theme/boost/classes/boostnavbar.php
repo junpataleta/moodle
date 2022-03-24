@@ -110,7 +110,7 @@ class boostnavbar implements \renderable {
                 $courseformat->coursedisplay != COURSE_DISPLAY_MULTIPAGE;
         }
 
-        if ($this->page->context->contextlevel === CONTEXT_SYSTEM) {
+        if ($this->page->context->contextlevel == CONTEXT_SYSTEM) {
             // Remove the navbar nodes that already exist in the secondary navigation menu.
             $this->remove_items_that_exist_in_navigation($PAGE->secondarynav);
         }
