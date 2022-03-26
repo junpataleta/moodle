@@ -99,3 +99,22 @@ function core_question_output_fragment_tags_form($args) {
         return $mform->render();
     }
 }
+
+/**
+ * Version selection fragment for modals in qbank plugins.
+ * All you need to do is call this fragment from the js and add an event
+ * listener to change the modal or according to the change in the dropdoqn.
+ *
+ * @param array $args
+ */
+function core_question_output_fragment_version_selection($args): string {
+    global $PAGE;
+
+    if (!$args['questionid'] || !$args['uniqueidentifier']) {
+        return '';
+    }
+
+    return $PAGE->get_renderer('core_question', 'bank')->render(
+            \core_question\output\question_version_selection::make_for_question(
+                    $args['uniqueidentifier'], $args['questionid']));
+}

@@ -498,6 +498,7 @@ $string['yougotnright'] = 'You have correctly selected {$a->num}.';
 $string['qbanknotfound'] = 'The \'{$a}\' question bank plugin doesn\'t exist or is not recognised.';
 $string['noquestionbanks'] = 'No question bank plugin found.';
 $string['questionloaderror'] = 'Could not load the question options.';
+$string['version_selection'] = 'Version {$a->version}';
 
 // Deprecated since Moodle 4.0.
 $string['notflagged'] = 'Not flagged';
