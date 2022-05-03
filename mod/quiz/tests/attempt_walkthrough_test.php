@@ -119,7 +119,38 @@ class mod_quiz_attempt_walkthrough_testcase extends advanced_testcase {
         $this->assertEquals(100, $gradebookgrade->grade);
     }
 
-    public function test_quiz_attempt_walkthrough_submit_time_recorded_correctly_when_overdue() {
+    /**
+     * Data provider for test_quiz_attempt_walkthrough_submit_time_recorded_correctly_when_overdue.
+     */
+    public function process_attempt_provider() {
+        return [
+            'In time, no grace period' => [
+                -0.5 * HOURSECS, null, -0.5 * HOURSECS
+            ],
+            'In time, with grace period' => [
+                -0.5 * HOURSECS, HOURSECS, -0.5 * HOURSECS
+            ],
+            'Too late, no grace period' => [
+                0.5 * HOURSECS, null, 0
+            ],
+            'Too late, with grace period' => [
+                0.5 * HOURSECS, HOURSECS, 0.5 * HOURSECS
+            ],
+        ];
+    }
+
+    /**
+     * Test recording of submission time for attempts.
+     *
+     * @dataProvider process_attempt_provider
+     * @param int $submittimeoffset The attempt's submission time relative to the quiz's close time.
+     * @param int|null $graceperiod The grace period allowed.
+     * @param int $expectedtimeoffset The expected recorded submission time relative to the quiz's close time.
+     * @return void
+     * @covers \quiz_attempt::process_attempt
+     */
+    public function test_quiz_attempt_walkthrough_submit_time_recorded_correctly_when_overdue(int $submittimeoffset,
+            ?int $graceperiod, int $expectedtimeoffset) {
         global $SITE;
 
         $this->resetAfterTest();
@@ -128,9 +159,12 @@ class mod_quiz_attempt_walkthrough_testcase extends advanced_testcase {
         $timeclose = time() + HOURSECS;
         $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
 
-        $quiz = $quizgenerator->create_instance(
-                ['course' => $SITE->id, 'timeclose' => $timeclose,
-                        'overduehandling' => 'graceperiod', 'graceperiod' => HOURSECS]);
+        $params = ['course' => $SITE->id, 'timeclose' => $timeclose];
+        if ($graceperiod) {
+            $params['overduehandling'] = 'graceperiod';
+            $params['graceperiod'] = $graceperiod;
+        }
+        $quiz = $quizgenerator->create_instance($params);
 
         // Create a question.
         $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
@@ -167,13 +201,13 @@ class mod_quiz_attempt_walkthrough_testcase extends advanced_testcase {
 
         // Student submits the attempt during the grace period.
         $attemptobj = quiz_attempt::create($attempt->id);
-        $attemptobj->process_attempt($timeclose + 30 * MINSECS, true, false, 1);
+        $attemptobj->process_attempt($timeclose + $submittimeoffset, true, false, 1);
 
         // Verify the attempt state.
         $attemptobj = quiz_attempt::create($attempt->id);
         $this->assertEquals(1, $attemptobj->get_attempt_number());
         $this->assertEquals(true, $attemptobj->is_finished());
-        $this->assertEquals($timeclose + 30 * MINSECS, $attemptobj->get_submitted_date());
+        $this->assertEquals($timeclose + $expectedtimeoffset, $attemptobj->get_submitted_date());
         $this->assertEquals($user->id, $attemptobj->get_userid());
         $this->assertTrue($attemptobj->has_response_to_at_least_one_graded_question());
     }
