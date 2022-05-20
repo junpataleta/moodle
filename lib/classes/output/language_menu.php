@@ -101,6 +101,7 @@ class language_menu implements \renderable, \templatable {
                 'text' => $langname,
                 'link' => true,
                 'isactive' => $isactive,
+                'lang' => str_replace('_', '-', $langtype),
                 'url' => $isactive ? new \moodle_url('#') : new \moodle_url($this->page->url, ['lang' => $langtype]),
             ];
 
