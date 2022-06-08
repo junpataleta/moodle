@@ -39,8 +39,12 @@
     <a id="message-drawer-toggle-{{uniqid}}" class="nav-link popover-region-toggle position-relative icon-no-margin" href="#"
             role="button">
         {{#pix}} t/message, core, {{#str}} togglemessagemenu, message {{/str}} {{/pix}}
-        <div class="count-container {{^unreadcount}}hidden{{/unreadcount}}" data-region="count-container"
-        aria-label="{{#str}} unreadconversations, core_message, {{unreadcount}} {{/str}}">{{unreadcount}}</div>
+        <div
+            class="count-container {{^unreadcount}}hidden{{/unreadcount}}"
+            data-region="count-container"
+            role="note"
+            aria-label="{{#str}} unreadconversations, core_message, {{unreadcount}} {{/str}}"
+        >{{unreadcount}}</div>
     </a>
     {{> core_message/message_jumpto }}
 </div>

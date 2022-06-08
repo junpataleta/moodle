@@ -55,7 +55,8 @@
             </span>
             <span class="font-weight-bold">{{$title}}{{/title}}</span>
             <small class="hidden ml-1" data-region="section-total-count-container"
-            aria-label="{{#str}} totalconversations, core_message, {{count.total}} {{/str}}">
+                role="note"
+                aria-label="{{#str}} totalconversations, core_message, {{count.total}} {{/str}}">
                 (<span data-region="section-total-count">{{count.total}}</span>)
             </small>
             <span class="hidden ml-2" data-region="loading-icon-container">
@@ -63,7 +64,7 @@
             </span>
             <span class="{{^count.unread}}hidden{{/count.unread}} badge badge-pill badge-primary ml-auto bg-primary"
             data-region="section-unread-count"
-            {{#count.unread}}aria-label="{{#str}} unreadconversations, core_message, {{count.unread}} {{/str}}"{{/count.unread}}>
+            {{#count.unread}}role="note" aria-label="{{#str}} unreadconversations, core_message, {{count.unread}} {{/str}}"{{/count.unread}}>
                 {{count.unread}}
             </span>
         </button>
