@@ -281,7 +281,7 @@ class gradingform_rubric_renderer extends plugin_renderer_base {
             );
         }
         $score = html_writer::tag('span', $score, array('id' => '{NAME}-criteria-{CRITERION-id}-levels-{LEVEL-id}-score', 'class' => 'scorevalue'));
-        $definitionclass = 'definition';
+        $definitionclass = 'definition text-break';
         if (isset($level['error_definition'])) {
             $definitionclass .= ' error';
         }
