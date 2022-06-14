@@ -613,7 +613,6 @@ class core_course_renderer extends plugin_renderer_base {
             $format,
             $mod->get_section_info(),
             $mod,
-            $this->page->user_is_editing(),
             $displayoptions
         );
 

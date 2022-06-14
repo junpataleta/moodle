@@ -1262,7 +1262,7 @@ $activity-add-hover: theme-color-level('primary', -10) !default;
     width: 100%;
 }
 
-#changenumsections {
+.changenumsections {
     border-top: $border-width solid $primary-light-border;
 }
 
@@ -1441,9 +1441,16 @@ $activity-add-hover: theme-color-level('primary', -10) !default;
         flex: 0 1 auto;
         max-width: 100%;
     }
-    .inplaceeditable .quickeditlink,
-    .afterlink {
-        margin: 1.5rem 0 0.2rem 0.5rem;
+
+    /* Prevent bootstrap strech-link from covering the inplace editable button. */
+    .activityname {
+        .inplaceeditable .quickeditlink,
+        .afterlink {
+            margin-left: 0.5rem;
+        }
+        .stretched-link::after {
+            right: 2rem;
+        }
     }
 
     .action-menu-item {
