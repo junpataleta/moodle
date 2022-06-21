@@ -35,6 +35,10 @@ $renderer = $PAGE->get_renderer('core');
 $header = $PAGE->activityheader;
 $headercontent = $header->export_for_template($renderer);
 
+$primary = new core\navigation\output\primary($PAGE);
+$renderer = $PAGE->get_renderer('core');
+$primarymenu = $primary->export_for_template($renderer);
+
 $templatecontext = [
     'sitename' => format_string($SITE->shortname, true, ['context' => context_course::instance(SITEID), "escape" => false]),
     'output' => $OUTPUT,
@@ -44,7 +48,7 @@ $templatecontext = [
     'haspostblocks' => $hassidepost,
     'bodyattributes' => $bodyattributes,
     'headercontent' => $headercontent,
+    'usermenu' => $primarymenu['user'],
 ];
 
 echo $OUTPUT->render_from_template('theme_classic/columns', $templatecontext);
-
