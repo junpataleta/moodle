@@ -12007,26 +12007,50 @@ input[disabled] {
 .alert-primary a {
   color: #041d34; }
 
+.alert-primary .close {
+  color: #000305; }
+
 .alert-secondary a {
   color: #525557; }
+
+.alert-secondary .close {
+  color: #393b3d; }
 
 .alert-success a, .environmenttable .ok a {
   color: #0c1b0b; }
 
+.alert-success .close, .environmenttable .ok .close {
+  color: black; }
+
 .alert-info a {
   color: #00171b; }
+
+.alert-info .close {
+  color: black; }
 
 .alert-warning a, .environmenttable .warn a {
   color: #573e1c; }
 
+.alert-warning .close, .environmenttable .warn .close {
+  color: #302310; }
+
 .alert-danger a, .environmenttable .error a {
   color: #3d0f0a; }
+
+.alert-danger .close, .environmenttable .error .close {
+  color: #110403; }
 
 .alert-light a {
   color: #686868; }
 
+.alert-light .close {
+  color: #4e4e4f; }
+
 .alert-dark a {
   color: #040505; }
+
+.alert-dark .close {
+  color: black; }
 
 .alert a {
   font-weight: 700; }
