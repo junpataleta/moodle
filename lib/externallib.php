@@ -887,7 +887,10 @@ class external_format_value extends external_value {
      * @since Moodle 2.3
      */
     public function __construct($textfieldname, $required = VALUE_REQUIRED, $default = null) {
-
+        // Make sure that the $required parameter is set correctly.
+        if (!in_array($required, [VALUE_DEFAULT, VALUE_REQUIRED, VALUE_OPTIONAL])) {
+            throw new coding_exception('The parameter $required must be one of VALUE_DEFAULT, VALUE_REQUIRED or VALUE_OPTIONAL');
+        }
         if ($default == null && $required == VALUE_DEFAULT) {
             $default = FORMAT_HTML;
         }
