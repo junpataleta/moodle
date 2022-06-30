@@ -96,16 +96,17 @@ Feature: Show/hide course sections
     And I should not see "Topic 2" in the "region-main" "region"
     And I should see "Topic 1" in the "region-main" "region"
 
+  @javascript
   Scenario: Students can not navigate to restricted sections
     Given I am on "Course 1" course homepage
-    Given I navigate to "Settings" in current page administration
+    And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | Course layout | Show one section per page |
       | Enable completion tracking | Yes |
     And I press "Save and display"
     And the following "activities" exist:
-      | activity | course | section | intro      | completion |
-      | label    | C1     | 1       | Test label | 1          |
+      | activity | course | section | intro      | completion | idnumber |
+      | label    | C1     | 1       | Test label | 1          | label1   |
     And I edit the section "2"
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
