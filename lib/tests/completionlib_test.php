@@ -1929,6 +1929,7 @@ class completionlib_test extends advanced_testcase {
      * @covers \core\event\course_completion_settings_unlocked
      */
     public function test_course_completion_settings_unlocked_event() {
+        global $USER;
         $this->setup_data();
         $coursecontext = context_course::instance($this->course->id);
         $settingsunlockedevent = \core\event\course_completion_settings_unlocked::create([
@@ -1946,6 +1947,12 @@ class completionlib_test extends advanced_testcase {
         $this->assertInstanceOf('\core\event\course_completion_settings_unlocked', $event);
         $this->assertEquals($this->course->id, $event->courseid);
         $this->assertEquals($coursecontext, $event->get_context());
+        $this->assertEquals(get_string('eventcoursecompletionsettingsunlocked', 'core_completion'), $event::get_name());
+        $description = get_string('eventcoursecompletionsettingsunlockeddesc', 'core_completion', [
+            'userid'   => $USER->id,
+            'courseid' => $this->course->id,
+        ]);
+        $this->assertEquals($description, $event->get_description());
         $this->assertInstanceOf('moodle_url', $event->get_url());
         $expectedlegacylog = [
             $this->course->id,

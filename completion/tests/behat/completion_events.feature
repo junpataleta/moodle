@@ -1,13 +1,13 @@
 @core @core_completion
-Feature: Ensure events are emitted
+Feature: Ensure completion events are emitted
   In order to conduct postmortems and maintain accountability
   As an admin
   I need to know who performed actions and when
 
   Background:
     Given the following "courses" exist:
-      | fullname | shortname | category |
-      | Course 1 | C1 | 0 |
+      | fullname | shortname  | category  | enablecompletion |
+      | Course 1 | C1         | 0         | 1                |
     And the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | Frist | teacher1@example.com |
@@ -19,19 +19,12 @@ Feature: Ensure events are emitted
 
   @javascript
   Scenario: Ensure event is thrown when user unlocks course completion settings
-    Given I log in as "teacher1"
+    Given the following "activities" exist:
+      | activity  | name           | intro                  | course | section | completion | content             |
+      | label     |                | Test label             | C1     | 1       | 1          |                     |
+      | page      | Test page name | Test page description  | C1     | 2       | 0          | Test page contents  |
+    And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I navigate to "Settings" in current page administration
-    And I set the following fields to these values:
-      | Enable completion tracking | Yes |
-    And I press "Save and display"
-    And I add a "Label" to section "1" and I fill the form with:
-      | Label text | Test label |
-      | Completion tracking | Students can manually mark the activity as completed |
-    And I add a "Page" to section "2" and I fill the form with:
-      | Name | Test page name |
-      | Description | Test page description |
-      | Page content | Test page contents |
     When I edit the section "2"
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
@@ -54,7 +47,7 @@ Feature: Ensure events are emitted
     And I am on "Course 1" course homepage
     And I navigate to "Course completion" in current page administration
     Then I should see "Completion settings locked"
-    And I click on "Unlock completion options and delete user completion data" "button"
+    And I click on "Unlock completion settings and delete user completion data" "button"
     And I log out
     And I log in as "admin"
     And I am on "Course 1" course homepage
