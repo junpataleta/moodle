@@ -7,8 +7,8 @@ Feature: Scorm multi-sco review mode.
       | teacher1 | Teacher | 1 | teacher1@example.com |
       | student1 | Student | 1 | student1@example.com |
     And the following "courses" exist:
-      | fullname | shortname | category |
-      | Course 1 | C1 | 0 |
+      | fullname | shortname  | category  |
+      | Course 1 | C1         | 0         |
     And the following "course enrolments" exist:
       | user | course | role |
       | teacher1 | C1 | editingteacher |
@@ -24,23 +24,7 @@ Feature: Scorm multi-sco review mode.
 
   @javascript
   Scenario: Test review mode with a single sco completion.
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I navigate to "Settings" in current page administration
-    And I set the following fields to these values:
-      | Enable completion tracking | Yes |
-    And I press "Save and display"
-    And I am on the "Basic Multi-sco SCORM package" "scorm activity editing" page
-    And I expand all fieldsets
-    And I set the following fields to these values:
-      | completion              | 2 |
-      | completionstatusallscos | 1 |
-      | completionview          | 1 |
-    And I set the field "Completed" to "1"
-    And I click on "Save and display" "button"
-    And I should see "Basic Multi-sco SCORM package"
-    And I log out
-    And I am on the "Basic Multi-sco SCORM package" "scorm activity" page logged in as student1
+    Given I am on the "Basic Multi-sco SCORM package" "scorm activity" page logged in as student1
     And I should see "Enter"
     And I press "Enter"
     And I switch to "scorm_object" iframe
@@ -51,27 +35,12 @@ Feature: Scorm multi-sco review mode.
     And I should see "Basic Multi-sco SCORM package"
     And I am on the "Basic Multi-sco SCORM package" "scorm activity" page
     And I should see "Enter"
-    And I press "Enter"
+    When I press "Enter"
     Then I should not see "Review mode"
 
   @javascript
   Scenario: Test review mode with all scos completed.
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I navigate to "Settings" in current page administration
-    And I set the following fields to these values:
-      | Enable completion tracking | Yes |
-    And I press "Save and display"
-    And I am on the "ADV Multi-sco SCORM package" "scorm activity editing" page
-    And I set the following fields to these values:
-      | completion              | 2 |
-      | completionstatusallscos | 1 |
-      | completionview          | 1 |
-    And I set the field "Completed" to "1"
-    And I click on "Save and display" "button"
-    And I should see "ADV Multi-sco SCORM package"
-    And I log out
-    And I am on the "ADV Multi-sco SCORM package" "scorm activity" page logged in as student1
+    Given I am on the "ADV Multi-sco SCORM package" "scorm activity" page logged in as student1
     And I should see "Enter"
     And I press "Enter"
     And I switch to "scorm_object" iframe
@@ -172,12 +141,7 @@ Feature: Scorm multi-sco review mode.
 
   @javascript
   Scenario: Test force completed set to Always.
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I am on the "Basic Multi-sco SCORM package2" "scorm activity" page
-    And I should see "Basic Multi-sco SCORM package2"
-    And I log out
-    And I am on the "Basic Multi-sco SCORM package2" "scorm activity" page logged in as student1
+    Given I am on the "Basic Multi-sco SCORM package2" "scorm activity" page logged in as student1
     And I should see "Enter"
     And I press "Enter"
     And I switch to "scorm_object" iframe
@@ -196,12 +160,7 @@ Feature: Scorm multi-sco review mode.
 
   @javascript
   Scenario: Test force completed set to when previous complete/passed/failed.
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I am on the "Basic Multi-sco SCORM package3" "scorm activity" page
-    And I should see "Basic Multi-sco SCORM package3"
-    And I log out
-    And I am on the "Basic Multi-sco SCORM package3" "scorm activity" page logged in as student1
+    Given I am on the "Basic Multi-sco SCORM package3" "scorm activity" page logged in as student1
     And I should see "Enter"
     And I press "Enter"
     And I switch to "scorm_object" iframe
@@ -265,12 +224,7 @@ Feature: Scorm multi-sco review mode.
 
   @javascript
   Scenario: Test force completed set to Always and student skipview
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I am on the "Basic Multi-sco SCORM package4" "scorm activity" page
-    And I should see "Basic Multi-sco SCORM package4"
-    And I log out
-    And I am on the "Basic Multi-sco SCORM package4" "scorm activity" page logged in as student1
+    Given I am on the "Basic Multi-sco SCORM package4" "scorm activity" page logged in as student1
     And I switch to "scorm_object" iframe
     And I should see "Play of the game"
     And I switch to the main frame
@@ -284,12 +238,7 @@ Feature: Scorm multi-sco review mode.
 
   @javascript
   Scenario: Test force completed set to when previous complete/passed/failed.
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I am on the "Basic Multi-sco SCORM package5" "scorm activity" page
-    And I should see "Basic Multi-sco SCORM package5"
-    And I log out
-    And I am on the "Basic Multi-sco SCORM package5" "scorm activity" page logged in as student1
+    Given I am on the "Basic Multi-sco SCORM package5" "scorm activity" page logged in as student1
     And I switch to "scorm_object" iframe
     And I should see "Play of the game"
     And I switch to the main frame
