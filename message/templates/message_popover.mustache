@@ -42,9 +42,10 @@
         <div
             class="count-container {{^unreadcount}}hidden{{/unreadcount}}"
             data-region="count-container"
-            role="note"
-            aria-label="{{#str}} unreadconversations, core_message, {{unreadcount}} {{/str}}"
-        >{{unreadcount}}</div>
+        >
+            <span aria-hidden="true">{{unreadcount}}</span>
+            <span class="sr-only">{{#str}} unreadconversations, core_message, {{unreadcount}} {{/str}}</span>
+        </div>
     </a>
     {{> core_message/message_jumpto }}
 </div>

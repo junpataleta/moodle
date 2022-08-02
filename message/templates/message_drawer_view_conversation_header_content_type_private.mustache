@@ -62,18 +62,14 @@
                     <span
                         class="{{^isfavourite}}hidden{{/isfavourite}} ml-1 text-primary"
                         data-region="favourite-icon-container"
-                        role="note"
-                        aria-label="{{#str}} favourites, core {{/str}}"
                     >
-                        {{#pix}} i/star-rating, core {{/pix}}
+                        {{#pix}} i/star-rating, core, {{#str}} favourites, core {{/str}} {{/pix}}
                     </span>
                     <span
                         class="{{^ismuted}}hidden{{/ismuted}} ml-1 text-primary"
                         data-region="muted-icon-container"
-                        role="note"
-                        aria-label="{{#str}} mutedconversation, core_message {{/str}}"
                     >
-                        {{#pix}} i/muted, core {{/pix}}
+                        {{#pix}} i/muted, core, {{#str}} mutedconversation, core_message {{/str}} {{/pix}}
                     </span>
                 </div>
                 {{#showonlinestatus}}

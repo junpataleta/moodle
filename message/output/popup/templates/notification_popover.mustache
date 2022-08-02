@@ -42,14 +42,16 @@
     {{$classes}}popover-region-notifications{{/classes}}
     {{$attributes}}id="nav-notification-popover-container" data-userid="{{userid}}"{{/attributes}}
 
-    {{$togglelabel}}{{#str}} shownotificationwindownonew, message {{/str}}{{/togglelabel}}
+    {{$togglelabel}}{{!
+        }}{{^unreadcount}} {{#str}} shownotificationwindownonew, message {{/str}} {{/unreadcount}} {{!
+        }}{{#unreadcount}} {{#str}} shownotificationwindowwithcount, message, {{.}} {{/str}} {{/unreadcount}} {{!
+    }}{{/togglelabel}}
     {{$togglecontent}}
         {{#pix}} i/notifications, core, {{#str}} togglenotificationmenu, message {{/str}} {{/pix}}
         <div
             class="count-container {{^unreadcount}}hidden{{/unreadcount}}"
             data-region="count-container"
-            role="note"
-            aria-label="{{#str}} unreadnotifications, core_message, {{unreadcount}} {{/str}}"
+            aria-hidden=true
         >
             {{unreadcount}}
         </div>
