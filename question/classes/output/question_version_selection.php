@@ -77,7 +77,7 @@ class question_version_selection implements templatable, renderable {
             $a = new \stdClass();
             $a->version = $versionsoption->version;
             $versionsoption->name = get_string('version_selection', 'core_question', $a);
-            if ((int)$versionsoption->questionid === (int)$this->currentselectedquestionid) {
+            if ($versionsoption->questionid == $this->currentselectedquestionid) {
                 $versionsoption->selected = true;
             }
             $displaydata[] = $versionsoption;

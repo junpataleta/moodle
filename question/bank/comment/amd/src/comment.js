@@ -44,7 +44,7 @@ const commentEvent = (questionId, courseID, contextId) => {
     };
     ModalFactory.create({
         type: ModalFactory.types.SAVE_CANCEL,
-        title: Fragment.loadFragment('core_question', 'version_selection', contextId, args),
+        title: Str.get_string('commentheader', 'qbank_comment'),
         body: Fragment.loadFragment('qbank_comment', 'question_comment', contextId, args),
         large: true,
     }).then((modal) => {

@@ -114,7 +114,6 @@ function core_question_output_fragment_version_selection($args): string {
         return '';
     }
 
-    return $PAGE->get_renderer('core_question', 'bank')->render(
-            \core_question\output\question_version_selection::make_for_question(
-                    $args['uniqueidentifier'], $args['questionid']));
+    $selector = \core_question\output\question_version_selection::make_for_question($args['uniqueidentifier'], $args['questionid']);
+    return $PAGE->get_renderer('core_question', 'bank')->render($selector);
 }

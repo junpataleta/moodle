@@ -25,6 +25,7 @@
 import Fragment from 'core/fragment';
 import ModalFactory from 'core/modal_factory';
 import Notification from 'core/notification';
+import * as Str from 'core/str';
 
 /**
  * Event listeners for the module.
@@ -40,7 +41,7 @@ const usageEvent = (questionId, contextId) => {
     };
     ModalFactory.create({
         type: ModalFactory.types.CANCEL,
-        title: Fragment.loadFragment('core_question', 'version_selection', contextId, args),
+        title: Str.get_string('usageheader', 'qbank_usage'),
         body: Fragment.loadFragment('qbank_usage', 'question_usage', contextId, args),
         large: true,
     }).then((modal) => {
