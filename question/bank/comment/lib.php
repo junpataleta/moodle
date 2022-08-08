@@ -137,7 +137,8 @@ function qbank_comment_output_fragment_question_comment($args): string {
     }
 
     $selector = \core_question\output\question_version_selection::make_for_question($args['uniqueidentifier'], $args['questionid']);
-    $displaydata['versionselection'] = $PAGE->get_renderer('core_question', 'bank')->render($selector);
+    $qbankrenderer = $PAGE->get_renderer('core_question', 'bank');
+    $displaydata['versionselection'] = $selector->export_for_template($qbankrenderer);
 
     return $PAGE->get_renderer('qbank_comment')->render_comment_fragment($displaydata);
 }
