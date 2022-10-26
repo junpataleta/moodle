@@ -24,7 +24,10 @@
 
 namespace core_files\local\archive_writer;
 
+use stored_file;
 use ZipStream\Option\Archive;
+use ZipStream\Option\File;
+use ZipStream\Option\Method;
 use ZipStream\ZipStream;
 use core_files\archive_writer;
 use core_files\local\archive_writer\file_writer_interface as file_writer_interface;
@@ -96,22 +99,41 @@ class zip_writer extends archive_writer implements file_writer_interface, stream
         return $zipwriter;
     }
 
-    public function add_file_from_filepath(string $name, string $path): void {
-        $this->archive->addFileFromPath($this->sanitise_filepath($name), $path);
+    public function add_file_from_filepath(string $name, string $path, ?array $options = null): void {
+        $fileoptions = $this->get_file_options($options);
+        $this->archive->addFileFromPath($this->sanitise_filepath($name), $path, $fileoptions);
     }
 
-    public function add_file_from_string(string $name, string $data): void {
-        $this->archive->addFile($this->sanitise_filepath($name), $data);
+    public function add_file_from_string(string $name, string $data, ?array $options = null): void {
+        $fileoptions = $this->get_file_options($options);
+        $this->archive->addFile($this->sanitise_filepath($name), $data, $fileoptions);
     }
 
-    public function add_file_from_stream(string $name, $stream): void {
-        $this->archive->addFileFromStream($this->sanitise_filepath($name), $stream);
+    public function add_file_from_stream(string $name, $stream, ?array $options = null): void {
+        $fileoptions = $this->get_file_options($options);
+        $this->archive->addFileFromStream($this->sanitise_filepath($name), $stream, $fileoptions);
         fclose($stream);
     }
 
-    public function add_file_from_stored_file(string $name, \stored_file $file): void {
+    /**
+     * Adds a stored_file to the zip archive.
+     *
+     * @param string $name The path of file in archive (including directory).
+     * @param stored_file $file
+     * @param array|null $options Options for adding the file. See {@see File} or {@see zip_writer::get_file_options()}.
+     *      <br>- time (int or 'timecreated' or 'timemodified') The timestamp from the stored file to use. Defaults to current time
+     * @return void
+     */
+    public function add_file_from_stored_file(string $name, stored_file $file, ?array $options = null): void {
         $filehandle = $file->get_content_file_handle();
-        $this->archive->addFileFromStream($this->sanitise_filepath($name), $filehandle);
+        if (isset($options['time']) && is_string($options['time'])) {
+            $timemethod = "get_{$options['time']}";
+            if (method_exists($file, $timemethod)) {
+                $options['time'] = $file->$timemethod();
+            }
+        }
+        $fileoptions = $this->get_file_options($options);
+        $this->archive->addFileFromStream($this->sanitise_filepath($name), $filehandle, $fileoptions);
         fclose($filehandle);
     }
 
@@ -131,5 +153,49 @@ class zip_writer extends archive_writer implements file_writer_interface, stream
         $filepath = parent::sanitise_filepath($filepath);
 
         return \ZipStream\File::filterFilename($filepath);
+    }
+
+    /**
+     * Get the options for the file to be added to the archive.
+     *
+     * @param array|null $options Options for adding the file. See {@see File}.
+     *      <ul>
+     *          <li>comment (string) The comment related to the file</li>
+     *          <li>deflateLevel (int)</li>
+     *          <li>method ({@see Method::DEFLATE()} or {@see Method::STORE()})</li>
+     *          <li>size (int)</li>
+     *          <li>time (int) The timestamp to be used for the file. Defaults to current time</li>
+     *      </ul>
+     * @return File|null
+     */
+    public function get_file_options(?array $options = null): ?File {
+        if (empty($options)) {
+            return null;
+        }
+        $fileoptions = new File();
+        foreach ($options as $option => $value) {
+            switch ($option) {
+                case 'comment':
+                    $fileoptions->setComment($value);
+                    break;
+                case 'deflateLevel':
+                    $fileoptions->setDeflateLevel($value);
+                    break;
+                case 'method':
+                    $fileoptions->setMethod($value);
+                    break;
+                case 'size':
+                    $fileoptions->setSize($value);
+                    break;
+                case 'time':
+                    $time = new \DateTime();
+                    $time->setTimestamp($value);
+                    $fileoptions->setTime($time);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return $fileoptions;
     }
 }

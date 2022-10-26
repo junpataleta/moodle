@@ -108,32 +108,44 @@ abstract class archive_writer {
      * @param string $name The path of file in archive (including directory).
      * @param string $path The path to file on disk (note: paths should be encoded using
      *                     UNIX-style forward slashes -- e.g '/path/to/some/file').
+     * @param array|null $options Options for adding the file as defined by the implementation. See {@see self::get_file_options()}.
      */
-    abstract public function add_file_from_filepath(string $name, string $path): void;
+    abstract public function add_file_from_filepath(string $name, string $path, ?array $options = null): void;
 
     /**
      * Adds a file from a string.
      *
      * @param string $name The path of file in archive (including directory).
      * @param string $data The contents of file
+     * @param array|null $options Options for adding the file as defined by the implementation. See {@see self::get_file_options()}.
      */
-    abstract public function add_file_from_string(string $name, string $data): void;
+    abstract public function add_file_from_string(string $name, string $data, ?array $options = null): void;
 
     /**
      * Adds a file from a stream.
      *
      * @param string $name The path of file in archive (including directory).
      * @param resource $stream The contents of file as a stream resource
+     * @param array|null $options Options for adding the file as defined by the implementation. See {@see self::get_file_options()}.
      */
-    abstract public function add_file_from_stream(string $name, $stream): void;
+    abstract public function add_file_from_stream(string $name, $stream, ?array $options = null): void;
 
     /**
      * Adds a stored_file to archive.
      *
      * @param string $name The path of file in archive (including directory).
      * @param \stored_file $file
+     * @param array|null $options Options for adding the file as defined by the implementation. See {@see self::get_file_options()}.
      */
-    abstract public function add_file_from_stored_file(string $name, \stored_file $file): void;
+    abstract public function add_file_from_stored_file(string $name, \stored_file $file, ?array $options = null): void;
+
+    /**
+     * Get the options for the file to be added to the archive.
+     *
+     * @param array|null $options
+     * @return mixed|null
+     */
+    abstract public function get_file_options(?array $options = null);
 
     /**
      * Finish writing the zip footer.
