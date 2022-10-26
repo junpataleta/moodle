@@ -3809,12 +3809,14 @@ class assign {
         \core\session\manager::write_close();
 
         $zipwriter = \core_files\archive_writer::get_stream_writer($filename, \core_files\archive_writer::ZIP_WRITER);
-
         // Stream the files into the zip.
         foreach ($filesforzipping as $pathinzip => $file) {
             if ($file instanceof \stored_file) {
-                // Most of cases are \stored_file.
-                $zipwriter->add_file_from_stored_file($pathinzip, $file);
+                // Most of the cases are \stored_file.
+                $fileoptions = [
+                    'time' => 'timecreated',
+                ];
+                $zipwriter->add_file_from_stored_file($pathinzip, $file, $fileoptions);
             } else if (is_array($file)) {
                 // Save $file as contents, from onlinetext subplugin.
                 $content = reset($file);
