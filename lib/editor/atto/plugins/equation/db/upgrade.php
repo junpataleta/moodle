@@ -47,5 +47,44 @@ function xmldb_atto_equation_upgrade($oldversion) {
     // Automatically generated Moodle v4.0.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2022041901) {
+        $olddefault = '\sum{a,b}
+\sqrt[a]{b+c}
+\int_{a}^{b}{c}
+\iint_{a}^{b}{c}
+\iiint_{a}^{b}{c}
+\oint{a}
+(a)
+[a]
+\lbrace{a}\rbrace
+\left| \begin{matrix} a_1 & a_2 \\ a_3 & a_4 \end{matrix} \right|
+\frac{a}{b+c}
+\vec{a}
+\binom {a} {b}
+{a \brack b}
+{a \brace b}';
+        $default = '\sum{a,b}
+\sqrt[a]{b+c}
+\int_{a}^{b}{c}
+\iint_{a}^{b}{c}
+\iiint_{a}^{b}{c}
+\oint{a}
+(a)
+[a]
+\lbrace{a}\rbrace
+\left| \begin{matrix} a_1 & a_2 \\\\ a_3 & a_4 \end{matrix} \right|
+\frac{a}{b+c}
+\vec{a}
+\binom {a} {b}
+{a \brack b}
+{a \brace b}';
+        $config = get_config('atto_equation', 'librarygroup4');
+        if (trim($config) === $olddefault) {
+            set_config('librarygroup4', $default, 'atto_equation');
+        }
+        // Atto equation savepoint reached.
+        upgrade_plugin_savepoint(true, 2022041901, 'atto', 'equation');
+    }
+
     return true;
 }
