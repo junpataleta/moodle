@@ -179,18 +179,21 @@ class auth_plugin_cas extends auth_plugin_ldap {
         static $connected = false;
 
         if (!$connected) {
-            // Form the base URL of the server with just the protocol and hostname.
-            $serverurl = new moodle_url("/");
-            $servicebaseurl = $serverurl->get_scheme() ? $serverurl->get_scheme() . "://" : '';
-            $servicebaseurl .= $serverurl->get_host();
-            // Add the port if set.
-            $servicebaseurl .= $serverurl->get_port() ? ':' . $serverurl->get_port() : '';
-
             // Make sure phpCAS doesn't try to start a new PHP session when connecting to the CAS server.
-            if ($this->config->proxycas) {
+            if ($this->config->proxycas && !empty($CFG->proxyhost)) {
+                // Form the base URL of the server with just the protocol and hostname.
+                $servicebaseurl = $CFG->proxyhost;
+                // Add the port if set.
+                $servicebaseurl .= $CFG->proxyport ? ':' . $CFG->proxyport : '';
                 phpCAS::proxy($this->config->casversion, $this->config->hostname, (int) $this->config->port, $this->config->baseuri,
                     $servicebaseurl, false);
             } else {
+                // Form the base URL of the server with just the protocol and hostname.
+                $serverurl = new moodle_url("/");
+                $servicebaseurl = $serverurl->get_scheme() ? $serverurl->get_scheme() . "://" : '';
+                $servicebaseurl .= $serverurl->get_host();
+                // Add the port if set.
+                $servicebaseurl .= $serverurl->get_port() ? ':' . $serverurl->get_port() : '';
                 phpCAS::client($this->config->casversion, $this->config->hostname, (int) $this->config->port,
                     $this->config->baseuri, $servicebaseurl, false);
             }
