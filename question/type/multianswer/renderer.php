@@ -147,6 +147,9 @@ class qtype_multianswer_renderer extends qtype_renderer {
  */
 abstract class qtype_multianswer_subq_renderer_base extends qtype_renderer {
 
+    /** @var int[] Stores the counts of answer instances for questions. */
+    protected static $answercount = [];
+
     abstract public function subquestion(question_attempt $qa,
             question_display_options $options, $index,
             question_graded_automatically $subq);
@@ -197,6 +200,36 @@ abstract class qtype_multianswer_subq_renderer_base extends qtype_renderer {
 
         return html_writer::tag('span', implode('<br />', $feedback),
                 array('class' => 'feedbackspan accesshide'));
+    }
+
+    /**
+     * Generates a label for an answer field.
+     *
+     * If the display options include a question slot number ({@see question_display_options::$questionslot}), the label will
+     * include the question number in order to indicate which question the answer field belongs to.
+     *
+     * @param question_display_options $options
+     * @return string
+     */
+    protected function get_answer_label(question_display_options $options): string {
+        // There may be multiple answer fields for a question, so we need to increment the answer fields in order to distinguish
+        // them from one another.
+        $slot = $options->questionslot ?? 0;
+        if (isset(self::$answercount[$slot])) {
+            self::$answercount[$slot]++;
+        } else {
+            self::$answercount[$slot] = 1;
+        }
+        if (!empty($options->questionslot)) {
+            // Link the answer to the question number when available.
+            $labeltext = get_string('answerxquestiony', 'question', (object) [
+                'number' => self::$answercount[$slot],
+                'question' => $options->questionslot,
+            ]);
+        } else {
+            $labeltext = get_string('answerx', 'question', self::$answercount[$slot]);
+        }
+        return $labeltext;
     }
 }
 
@@ -272,7 +305,8 @@ class qtype_multianswer_textfield_renderer extends qtype_multianswer_subq_render
                 s($correctanswer->answer), $options);
 
         $output = html_writer::start_tag('span', array('class' => 'subquestion form-inline d-inline'));
-        $output .= html_writer::tag('label', get_string('answer'),
+
+        $output .= html_writer::tag('label', $this->get_answer_label($options),
                 array('class' => 'subq accesshide', 'for' => $inputattributes['id']));
         $output .= html_writer::empty_tag('input', $inputattributes);
         $output .= $feedbackimg;
@@ -340,7 +374,7 @@ class qtype_multianswer_multichoice_inline_renderer
                         $qa, 'question', 'answer', $rightanswer->id), $options);
 
         $output = html_writer::start_tag('span', array('class' => 'subquestion'));
-        $output .= html_writer::tag('label', get_string('answer'),
+        $output .= html_writer::tag('label', $this->get_answer_label($options),
                 array('class' => 'subq accesshide', 'for' => $inputattributes['id']));
         $output .= $select;
         $output .= $feedbackimg;
