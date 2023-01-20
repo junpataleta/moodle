@@ -96,7 +96,7 @@ class core_question_renderer extends plugin_renderer_base {
                 array('class' => 'info'));
 
         $output .= html_writer::start_tag('div', array('class' => 'content'));
-
+        $options->questionslot = $number;
         $output .= html_writer::tag('div',
                 $this->add_part_heading($qtoutput->formulation_heading(),
                     $this->formulation($qa, $behaviouroutput, $qtoutput, $options)),
