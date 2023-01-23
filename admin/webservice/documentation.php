@@ -33,7 +33,7 @@ admin_externalpage_setup('webservicedocumentation');
 $functions = $DB->get_records('external_functions', array(), 'name');
 $functiondescs = array();
 foreach ($functions as $function) {
-    $functiondescs[$function->name] = external_api::external_function_info($function);
+    $functiondescs[$function->name] = \core_external\external_api::external_function_info($function);
 }
 
 // TODO: MDL-76078 - Incorrect inter-communication, core cannot have plugin dependencies like this.

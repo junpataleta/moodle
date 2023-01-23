@@ -361,7 +361,7 @@ class core_webservice_renderer extends plugin_renderer_base {
 
     /**
      * Return documentation for a ws description object
-     * ws description object can be 'external_multiple_structure', 'external_single_structure'
+     * ws description object can be '\core_external\external_multiple_structure', '\core_external\external_single_structure'
      * or 'external_value'
      *
      * Example of documentation for core_group_create_groups function:
@@ -410,10 +410,10 @@ class core_webservice_renderer extends plugin_renderer_base {
         }
 
         // description object is a list
-        if ($params instanceof external_multiple_structure) {
+        if ($params instanceof \core_external\external_multiple_structure) {
             return $paramdesc . "list of ( " . html_writer::empty_tag('br', array())
             . $this->detailed_description_html($params->content) . ")";
-        } else if ($params instanceof external_single_structure) {
+        } else if ($params instanceof \core_external\external_single_structure) {
             // description object is an object
             $singlestructuredesc = $paramdesc . "object {" . html_writer::empty_tag('br', array());
             foreach ($params->keys as $attributname => $attribut) {
@@ -447,7 +447,7 @@ class core_webservice_renderer extends plugin_renderer_base {
      * Return a description object in indented xml format (for REST response)
      * It is indented to be output within <pre> tags
      *
-     * @param external_description $returndescription the description structure of the web service function returned value
+     * @param \core_external\external_description $returndescription the description structure of the web service function returned value
      * @param string $indentation Indentation in the generated HTML code; should contain only spaces.
      * @return string the html to diplay
      */
@@ -458,13 +458,13 @@ class core_webservice_renderer extends plugin_renderer_base {
 
 EOF;
         // description object is a list
-        if ($returndescription instanceof external_multiple_structure) {
+        if ($returndescription instanceof \core_external\external_multiple_structure) {
             $return = $indentation . "<MULTIPLE>" . $brakeline;
             $return .= $this->description_in_indented_xml_format($returndescription->content,
                             $indentation);
             $return .= $indentation . "</MULTIPLE>" . $brakeline;
             return $return;
-        } else if ($returndescription instanceof external_single_structure) {
+        } else if ($returndescription instanceof \core_external\external_single_structure) {
             // description object is an object
             $singlestructuredesc = $indentation . "<SINGLE>" . $brakeline;
             $keyindentation = $indentation . "    ";
@@ -499,7 +499,7 @@ EOF;
      *
      * @todo MDL-76078 - Incorrect inter-communication, core cannot have plugin dependencies like this.
      *
-     * @param external_description $paramdescription the description structure of the web service function parameters
+     * @param \core_external\external_description $paramdescription the description structure of the web service function parameters
      * @param string $indentation Indentation in the generated HTML code; should contain only spaces.
      * @return string the html to diplay
      */
@@ -510,7 +510,7 @@ EOF;
 
 EOF;
         // description object is a list
-        if ($paramdescription instanceof external_multiple_structure) {
+        if ($paramdescription instanceof \core_external\external_multiple_structure) {
             $return = $brakeline . $indentation . "Array ";
             $indentation = $indentation . "    ";
             $return .= $brakeline . $indentation . "(";
@@ -518,7 +518,7 @@ EOF;
             $return .= $this->xmlrpc_param_description_html($paramdescription->content, $indentation);
             $return .= $brakeline . $indentation . ")";
             return $return;
-        } else if ($paramdescription instanceof external_single_structure) {
+        } else if ($paramdescription instanceof \core_external\external_single_structure) {
             // description object is an object
             $singlestructuredesc = $brakeline . $indentation . "Array ";
             $keyindentation = $indentation . "    ";
@@ -579,7 +579,7 @@ EOF;
      *
      * @todo MDL-76078 - Incorrect inter-communication, core cannot have plugin dependencies like this.
      *
-     * @param external_description $paramdescription the description structure of the web service function parameters
+     * @param \core_external\external_description $paramdescription the description structure of the web service function parameters
      * @param string $paramstring parameter
      * @return string the html to diplay
      */
@@ -589,11 +589,11 @@ EOF;
 
 EOF;
         // description object is a list
-        if ($paramdescription instanceof external_multiple_structure) {
+        if ($paramdescription instanceof \core_external\external_multiple_structure) {
             $paramstring = $paramstring . '[0]';
             $return = $this->rest_param_description_html($paramdescription->content, $paramstring);
             return $return;
-        } else if ($paramdescription instanceof external_single_structure) {
+        } else if ($paramdescription instanceof \core_external\external_single_structure) {
             // description object is an object
             $singlestructuredesc = "";
             $initialparamstring = $paramstring;
@@ -626,7 +626,7 @@ EOF;
      *
      * @todo MDL-76078 - Incorrect inter-communication, core cannot have plugin dependencies like this.
      *
-     * @param array $functions external_description of all the web service functions
+     * @param array $functions \core_external\external_description of all the web service functions
      * @param boolean $printableformat true if we want to display the documentation in a printable format
      * @param array $activatedprotocol the currently enabled protocol
      * @param array $authparams url parameters (it contains 'tokenid' and sometimes 'print')
