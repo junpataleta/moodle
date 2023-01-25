@@ -37,10 +37,13 @@ abstract class external_description {
      * Contructor.
      *
      * @param string $desc Description of element
-     * @param int $required Whethe the element value is required
+     * @param int $required Whether the element value is required. Valid values are VALUE_DEFAULT, VALUE_REQUIRED, VALUE_OPTIONAL.
      * @param mixed $default The default value
      */
     public function __construct($desc, $required, $default) {
+        if (!in_array($required, [VALUE_DEFAULT, VALUE_REQUIRED, VALUE_OPTIONAL])) {
+            throw new \coding_exception('The $required parameter must be either VALUE_DEFAULT, VALUE_REQUIRED, or VALUE_OPTIONAL');
+        }
         $this->desc = $desc;
         $this->required = $required;
         $this->default = $default;
