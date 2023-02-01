@@ -276,4 +276,42 @@ class external_externallib_test extends externallib_advanced_testcase {
         $this->assertEquals('1 01 2011', $result['dates'][2]);
         $this->assertEquals('some invalid format', $result['dates'][3]);
     }
+
+    /**
+     * Data provider for the required param test.
+     *
+     * @return array[]
+     */
+    public function required_param_provider(): array {
+        return [
+            [ VALUE_DEFAULT, false ],
+            [ VALUE_REQUIRED, false ],
+            [ VALUE_OPTIONAL, false ],
+            [ 'aaa', true, 'aaa' ],
+            [ [VALUE_OPTIONAL], true, 'Array: ' . VALUE_OPTIONAL ],
+            [ -1000, true, -1000 ],
+        ];
+    }
+
+    /**
+     * Tests the constructor for the $required parameter validation.
+     *
+     * @dataProvider required_param_provider
+     * @param int $required The required param being tested.
+     * @param bool $debuggingexpected Whether debugging is expected.
+     * @param mixed $requiredstr The string value of the $required param in the debugging message.
+     * @covers \external_value
+     * @covers \external_description
+     * @return void
+     */
+    public function test_required_param_validation($required, $debuggingexpected, $requiredstr = '') {
+        $externalvalue = new \external_value(PARAM_INT, 'Cool description', $required);
+        if ($debuggingexpected) {
+            $this->assertDebuggingCalled("Invalid \$required parameter value: '{$requiredstr}'. 
+                It must be either VALUE_DEFAULT, VALUE_REQUIRED, or VALUE_OPTIONAL", DEBUG_DEVELOPER);
+        }
+        $this->assertEquals(PARAM_INT, $externalvalue->type);
+        $this->assertEquals('Cool description', $externalvalue->desc);
+        $this->assertEquals($required, $externalvalue->required);
+    }
 }

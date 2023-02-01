@@ -603,6 +603,14 @@ abstract class external_description {
      * @since Moodle 2.0
      */
     public function __construct($desc, $required, $default) {
+        if (!in_array($required, [VALUE_DEFAULT, VALUE_REQUIRED, VALUE_OPTIONAL], true)) {
+            $requiredstr = $required;
+            if (is_array($required)) {
+                $requiredstr = "Array: " . implode(" ", $required);
+            }
+            debugging("Invalid \$required parameter value: '{$requiredstr}'. 
+                It must be either VALUE_DEFAULT, VALUE_REQUIRED, or VALUE_OPTIONAL", DEBUG_DEVELOPER);
+        }
         $this->desc = $desc;
         $this->required = $required;
         $this->default = $default;
