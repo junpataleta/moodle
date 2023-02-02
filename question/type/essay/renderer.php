@@ -38,7 +38,10 @@ class qtype_essay_renderer extends qtype_renderer {
             question_display_options $options) {
         global $CFG;
         $question = $qa->get_question();
+
+        /** @var qtype_essay_renderer $responseoutput */
         $responseoutput = $question->get_format_renderer($this->page);
+        $responseoutput->set_question_number($this->questionnumber);
 
         // Answer field.
         $step = $qa->get_last_step_with_qt_var('answer');
@@ -131,7 +134,8 @@ class qtype_essay_renderer extends qtype_renderer {
 
         $labelbyid = $qa->get_qt_field_name('attachments') . '_label';
 
-        $output = html_writer::tag('h4', get_string('answerfiles', 'qtype_essay'), ['id' => $labelbyid, 'class' => 'sr-only']);
+        $fileslabel = $this->get_answer_label('answerfiles', 'answerfilesquestionnum');
+        $output = html_writer::tag('h4', $fileslabel, ['id' => $labelbyid, 'class' => 'sr-only']);
         $output .= html_writer::tag('ul', implode($filelist), [
             'aria-labelledby' => $labelbyid,
             'class' => 'list-unstyled m-0',
@@ -182,7 +186,8 @@ class qtype_essay_renderer extends qtype_renderer {
         }
 
         $output = html_writer::start_tag('fieldset');
-        $output .= html_writer::tag('legend', get_string('answerfiles', 'qtype_essay'), ['class' => 'sr-only']);
+        $fileslabel = $this->get_answer_label('answerfiles', 'answerfilesquestionnum');
+        $output .= html_writer::tag('legend', $fileslabel, ['class' => 'sr-only']);
         $output .= $filesrenderer->render($fm);
         $output .= html_writer::empty_tag('input', [
             'type' => 'hidden',
@@ -204,6 +209,24 @@ class qtype_essay_renderer extends qtype_renderer {
         return html_writer::nonempty_tag('div', $question->format_text(
                 $question->graderinfo, $question->graderinfoformat, $qa, 'qtype_essay',
                 'graderinfo', $question->id), array('class' => 'graderinfo'));
+    }
+
+    /**
+     * Generates a label for an answer field.
+     *
+     * If the question number is set ({@see qtype_renderer::$questionnumber}), the label will
+     * include the question number in order to indicate which question the answer field belongs to.
+     *
+     * @param string $langkey The lang string key for the lang string that does not include the question number.
+     * @param string $langkeywithquestion The lang string key for the lang string that includes the question number.
+     * @return string The label for the answer field.
+     */
+    protected function get_answer_label(string $langkey = 'answertext',
+            string $langkeywithquestion = 'answertextquestionnum'): string {
+        if ($this->questionnumber) {
+            return get_string($langkeywithquestion, 'qtype_essay', $this->questionnumber);
+        }
+        return get_string($langkey, 'qtype_essay');
     }
 }
 
@@ -253,7 +276,7 @@ abstract class qtype_essay_format_renderer_base extends plugin_renderer_base {
  * @copyright  2013 Binghamton University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_essay_format_noinline_renderer extends plugin_renderer_base {
+class qtype_essay_format_noinline_renderer extends qtype_essay_renderer {
 
     protected function class_name() {
         return 'qtype_essay_noinline';
@@ -276,7 +299,7 @@ class qtype_essay_format_noinline_renderer extends plugin_renderer_base {
  * @copyright  2011 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_essay_format_editor_renderer extends plugin_renderer_base {
+class qtype_essay_format_editor_renderer extends qtype_essay_renderer {
     protected function class_name() {
         return 'qtype_essay_editor';
     }
@@ -284,7 +307,7 @@ class qtype_essay_format_editor_renderer extends plugin_renderer_base {
     public function response_area_read_only($name, $qa, $step, $lines, $context) {
         $labelbyid = $qa->get_qt_field_name($name) . '_label';
 
-        $output = html_writer::tag('h4', get_string('answertext', 'qtype_essay'), ['id' => $labelbyid, 'class' => 'sr-only']);
+        $output = html_writer::tag('h4', $this->get_answer_label(), ['id' => $labelbyid, 'class' => 'sr-only']);
         $output .= html_writer::tag('div', $this->prepare_response($name, $qa, $step, $context), [
             'role' => 'textbox',
             'aria-readonly' => 'true',
@@ -320,7 +343,7 @@ class qtype_essay_format_editor_renderer extends plugin_renderer_base {
         $editor->use_editor($id, $this->get_editor_options($context),
                 $this->get_filepicker_options($context, $draftitemid));
 
-        $output = html_writer::tag('label', get_string('answertext', 'qtype_essay'), [
+        $output = html_writer::tag('label', $this->get_answer_label(), [
             'class' => 'sr-only',
             'for' => $id,
         ]);
@@ -514,7 +537,7 @@ class qtype_essay_format_editorfilepicker_renderer extends qtype_essay_format_ed
  * @copyright  2011 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_essay_format_plain_renderer extends plugin_renderer_base {
+class qtype_essay_format_plain_renderer extends qtype_essay_renderer {
     /**
      * @return string the HTML for the textarea.
      */
@@ -532,7 +555,7 @@ class qtype_essay_format_plain_renderer extends plugin_renderer_base {
     public function response_area_read_only($name, $qa, $step, $lines, $context) {
         $id = $qa->get_qt_field_name($name) . '_id';
 
-        $output = html_writer::tag('label', get_string('answertext', 'qtype_essay'), ['class' => 'sr-only', 'for' => $id]);
+        $output = html_writer::tag('label', $this->get_answer_label(), ['class' => 'sr-only', 'for' => $id]);
         $output .= $this->textarea($step->get_qt_var($name), $lines, ['id' => $id, 'readonly' => 'readonly']);
         return $output;
     }
@@ -541,7 +564,7 @@ class qtype_essay_format_plain_renderer extends plugin_renderer_base {
         $inputname = $qa->get_qt_field_name($name);
         $id = $inputname . '_id';
 
-        $output = html_writer::tag('label', get_string('answertext', 'qtype_essay'), ['class' => 'sr-only', 'for' => $id]);
+        $output = html_writer::tag('label', $this->get_answer_label(), ['class' => 'sr-only', 'for' => $id]);
         $output .= $this->textarea($step->get_qt_var($name), $lines, ['name' => $inputname, 'id' => $id]);
         $output .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $inputname . 'format', 'value' => FORMAT_PLAIN]);
 
