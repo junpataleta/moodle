@@ -1797,6 +1797,15 @@ class cm_info implements IteratorAggregate {
     }
 
     /**
+     * Whether the icon for this activity is from an external source.
+     *
+     * @return bool
+     */
+    public function is_icon_external(): bool {
+        return !empty($this->iconurl);
+    }
+
+    /**
      * @param string $textclasses additionnal classes for grouping label
      * @return string An empty string or HTML grouping label span tag
      */
