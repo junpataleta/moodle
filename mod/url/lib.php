@@ -209,7 +209,7 @@ function url_delete_instance($id) {
  * @return cached_cm_info info
  */
 function url_get_coursemodule_info($coursemodule) {
-    global $CFG, $DB;
+    global $CFG, $DB, $OUTPUT;
     require_once("$CFG->dirroot/mod/url/locallib.php");
 
     if (!$url = $DB->get_record('url', array('id'=>$coursemodule->instance),
@@ -221,7 +221,10 @@ function url_get_coursemodule_info($coursemodule) {
     $info->name = $url->name;
 
     //note: there should be a way to differentiate links from normal resources
-    $info->icon = url_guess_icon($url->externalurl, 24);
+    $info->icon = url_guess_icon($url->externalurl, 48);
+    if ($info->icon !== null) {
+        $info->iconurl = $OUTPUT->image_url($info->icon);
+    }
 
     $display = url_get_final_display_type($url);
 
