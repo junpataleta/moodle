@@ -12485,38 +12485,38 @@ blockquote {
 
 .activityiconcontainer.administration {
   background-color: #5d63f6; }
-  .activityiconcontainer.administration .activityicon,
-  .activityiconcontainer.administration .icon {
+  .activityiconcontainer.administration .activityicon:not(.external),
+  .activityiconcontainer.administration .icon:not(.external) {
     filter: brightness(0) invert(1); }
 
 .activityiconcontainer.assessment {
   background-color: #eb66a2; }
-  .activityiconcontainer.assessment .activityicon,
-  .activityiconcontainer.assessment .icon {
+  .activityiconcontainer.assessment .activityicon:not(.external),
+  .activityiconcontainer.assessment .icon:not(.external) {
     filter: brightness(0) invert(1); }
 
 .activityiconcontainer.collaboration {
   background-color: #f7634d; }
-  .activityiconcontainer.collaboration .activityicon,
-  .activityiconcontainer.collaboration .icon {
+  .activityiconcontainer.collaboration .activityicon:not(.external),
+  .activityiconcontainer.collaboration .icon:not(.external) {
     filter: brightness(0) invert(1); }
 
 .activityiconcontainer.communication {
   background-color: #11a676; }
-  .activityiconcontainer.communication .activityicon,
-  .activityiconcontainer.communication .icon {
+  .activityiconcontainer.communication .activityicon:not(.external),
+  .activityiconcontainer.communication .icon:not(.external) {
     filter: brightness(0) invert(1); }
 
 .activityiconcontainer.content {
   background-color: #399be2; }
-  .activityiconcontainer.content .activityicon,
-  .activityiconcontainer.content .icon {
+  .activityiconcontainer.content .activityicon:not(.external),
+  .activityiconcontainer.content .icon:not(.external) {
     filter: brightness(0) invert(1); }
 
 .activityiconcontainer.interface {
   background-color: #a378ff; }
-  .activityiconcontainer.interface .activityicon,
-  .activityiconcontainer.interface .icon {
+  .activityiconcontainer.interface .activityicon:not(.external),
+  .activityiconcontainer.interface .icon:not(.external) {
     filter: brightness(0) invert(1); }
 
 :root {
