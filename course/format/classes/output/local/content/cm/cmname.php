@@ -102,9 +102,11 @@ class cmname implements named_templatable, renderable {
             return [];
         }
 
+        $iconurl = $mod->get_icon_url();
         $data = [
             'url' => $mod->url,
-            'icon' => $mod->get_icon_url(),
+            'icon' => $iconurl,
+            'issvg' => $iconurl->get_param('issvg'),
             'modname' => $mod->modname,
             'pluginname' => get_string('pluginname', 'mod_' . $mod->modname),
             'textclasses' => $displayoptions['textclasses'] ?? '',
