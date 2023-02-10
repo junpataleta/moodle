@@ -1767,12 +1767,14 @@ class cm_info implements IteratorAggregate {
      * @return moodle_url Icon URL for a suitable icon to put beside this cm
      */
     public function get_icon_url($output = null) {
-        global $OUTPUT;
+        global $OUTPUT, $PAGE;
         $this->obtain_dynamic_data();
         if (!$output) {
             $output = $OUTPUT;
         }
 
+        $imagefile = null;
+        $usesvg = $PAGE->theme->use_svg_icons();
         if (!empty($this->iconurl)) {
             // Support modules setting their own, external, icon image.
             $icon = $this->iconurl;
@@ -1781,6 +1783,7 @@ class cm_info implements IteratorAggregate {
             if (substr($this->icon, 0, 4) === 'mod/') {
                 list($modname, $iconname) = explode('/', substr($this->icon, 4), 2);
                 $icon = $output->image_url($iconname, $modname);
+                $imagefile = $PAGE->theme->resolve_image_location($iconname, $modname, $usesvg);
             } else {
                 if (!empty($this->iconcomponent)) {
                     // Icon has specified component.
@@ -1789,9 +1792,19 @@ class cm_info implements IteratorAggregate {
                     // Icon does not have specified component, use default.
                     $icon = $output->image_url($this->icon);
                 }
+                $imagefile = $PAGE->theme->resolve_image_location($this->icon, $this->iconcomponent, $usesvg);
             }
         } else {
             $icon = $output->image_url('monologo', $this->modname);
+            $imagefile = $PAGE->theme->resolve_image_location('monologo', $this->modname, $usesvg);
+        }
+
+        // Determine whether this image type is an SVG file. If so, add a parameter to the icon URL that indicates this.
+        if ($imagefile) {
+            $extension = mime_content_type($imagefile);
+            if (strpos($extension, 'image/svg') !== false) {
+                $icon->param('issvg', 1);
+            }
         }
         return $icon;
     }
