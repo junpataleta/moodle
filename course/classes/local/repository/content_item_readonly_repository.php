@@ -269,12 +269,14 @@ class content_item_readonly_repository implements content_item_readonly_reposito
             $archetype = plugin_supports('mod', $mod->name, FEATURE_MOD_ARCHETYPE, MOD_ARCHETYPE_OTHER);
             $purpose = plugin_supports('mod', $mod->name, FEATURE_MOD_PURPOSE, MOD_PURPOSE_OTHER);
 
+            $icon = 'monologo';
+            $iconclass = $this->get_icon_class($icon, $mod->name);
             $contentitem = new content_item(
                 $mod->id,
                 $mod->name,
                 new lang_string_title("modulename", $mod->name),
                 new \moodle_url($urlbase, ['add' => $mod->name]),
-                $OUTPUT->pix_icon('monologo', '', $mod->name, ['class' => 'icon activityicon']),
+                $OUTPUT->pix_icon($icon, '', $mod->name, ['class' => "activityicon $iconclass"]),
                 $help,
                 $archetype,
                 'mod_' . $mod->name,
@@ -337,5 +339,25 @@ class content_item_readonly_repository implements content_item_readonly_reposito
         }
 
         return $return;
+    }
+
+    /**
+     * Fetch the CSS class for the item's icon.
+     *
+     * This will return 'nofilter' for non-SVG icons, so they can be rendered properly.
+     * Returns an empty string for SVG icons.
+     *
+     * @param string $icon
+     * @param string|null $component
+     * @return string
+     */
+    protected function get_icon_class(string $icon, ?string $component = null): string {
+        // Determine the file type of the activity icon.
+        $icontype = file_get_icon_mimetype($icon, $component);
+        // Return 'nofilter' CSS class for non-SVG icons.
+        if (!file_is_svg_image_from_mimetype($icontype)) {
+            return 'nofilter';
+        }
+        return '';
     }
 }
