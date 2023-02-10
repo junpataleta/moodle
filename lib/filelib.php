@@ -1889,6 +1889,24 @@ function file_file_icon($file, $size = null) {
 }
 
 /**
+ * A function that resolves an icon's MIME type.
+ *
+ * This can be used to determine the file format being used for the icon in the current theme.
+ * (e.g. the icon's SVG version or PNG version)
+ *
+ * @param string $iconname The icon name. e.g. monologo.
+ * @param string|null $component The component that the icon belongs to.
+ * @return string
+ */
+function file_get_icon_mimetype(string $iconname, ?string $component = null): string {
+    global $PAGE;
+
+    $usesvg = $PAGE->theme->use_svg_icons();
+    $iconfile = $PAGE->theme->resolve_image_location($iconname, $component, $usesvg);
+    return file_storage::mimetype_from_file($iconfile);
+}
+
+/**
  * Return the relative icon path for a folder image
  *
  * Usage:
