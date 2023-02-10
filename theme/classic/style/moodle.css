@@ -12485,38 +12485,38 @@ blockquote {
 
 .activityiconcontainer.administration {
   background-color: #5d63f6; }
-  .activityiconcontainer.administration .activityicon,
-  .activityiconcontainer.administration .icon {
+  .activityiconcontainer.administration .activityicon.svg,
+  .activityiconcontainer.administration .icon.svg {
     filter: brightness(0) invert(1); }
 
 .activityiconcontainer.assessment {
   background-color: #eb66a2; }
-  .activityiconcontainer.assessment .activityicon,
-  .activityiconcontainer.assessment .icon {
+  .activityiconcontainer.assessment .activityicon.svg,
+  .activityiconcontainer.assessment .icon.svg {
     filter: brightness(0) invert(1); }
 
 .activityiconcontainer.collaboration {
   background-color: #f7634d; }
-  .activityiconcontainer.collaboration .activityicon,
-  .activityiconcontainer.collaboration .icon {
+  .activityiconcontainer.collaboration .activityicon.svg,
+  .activityiconcontainer.collaboration .icon.svg {
     filter: brightness(0) invert(1); }
 
 .activityiconcontainer.communication {
   background-color: #11a676; }
-  .activityiconcontainer.communication .activityicon,
-  .activityiconcontainer.communication .icon {
+  .activityiconcontainer.communication .activityicon.svg,
+  .activityiconcontainer.communication .icon.svg {
     filter: brightness(0) invert(1); }
 
 .activityiconcontainer.content {
   background-color: #399be2; }
-  .activityiconcontainer.content .activityicon,
-  .activityiconcontainer.content .icon {
+  .activityiconcontainer.content .activityicon.svg,
+  .activityiconcontainer.content .icon.svg {
     filter: brightness(0) invert(1); }
 
 .activityiconcontainer.interface {
   background-color: #a378ff; }
-  .activityiconcontainer.interface .activityicon,
-  .activityiconcontainer.interface .icon {
+  .activityiconcontainer.interface .activityicon.svg,
+  .activityiconcontainer.interface .icon.svg {
     filter: brightness(0) invert(1); }
 
 :root {
