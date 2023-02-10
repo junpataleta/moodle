@@ -1763,7 +1763,14 @@ class cm_info implements IteratorAggregate {
     }
 
     /**
-     * @param moodle_core_renderer $output Output render to use, or null for default (global)
+     * Fetch the module's icon URL.
+     *
+     * This function fetches the course module instance's icon URL.
+     * If the icon is an SVG file, an additional `issvg` parameter is added to the URL which can be used by plugins that may need
+     * to render non-SVG icons differently compared to the icon's SVG counterpart.
+     * (e.g. whether to apply a `nofilter` CSS class for a plugin icon's non-SVG version, so it can be rendered as is).
+     *
+     * @param core_renderer $output Output render to use, or null for default (global)
      * @return moodle_url Icon URL for a suitable icon to put beside this cm
      */
     public function get_icon_url($output = null) {
@@ -1776,11 +1783,13 @@ class cm_info implements IteratorAggregate {
         if (!empty($this->iconurl)) {
             // Support modules setting their own, external, icon image.
             $icon = $this->iconurl;
+            $icontype = file_storage::mimetype_from_file($icon);
         } else if (!empty($this->icon)) {
             // Fallback to normal local icon + component processing.
             if (substr($this->icon, 0, 4) === 'mod/') {
                 list($modname, $iconname) = explode('/', substr($this->icon, 4), 2);
                 $icon = $output->image_url($iconname, $modname);
+                $icontype = file_get_icon_mimetype($iconname, $modname);
             } else {
                 if (!empty($this->iconcomponent)) {
                     // Icon has specified component.
@@ -1789,9 +1798,16 @@ class cm_info implements IteratorAggregate {
                     // Icon does not have specified component, use default.
                     $icon = $output->image_url($this->icon);
                 }
+                $icontype = file_get_icon_mimetype($this->icon, $this->iconcomponent);
             }
         } else {
             $icon = $output->image_url('monologo', $this->modname);
+            $icontype = file_get_icon_mimetype('monologo', $this->modname);
+        }
+
+        // Determine whether this image type is an SVG file. If so, add a parameter to the icon URL that indicates this.
+        if ($icontype && file_is_svg_image_from_mimetype($icontype)) {
+            $icon->param('issvg', 1);
         }
         return $icon;
     }
