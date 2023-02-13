@@ -1,6 +1,18 @@
 This files describes API changes in core libraries and APIs,
 information provided here is intended especially for developers.
 
+=== 4.0.8 ===
+
+* New file_get_icon_mimetype() that resolves an icon file's MIME type from its icon name and component. This can be used to
+  determine the file format being used for the icon in the current theme (e.g. the icon's SVG version or PNG version).
+* \cm_info::get_icon_url() resolves the icon's file type and adds an `issvg` parameter in the URL when rendering the SVG version of
+  the course module icon. This additional information can be used by plugins rendering the module icon differently for their icons'
+  non-SVG versions. (e.g. whether to apply a `nofilter` CSS class for a plugin icon's non-SVG version, so it can be rendered
+  as is).
+* Plugins displaying activity module icons using \cm_info::get_icon_url() and enclosing them in `.activityiconcontainer .icon` or
+  `.activityiconcontainer .activityicon` containers need to apply a `.nofilter` CSS class when the activity icon being rendered
+  is not an SVG file so the icon can be rendered as is and not appear whitened out.
+
 === 4.0.7 ===
 
 * The method `flexible_table::set_columnsattributes` now can be used with 'class' key to add custom classes to the DOM.
