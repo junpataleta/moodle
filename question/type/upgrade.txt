@@ -1,5 +1,11 @@
 This files describes API changes for question type plugins.
 
+=== 4.0.7 ===
+
+* A `$questionnumber` property has been added to `\qtype_renderer` to enable question type plugins to associate the
+question to a question number where the question is being rendered.
+
+
 === 4.0.2, 4.1 ===
 
 * There was one issue caused by the changes in Moodle 4.0 which requires changes in question types,
