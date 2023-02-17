@@ -86,8 +86,18 @@ class qtype_shortanswer_renderer extends qtype_renderer {
 
         if (!$placeholder) {
             $result .= html_writer::start_tag('div', array('class' => 'ablock form-inline'));
-            $result .= html_writer::tag('label', get_string('answer', 'qtype_shortanswer',
-                    html_writer::tag('span', $input, array('class' => 'answer'))),
+            $answerspan = html_writer::tag('span', $input, array('class' => 'answer'));
+            if ($options->has_question_identifier()) {
+                // Visible label text but hidden to screen readers.
+                $questionnumber = html_writer::span(get_string('answer', 'qtype_shortanswer', ''), '', ['aria-hidden' => 'true']);
+                // Screen reader only text label that will link the answer input to the question number.
+                $srlabel = get_string('answerquestionx', 'question', $options->questionidentifier);
+                $questionnumber .= html_writer::span($srlabel, 'sr-only');
+                $questionnumber .= $answerspan;
+            } else {
+                $questionnumber = get_string('answer', 'qtype_shortanswer', $answerspan);
+            }
+            $result .= html_writer::tag('label', $questionnumber,
                     array('for' => $inputattributes['id']));
             $result .= html_writer::end_tag('div');
         }
