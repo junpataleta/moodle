@@ -1,5 +1,16 @@
 This files describes API changes for question type plugins.
 
+=== 4.2 ===
+
+* A `$questionnumber` property has been added to `\question_display_options` to enable question type plugins to associate the
+question number to the question that is being rendered. This can be used to improve the accessibility of rendered
+questions and can be especially be helpful for screen reader users as adding the question number on the answer field(s) labels
+will allow them to distinguish between answer fields as they navigate through a quiz.
+* Question type plugins can use \question_display_options::get_answer_field_label() to determine the lang string to be used
+for the label of the answer field(s) of the question that is being rendered. Labels that include the question number may be too
+verbose so these are recommended to be rendered within sr-only containers.
+
+
 === 4.0.2, 4.1 ===
 
 * There was one issue caused by the changes in Moodle 4.0 which requires changes in question types,

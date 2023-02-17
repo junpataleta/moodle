@@ -640,6 +640,11 @@ class question_display_options {
     public $userinfoinhistory = self::HIDDEN;
 
     /**
+     * @var string The question number that the question being rendered is associated with.
+     */
+    public $questionnumber;
+
+    /**
      * Set all the feedback-related fields {@link $feedback}, {@link generalfeedback},
      * {@link rightanswer} and {@link manualcomment} to
      * {@link question_display_options::HIDDEN}.
@@ -668,6 +673,43 @@ class question_display_options {
             $options[$i] = $i;
         }
         return $options;
+    }
+
+    /**
+     * Generates a label for an answer field.
+     *
+     * If the question number is set ({@see $questionnumber}), the label will
+     * include the question number in order to indicate which question the answer field belongs to.
+     *
+     * @param string $answer The lang string key for the answer field label that does not include the question number.
+     * @param string $answerquestion The lang string key for the answer field label with the question number.
+     * @param string $answercomponent The component for the answer label without the question number.
+     * @param string $answerquestioncomponent The component for the answer label with the question number.
+     * @param mixed|null $params The parameters for the lang string.
+     * @return string The label for the answer field.
+     * @throws coding_exception
+     */
+    public function get_answer_field_label(
+        string $answer = 'answer',
+        string $answercomponent = 'question',
+        string $answerquestion = 'answerquestionx',
+        string $answerquestioncomponent = 'question',
+        mixed $params = null
+    ): string {
+        // Use the lang string with the question number if the question number is a non-empty string.
+        if ($this->has_questionnumber()) {
+            return get_string($answerquestion, $answerquestioncomponent, $params);
+        }
+        return get_string($answer, $answercomponent, $params);
+    }
+
+    /**
+     * Whether a question number has been provided for the question that is being displayed.
+     *
+     * @return bool
+     */
+    public function has_questionnumber(): bool {
+        return $this->questionnumber !== null && trim($this->questionnumber) !== '';
     }
 }
 
