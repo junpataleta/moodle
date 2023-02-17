@@ -125,7 +125,17 @@ class qtype_numerical_renderer extends qtype_renderer {
 
         if (!$placeholder) {
             $result .= html_writer::start_tag('div', array('class' => 'ablock form-inline'));
-            $result .= html_writer::tag('label', get_string('answercolon', 'qtype_numerical'), array('for' => $inputattributes['id']));
+            if (!empty($this->questionnumber)) {
+                // Visible label text but hidden to screen readers.
+                $questionnumber = html_writer::span(get_string('answercolon', 'qtype_numerical', ''), '',
+                        ['aria-hidden' => 'true']);
+                // Screen reader-only text label that will link the answer input to the question number.
+                $questionnumber .= html_writer::span(get_string('answerquestionx', 'question', $this->questionnumber), 'sr-only');
+            } else {
+                $questionnumber = get_string('answercolon', 'qtype_numerical');
+            }
+            $result .= html_writer::tag('label', $questionnumber,
+                array('for' => $inputattributes['id']));
             $result .= html_writer::tag('span', $input, array('class' => 'answer'));
             $result .= html_writer::end_tag('div');
         }
