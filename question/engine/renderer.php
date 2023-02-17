@@ -97,6 +97,9 @@ class core_question_renderer extends plugin_renderer_base {
 
         $output .= html_writer::start_tag('div', array('class' => 'content'));
 
+        // Trim the question number of whitespace, including &nbsp;.
+        $questionnumber = trim(html_entity_decode($number), " \n\r\t\v\x00\xC2\xA0");
+        $qtoutput->set_question_number($questionnumber);
         $output .= html_writer::tag('div',
                 $this->add_part_heading($qtoutput->formulation_heading(),
                     $this->formulation($qa, $behaviouroutput, $qtoutput, $options)),

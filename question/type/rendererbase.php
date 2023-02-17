@@ -34,6 +34,10 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class qtype_renderer extends plugin_renderer_base {
+
+    /** @var string The question number that is associated with this question when it is rendered. */
+    protected $questionnumber;
+
     /**
      * Generate the display of the formulation part of the question. This is the
      * area that contains the quetsion text, and the controls for students to
@@ -229,6 +233,16 @@ abstract class qtype_renderer extends plugin_renderer_base {
         $feedbackclass = question_state::graded_state_for_fraction($fraction)->get_feedback_class();
 
         return $this->output->pix_icon('i/grade_' . $feedbackclass, get_string($feedbackclass, 'question'));
+    }
+
+    /**
+     * Question number setter
+     *
+     * @param string|null $questionnumber
+     * @return void
+     */
+    public function set_question_number(?string $questionnumber): void {
+        $this->questionnumber = $questionnumber;
     }
 }
 
