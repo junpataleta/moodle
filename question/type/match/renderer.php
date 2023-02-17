@@ -77,8 +77,16 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
                 $feedbackimage = $this->feedback_image($fraction);
             }
 
+            $labeltext = get_string('answer', 'qtype_match', $i);
+            if (!empty($this->questionnumber)) {
+                // Link the answer to the question number when available.
+                $labeltext = get_string('answerxquestiony', 'question', (object) [
+                    'number' => $i,
+                    'question' => $this->questionnumber,
+                ]);
+            }
             $result .= html_writer::tag('td',
-                    html_writer::label(get_string('answer', 'qtype_match', $i),
+                    html_writer::label($labeltext,
                             'menu' . $qa->get_qt_field_name('sub' . $key), false,
                             array('class' => 'accesshide')) .
                     html_writer::select($choices, $qa->get_qt_field_name('sub' . $key), $selected,
