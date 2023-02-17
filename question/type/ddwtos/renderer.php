@@ -76,8 +76,12 @@ class qtype_ddwtos_renderer extends qtype_elements_embedded_in_question_text_ren
             question_display_options $options) {
         $question = $qa->get_question();
         $group = $question->places[$place];
-        $boxcontents = '&#160;' . html_writer::tag('span',
-                get_string('blank', 'qtype_ddwtos'), array('class' => 'accesshide'));
+        $params = (object)[
+            'number' => $place,
+            'question' => $options->questionnumber,
+        ];
+        $label = $options->get_answer_field_label('blanknumber', 'qtype_ddwtos', 'blanknumberquestion', 'qtype_ddwtos', $params);
+        $boxcontents = '&#160;' . html_writer::tag('span', $label, array('class' => 'accesshide'));
 
         $value = $qa->get_last_qt_var($question->field($place));
 
