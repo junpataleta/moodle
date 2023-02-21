@@ -432,7 +432,7 @@ class qtype_multianswer_multichoice_vertical_renderer extends qtype_multianswer_
                 unset($inputattributes['checked']);
             }
 
-            $class = 'form-check';
+            $class = 'form-check text-wrap text-break';
             if ($options->correctness && $isselected) {
                 $feedbackimg = $this->feedback_image($ans->fraction);
                 $class .= ' ' . $this->feedback_class($ans->fraction);
@@ -444,7 +444,7 @@ class qtype_multianswer_multichoice_vertical_renderer extends qtype_multianswer_
             $result .= html_writer::empty_tag('input', $inputattributes);
             $result .= html_writer::tag('label', $subq->format_text($ans->answer,
                     $ans->answerformat, $qa, 'question', 'answer', $ansid),
-                    array('for' => $inputattributes['id']));
+                    array('for' => $inputattributes['id'], 'class' => 'form-check-label text-body'));
             $result .= $feedbackimg;
 
             if ($options->feedback && $isselected && trim($ans->feedback)) {
