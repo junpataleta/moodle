@@ -649,6 +649,11 @@ const Tour = class {
         {
             node: $('body'),
             args: ['keydown', $.proxy(this.handleKeyDown, this)]
+        },
+        // Resize.
+        {
+            node: $(window),
+            args: ['resize', $.proxy(this.handleResize, this)]
         });
 
         if (stepConfig.moveOnClick) {
@@ -1095,6 +1100,15 @@ const Tour = class {
         }
 
         return this;
+    }
+
+    handleResize() {
+        clearTimeout(window.resizedFinished);
+        window.resizedFinished = setTimeout(() => {
+            // Wait until the resize event has finished.
+            this.hide();
+            this.startTour();
+        }, 250);
     }
 
     /**
