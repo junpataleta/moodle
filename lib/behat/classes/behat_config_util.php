@@ -552,7 +552,15 @@ class behat_config_util {
                 'extensions' => array(
                     'Behat\MinkExtension' => array(
                         'base_url' => $CFG->behat_wwwroot,
-                        'browserkit_http' => null,
+                        'browserkit_http' => [
+                            // Do not validate certificate security.
+                            // This is required for situations where we test things like oauth.
+                            'guzzle_parameters' => [
+                                'defaults' => [
+                                    'verify' => false,
+                                ],
+                            ],
+                        ],
                         'webdriver' => $webdriverwdhost
                     ),
                     'Moodle\BehatExtension' => array(
