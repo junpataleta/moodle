@@ -95,18 +95,20 @@ class qtype_truefalse_renderer extends qtype_renderer {
                 html_writer::tag('label', get_string('false', 'qtype_truefalse'),
                 array('for' => $falseattributes['id'], 'class' => 'ml-1'));
 
-        $result = '';
-        $result .= html_writer::tag('div', $question->format_questiontext($qa),
-                array('class' => 'qtext'));
+        $qtextid = $qa->get_qt_field_name('qtext');
+        $result = html_writer::tag('div', $question->format_questiontext($qa), ['class' => 'qtext', 'id' => $qtextid]);
 
-        $result .= html_writer::start_tag('fieldset', array('class' => 'ablock'));
-        $legendclass = 'sr-only';
+        $legendhtml = '';
+        $fieldsetparams = ['class' => 'ablock'];
         if (!empty($question->showstandardinstruction)) {
-            $legendclass = '';
+            $questionnumber = $options->add_question_identifier_to_label(get_string('selectone', 'qtype_truefalse'), true, true);
+            $legendhtml = html_writer::tag('legend', $questionnumber, ['class' => 'prompt h6 font-weight-normal']);
+        } else {
+            // When the standard instruction is not shown, set the question text as the label for the options fieldset.
+            $fieldsetparams['aria-labelledby'] = $qtextid;
         }
-        $questionnumber = $options->add_question_identifier_to_label(get_string('selectone', 'qtype_truefalse'), true, true);
-        $result .= html_writer::tag('legend', $questionnumber,
-            array('class' => 'prompt h6 font-weight-normal ' . $legendclass));
+        $result .= html_writer::start_tag('fieldset', $fieldsetparams);
+        $result .= $legendhtml;
 
         $result .= html_writer::start_tag('div', array('class' => 'answer'));
         $result .= html_writer::tag('div', $radiotrue . ' ' . $truefeedbackimg,
