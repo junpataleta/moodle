@@ -145,20 +145,20 @@ abstract class qtype_multichoice_renderer_base extends qtype_with_combined_feedb
             $classes[] = $class;
         }
 
-        $result = '';
-        $result .= html_writer::tag('div', $question->format_questiontext($qa),
-                array('class' => 'qtext'));
+        $qtextid = $qa->get_qt_field_name('qtext');
+        $result = html_writer::tag('div', $question->format_questiontext($qa), ['class' => 'qtext', 'id' => $qtextid]);
 
-        $questionnumber = $options->add_question_identifier_to_label($this->prompt(), true, true);
-        $result .= html_writer::start_tag('fieldset', array('class' => 'ablock no-overflow visual-scroll-x'));
-        $legendclass = 'sr-only';
+        $legendhtml = '';
+        $fieldsetparams = ['class' => 'ablock no-overflow visual-scroll-x'];
         if ($question->showstandardinstruction == 1) {
-            $legendclass = '';
+            $questionnumber = $options->add_question_identifier_to_label($this->prompt(), true, true);
+            $legendhtml = html_writer::tag('legend', $questionnumber, ['class' => 'prompt h6 font-weight-normal']);
+        } else {
+            // When the standard instruction is not shown, set the question text as the label for the options fieldset.
+            $fieldsetparams['aria-labelledby'] = $qtextid;
         }
-        $legendattrs = [
-            'class' => 'prompt h6 font-weight-normal ' . $legendclass,
-        ];
-        $result .= html_writer::tag('legend', $questionnumber, $legendattrs);
+        $result .= html_writer::start_tag('fieldset', $fieldsetparams);
+        $result .= $legendhtml;
 
         $result .= html_writer::start_tag('div', array('class' => 'answer'));
         foreach ($radiobuttons as $key => $radio) {
