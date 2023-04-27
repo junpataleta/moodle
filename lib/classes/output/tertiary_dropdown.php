@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace core_grades\output;
+namespace core\output;
 
 use moodle_exception;
 use renderable;
@@ -24,16 +24,11 @@ use templatable;
 /**
  * Renderable class for the dropdown in the gradebook pages.
  *
- * We have opted to have this as a class as opposed to a renderable for prosperity
- * in the case that custom handling is required by the calling code.
- *
- * This could become a abstract class if other components require similar functionality and wish to extend the base here.
- *
- * @package    core_grades
+ * @package    core_output
  * @copyright  2022 Mathew May <Mathew.solutions>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class gradebook_dropdown implements renderable, templatable {
+class tertiary_dropdown implements renderable, templatable {
 
     /** @var bool $renderlater Should the dropdown render straightaway? */
     protected $renderlater;
@@ -119,6 +114,7 @@ class gradebook_dropdown implements renderable, templatable {
             'dropdownclasses' => $this->dropdownclasses,
             'buttonheader' => $this->buttonheader,
             'usebutton' => $this->usesbutton,
+            'instance' => rand(), // Template uniqid is per render out so sometimes these conflict.
         ];
     }
 
@@ -128,6 +124,6 @@ class gradebook_dropdown implements renderable, templatable {
      * @return string
      */
     public function get_template(): string {
-        return 'core_grades/tertiary_navigation_dropdown';
+        return 'core/navigation_dropdown';
     }
 }

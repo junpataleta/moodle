@@ -51,7 +51,7 @@ export const userFetch = (courseid, groupId) => {
  */
 export const groupFetch = (courseid) => {
     const request = {
-        methodname: 'core_grades_get_groups_for_selector',
+        methodname: 'core_group_get_groups_for_selector',
         args: {
             courseid: courseid,
         },

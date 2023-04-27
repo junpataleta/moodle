@@ -871,6 +871,7 @@ $string['viewas'] = 'View report as';
 $string['viewbygroup'] = 'Group';
 $string['viewfeedback'] = 'View feedback';
 $string['viewgrades'] = 'View grades';
+$string['viewresults'] = 'View results for {$a}';
 $string['weight'] = 'weight';
 $string['weight_help'] = 'A value used to determine the relative value of multiple grade items in a category or course.';
 $string['weightcourse'] = 'Use weighted grades for course';
@@ -893,6 +894,9 @@ $string['yes'] = 'Yes';
 $string['yourgrade'] = 'Your grade';
 
 $string['aria-toggledropdown'] = 'Toggle the following dropdown';
+$string['aria:dropdowngrades'] = 'Grade items found';
+$string['aria:dropdowngroups'] = 'Groups found';
+$string['aria:dropdownusers'] = 'Users found';
 
 // Deprecated since Moodle 4.0.
 $string['navmethod'] = 'Navigation method';

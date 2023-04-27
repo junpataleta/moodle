@@ -35265,6 +35265,25 @@ p.arrow_button {
   display: none;
 }
 
+.usersearchdropdown,
+.gradesearchdropdown,
+.groupsearchdropdown {
+  max-width: 350px;
+}
+.usersearchdropdown .searchresultitemscontainer,
+.gradesearchdropdown .searchresultitemscontainer,
+.groupsearchdropdown .searchresultitemscontainer {
+  max-height: 170px;
+  overflow: auto;
+  /* stylelint-disable declaration-no-important */
+}
+.usersearchdropdown .searchresultitemscontainer img,
+.gradesearchdropdown .searchresultitemscontainer img,
+.groupsearchdropdown .searchresultitemscontainer img {
+  height: 48px !important;
+  width: 48px !important;
+}
+
 .search-widget .dropdown-menu {
   padding: 0.8rem 1.2rem;
 }

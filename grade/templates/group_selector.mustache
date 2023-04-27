@@ -21,48 +21,24 @@
 
     Context variables required for this template:
     * label - The label text fot the group selector element.
-    * name - The name of the group selector element
     * group - The value of the group selector element (id of the preselected group)
-    * courseid - The course ID.
-    * groupactionbaseurl - The base URL for the group action.
     * selectedgroup - The text of the selected group option.
 
     Example context (json):
     {
         "label": "Select separate groups",
-        "name": "group",
         "group": "21",
-        "courseid": "2",
-        "groupactionbaseurl": "index.php?item=test",
         "selectedgroup": "Group 1"
     }
 }}
-<div class="search-widget d-flex dropdown" data-searchtype="group">
-    <div
-        tabindex="0"
-        aria-expanded="false"
-        role="combobox"
-        aria-haspopup="dialog"
-        aria-controls="dialog-{{uniqid}}"
-        data-toggle="dropdown"
-        class="btn dropdown-toggle d-flex text-left align-items-center p-0"
-        data-courseid="{{courseid}}"
-        data-action-base-url="{{groupactionbaseurl}}"
-        aria-label="{{#cleanstr}} selectagroup, core {{/cleanstr}}"
-        data-input-element="input-{{uniqid}}"
-    >
-        <div class="align-items-center d-flex">
-            <div class="d-block pr-3">
-                <span class="d-block small">
-                    {{label}}
-                </span>
-                <span class="p-0 font-weight-bold">
-                    {{selectedgroup}}
-                </span>
-            </div>
-        </div>
+<span class="d-none" data-region="groupid" data-groupid="{{group}}" aria-hidden="true"></span>
+<div class="align-items-center d-flex">
+    <div class="d-block pr-3 text-truncate">
+        <span class="d-block small">
+            {{label}}
+        </span>
+        <span class="p-0 font-weight-bold">
+            {{selectedgroup}}
+        </span>
     </div>
-    <div class="dropdown-menu narrow" id="dialog-{{uniqid}}" role="dialog" aria-modal="true" aria-label="{{#cleanstr}} selectagroup, core {{/cleanstr}}">
-    </div>
-    <input type="hidden" name="{{name}}" value="{{group}}" id="input-{{uniqid}}" />
 </div>
