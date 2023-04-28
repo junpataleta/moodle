@@ -23,6 +23,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['aria:dropdowncolumns'] = 'Collapsed columns found';
 $string['clearsearch'] = 'Clear searched users';
 $string['collapsedcolumns'] = 'Collapsed columns <span class="badge badge-pill badge-primary ml-1" data-collapse="count">{$a}</span>';
 $string['eventgradereportviewed'] = 'Grader report viewed';
@@ -52,7 +53,6 @@ $string['overriddengrade'] = 'Overridden grade';
 $string['advancedgrading'] = 'View {$a} results';
 $string['cellactions'] = 'Cell actions';
 $string['viewallresults'] = 'View all results ({$a})';
-$string['viewresultsuser'] = 'View results for {$a}';
 
 // Deprecated since Moodle 4.2.
 $string['privacy:metadata:preference:grade_report_showanalysisicon'] = 'Whether to show grade analysis icon by default. If the activity module supports it, the grade analysis icon links to a page with more detailed explanation of the grade and how it was obtained.';
@@ -68,3 +68,4 @@ $string['ajaxfieldchanged'] = 'The field you are currently editing has changed, 
 $string['ajaxchoosescale'] = 'Choose';
 $string['privacy:metadata:preference:grade_report_showactivityicons'] = 'Whether to show the activity icons next to activity names';
 $string['privacy:metadata:preference:grade_report_showcalculations'] = 'Whether a calculator icon for each grade item and category with a visual indicator that a grade item is calculated is displayed or not when editing is turned on';
+$string['viewresultsuser'] = 'View results for {$a}';

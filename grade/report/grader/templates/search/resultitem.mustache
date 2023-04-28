@@ -34,24 +34,25 @@
         "link": "http://foo.bar/grade/report/grader/index.php?id=42&userid=2"
     }
 }}
-<li class="w-100 result-row" role="none" id="result-row-{{id}}">
-    <a role="option" id="user-{{id}}" href="{{{link}}}" class="dropdown-item d-flex px-2 py-1 align-items-center" tabindex="-1" aria-label="{{#str}}viewresultsuser, gradereport_grader, {{fullname}}{{/str}}">
-        <div class="d-block pr-2 w-25">
+{{<core/local/comboboxsearch/resultitem }}
+    {{$arialabel}}{{#str}}viewresultsuser, gradereport_grader, {{fullname}}{{/str}}{{/arialabel}}
+    {{$content}}
+        <span class="d-block px-2 w-25">
             {{#profileimageurl}}
-                <img class="userpicture w-75 mx-auto d-block" src="{{profileimageurl}}" alt=""/>
+                <img class="userpicture w-100 mx-auto d-block" src="{{profileimageurl}}" alt=""/>
             {{/profileimageurl}}
             {{^profileimageurl}}
                 <span class="userinitials"></span>
             {{/profileimageurl}}
-        </div>
-        <div class="d-block pr-3 w-75">
-            <span class="d-block w-100 p-0 text-truncate font-weight-bold">
-                {{fullname}}
-            </span>
+        </span>
+        <span class="d-block pr-3 w-75">
+                <span class="d-block w-100 p-0 text-truncate font-weight-bold">
+                    {{fullname}}
+                </span>
             <span class="d-block w-100 pull-left text-truncate small" aria-hidden="true">
                 {{{matchingField}}}
             </span>
             <span class="sr-only" aria-label="{{#str}}usermatchedon, core_grades{{/str}}">{{matchingFieldName}}</span>
-        </div>
-    </a>
-</li>
+        </span>
+    {{/content}}
+{{/core/local/comboboxsearch/resultitem}}

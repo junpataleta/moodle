@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import * as Repository from 'gradereport_grader/collapse/repository';
-import GradebookSearchClass from 'core/tertiary_search_class';
+import GradebookSearchClass from 'core/comboboxsearch/search_combobox';
 import {renderForPromise, replaceNodeContents, replaceNode} from 'core/templates';
 import {debounce} from 'core/utils';
 import $ from 'jquery';
@@ -373,18 +373,6 @@ export default class ColumnSearch extends GradebookSearchClass {
                 };
             })
         );
-    }
-
-    /**
-     * Update any changeable nodes, filter and then render the result.
-     *
-     * @returns {Promise<void>}
-     */
-    async filterrenderpipe() {
-        this.updateNodes();
-        this.setMatchedResults(await this.filterDataset(this.getDataset()));
-        this.filterMatchDataset();
-        await this.renderDropdown();
     }
 
     /**

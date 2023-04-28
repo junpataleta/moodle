@@ -47,25 +47,24 @@
         "matches": 20,
         "selectall": "https://foo.bar/grade/report/grader/index.php?id=2&searchvalue=abe",
         "searchterm": "Foo",
-        "hasusers": true
+        "hasresults": true
     }
 }}
-<div class="d-flex flex-column mh-100 h-100">
-    {{#hasusers}}
-        <ul class="searchresultitemscontainer d-flex flex-column mw-100 position-relative py-2 list-group h-100 mh-100 mx-0" role="listbox" data-region="search-result-items-container" tabindex="-1">
-            {{#users}}
-                {{>gradereport_grader/search/resultitem}}
-            {{/users}}
-            {{#selectall}}
-                <li class="w-100 result-row p-1 border-top bottom-0 position-sticky" role="none" id="result-row-{{id}}">
-                    <a role="option" class="dropdown-item d-flex small p-3" id="select-all" href="{{{selectall}}}" tabindex="-1">
-                        {{#str}}viewallresults, gradereport_grader, {{matches}}{{/str}}
-                    </a>
-                </li>
-            {{/selectall}}
-        </ul>
-    {{/hasusers}}
-    {{^hasusers}}
-        <span class="small d-block px-4 my-4">{{#str}} noresultsfor, core_grades, {{searchterm}}{{/str}}</span>
-    {{/hasusers}}
-</div>
+{{<core/local/comboboxsearch/resultset}}
+    {{$listid}}user{{/listid}}
+    {{$results}}
+        {{#users}}
+            {{>gradereport_grader/search/resultitem}}
+        {{/users}}
+    {{/results}}
+    {{$selectall}}
+        {{#selectall}}
+            <li class="w-100 result-row p-1 border-top bottom-0 position-sticky" role="none" id="result-row-{{id}}">
+                <a role="option" class="dropdown-item d-flex small p-3" id="select-all" href="{{{selectall}}}" tabindex="-1">
+                    {{#str}}viewallresults, gradereport_grader, {{matches}}{{/str}}
+                </a>
+            </li>
+        {{/selectall}}
+    {{/selectall}}
+    {{$listclasses}}mh-100{{/listclasses}}
+{{/core/local/comboboxsearch/resultset}}
