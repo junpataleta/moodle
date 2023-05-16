@@ -14,46 +14,60 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Allow the user to search for grades within the singleview report.
+ * Allow the user to search for groups within the singleview report.
  *
- * @module    gradereport_singleview/grade
+ * @module    gradereport_singleview/group
  * @copyright 2023 Mathew May <mathew.solutions>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import GradeItemSearch from 'core_grades/grade';
+import GroupSearch from 'core/comboboxsearch/searchtype/group';
 import Url from 'core/url';
 
 // Define our standard lookups.
 const selectors = {
-    component: '.grade-search',
+    component: '.group-search',
     courseid: '[data-region="courseid"]',
 };
 const component = document.querySelector(selectors.component);
 
-export default class GradeItems extends GradeItemSearch {
+export default class Group extends GroupSearch {
 
     courseID = component.querySelector(selectors.courseid).dataset.courseid;
 
-    constructor() {
-        super();
-    }
+    item = null;
 
-    static init() {
-        return new GradeItems();
+    /**
+     * Construct the class.
+     *
+     * @param {string} item The page type we are currently on.
+     */
+    constructor(item) {
+        super();
+        this.item = item;
     }
 
     /**
-     * Build up the link that is dedicated to a particular result.
+     * Allow the class to be invoked via PHP.
      *
-     * @param {Number} gradeID The ID of the grade item selected.
+     * @param {string} item The page type we are currently on.
+     * @returns {Group}
+     */
+    static init(item) {
+        return new Group(item);
+    }
+
+    /**
+     * Build up the view all link that is dedicated to a particular result.
+     *
+     * @param {Number} groupID The ID of the group selected.
      * @returns {string|*}
      */
-    selectOneLink(gradeID) {
+    selectOneLink(groupID) {
         return Url.relativeUrl('/grade/report/singleview/index.php', {
             id: this.courseID,
-            gradesearchvalue: this.getSearchTerm(),
-            item: 'grade',
-            itemid: gradeID,
+            groupsearchvalue: this.getSearchTerm(),
+            group: groupID,
+            item: this.item
         }, false);
     }
 }
