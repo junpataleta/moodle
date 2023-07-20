@@ -46,7 +46,7 @@ export default class User extends UserSearch {
      * Build the content then replace the node.
      */
     async renderDropdown() {
-        const {html, js} = await renderForPromise('gradereport_grader/search/resultset', {
+        const {html, js} = await renderForPromise('core/local/comboboxsearch/user/resultset', {
             users: this.getMatchedResults().slice(0, 5),
             hasresults: this.getMatchedResults().length > 0,
             matches: this.getDatasetSize(),

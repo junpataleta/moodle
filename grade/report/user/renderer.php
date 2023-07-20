@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use core\output\tertiary_dropdown;
+use core\output\comboboxsearch;
 
 /**
  * Custom renderer for the user grade report
@@ -101,9 +101,9 @@ class gradereport_user_renderer extends plugin_renderer_base {
             'groupid' => $groupid ?? 0,
         ];
 
-        $searchdropdown = new tertiary_dropdown(
+        $searchdropdown = new comboboxsearch(
             true,
-            $this->render_from_template('core_grades/user_selector', $data),
+            $this->render_from_template('core/local/comboboxsearch/user/user_selector', $data),
             null,
             'user-search dropdown d-flex',
             null,
