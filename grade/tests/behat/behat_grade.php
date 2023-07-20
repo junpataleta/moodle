@@ -391,10 +391,10 @@ class behat_grade extends behat_base {
         $this->execute("behat_general::wait_until_the_page_is_ready");
 
         // Set the default field to search and handle any special preamble.
-        $string = get_string('searchusers', 'core_grades');
+        $string = get_string('searchusers', 'core');
         $selector = '.usersearchdropdown';
         if (strtolower($haystack) === 'group') {
-            $string = get_string('searchgroups', 'core_grades');
+            $string = get_string('searchgroups', 'core');
             $selector = '.groupsearchdropdown';
             $trigger = ".groupsearchwidget";
             $node = $this->find("css_element", $selector);
@@ -402,7 +402,7 @@ class behat_grade extends behat_base {
                 $this->execute("behat_general::i_click_on", [$trigger, "css_element"]);
             }
         } else if (strtolower($haystack) === 'grade') {
-            $string = get_string('searchgrades', 'gradereport_singleview');
+            $string = get_string('searchitems', 'core');
             $selector = '.gradesearchdropdown';
             $trigger = ".gradesearchwidget";
             $node = $this->find("css_element", $selector);

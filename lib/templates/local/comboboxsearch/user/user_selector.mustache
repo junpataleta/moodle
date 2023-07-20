@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template core_grades/user_selector
+    @template core/local/comboboxsearch/user/user_selector
 
     The user selector trigger element.
 
@@ -38,7 +38,7 @@
 {{#currentvalue}}
     {{< core/search_input_auto }}
         {{$label}}{{#str}}
-            searchusers, core_grades
+            searchusers, core
         {{/str}}{{/label}}
         {{$value}}{{{currentvalue}}}{{/value}}
         {{$additionalattributes}}
@@ -46,17 +46,17 @@
             data-input-element="user-input-{{uniqid}}"
         {{/additionalattributes}}
     {{/ core/search_input_auto }}
-    <a class="ml-2 btn btn-link border-0 align-self-center" href="{{resetlink}}" data-action="resetpage" role="link" aria-label="{{#str}}clearsearch, gradereport_grader{{/str}}">
+    <a class="ml-2 btn btn-link border-0 align-self-center" href="{{resetlink}}" data-action="resetpage" role="link" aria-label="{{#str}}clearsearch, core{{/str}}">
         {{#str}}clear{{/str}}
     </a>
 {{/currentvalue}}
 {{^currentvalue}}
     {{< core/search_input_auto }}
         {{$label}}{{#str}}
-            searchusers, core_grades
+            searchusers, core
         {{/str}}{{/label}}
         {{$placeholder}}{{#str}}
-            searchusers, core_grades
+            searchusers, core
         {{/str}}{{/placeholder}}
         {{$additionalattributes}}
             aria-autocomplete="list"

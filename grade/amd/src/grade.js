@@ -20,7 +20,7 @@
  * @copyright 2023 Mathew May <mathew.solutions>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import TertiarySearchClass from 'core/comboboxsearch/search_combobox';
+import search_combobox from 'core/comboboxsearch/search_combobox';
 import * as Repository from 'core_grades/searchwidget/repository';
 import {renderForPromise, replaceNodeContents} from 'core/templates';
 import {debounce} from 'core/utils';
@@ -33,7 +33,7 @@ const selectors = {
 };
 const component = document.querySelector(selectors.component);
 
-export default class GradeItemSearch extends TertiarySearchClass {
+export default class GradeItemSearch extends search_combobox {
 
     courseID = component.querySelector(selectors.courseid).dataset.courseid;
 

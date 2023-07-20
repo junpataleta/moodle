@@ -22,13 +22,13 @@ use renderer_base;
 use templatable;
 
 /**
- * Renderable class for the dropdown in the gradebook pages.
+ * Renderable class for the comboboxsearch.
  *
  * @package    core_output
  * @copyright  2022 Mathew May <Mathew.solutions>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tertiary_dropdown implements renderable, templatable {
+class comboboxsearch implements renderable, templatable {
 
     /** @var bool $renderlater Should the dropdown render straightaway? */
     protected $renderlater;
@@ -81,7 +81,7 @@ class tertiary_dropdown implements renderable, templatable {
         if (!$renderlater && empty($dropdowncontent)) {
             throw new moodle_exception(
                 'incorrectdropdownvars',
-                'core_grades',
+                'core',
                 '', null,
                 'Dropdown content must be set to render later.'
             );
@@ -124,6 +124,6 @@ class tertiary_dropdown implements renderable, templatable {
      * @return string
      */
     public function get_template(): string {
-        return 'core/navigation_dropdown';
+        return 'core/comboboxsearch';
     }
 }

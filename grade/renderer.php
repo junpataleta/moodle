@@ -16,7 +16,7 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-use core\output\tertiary_dropdown;
+use core\output\comboboxsearch;
 use \core_grades\output\action_bar;
 use core_message\helper;
 use core_message\api;
@@ -56,7 +56,7 @@ class core_grades_renderer extends plugin_renderer_base {
             return null;
         }
 
-        $sbody = $this->render_from_template('core_grades/local/group/searchbody', [
+        $sbody = $this->render_from_template('core/local/comboboxsearch/group/searchbody', [
             'courseid' => $course->id,
             'currentvalue' => optional_param('groupsearchvalue', '', PARAM_NOTAGS),
         ]);
@@ -89,9 +89,9 @@ class core_grades_renderer extends plugin_renderer_base {
             $data['selectedgroup'] = get_string('allparticipants');
         }
 
-        $groupdropdown = new tertiary_dropdown(
+        $groupdropdown = new comboboxsearch(
             false,
-            $this->render_from_template('core_grades/group_selector', $data),
+            $this->render_from_template('core/local/comboboxsearch/group/group_selector', $data),
             $sbody,
             'group-search',
             'groupsearchwidget',
