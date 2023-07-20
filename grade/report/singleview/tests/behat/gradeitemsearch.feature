@@ -22,17 +22,18 @@ Feature: Given we have opted to search for a grade item, Lets find and search th
   Scenario: A teacher can search for and find a grade item to view
     Given I navigate to "View > Single view" in the course gradebook
     And I click on "Grade items" "link" in the ".page-toggler" "css_element"
+    And I click on ".gradesearchwidget" "css_element"
     When I confirm "Test assignment one" in "grade" search within the gradebook widget exists
     And I confirm "Test assignment two" in "grade" search within the gradebook widget exists
-    Then I set the field "Search grade items" to "two"
+    Then I set the field "Search items" to "two"
     And I wait until "Test assignment one" "option_role" does not exist
     And I confirm "Test assignment one" in "grade" search within the gradebook widget does not exist
     And I confirm "Test assignment two" in "grade" search within the gradebook widget exists
     And I click on "Test assignment two" in the "grade" search widget
     # The search input remains in the field on reload this is in keeping with other search implementations.
     And I click on ".gradesearchwidget" "css_element"
-    And the field "Search grade items" matches value "two"
-    Then I set the field "Search grade items" to "Turtle"
+    And the field "Search items" matches value "two"
+    Then I set the field "Search items" to "Turtle"
     And I should see "No results for \"Turtle\""
 
   @accessibility
@@ -45,7 +46,7 @@ Feature: Given we have opted to search for a grade item, Lets find and search th
     And the page should meet "wcag131, wcag141, wcag412" accessibility standards
     And the page should meet accessibility standards with "wcag131, wcag141, wcag412" extra tests
     # Move onto general keyboard navigation testing.
-    And I click on "Search grade items" "field"
+    And I click on "Search items" "field"
     And I wait until "Test assignment one" "option_role" exists
     And I press the down key
     And the focused element is "Test assignment one" "option_role"
@@ -58,14 +59,14 @@ Feature: Given we have opted to search for a grade item, Lets find and search th
     And I press the down key
     And the focused element is "Test assignment one" "option_role"
     And I press the escape key
-    And the focused element is "Search grade items" "field"
-    Then I set the field "Search grade items" to "Goodmeme"
+    And the focused element is "Search items" "field"
+    Then I set the field "Search items" to "Goodmeme"
     And I wait until "Test assignment one" "option_role" does not exist
     And I press the down key
-    And the focused element is "Search grade items" "field"
+    And the focused element is "Search items" "field"
 
     # Lets check the tabbing order.
-    And I set the field "Search grade items" to "one"
+    And I set the field "Search items" to "one"
     And I wait until "Test assignment one" "option_role" exists
     And I press the tab key
     And the focused element is "Clear search input" "button" in the ".grade-search" "css_element"

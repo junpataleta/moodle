@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use core\output\tertiary_dropdown;
+use core\output\comboboxsearch;
 use gradereport_singleview\report\singleview;
 
 /**
@@ -53,9 +53,9 @@ class gradereport_singleview_renderer extends plugin_renderer_base {
             'resetlink' => $resetlink->out(false),
             'userid' => $userid ?? 0
         ];
-        $dropdown = new tertiary_dropdown(
+        $dropdown = new comboboxsearch(
             true,
-            $this->render_from_template('core_grades/user_selector', $data),
+            $this->render_from_template('core/local/comboboxsearch/user/user_selector', $data),
             null,
             'user-search dropdown d-flex',
             null,
@@ -93,7 +93,7 @@ class gradereport_singleview_renderer extends plugin_renderer_base {
             'courseid' => $course->id,
             'currentvalue' => optional_param('gradesearchvalue', '', PARAM_NOTAGS),
         ]);
-        $dropdown = new tertiary_dropdown(
+        $dropdown = new comboboxsearch(
             false,
             $this->render_from_template('gradereport_singleview/grade_item_selector', $data),
             $sbody,
