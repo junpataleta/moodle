@@ -2134,6 +2134,10 @@ function forum_get_course_forum($courseid, $type) {
     $mod->module = $module->id;
     $mod->instance = $forum->id;
     $mod->section = 0;
+    // Generate a default ID number for the course forum based on the course shortname.
+    $shortname = $DB->get_field('course', 'shortname', ['id' => $courseid]);
+    // Course short names have a max length of 255. Make sure the ID number does not exceed 100 characters.
+    $mod->idnumber = substr($shortname, 0, 80) . "_courseforum";
     include_once("$CFG->dirroot/course/lib.php");
     if (! $mod->coursemodule = add_course_module($mod) ) {
         echo $OUTPUT->notification("Could not add a new course module to the course '" . $courseid . "'");

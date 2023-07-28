@@ -4257,4 +4257,40 @@ class lib_test extends \advanced_testcase {
         $this->assertIsObject($throttling);
         $this->assertFalse($throttling->canpost);
     }
+
+    /**
+     * Data provider for {@see test_forum_get_course_forum()}.
+     *
+     * @return array
+     */
+    public function course_forum_idnumber_provider(): array {
+        return [
+            'Shortname > 80 chars' => [
+                'shortname' => str_repeat('a', 100),
+                'expected' => str_repeat('a', 80) . "_courseforum",
+            ],
+            'Shortname < 50 chars' => [
+                'shortname' => 'helloshortname',
+                'expected' => 'helloshortname_courseforum',
+            ],
+        ];
+    }
+
+    /**
+     * Test for forum_get_course_forum.
+     *
+     * @dataProvider course_forum_idnumber_provider
+     * @covers \forum_get_course_forum
+     * @param string $shortname The course shortname.
+     * @param string $expected The expected forum idnumber.
+     */
+    public function test_course_forum_idnumber(string $shortname, string $expected): void {
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['shortname' => $shortname]);
+        $forum = forum_get_course_forum($course->id, 'news');
+        $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id);
+        $this->assertEquals($expected, $cm->idnumber);
+    }
 }
