@@ -12,7 +12,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template core/local/comboboxsearch/user/resultset
+    @template core_user/comboboxsearch/resultset
 
     Wrapping template for returned result items.
 
@@ -54,7 +54,7 @@
     {{$listid}}user{{/listid}}
     {{$results}}
         {{#users}}
-            {{>core/local/comboboxsearch/user/resultitem}}
+            {{>core_user/comboboxsearch/resultitem}}
         {{/users}}
     {{/results}}
     {{$selectall}}

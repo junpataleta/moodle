@@ -16,29 +16,21 @@
 /**
  * Allow the user to search for learners.
  *
- * @module    core/comboboxsearch/searchtype/user
+ * @module    core_user/comboboxsearch/user
  * @copyright 2023 Mathew May <mathew.solutions>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import search_combobox from 'core/comboboxsearch/search_combobox';
-import * as Repository from 'core/comboboxsearch/repository';
 import {get_strings as getStrings} from 'core/str';
 import {renderForPromise, replaceNodeContents} from 'core/templates';
 import $ from 'jquery';
-
-// Define our standard lookups.
-const selectors = {
-    component: '.user-search',
-    courseid: '[data-region="courseid"]',
-    groupid: '[data-region="groupid"]',
-    resetPageButton: '[data-action="resetpage"]',
-};
-const component = document.querySelector(selectors.component);
-const courseID = component.querySelector(selectors.courseid).dataset.courseid;
-const groupID = document.querySelector(selectors.groupid)?.dataset?.groupid;
-const bannedFilterFields = ['profileimageurlsmall', 'profileimageurl', 'id', 'link', 'matchingField', 'matchingFieldName'];
+import Notification from 'core/notification';
 
 export default class UserSearch extends search_combobox {
+
+    courseID;
+    groupID;
+    bannedFilterFields = ['profileimageurlsmall', 'profileimageurl', 'id', 'link', 'matchingField', 'matchingFieldName'];
 
     // A map of user profile field names that is human-readable.
     profilestringmap = null;
@@ -52,6 +44,17 @@ export default class UserSearch extends search_combobox {
                 this.toggleDropdown();
             }
         });
+
+        // Define our standard lookups.
+        this.selectors = {...this.selectors,
+            courseid: '[data-region="courseid"]',
+            groupid: '[data-region="groupid"]',
+            resetPageButton: '[data-action="resetpage"]',
+        };
+
+        const component = document.querySelector(this.setComponentSelector());
+        this.courseID = component.querySelector(this.selectors.courseid).dataset.courseid;
+        this.groupID = document.querySelector(this.selectors.groupid)?.dataset?.groupid;
     }
 
     static init() {
@@ -89,7 +92,7 @@ export default class UserSearch extends search_combobox {
      * Build the content then replace the node.
      */
     async renderDropdown() {
-        const {html, js} = await renderForPromise('core/local/comboboxsearch/user/resultset', {
+        const {html, js} = await renderForPromise('core_user/comboboxsearch/resultset', {
             users: this.getMatchedResults().slice(0, 5),
             hasresults: this.getMatchedResults().length > 0,
             matches: this.getMatchedResults().length,
@@ -105,9 +108,7 @@ export default class UserSearch extends search_combobox {
      * @returns {Promise<*>}
      */
     fetchDataset() {
-        // Small typing checks as sometimes groups don't exist therefore the element returns a empty string.
-        const gts = typeof (groupID) === "string" && groupID === '' ? 0 : groupID;
-        return Repository.userFetch(courseID, gts).then((r) => r.users);
+        throw new Error(`fetchDataset() must be implemented in ${this.constructor.name}`);
     }
 
     /**
@@ -118,7 +119,7 @@ export default class UserSearch extends search_combobox {
      */
     async filterDataset(filterableData) {
         return filterableData.filter((user) => Object.keys(user).some((key) => {
-            if (user[key] === "" || user[key] === null || bannedFilterFields.includes(key)) {
+            if (user[key] === "" || user[key] === null || this.bannedFilterFields.includes(key)) {
                 return false;
             }
             return user[key].toString().toLowerCase().includes(this.getPreppedSearchTerm());
@@ -140,7 +141,7 @@ export default class UserSearch extends search_combobox {
                         continue;
                     }
                     const valueString = value.toString().toLowerCase();
-                    if (valueString.includes(this.getPreppedSearchTerm()) && !bannedFilterFields.includes(key)) {
+                    if (valueString.includes(this.getPreppedSearchTerm()) && !this.bannedFilterFields.includes(key)) {
                         // Ensure we have a good string, otherwise fallback to the key.
                         user.matchingFieldName = stringMap.get(key) ?? key;
                         user.matchingField = valueString.replace(
@@ -163,7 +164,7 @@ export default class UserSearch extends search_combobox {
      * @param {MouseEvent} e The triggering event that we are working with.
      */
     clickHandler(e) {
-        super.clickHandler(e);
+        super.clickHandler(e).catch(Notification.exception);
         if (e.target.closest(this.selectors.component)) {
             // Forcibly prevent BS events so that we can control the open and close.
             // Really needed because by default input elements cant trigger a dropdown.
@@ -172,8 +173,8 @@ export default class UserSearch extends search_combobox {
         if (e.target === this.getHTMLElements().currentViewAll && e.button === 0) {
             window.location = this.selectAllResultsLink();
         }
-        if (e.target.closest(selectors.resetPageButton)) {
-            window.location = e.target.closest(selectors.resetPageButton).href;
+        if (e.target.closest(this.selectors.resetPageButton)) {
+            window.location = e.target.closest(this.selectors.resetPageButton).href;
         }
     }
 
@@ -202,8 +203,8 @@ export default class UserSearch extends search_combobox {
                     this.closeSearch(true);
                     break;
                 }
-                if (e.target.closest(selectors.resetPageButton)) {
-                    window.location = e.target.closest(selectors.resetPageButton).href;
+                if (e.target.closest(this.selectors.resetPageButton)) {
+                    window.location = e.target.closest(this.selectors.resetPageButton).href;
                     break;
                 }
                 if (e.target.closest('.dropdown-item')) {
