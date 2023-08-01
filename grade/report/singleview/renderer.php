@@ -55,7 +55,7 @@ class gradereport_singleview_renderer extends plugin_renderer_base {
         ];
         $dropdown = new comboboxsearch(
             true,
-            $this->render_from_template('core/local/comboboxsearch/user/user_selector', $data),
+            $this->render_from_template('core_user/comboboxsearch/user_selector', $data),
             null,
             'user-search dropdown d-flex',
             null,

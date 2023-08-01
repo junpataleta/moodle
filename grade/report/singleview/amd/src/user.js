@@ -20,17 +20,10 @@
  * @copyright 2023 Mathew May <mathew.solutions>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import UserSearch from 'core/comboboxsearch/searchtype/user';
+import UserSearch from 'core_user/comboboxsearch/user';
 import Url from 'core/url';
 import {renderForPromise, replaceNodeContents} from 'core/templates';
-
-// Define our standard lookups.
-const selectors = {
-    component: '.user-search',
-    courseid: '[data-region="courseid"]',
-};
-const component = document.querySelector(selectors.component);
-const courseID = component.querySelector(selectors.courseid).dataset.courseid;
+import * as Repository from 'core_grades/searchwidget/repository';
 
 export default class User extends UserSearch {
 
@@ -46,7 +39,7 @@ export default class User extends UserSearch {
      * Build the content then replace the node.
      */
     async renderDropdown() {
-        const {html, js} = await renderForPromise('core/local/comboboxsearch/user/resultset', {
+        const {html, js} = await renderForPromise('core_user/comboboxsearch/resultset', {
             users: this.getMatchedResults().slice(0, 5),
             hasresults: this.getMatchedResults().length > 0,
             searchterm: this.getSearchTerm(),
@@ -70,10 +63,21 @@ export default class User extends UserSearch {
      */
     selectOneLink(userID) {
         return Url.relativeUrl('/grade/report/singleview/index.php', {
-            id: courseID,
+            id: this.courseID,
             searchvalue: this.getSearchTerm(),
             item: 'user',
             userid: userID,
         }, false);
+    }
+
+    /**
+     * Get the data we will be searching against in this component.
+     *
+     * @returns {Promise<*>}
+     */
+    fetchDataset() {
+        // Small typing checks as sometimes groups don't exist therefore the element returns a empty string.
+        const gts = typeof (this.groupID) === "string" && this.groupID === '' ? 0 : this.groupID;
+        return Repository.userFetch(this.courseID, gts).then((r) => r.users);
     }
 }

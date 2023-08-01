@@ -40,3 +40,22 @@ export const gradeitemFetch = (courseid) => {
     };
     return ajax.call([request])[0];
 };
+
+/**
+ * Given a course ID, we want to fetch the enrolled learners, so we may fetch their reports.
+ *
+ * @method userFetch
+ * @param {int} courseid ID of the course to fetch the users of.
+ * @param {int} groupId ID of the group to fetch the users of.
+ * @return {object} jQuery promise
+ */
+export const userFetch = (courseid, groupId) => {
+    const request = {
+        methodname: 'core_grades_get_enrolled_users_for_selector',
+        args: {
+            courseid: courseid,
+            groupid: groupId,
+        },
+    };
+    return ajax.call([request])[0];
+};

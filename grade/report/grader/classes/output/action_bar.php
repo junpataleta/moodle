@@ -93,7 +93,7 @@ class action_bar extends \core_grades\output\action_bar {
             $data['groupselector'] = $gradesrenderer->group_selector($course);
 
             $resetlink = new moodle_url('/grade/report/grader/index.php', ['id' => $courseid]);
-            $searchinput = $OUTPUT->render_from_template('core/local/comboboxsearch/user/user_selector', [
+            $searchinput = $OUTPUT->render_from_template('core_user/comboboxsearch/user_selector', [
                 'currentvalue' => $this->usersearch,
                 'courseid' => $courseid,
                 'resetlink' => $resetlink->out(false),

@@ -20,7 +20,7 @@
  * @copyright 2023 Mathew May <mathew.solutions>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import UserSearch from 'core/comboboxsearch/searchtype/user';
+import UserSearch from 'core_user/comboboxsearch/user';
 import Url from 'core/url';
 import * as Repository from 'gradereport_grader/local/user/repository';
 
