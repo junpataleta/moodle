@@ -56,7 +56,7 @@ class core_grades_renderer extends plugin_renderer_base {
             return null;
         }
 
-        $sbody = $this->render_from_template('core/local/comboboxsearch/group/searchbody', [
+        $sbody = $this->render_from_template('core_group/comboboxsearch/searchbody', [
             'courseid' => $course->id,
             'currentvalue' => optional_param('groupsearchvalue', '', PARAM_NOTAGS),
         ]);
@@ -91,7 +91,7 @@ class core_grades_renderer extends plugin_renderer_base {
 
         $groupdropdown = new comboboxsearch(
             false,
-            $this->render_from_template('core/local/comboboxsearch/group/group_selector', $data),
+            $this->render_from_template('core_group/comboboxsearch/group_selector', $data),
             $sbody,
             'group-search',
             'groupsearchwidget',

@@ -20,19 +20,12 @@
  * @copyright 2023 Mathew May <mathew.solutions>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import GroupSearch from 'core/comboboxsearch/searchtype/group';
+import GroupSearch from 'core_group/comboboxsearch/group';
 import Url from 'core/url';
-
-// Define our standard lookups.
-const selectors = {
-    component: '.group-search',
-    courseid: '[data-region="courseid"]',
-};
-const component = document.querySelector(selectors.component);
 
 export default class Group extends GroupSearch {
 
-    courseID = component.querySelector(selectors.courseid).dataset.courseid;
+    courseID;
 
     item = null;
 
@@ -44,6 +37,13 @@ export default class Group extends GroupSearch {
     constructor(item) {
         super();
         this.item = item;
+
+        // Define our standard lookups.
+        this.selectors = {...this.selectors,
+            courseid: '[data-region="courseid"]',
+        };
+        const component = document.querySelector(this.setComponentSelector());
+        this.courseID = component.querySelector(this.selectors.courseid).dataset.courseid;
     }
 
     /**
