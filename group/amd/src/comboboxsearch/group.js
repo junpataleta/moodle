@@ -16,31 +16,30 @@
 /**
  * Allow the user to search for groups.
  *
- * @module    core/comboboxsearch/searchtype/group
+ * @module    core_group/comboboxsearch/group
  * @copyright 2023 Mathew May <mathew.solutions>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import search_combobox from 'core/comboboxsearch/search_combobox';
-import * as Repository from 'core/comboboxsearch/repository';
+import {groupFetch} from 'core_group/comboboxsearch/repository';
 import {renderForPromise, replaceNodeContents} from 'core/templates';
 import {debounce} from 'core/utils';
-
-// Define our standard lookups.
-const selectors = {
-    component: '.group-search',
-    courseid: '[data-region="courseid"]',
-    placeholder: '.groupsearchdropdown [data-region="searchplaceholder"]',
-};
-const component = document.querySelector(selectors.component);
-const bannedFilterFields = ['id', 'link', 'groupimageurl'];
+import Notification from 'core/notification';
 
 export default class GroupSearch extends search_combobox {
 
-    courseID = component.querySelector(selectors.courseid).dataset.courseid;
+    courseID;
+    bannedFilterFields = ['id', 'link', 'groupimageurl'];
 
     constructor() {
         super();
-        this.renderDefault();
+        this.selectors = {...this.selectors,
+            courseid: '[data-region="courseid"]',
+            placeholder: '.groupsearchdropdown [data-region="searchplaceholder"]',
+        };
+        const component = document.querySelector(this.setComponentSelector());
+        this.courseID = component.querySelector(this.selectors.courseid).dataset.courseid;
+        this.renderDefault().catch(Notification.exception);
     }
 
     static init() {
@@ -78,12 +77,12 @@ export default class GroupSearch extends search_combobox {
      * Build the content then replace the node.
      */
     async renderDropdown() {
-        const {html, js} = await renderForPromise('core/local/comboboxsearch/group/resultset', {
+        const {html, js} = await renderForPromise('core_group/comboboxsearch/resultset', {
             groups: this.getMatchedResults(),
             hasresults: this.getMatchedResults().length > 0,
             searchterm: this.getSearchTerm(),
         });
-        replaceNodeContents(selectors.placeholder, html, js);
+        replaceNodeContents(this.selectors.placeholder, html, js);
     }
 
     /**
@@ -110,7 +109,7 @@ export default class GroupSearch extends search_combobox {
      * @returns {Promise<*>}
      */
     async fetchDataset() {
-        return await Repository.groupFetch(this.courseID).then((r) => r.groups);
+        return await groupFetch(this.courseID).then((r) => r.groups);
     }
 
     /**
@@ -125,7 +124,7 @@ export default class GroupSearch extends search_combobox {
             return filterableData;
         }
         return filterableData.filter((group) => Object.keys(group).some((key) => {
-            if (group[key] === "" || bannedFilterFields.includes(key)) {
+            if (group[key] === "" || this.bannedFilterFields.includes(key)) {
                 return false;
             }
             return group[key].toString().toLowerCase().includes(this.getPreppedSearchTerm());

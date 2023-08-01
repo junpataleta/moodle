@@ -12,7 +12,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template core/local/comboboxsearch/group/resultset
+    @template core_group/comboboxsearch/resultset
 
     Wrapping template for returned result items.
 
@@ -43,7 +43,7 @@
     {{$listid}}groups{{/listid}}
     {{$results}}
         {{#groups}}
-            {{>core/local/comboboxsearch/group/resultitem}}
+            {{>core_group/comboboxsearch/resultitem}}
         {{/groups}}
     {{/results}}
 {{/core/local/comboboxsearch/resultset}}
