@@ -25,20 +25,22 @@ import * as Repository from 'core_grades/searchwidget/repository';
 import {renderForPromise, replaceNodeContents} from 'core/templates';
 import {debounce} from 'core/utils';
 
-// Define our standard lookups.
-const selectors = {
-    component: '.grade-search',
-    courseid: '[data-region="courseid"]',
-    placeholder: '.gradesearchdropdown [data-region="searchplaceholder"]',
-};
-const component = document.querySelector(selectors.component);
-
 export default class GradeItemSearch extends search_combobox {
 
-    courseID = component.querySelector(selectors.courseid).dataset.courseid;
+    courseID;
 
     constructor() {
         super();
+
+        // Define our standard lookups.
+        this.selectors = {
+            ...this.selectors,
+            courseid: '[data-region="courseid"]',
+            placeholder: '.gradesearchdropdown [data-region="searchplaceholder"]',
+        };
+        const component = document.querySelector(this.setComponentSelector());
+        this.courseID = component.querySelector(this.selectors.courseid).dataset.courseid;
+
         this.renderDefault();
     }
 
@@ -82,7 +84,7 @@ export default class GradeItemSearch extends search_combobox {
             hasresults: this.getMatchedResults().length > 0,
             searchterm: this.getSearchTerm(),
         });
-        replaceNodeContents(selectors.placeholder, html, js);
+        replaceNodeContents(this.selectors.placeholder, html, js);
     }
 
     /**
