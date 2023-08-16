@@ -882,6 +882,41 @@ class repository_onedrive extends repository {
 
         $systemservice = new repository_onedrive\rest($systemauth);
 
+        // Copy the file to system account.
+        $fileid = $this->copy_file_to_system_account($userauth, $systemauth, $source, $context, $component, $filearea, $itemid);
+
+        // Read with link.
+        $link = $this->set_file_sharing_anyone_with_link_can_read($systemservice, $fileid);
+
+        $summary = $this->get_file_summary($systemservice, $fileid);
+
+        // Update the details in the file reference before it is saved.
+        $source->id = $summary->id;
+        $source->link = $link;
+        $source->usesystem = true;
+
+        $reference = json_encode($source);
+
+        return $reference;
+    }
+
+    /**
+     * Copy a user file to the system account.
+     *
+     * @param \core\oauth2\client $userauth The user's oauth client.
+     * @param \core\oauth2\client $systemauth The system's oauth client.
+     * @param object $source The source file.
+     * @param \context $context The context.
+     * @param string $component The target context for this new file.
+     * @param string $filearea The target filearea for this new file.
+     * @param string $itemid the Target itemid for this new file.
+     * @return string The copied file ID.
+     */
+    protected function copy_file_to_system_account($userauth, $systemauth, $source, $context, $component, $filearea, $itemid) {
+        global $CFG, $SITE;
+
+        $systemservice = new repository_onedrive\rest($systemauth);
+
         // Download the file.
         $tmpfilename = clean_param($source->id, PARAM_PATH);
         $temppath = make_request_directory() . $tmpfilename;
@@ -962,19 +997,7 @@ class repository_onedrive extends repository {
         $curl = new \curl();
         $fileid = $this->upload_file($systemservice, $curl, $systemauth, $temppath, $mimetype, $parentid, $safefilename);
 
-        // Read with link.
-        $link = $this->set_file_sharing_anyone_with_link_can_read($systemservice, $fileid);
-
-        $summary = $this->get_file_summary($systemservice, $fileid);
-
-        // Update the details in the file reference before it is saved.
-        $source->id = $summary->id;
-        $source->link = $link;
-        $source->usesystem = true;
-
-        $reference = json_encode($source);
-
-        return $reference;
+        return $fileid;
     }
 
     /**
