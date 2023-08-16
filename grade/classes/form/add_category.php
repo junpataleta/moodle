@@ -51,13 +51,16 @@ class add_category extends dynamic_form {
      */
     private ?array $aggregation_options;
 
+    protected $gradecategory;
+
+    protected $categoryitem;
+
+    protected $gradeitem;
+
     /**
      * Helper function to grab the current grade category based on information within the form.
-     *
-     * @return array
-     * @throws \moodle_exception
      */
-    private function get_gradecategory(): array {
+    private function get_gradecategory(): void {
         $courseid = $this->optional_param('courseid', null, PARAM_INT);
         $id = $this->optional_param('category', null, PARAM_INT);
 
@@ -130,10 +133,9 @@ class add_category extends dynamic_form {
             }
         }
 
-        return [
-            'gradecategory' => $gradecategory,
-            'categoryitem' => $category
-        ];
+        $this->gradecategory = $gradecategory;
+        $this->categoryitem = $category;
+        $this->gradeitem = $gradeitem;
     }
 
     /**
@@ -160,8 +162,8 @@ class add_category extends dynamic_form {
 
         $this->aggregation_options = grade_helper::get_aggregation_strings();
 
-        $local = $this->get_gradecategory();
-        $category = $local['categoryitem'];
+        $this->get_gradecategory();
+        $category = $this->categoryitem;
 
         // Hidden elements.
         $mform->addElement('hidden', 'id', 0);
@@ -205,20 +207,19 @@ class add_category extends dynamic_form {
         $mform->hideIf('droplow', 'keephigh', 'noteq', 0);
 
         if (!empty($category->id)) {
-            $gradecategory = grade_category::fetch(['id' => $category->id]);
-            $gradeitem = $gradecategory->load_grade_item();
+            $gradeitem = $this->gradeitem;
 
             // If grades exist set a message so the user knows why they can not alter the grade type or scale.
             // We could never change the grade type for external items, so only need to show this for manual grade items.
             if ($gradeitem->has_overridden_grades()) {
-                // Set a message so the user knows why the can not alter the grade type or scale.
+                // Set a message so the user knows why they can not alter the grade type or scale.
                 if ($gradeitem->gradetype == GRADE_TYPE_SCALE) {
                     $gradesexistmsg = get_string('modgradecategorycantchangegradetyporscalemsg', 'grades');
                 } else {
                     $gradesexistmsg = get_string('modgradecategorycantchangegradetypemsg', 'grades');
                 }
                 $notification = new \core\output\notification($gradesexistmsg, \core\output\notification::NOTIFY_INFO);
-                $notification->set_show_closebutton(false);
+                $notification->set_show_closebutton();
                 $mform->addElement('static', 'gradesexistmsg', '', $OUTPUT->render($notification));
             }
         }
@@ -331,7 +332,7 @@ class add_category extends dynamic_form {
     public function definition_after_data(): void {
         global $CFG;
 
-        $mform =& $this->_form;
+        $mform = $this->_form;
 
         $categoryobject = new grade_category();
 
@@ -359,9 +360,9 @@ class add_category extends dynamic_form {
             }
         }
 
-        if ($id = $mform->getElementValue('id')) {
-            $gradecategory = grade_category::fetch(['id' => $id]);
-            $gradeitem = $gradecategory->load_grade_item();
+        if ($mform->getElementValue('id')) {
+            $gradecategory = $this->gradecategory;
+            $gradeitem = $this->gradeitem;
 
             // Remove agg coef if not used.
             if ($gradecategory->is_course_category()) {
@@ -456,9 +457,8 @@ class add_category extends dynamic_form {
         }
 
         // Grade item.
-        if ($id = $mform->getElementValue('id')) {
-            $gradecategory = grade_category::fetch(['id' => $id]);
-            $gradeitem = $gradecategory->load_grade_item();
+        if ($mform->getElementValue('id')) {
+            $gradeitem = $this->gradeitem;
 
             // Load appropriate "hidden"/"hidden until" defaults.
             if (!$gradeitem->is_hiddenuntil()) {
@@ -602,14 +602,13 @@ class add_category extends dynamic_form {
         $data = $this->get_data();
 
         $url = $this->gpr->get_return_url('index.php?id=' . $data->courseid);
-        $local = $this->get_gradecategory();
-        $gradecategory = $local['gradecategory'];
+        $gradecategory = $this->gradecategory;
 
         // GRADE ITEM.
         // Grade item data saved with prefix "grade_item_".
-        $data->grade_item_gradepass = $local['categoryitem']->grade_item_gradepass;
-        $data->grade_item_grademax = $local['categoryitem']->grade_item_grademax;
-        $data->grade_item_grademin = $local['categoryitem']->grade_item_grademin;
+        $data->grade_item_gradepass = $this->categoryitem->grade_item_gradepass;
+        $data->grade_item_grademax = $this->categoryitem->grade_item_grademax;
+        $data->grade_item_grademin = $this->categoryitem->grade_item_grademin;
 
         grade_edit_tree::update_gradecategory($gradecategory, $data);
 
@@ -629,11 +628,7 @@ class add_category extends dynamic_form {
      *         or an empty array if everything is OK (true allowed for backwards compatibility too).
      */
     public function validation($data, $files): array {
-        $gradeitem = false;
-        if ($data['id']) {
-            $gradecategory = grade_category::fetch(['id' => $data['id']]);
-            $gradeitem = $gradecategory->load_grade_item();
-        }
+        $gradeitem = $this->gradeitem;
 
         $errors = parent::validation($data, $files);
 
@@ -659,7 +654,7 @@ class add_category extends dynamic_form {
             }
         }
 
-        if ($data['id'] && $gradeitem->has_overridden_grades()) {
+        if ($gradeitem->has_overridden_grades()) {
             if ($gradeitem->gradetype == GRADE_TYPE_VALUE) {
                 if (grade_floats_different($grademin, $gradeitem->grademin) ||
                     grade_floats_different($grademax, $gradeitem->grademax)) {
