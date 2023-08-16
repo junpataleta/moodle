@@ -136,6 +136,27 @@ class rest extends \core\oauth2\rest {
                 ],
                 'response' => 'json'
             ],
+            'copy_user_file' => [
+                'endpoint' => 'https://graph.microsoft.com/v1.0/users/{userid}/drive/items/{fileid}/copy',
+                'method' => 'post',
+                'args' => [
+                    'userid' => PARAM_RAW,
+                    'fileid' => PARAM_RAW
+                ],
+                'response' => 'headers'
+            ],
+            'me' => [
+                'endpoint' => 'https://graph.microsoft.com/v1.0/me',
+                'method' => 'get',
+                'args' => [],
+                'response' => 'json'
+            ],
+            'my_drive' => [
+                'endpoint' => 'https://graph.microsoft.com/v1.0/me/drive',
+                'method' => 'get',
+                'args' => [],
+                'response' => 'json'
+            ],
         ];
     }
 }
