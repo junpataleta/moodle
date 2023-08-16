@@ -538,7 +538,7 @@ class repository_onedrive extends repository {
      * @return array
      */
     public static function get_type_option_names() {
-        return array('issuerid', 'pluginname', 'defaultreturntype', 'supportedreturntypes');
+        return array('issuerid', 'pluginname', 'defaultreturntype', 'sharescope', 'supportedreturntypes');
     }
 
     /**
@@ -745,9 +745,10 @@ class repository_onedrive extends repository {
     protected function set_file_sharing_anyone_with_link_can_read(\repository_onedrive\rest $client, $fileid) {
 
         $type = (isset($this->options['embed']) && $this->options['embed'] == true) ? 'embed' : 'view';
+        $scope = get_config('onedrive', 'sharescope') ?: 'anonymous';
         $updateread = [
             'type' => $type,
-            'scope' => 'anonymous'
+            'scope' => $scope
         ];
         $params = ['fileid' => $fileid];
         $response = $client->call('create_link', $params, json_encode($updateread));
@@ -1140,6 +1141,14 @@ class repository_onedrive extends repository {
         ];
         $mform->addElement('select', 'defaultreturntype', get_string('defaultreturntype', 'repository_onedrive'), $choices);
 
+        $choices = [
+            'anonymous' => get_string('anonymous', 'repository_onedrive'),
+            'organization' => get_string('organization', 'repository_onedrive'),
+        ];
+        $mform->addElement('select', 'sharescope', get_string('sharescope', 'repository_onedrive'), $choices);
+        $mform->setDefault('sharescope', 'anonymous');
+        $mform->addHelpButton('sharescope', 'sharescope', 'repository_onedrive');
+        $mform->disabledIf('sharescope', 'supportedreturntypes', 'eq', 'internal');
     }
 }
 

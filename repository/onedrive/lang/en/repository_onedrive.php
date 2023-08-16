@@ -24,6 +24,7 @@
  */
 
 $string['access'] = 'Access';
+$string['anonymous'] = 'Anonymous';
 $string['both'] = 'Internal and external';
 $string['cachedef_folder'] = 'OneDrive file IDs for folders in the system account';
 $string['configplugin'] = 'Configure OneDrive plugin';
@@ -37,6 +38,7 @@ $string['issuer_help'] = 'Select the OAuth 2 service that is configured to talk 
 $string['issuer'] = 'OAuth 2 service';
 $string['mysitenotfound'] = 'You have never logged into OneDrive before. You must log in to OneDrive at least once before it can be used with Moodle.';
 $string['oauth2serviceslink'] = '<a href="{$a}" title="Link to OAuth 2 services configuration">OAuth 2 services configuration</a>';
+$string['organization'] = 'Organization';
 $string['owner'] = 'Owned by: {$a}';
 $string['pluginname'] = 'Microsoft OneDrive';
 $string['removetempaccesstask'] = 'Remove temporary write access from controlled links';
@@ -46,6 +48,8 @@ $string['skydrivefilesexist'] = 'The Microsoft SkyDrive repository is enabled bu
 $string['skydrivefilesimported'] = 'All files were imported from the Microsoft SkyDrive repository.';
 $string['skydrivefilesnotimported'] = 'Some files could not be imported from the Microsoft SkyDrive repository.';
 $string['onedrive:view'] = 'View OneDrive repository';
+$string['sharescope'] = 'Share scope';
+$string['sharescope_help'] = 'The scope of the links created when sharing files.';
 $string['supportedreturntypes'] = 'Supported files';
 $string['privacy:metadata:repository_onedrive'] = 'The Microsoft OneDrive repository stores temporary access grants, and transmits user data from Moodle to the remote system.';
 $string['privacy:metadata:repository_onedrive:searchtext'] = 'The Microsoft OneDrive repository user search text query.';
