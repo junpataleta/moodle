@@ -888,10 +888,8 @@ class repository_onedrive extends repository {
         // Read with link.
         $link = $this->set_file_sharing_anyone_with_link_can_read($systemservice, $fileid);
 
-        $summary = $this->get_file_summary($systemservice, $fileid);
-
         // Update the details in the file reference before it is saved.
-        $source->id = $summary->id;
+        $source->id = $fileid;
         $source->link = $link;
         $source->usesystem = true;
 
