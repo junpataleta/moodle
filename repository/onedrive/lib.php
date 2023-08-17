@@ -1082,12 +1082,12 @@ class repository_onedrive extends repository {
             $allfolders[] = $foldername;
         }
 
-        $allfolders[] = urlencode(clean_param($component, PARAM_PATH));
-        $allfolders[] = urlencode(clean_param($filearea, PARAM_PATH));
+        $allfolders[] = urlencode(clean_param($component, PARAM_PATH) . '__' . clean_param($filearea, PARAM_PATH));
         $allfolders[] = urlencode(clean_param($itemid, PARAM_PATH));
 
         // Variable $allfolders now has the complete path we want to store the file in.
         // Create each folder in $allfolders under the system account.
+        $couldalreadyexist = true;
         foreach ($allfolders as $foldername) {
             if ($fullpath) {
                 $fullpath .= '/';
@@ -1095,7 +1095,7 @@ class repository_onedrive extends repository {
             $fullpath .= $foldername;
 
             $folderid = $cache->get($fullpath);
-            if (empty($folderid)) {
+            if (empty($folderid) && $couldalreadyexist) {
                 $folderid = $this->get_file_id_by_path($service, $fullpath);
             }
             if ($folderid !== false) {
@@ -1105,6 +1105,7 @@ class repository_onedrive extends repository {
                 // Create it.
                 $parentid = $this->create_folder_in_folder($service, $foldername, $parentid);
                 $cache->set($fullpath, $parentid);
+                $couldalreadyexist = false;
             }
         }
 
