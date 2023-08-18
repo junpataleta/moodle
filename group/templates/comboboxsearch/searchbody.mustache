@@ -66,5 +66,7 @@
     {{/currentvalue}}
     <input type="hidden" name="search" id="input-{{uniqid}}"/>
 
-    <div data-region="searchplaceholder"></div>
+    <div data-region="searchplaceholder">
+        {{>core_group/comboboxsearch/resultset}}
+    </div>
 </div>
