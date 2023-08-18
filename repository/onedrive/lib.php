@@ -645,7 +645,7 @@ class repository_onedrive extends repository {
         } catch (\core\oauth2\rest_exception $re) {
             return false;
         }
-        return $response->id;
+        return $response ? $response->id : false;
     }
 
     /**
@@ -933,13 +933,10 @@ class repository_onedrive extends repository {
         $caughtexception = null;
         try {
             // Get a path to upload the file at.
-            $filename = clean_param($source->name, PARAM_PATH);
+            $filename = $this->make_filename_unique($source->name);
             $filepath = $this->generate_system_account_filepath_from_context($systemservice, $context, $component,
                 $filearea, $itemid, $filename);
             $path = $filepath->fullpath . '/' . $filename;
-
-            // Delete any conflicting file.
-            $this->delete_file_by_path($systemservice, $path);
 
             // Retrieve the user's ID.
             $resp = $userservice->call("me", []);
@@ -958,7 +955,8 @@ class repository_onedrive extends repository {
                     'id' => $filepath->parentid,
                     'driveId' => $systemdriveid,
                 ],
-                'name' => $filename
+                'name' => $filename,
+                '@microsoft.graph.conflictBehavior' => 'replace'
             ]));
             $location = null;
             foreach ($rawheaders as $rawheader) {
@@ -1040,6 +1038,24 @@ class repository_onedrive extends repository {
         }
 
         return $copiedfiledid;
+    }
+
+    /**
+     * Make a filename unique.
+     *
+     * @param string $filename The original file name.
+     * @return string
+     */
+    protected function make_filename_unique($filename) {
+        $filename = clean_param($filename, PARAM_FILE) ?: 'file';
+
+        $dot = strrpos($filename, '.');
+        $basename = $dot === false ? $filename : substr($filename, 0, $dot);
+        $ext = $dot === false ? '' : substr($filename, $dot + 1);
+
+        $prefix = $basename !== '' ? $basename . '.' : '';
+        $suffix = $ext !== '' ? '.' . $ext : '';
+        return $prefix . time() . '.' . strtolower(random_string(4)) . $suffix;
     }
 
     /**
