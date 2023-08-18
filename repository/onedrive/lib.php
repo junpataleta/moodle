@@ -641,7 +641,7 @@ class repository_onedrive extends repository {
     protected function get_file_id_by_path(\repository_onedrive\rest $client, $fullpath) {
         $fields = "id";
         try {
-            $response = $client->call('get_file_by_path', ['fullpath' => $fullpath, '$select' => $fields]);
+            $response = $client->call('get_file_by_path', ['fullpath' => rawurlencode($fullpath), '$select' => $fields]);
         } catch (\core\oauth2\rest_exception $re) {
             return false;
         }
