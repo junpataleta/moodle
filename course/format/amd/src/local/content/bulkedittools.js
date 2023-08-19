@@ -33,6 +33,7 @@ import {
     switchBulkSelection,
     checkAllBulkSelected
 } from 'core_courseformat/local/content/actions/bulkselection';
+import Notification from 'core/notification';
 
 // Load global strings.
 prefetchStrings(
@@ -113,6 +114,8 @@ export default class Component extends BaseComponent {
      * @param {Object} param.element details the update details (state.bulk in this case).
      */
     _refreshEnabled({element}) {
+        this._updatePageTitle(element.enabled).catch(Notification.exception);
+
         if (element.enabled) {
             enableStickyFooter();
         } else {
@@ -233,5 +236,42 @@ export default class Component extends BaseComponent {
             document.querySelector(this.selectors.SELECTABLE)?.focus();
             pending.resolve();
         }, 150);
+    }
+
+    /**
+     * Updates the <title> attribute of the page whenever bulk editing is toggled.
+     *
+     * This helps users, especially screen reader users, to understand the current state of the course homepage.
+     *
+     * @param {Boolean} enabled True when bulk editing is turned on. False, otherwise.
+     * @returns {Promise<void>}
+     * @private
+     */
+    async _updatePageTitle(enabled) {
+        const enableBulk = document.querySelector(this.selectors.BULKBTN);
+        let params = {course: enableBulk.dataset.coursename};
+        let bulkEditTitle = await getString('coursetitlebulkediting', 'moodle', params);
+        let editingTitle = await getString('coursetitleediting', 'moodle', params);
+        if (enableBulk.dataset.sectiontitle) {
+            params = {
+                course: enableBulk.dataset.coursename,
+                sectionname: enableBulk.dataset.sectionname,
+                sectiontitle: enableBulk.dataset.sectiontitle,
+            };
+            bulkEditTitle = await getString('coursesectiontitlebulkediting', 'moodle', params);
+            editingTitle = await getString('coursesectiontitleediting', 'moodle', params);
+        }
+        const pageTitle = document.title;
+        if (enabled) {
+            // Use bulk editing string for the page title.
+            if (pageTitle.indexOf(bulkEditTitle) < 0) {
+                document.title = pageTitle.replace(editingTitle, bulkEditTitle);
+            }
+        } else {
+            // Use the normal editing string for the page title.
+            if (pageTitle.indexOf(bulkEditTitle) >= 0) {
+                document.title = pageTitle.replace(bulkEditTitle, editingTitle);
+            }
+        }
     }
 }
