@@ -362,6 +362,12 @@ class repository_onedrive extends repository {
                     'children' => []
                 ];
             } else {
+
+                // Skip 0 bytes files, they are probably files that are visible, but not yet fully uploaded.
+                if (empty($remotefile->size)) {
+                    continue;
+                }
+
                 // We can download all other file types.
                 $title = $remotefile->name;
                 $source = json_encode([
