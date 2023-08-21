@@ -60,17 +60,21 @@
     <table id="presets-list" class="generaltable fullwidth">
         <thead>
             <tr>
-                <th class="pl-4 border-top-0" scope="col" style="width: 3%"></th>
+                <th class="pl-4 border-top-0" scope="col" style="width: 3%">
+                    <span class="sr-only">{{#str}}select{{/str}}</span>
+                </th>
                 <th class="pl-4 border-top-0" scope="col" style="width:30%">{{#str}} name {{/str}}</th>
                 <th class="pl-4 border-top-0" scope="col">{{#str}} description {{/str}}</th>
-                <th class="pl-4 border-top-0" scope="col" style="width: 3%"></th>
+                <th class="pl-4 border-top-0" scope="col" style="width: 3%">
+                    <span class="sr-only">{{#str}}actions{{/str}}</span>
+                </th>
             </tr>
         </thead>
         <tbody>
             {{#presets}}
             <tr>
                 <td class="p-4 border-right">
-                    <input type="radio" name="fullname" value="{{userid}}/{{shortname}}" data-cmid="{{cmid}}" />
+                    <input type="radio" name="fullname" value="{{userid}}/{{shortname}}" data-cmid="{{cmid}}" aria-label="{{fullname}}" />
                 </td>
                 <td class="p-4">
                     <a href="{{{url}}}">{{fullname}}</a>
