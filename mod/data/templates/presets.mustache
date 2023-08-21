@@ -57,8 +57,10 @@
     <input type="hidden" name="mode" value="usepreset">
     <input type="hidden" name="action" value="select">
 
-    <table id="presets-list" class="generaltable fullwidth">
-        <thead>
+    <fieldset>
+        <legend class="sr-only">{{#str}}presets, mod_data{{/str}}</legend>
+        <table id="presets-list" class="generaltable fullwidth">
+            <thead>
             <tr>
                 <th class="pl-4 border-top-0" scope="col" style="width: 3%">
                     <span class="sr-only">{{#str}}select{{/str}}</span>
@@ -69,28 +71,29 @@
                     <span class="sr-only">{{#str}}actions{{/str}}</span>
                 </th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             {{#presets}}
-            <tr>
-                <td class="p-4 border-right">
-                    <input type="radio" name="fullname" value="{{userid}}/{{shortname}}" data-cmid="{{cmid}}" aria-label="{{fullname}}" />
-                </td>
-                <td class="p-4">
-                    <a href="{{{url}}}">{{fullname}}</a>
-                </td>
-                <td class="p-4">{{description}}</td>
-                <td class="p-4 preset_action_menu">
-                    {{#actions}}
-                        <div class="float-right">
-                            {{>core/action_menu}}
-                        </div>
-                    {{/actions}}
-                </td>
-            </tr>
+                <tr>
+                    <td class="p-4 border-right">
+                        <input type="radio" name="fullname" value="{{userid}}/{{shortname}}" data-cmid="{{cmid}}" aria-label="{{fullname}}" />
+                    </td>
+                    <td class="p-4">
+                        <a href="{{{url}}}">{{fullname}}</a>
+                    </td>
+                    <td class="p-4">{{description}}</td>
+                    <td class="p-4 preset_action_menu">
+                        {{#actions}}
+                            <div class="float-right">
+                                {{>core/action_menu}}
+                            </div>
+                        {{/actions}}
+                    </td>
+                </tr>
             {{/presets}}
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </fieldset>
 
     {{< core/sticky_footer }}
         {{$ stickycontent }}
