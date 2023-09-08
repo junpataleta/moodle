@@ -249,10 +249,9 @@ export default class Component extends BaseComponent {
      */
     async _updatePageTitle(enabled) {
         const enableBulk = document.querySelector(this.selectors.BULKBTN);
-        let params = {course: enableBulk.dataset.coursename};
-        let bulkEditTitle = await getString('coursetitlebulkediting', 'moodle', params);
-        let editingTitle = await getString('coursetitleediting', 'moodle', params);
+        let params, bulkEditTitle, editingTitle;
         if (enableBulk.dataset.sectiontitle) {
+            // Section editing mode.
             params = {
                 course: enableBulk.dataset.coursename,
                 sectionname: enableBulk.dataset.sectionname,
@@ -260,18 +259,25 @@ export default class Component extends BaseComponent {
             };
             bulkEditTitle = await getString('coursesectiontitlebulkediting', 'moodle', params);
             editingTitle = await getString('coursesectiontitleediting', 'moodle', params);
+        } else {
+            // Whole course editing mode.
+            params = {
+                course: enableBulk.dataset.coursename
+            };
+            bulkEditTitle = await getString('coursetitlebulkediting', 'moodle', params);
+            editingTitle = await getString('coursetitleediting', 'moodle', params);
         }
         const pageTitle = document.title;
         if (enabled) {
             // Use bulk editing string for the page title.
-            if (pageTitle.indexOf(bulkEditTitle) < 0) {
-                document.title = pageTitle.replace(editingTitle, bulkEditTitle);
-            }
+            // At this point, the current page title should be the normal editing title.
+            // So replace the normal editing title with the bulk editing title.
+            document.title = pageTitle.replace(editingTitle, bulkEditTitle);
         } else {
             // Use the normal editing string for the page title.
-            if (pageTitle.indexOf(bulkEditTitle) >= 0) {
-                document.title = pageTitle.replace(bulkEditTitle, editingTitle);
-            }
+            // At this point, the current page title should be the bulk editing title.
+            // So replace the bulk editing title with the normal editing title.
+            document.title = pageTitle.replace(bulkEditTitle, editingTitle);
         }
     }
 }
