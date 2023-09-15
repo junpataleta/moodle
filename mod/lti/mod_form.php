@@ -86,8 +86,6 @@ class mod_lti_mod_form extends moodleform_mod {
             if (empty($this->typeid) && empty($current->id)) {
                 throw new moodle_exception('lti:addmanualinstanceprohibitederror', 'mod_lti');
             }
-            $PAGE->set_heading('testing');
-            $PAGE->set_title('blah');
         }
 
         parent::__construct($current, $section, $cm, $course);
@@ -339,7 +337,8 @@ class mod_lti_mod_form extends moodleform_mod {
         // Instances based on preconfigured tools and which are not domain matched as above, are still valid and will be shown using
         // the non-legacy form.
         if ($manualinstance || $matchestoolnotavailabletocourse) {
-            return $this->legacy_instance_form_definition($instancetypes);
+            $this->legacy_instance_form_definition($instancetypes);
+            return;
         }
 
         $tooltypeid = $this->current->typeid ?? $this->typeid;
