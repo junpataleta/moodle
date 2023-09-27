@@ -83,7 +83,7 @@ if ($requestform->is_cancelled()){
     $request = course_request::create($data);
 
     // And redirect back to the course listing.
-    notice(get_string('courserequestsuccess'), $returnurl);
+    redirect($returnurl, get_string('courserequestsuccess'), null, \core\notification::SUCCESS);
 }
 
 $categoryurl = new moodle_url('/course/index.php');
