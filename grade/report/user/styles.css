@@ -67,6 +67,7 @@
 .grade-report-user .user-grade .baggt,
 .grade-report-user .user-grade .baggb {
     font-weight: bold;
+    background-color: #f8f9fa;
 }
 
 .path-grade-report-user .user-report-container,
@@ -99,8 +100,8 @@
     border-bottom: 1px solid #dee2e6;
 }
 
-.path-grade-report-user .user-grade th.column-itemname:not(.header),
-.grade-report-user .user-grade th.column-itemname:not(.header) {
+.path-grade-report-user .user-grade th.column-itemname:not(.header,.category,.baggt,.baggb),
+.grade-report-user .user-grade th.column-itemname:not(.header,.category,.baggt,.baggb) {
     background-color: white;
     font-weight: normal;
 }
