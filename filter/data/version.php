@@ -29,4 +29,4 @@ $plugin->version  = 2023100900;
 $plugin->requires = 2023092900;  // Requires this Moodle version.
 $plugin->component= 'filter_data';
 
-$plugin->dependencies = array('mod_data' => 2023092900);
+$plugin->dependencies = ['mod_data' => 2023092900];

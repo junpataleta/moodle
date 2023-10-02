@@ -29,9 +29,9 @@ $plugin->requires = 2023092900;
 
 $plugin->component = 'qtype_randomsamatch';
 
-$plugin->dependencies = array(
+$plugin->dependencies = [
     'qtype_match' => 2023092900,
     'qtype_shortanswer' => 2023092900,
-);
+];
 
 $plugin->maturity  = MATURITY_STABLE;

@@ -28,4 +28,4 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->version = 2023100900;
 $plugin->requires = 2023092900;
 $plugin->component = 'theme_classic';
-$plugin->dependencies = array('theme_boost' => 2023092900);
+$plugin->dependencies = ['theme_boost' => 2023092900];

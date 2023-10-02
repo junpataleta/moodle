@@ -30,4 +30,4 @@ $plugin->version   = 2023100900;        // The current plugin version (Date: YYY
 $plugin->requires  = 2023092900;        // Requires this Moodle version.
 $plugin->component = 'auth_cas';        // Full name of the plugin (used for diagnostics)
 
-$plugin->dependencies = array('auth_ldap' => 2023092900);
+$plugin->dependencies = ['auth_ldap' => 2023092900];

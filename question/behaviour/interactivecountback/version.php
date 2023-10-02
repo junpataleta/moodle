@@ -29,8 +29,8 @@ $plugin->component = 'qbehaviour_interactivecountback';
 $plugin->version   = 2023100900;
 
 $plugin->requires  = 2023092900;
-$plugin->dependencies = array(
-    'qbehaviour_interactive' => 2023092900
-);
+$plugin->dependencies = [
+    'qbehaviour_interactive' => 2023092900,
+];
 
 $plugin->maturity  = MATURITY_STABLE;
