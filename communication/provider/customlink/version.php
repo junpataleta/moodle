@@ -25,6 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'communication_customlink';
-$plugin->version = 2023082600;
-$plugin->requires = 2023082600;
+$plugin->version = 2023100900;
+$plugin->requires = 2023092900;
 $plugin->maturity = MATURITY_ALPHA;
