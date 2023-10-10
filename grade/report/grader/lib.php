@@ -1087,6 +1087,9 @@ class grade_report_grader extends grade_report {
                         // Value type.
                         if ($quickgrading and $grade->is_editable()) {
                             $context->iseditable = true;
+                            $context->isnumeric = true;
+                            $context->minvalue = $item->grademin ?? null;
+                            $context->maxvalue = $item->grademax ?? null;
                             $value = format_float($gradeval, $decimalpoints);
                             $gradelabel = $fullname . ' ' . $item->get_name(true);
 
