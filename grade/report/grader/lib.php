@@ -1143,9 +1143,21 @@ class grade_report_grader extends grade_report {
                             $gradelabel = $fullname . ' ' . $item->get_name(true);
                             $itemcell->text .= '<label class="accesshide" for="grade_'.$userid.'_'.$item->id.'">'
                                           .get_string('useractivitygrade', 'gradereport_grader', $gradelabel).'</label>';
-                            $itemcell->text .= '<input size="6" '
-                                          . ' type="text" class="text" title="'. $strgrade .'" name="grade['
-                                          .$userid.'][' .$item->id.']" id="grade_'.$userid.'_'.$item->id.'" value="'.$value.'" />';
+                            $inputparams = [
+                                'type' => 'number',
+                                'class' => 'text',
+                                'title' => $strgrade,
+                                'name' => "grade[{$userid}][{$item->id}]",
+                                'id' => "grade_{$userid}_{$item->id}",
+                                'value' => $value,
+                            ];
+                            if (isset($item->grademin)) {
+                                $inputparams['min'] = $item->grademin;
+                            }
+                            if (isset($item->grademax)) {
+                                $inputparams['max'] = $item->grademax;
+                            }
+                            $itemcell->text .= html_writer::empty_tag('input', $inputparams);
                         } else {
                             $itemcell->text .= $gradepassicon . "<span class='gradevalue{$hidden}{$gradepass}'>" .
                                     format_float($gradeval, $decimalpoints) . "</span>";
