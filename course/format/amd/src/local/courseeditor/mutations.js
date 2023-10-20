@@ -14,6 +14,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 import ajax from 'core/ajax';
+import {add as addToast} from 'core/toast';
+import {getString} from "core/str";
 
 /**
  * Default mutation manager
@@ -66,6 +68,7 @@ export default class {
      */
     async _sectionBasicAction(stateManager, action, sectionIds, targetSectionId, targetCmId) {
         const course = stateManager.get('course');
+        const feedbackParams = this._getFeedbackParams(stateManager, 'section', sectionIds);
         this.sectionLock(stateManager, sectionIds, true);
         const updates = await this._callEditWebservice(
             action,
@@ -77,6 +80,8 @@ export default class {
         this.bulkReset(stateManager);
         stateManager.processUpdates(updates);
         this.sectionLock(stateManager, sectionIds, false);
+        // Show the feedback message after performing the action.
+        await this._showFeedbackMessage(action, feedbackParams);
     }
 
     /**
@@ -88,6 +93,7 @@ export default class {
      * @param {number} targetCmId optional target cm id (for moving actions)
      */
     async _cmBasicAction(stateManager, action, cmIds, targetSectionId, targetCmId) {
+        const feedbackParams = this._getFeedbackParams(stateManager, 'cm', cmIds);
         const course = stateManager.get('course');
         this.cmLock(stateManager, cmIds, true);
         const updates = await this._callEditWebservice(
@@ -100,6 +106,49 @@ export default class {
         this.bulkReset(stateManager);
         stateManager.processUpdates(updates);
         this.cmLock(stateManager, cmIds, false);
+        await this._showFeedbackMessage(action, feedbackParams);
+    }
+
+    /**
+     * Builds the object for the parameters of the feedback message lang string.
+     *
+     * @param {StateManager} stateManager The state manager
+     * @param {string} itemType The item type. Can be 'cm' for course modules or 'section' for course sections.
+     * @param {number[]} itemIds The item IDs. Can be the array of cm IDs or section IDs.
+     * @returns {{}}
+     * @private
+     */
+    _getFeedbackParams(stateManager, itemType, itemIds) {
+        const feedbackParams = {};
+        if (itemIds.length > 1) {
+            feedbackParams.count = itemIds.length;
+        } else if (itemIds.length === 1) {
+            const itemInfo = stateManager.get(itemType, itemIds[0]);
+            if (itemType === 'section') {
+                // For course sections, the section name is in the title property.
+                feedbackParams.name = itemInfo.title;
+            } else {
+                feedbackParams.name = itemInfo.name;
+            }
+        }
+        return feedbackParams;
+    }
+
+    /**
+     * Displays a toast containing the feedback message for the action that has been performed.
+     *
+     * @param {string} action The action that has been performed.
+     * @param {object} messageParams The parameters for the feedback lang string.
+     * @returns {Promise<void>}
+     * @private
+     */
+    async _showFeedbackMessage(action, messageParams) {
+        let multi = '';
+        if (messageParams.count) {
+            multi = '_multi';
+        }
+        const toastMessage = await getString(`${action}_feedback${multi}`, 'core_courseformat', messageParams);
+        await addToast(toastMessage);
     }
 
     /**
@@ -185,6 +234,8 @@ export default class {
      * @param {number|undefined} targetCmId the target course module id
      */
     async cmDuplicate(stateManager, cmIds, targetSectionId, targetCmId) {
+        const action = 'cm_duplicate';
+        const feedbackParams = this._getFeedbackParams(stateManager, 'cm', cmIds);
         const course = stateManager.get('course');
         // Lock all target sections.
         const sectionIds = new Set();
@@ -198,11 +249,12 @@ export default class {
         }
         this.sectionLock(stateManager, Array.from(sectionIds), true);
 
-        const updates = await this._callEditWebservice('cm_duplicate', course.id, cmIds, targetSectionId, targetCmId);
+        const updates = await this._callEditWebservice(action, course.id, cmIds, targetSectionId, targetCmId);
         this.bulkReset(stateManager);
         stateManager.processUpdates(updates);
 
         this.sectionLock(stateManager, Array.from(sectionIds), false);
+        await this._showFeedbackMessage(action, feedbackParams);
     }
 
     /**
@@ -292,10 +344,13 @@ export default class {
      * @param {array} sectionIds the list of course modules ids
      */
     async sectionDelete(stateManager, sectionIds) {
+        const action = 'section_delete';
+        const feedbackParams = this._getFeedbackParams(stateManager, 'section', sectionIds);
         const course = stateManager.get('course');
-        const updates = await this._callEditWebservice('section_delete', course.id, sectionIds);
+        const updates = await this._callEditWebservice(action, course.id, sectionIds);
         this.bulkReset(stateManager);
         stateManager.processUpdates(updates);
+        await this._showFeedbackMessage(action, feedbackParams);
     }
 
     /**
@@ -304,12 +359,15 @@ export default class {
      * @param {array} cmIds the list of section ids
      */
     async cmDelete(stateManager, cmIds) {
+        const action = 'cm_delete';
+        const feedbackParams = this._getFeedbackParams(stateManager, 'cm', cmIds);
         const course = stateManager.get('course');
         this.cmLock(stateManager, cmIds, true);
-        const updates = await this._callEditWebservice('cm_delete', course.id, cmIds);
+        const updates = await this._callEditWebservice(action, course.id, cmIds);
         this.bulkReset(stateManager);
         this.cmLock(stateManager, cmIds, false);
         stateManager.processUpdates(updates);
+        await this._showFeedbackMessage(action, feedbackParams);
     }
 
     /**
