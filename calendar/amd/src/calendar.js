@@ -230,6 +230,15 @@ function(
                 }
                 e.preventDefault();
             });
+
+            root.on('keyup', SELECTORS.DAY, (e) => {
+                const trigger = e.key;
+                if (trigger === ' ' || trigger === 'Enter') {
+                    e.preventDefault();
+                    // Trigger the click event.
+                    $(root).trigger('click');
+                }
+            });
         }
     };
 

@@ -182,6 +182,16 @@ const registerEventListeners = (root) => {
         }
     });
 
+    root.on('keyup', CalendarSelectors.links.eventLink, (e) => {
+        const trigger = e.key;
+        const eventLink = e.target.closest(CalendarSelectors.actions.viewEvent);
+        if (trigger === ' ' || trigger === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            $(eventLink).trigger('click');
+        }
+    });
+
     root.on('click', CalendarSelectors.links.navLink, (e) => {
         const wrapper = root.find(CalendarSelectors.wrapper);
         const view = wrapper.data('view');
