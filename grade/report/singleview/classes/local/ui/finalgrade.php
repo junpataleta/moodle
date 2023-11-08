@@ -131,12 +131,31 @@ class finalgrade extends grade_attribute_format implements unique_value, be_disa
                 $this->is_readonly()
             );
         } else {
+            // Set this input field with type="number" if the decimal separator for current language is set to
+            // a period. Other decimal separators may not be recognised by browsers yet which may cause issues
+            // when entering grades.
+            $decsep = get_string('decsep', 'core_langconfig');
+            $isnumeric = $decsep === '.';
+            // If we're rendering this as a number field, set min/max attributes, if applicable.
+            if ($isnumeric) {
+                $inputtype = 'number';
+                $minvalue = $this->grade->get_grade_min() ?? null;
+                $maxvalue = $this->grade->get_grade_max() ?? null;
+            } else {
+                $inputtype = 'text';
+                $minvalue = null;
+                $maxvalue = null;
+            }
+
             return new text_attribute(
                 $this->get_name(),
                 $this->get_value(),
                 $this->get_label(),
                 $this->is_disabled(),
-                $this->is_readonly()
+                $this->is_readonly(),
+                $inputtype,
+                $minvalue,
+                $maxvalue
             );
         }
     }

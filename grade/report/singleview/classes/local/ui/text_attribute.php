@@ -45,6 +45,23 @@ class text_attribute extends element {
     private bool $isreadonly;
 
     /**
+     * @var string The input type to pass to the template. This defaults to text but can be overridden to number for grade inputs.
+     */
+    private string $type;
+
+    /**
+     * @var float|null The value to set for the input's `min` attribute.
+     *                 This is set if a minimum grade is provided for the grade input field.
+     */
+    private $min;
+
+    /**
+     * @var float|null The value to set for the input's `max` attribute.
+     *                 This is set if a maximum grade is provided for the grade input field.
+     */
+    private $max;
+
+    /**
      * Constructor
      *
      * @param string $name The input name (the first bit)
@@ -53,9 +70,13 @@ class text_attribute extends element {
      * @param bool $isdisabled Is this input disabled.
      * @param bool $isreadonly If this is a read-only input.
      */
-    public function __construct(string $name, string $value, string $label, bool $isdisabled = false, bool $isreadonly = false) {
+    public function __construct(string $name, string $value, string $label, bool $isdisabled = false, bool $isreadonly = false,
+            string $type = 'text', ?float $min = null, ?float $max = null) {
         $this->isdisabled = $isdisabled;
         $this->isreadonly = $isreadonly;
+        $this->type = $type;
+        $this->min = $min;
+        $this->max = $max;
         parent::__construct($name, $value, $label);
     }
 
@@ -87,6 +108,10 @@ class text_attribute extends element {
             $context->label = get_string('feedbackfor', 'gradereport_singleview', $this->label);
         } else if (preg_match("/^finalgrade/", $this->name)) {
             $context->label = get_string('gradefor', 'gradereport_singleview', $this->label);
+            $context->type = $this->type;
+            $context->isnumeric = $this->type === 'number';
+            $context->min = $this->min;
+            $context->max = $this->max;
         }
 
         return $OUTPUT->render_from_template('gradereport_singleview/text_attribute', $context);
