@@ -45,6 +45,23 @@ class text_attribute extends element {
     private bool $isreadonly;
 
     /**
+     * @var string|null The input type to pass to the template. This defaults to text but can be overridden to number for grade inputs.
+     */
+    private $type = null;
+
+    /**
+     * @var float|null The value to set for the input's `min` attribute.
+     *                 This is set if a minimum grade is provided for the grade input field.
+     */
+    private $min = null;
+
+    /**
+     * @var float|null The value to set for the input's `max` attribute.
+     *                 This is set if a maximum grade is provided for the grade input field.
+     */
+    private $max = null;
+
+    /**
      * Constructor
      *
      * @param string $name The input name (the first bit)
@@ -87,8 +104,42 @@ class text_attribute extends element {
             $context->label = get_string('feedbackfor', 'gradereport_singleview', $this->label);
         } else if (preg_match("/^finalgrade/", $this->name)) {
             $context->label = get_string('gradefor', 'gradereport_singleview', $this->label);
+            $context->type = $this->type;
+            $context->isnumeric = $this->type === 'number';
+            $context->min = $this->min;
+            $context->max = $this->max;
         }
 
         return $OUTPUT->render_from_template('gradereport_singleview/text_attribute', $context);
+    }
+
+    /**
+     * Input type setter.
+     *
+     * @param string|null $type
+     * @return void
+     */
+    public function set_type(?string $type): void {
+        $this->type = $type;
+    }
+
+    /**
+     * Min attribute setter.
+     *
+     * @param float|null $min
+     * @return void
+     */
+    public function set_min(?float $min): void {
+        $this->min = $min;
+    }
+
+    /**
+     * Max attribute setter.
+     *
+     * @param float|null $max
+     * @return void
+     */
+    public function set_max(?float $max): void {
+        $this->max = $max;
     }
 }
