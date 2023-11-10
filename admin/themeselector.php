@@ -111,7 +111,6 @@ foreach ($themes as $themename => $themedir) {
     // Is this the current theme?
     if ($themename === $CFG->theme) {
         $themedata['current'] = true;
-        $themedata['definedinconfig'] = $definedinconfig;
         $currentthemeindex = $index;
     } else if (!$definedinconfig) {
         // Form params.
@@ -132,7 +131,7 @@ if (isset($data[$currentthemeindex])) {
 }
 
 // Show theme selector.
-$renderable = new \core_admin\output\theme_selector($data);
+$renderable = new \core_admin\output\theme_selector($data, $definedinconfig);
 $renderer = $PAGE->get_renderer('core', 'admin');
 echo $renderer->theme_selector_list($renderable);
 
