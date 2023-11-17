@@ -547,7 +547,9 @@ abstract class exporter {
                     if (isset($returns[$formatproperty])) {
                         throw new coding_exception('The format for \'' . $property . '\' is already defined.');
                     }
-                    $returns[$formatproperty] = self::get_format_structure($property, $properties[$formatproperty]);
+                    $formatpropertydef = $properties[$formatproperty];
+                    $formatpropertyrequired = !empty($formatpropertydef['optional']) ? VALUE_OPTIONAL : VALUE_REQUIRED;
+                    $returns[$formatproperty] = self::get_format_structure($property, $formatpropertydef, $formatpropertyrequired);
                 }
             }
         }

@@ -53,6 +53,26 @@ const GROUPINGS = {
 
 const NUMCOURSES_PERPAGE = [12, 24, 48, 96, 0];
 
+/**
+ * The required fields to render the courses in the block.
+ *
+ * @type {string[]}
+ */
+const REQUIRED_FIELDS = [
+    'coursecategory',
+    'fullname',
+    'hasprogress',
+    'hidden',
+    'id',
+    'isfavourite',
+    'progress',
+    'shortname',
+    'showcoursecategory',
+    'showshortname',
+    'viewurl',
+    'visible',
+];
+
 let loadedPages = [];
 
 let courseOffset = 0;
@@ -103,7 +123,8 @@ const getMyCourses = (filters, limit) => {
         classification: filters.grouping,
         sort: filters.sort,
         customfieldname: filters.customfieldname,
-        customfieldvalue: filters.customfieldvalue
+        customfieldvalue: filters.customfieldvalue,
+        requiredfields: REQUIRED_FIELDS
     });
 };
 
@@ -123,7 +144,8 @@ const getSearchMyCourses = (filters, limit, searchValue) => {
         sort: filters.sort,
         customfieldname: filters.customfieldname,
         customfieldvalue: filters.customfieldvalue,
-        searchvalue: searchValue
+        searchvalue: searchValue,
+        requiredfields: REQUIRED_FIELDS
     });
 };
 
