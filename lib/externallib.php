@@ -888,6 +888,12 @@ class external_format_value extends external_value {
      * @since Moodle 2.3
      */
     public function __construct($textfieldname, $required = VALUE_REQUIRED, $default = null) {
+        // Make sure the default format's value is correct.
+        if ($default !== null && !in_array($default, [FORMAT_MOODLE, FORMAT_HTML, FORMAT_PLAIN, FORMAT_MARKDOWN])) {
+            debugging("Invalid default format for $textfieldname: $default. " .
+                      "It must be either FORMAT_MOODLE, FORMAT_HTML, FORMAT_PLAIN, or FORMAT_MARKDOWN.", DEBUG_DEVELOPER);
+            $default = null;
+        }
 
         if ($default == null && $required == VALUE_DEFAULT) {
             $default = FORMAT_HTML;
