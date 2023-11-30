@@ -95,16 +95,19 @@ class course_summary_exporter extends \core\external\exporter {
             ),
             'summary' => array(
                 'type' => PARAM_RAW,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
+                'default' => null,
             ),
             'summaryformat' => array(
                 'type' => PARAM_INT,
+                'default' => FORMAT_MOODLE,
             ),
             'startdate' => array(
                 'type' => PARAM_INT,
             ),
             'enddate' => array(
                 'type' => PARAM_INT,
+                'default' => 0,
             ),
             'visible' => array(
                 'type' => PARAM_BOOL,
@@ -119,7 +122,8 @@ class course_summary_exporter extends \core\external\exporter {
             ],
             'pdfexportfont' => [
                 'type' => PARAM_TEXT,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
+                'default' => null,
             ],
         );
     }
