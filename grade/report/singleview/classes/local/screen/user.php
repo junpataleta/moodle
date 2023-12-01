@@ -314,11 +314,8 @@ class user extends tablelike implements selectable_items {
      */
     public function heading(): string {
         global $PAGE;
-        $edit = '';
-        if ($PAGE->user_is_editing()) {
-            $edit = 'edit';
-        }
-        return get_string('gradeuser' . $edit, 'gradereport_singleview', fullname($this->item));
+        $headinglangstring = $PAGE->user_is_editing() ? 'gradeuseredit' : 'gradeuser';
+        return get_string($headinglangstring, 'gradereport_singleview', fullname($this->item));
     }
 
     /**

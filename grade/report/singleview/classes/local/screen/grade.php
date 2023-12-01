@@ -321,11 +321,8 @@ class grade extends tablelike implements selectable_items, filterable_items {
      */
     public function heading(): string {
         global $PAGE;
-        $edit = '';
-        if ($PAGE->user_is_editing()) {
-            $edit = 'edit';
-        }
-        return get_string('gradeitem' . $edit, 'gradereport_singleview', $this->item->get_name());
+        $headinglangstring = $PAGE->user_is_editing() ? 'gradeitemedit' : 'gradeitem';
+        return get_string($headinglangstring, 'gradereport_singleview', $this->item->get_name());
     }
 
     /**
