@@ -257,6 +257,12 @@
         }
     }
 
+    // ARIA live region where course action confirmation messages will be announced.
+    echo html_writer::div('', 'sr-only', [
+        'id' => 'action-announcements',
+        'aria-live' => 'polite',
+    ]);
+
     // Course wrapper start.
     echo html_writer::start_tag('div', array('class'=>'course-content'));
 
