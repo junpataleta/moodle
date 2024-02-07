@@ -736,6 +736,9 @@ if (!isset($CFG->debugdisplay)) {
 // Register our shutdown manager, do NOT use register_shutdown_function().
 core_shutdown_manager::initialize();
 
+// Add \core\task\manager::fail_running_task to shutdown manager, so we can fail running tasks on shutdown.
+core_shutdown_manager::register_function('\core\task\manager::fail_running_task');
+
 // Verify upgrade is not running unless we are in a script that needs to execute in any case
 if (!defined('NO_UPGRADE_CHECK') and isset($CFG->upgraderunning)) {
     if ($CFG->upgraderunning < time()) {
