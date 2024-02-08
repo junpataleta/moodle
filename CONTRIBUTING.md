@@ -47,6 +47,6 @@ For further details, see <https://moodledev.io/general/community/plugincontribut
 [1]: https://moodle.org
 [2]: https://moodledev.io/general/community/contribute
 [3]: https://tracker.moodle.org
-[4]: https://github.com/moodle/moodle
+[4]: https://github.com/junpataleta/moodle
 [5]: https://moodledev.io/general/development/process/security
 [6]: https://moodledev.io/general/development/process
