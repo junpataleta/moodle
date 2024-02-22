@@ -31,7 +31,7 @@
                         {{#error}}{{#element.checked}}
                             autofocus aria-describedby="{{element.iderror}}"
                         {{/element.checked}}{{/error}}
-                        {{#required}}aria-required="true"{{/required}} {{{element.attributes}}} >
+                        {{#required}}required{{/required}} {{{element.attributes}}} >
                     {{#text}}
                         {{{.}}}
                     {{/text}}
