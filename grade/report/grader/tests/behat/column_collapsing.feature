@@ -110,9 +110,9 @@ Feature: Within the grader report, test that we can collapse columns
     And I click on "Collapsed columns" "button"
     # This is checking that the column name search dropdown exists.
     When I wait until "Search collapsed columns" "field" exists
-    And I click on "Test assignment one" "option_role" in the "form" "gradereport_grader > collapse search"
-    And I click on "Test assignment three" "option_role" in the "form" "gradereport_grader > collapse search"
-    And I click on "Phone" "option_role" in the "form" "gradereport_grader > collapse search"
+    And I click on "Test assignment one" "checkbox" in the "form" "gradereport_grader > collapse search"
+    And I click on "Test assignment three" "checkbox" in the "form" "gradereport_grader > collapse search"
+    And I click on "Phone" "checkbox" in the "form" "gradereport_grader > collapse search"
     And I click on "Expand" "button" in the "form" "gradereport_grader > collapse search"
     And "Test assignment one" "link" in the "First name / Last name" "table_row" should be visible
     And "Test assignment three" "link" in the "First name / Last name" "table_row" should be visible
@@ -187,15 +187,15 @@ Feature: Within the grader report, test that we can collapse columns
     Then I click on "Collapsed columns" "button"
     And the focused element is "Search collapsed columns" "field"
     And I press the down key
-    And the focused element is "Email address" "option_role"
+    And the focused element is "Email address" "checkbox"
     And I press the end key
-    And the focused element is "Country" "option_role"
+    And the focused element is "Country" "checkbox"
     And I press the home key
-    And the focused element is "Email address" "option_role"
+    And the focused element is "Email address" "checkbox"
     And I press the up key
-    And the focused element is "Country" "option_role"
+    And the focused element is "Country" "checkbox"
     And I press the down key
-    And the focused element is "Email address" "option_role"
+    And the focused element is "Email address" "checkbox"
     And I press the escape key
     And the focused element is "Collapsed columns" "button"
     And I click on "Collapsed columns" "button"
@@ -205,7 +205,7 @@ Feature: Within the grader report, test that we can collapse columns
     And the focused element is "Search collapsed columns" "field"
     # Lets check the tabbing order.
     And I set the field "Search collapsed columns" to "phone"
-    And I wait until "Mobile phone" "option_role" exists
+    And I wait until "Mobile phone" "checkbox" exists
     And I press the tab key
     And the focused element is "Clear search input" "button" in the ".dropdown-menu.show" "css_element"
     And I press the tab key
