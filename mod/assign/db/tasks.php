@@ -30,5 +30,14 @@ $tasks = array(
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'
-    )
+    ),
+    [
+        'classname' => '\mod_assign\task\queue_notify_assignment_due_soon',
+        'blocking' => 0,
+        'minute' => 'R',
+        'hour' => '*/2',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*',
+    ],
 );
