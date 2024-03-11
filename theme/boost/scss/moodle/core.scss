@@ -2294,6 +2294,8 @@ $footer-link-color: $bg-inverse-link-color !default;
     a {
         color: $footer-link-color;
         text-decoration: underline;
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
 
         .icon {
             color: $footer-link-color;
