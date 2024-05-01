@@ -32,5 +32,5 @@ $plugin->requires  = 2024100100;
 $plugin->component = 'ltiservice_toolsettings';
 $plugin->dependencies = [
     'ltixservice_profile' => 2024100100,
-    'ltiservice_toolproxy' => 2024100100,
+    'ltixservice_toolproxy' => 2024100100,
 ];
