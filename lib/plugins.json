@@ -290,6 +290,7 @@
             "toolproxy",
             "toolsettings"
         ],
+        "ltixsource": [],
         "media": [
             "html5audio",
             "html5video",
