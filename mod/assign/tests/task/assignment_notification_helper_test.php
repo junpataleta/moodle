@@ -16,8 +16,6 @@
 
 namespace mod_assign\task;
 
-use mod_assign\task\assignment_notification_helper;
-
 /**
  * Test class for assignment_notification_helper.
  *

@@ -76,7 +76,7 @@ class assignment_notification_helper {
                   JOIN {modules} m ON cm.module = m.id AND m.name = :modulename
              LEFT JOIN {assign_overrides} ao ON a.id = ao.assignid
                  WHERE (a.duedate < :futuretime OR ao.duedate < :ao_futuretime)
-                   AND (a.duedate > :timenow OR ao.duedate > :ao_timenow);";
+                   AND (a.duedate > :timenow OR ao.duedate > :ao_timenow)";
 
         $params = [
             'timenow' => $timenow,
@@ -110,7 +110,7 @@ class assignment_notification_helper {
                         SELECT MIN(sortorder)
                           FROM {assign_overrides}
                          WHERE assignid = ao.assignid)
-                        );";
+                        )";
 
         return $DB->get_records_sql($sql, ['assignmentid' => $assignmentid]);
     }
@@ -138,11 +138,6 @@ class assignment_notification_helper {
         $submissions = $DB->get_records('assign_submission', ['assignment' => $assignment->assignmentid, 'status' => 'submitted']);
 
         foreach ($users as $key => $user) {
-            // If the assignment 'duedate' date has become empty, unset and continue.
-            if (empty($assignment->duedate)) {
-                unset($users[$key]);
-                continue;
-            }
             // Due dates can be user specific with an override.
             // We begin by assuming it is the same as recorded in the assignment.
             $user->duedate = $assignment->duedate;
@@ -177,7 +172,6 @@ class assignment_notification_helper {
 
             if (self::has_user_been_sent_a_notification_already($user->id, json_encode($match))) {
                 unset($users[$key]);
-                continue;
             }
         }
 
