@@ -1,10 +1,11 @@
 {
     "subplugintypes": {
-        "ltisource": "source",
-        "ltiservice": "service"
+        "ltisource": "source"
     },
     "plugintypes": {
-        "ltisource": "mod/lti/source",
-        "ltiservice": "mod/lti/service"
+        "ltisource": "mod/lti/source"
+    },
+    "deprecatedsubplugintypes": {
+        "ltiservice": "service"
     }
 }
