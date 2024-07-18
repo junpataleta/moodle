@@ -189,7 +189,7 @@ class behat_calendar extends behat_base {
     /**
      * Click on today in the mini-calendar.
      *
-     * @Given /^I click on today in the mini-calendar block( responsive view|)(to view the detail)|$/
+     * @Given /^I click on today in the mini-calendar block( responsive view|)( to view the detail)|$/
      *
      * @param string $responsive If not empty, use the responsive calendar link.
      * @param string $detail If not empty, use the detail view calendar link.
