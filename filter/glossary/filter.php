@@ -26,3 +26,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 debugging('This file is no longer required in Moodle 4.5+. Please do not include/require it.', DEBUG_DEVELOPER);
+
+// Alias the new class with the old class.
+class_alias(filter_glossary\text_filter::class, '\filter_glossary');
