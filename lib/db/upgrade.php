@@ -1365,5 +1365,46 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2024091000.01);
     }
 
+    if ($oldversion < 2024091600.00) {
+
+        // Temporary rename field success on table ai_action_register to oldsuccess. We'll drop this later.
+        $table = new xmldb_table('ai_action_register');
+        $field = new xmldb_field('success', XMLDB_TYPE_BINARY, null, null, XMLDB_NOTNULL, null, null, 'actionid');
+
+        // Launch rename field success to oldsuccess.
+        $dbman->rename_field($table, $field, 'oldsuccess');
+
+        // Define field success to be added to ai_action_register. This now has the correct type.
+        $table = new xmldb_table('ai_action_register');
+        $field = new xmldb_field('success', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'actionid');
+
+        // Conditionally launch add field success.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Copy the values from the oldsuccess field to the new success field.
+        $actionsrs = $DB->get_recordset('ai_action_register', null, '', 'id, oldsuccess');
+        if ($actionsrs->valid()) {
+            foreach ($actionsrs as $action) {
+                $DB->set_field('ai_action_register', 'success', (int) $action->oldsuccess, ['id' => $action->id]);
+            }
+        }
+        $actionsrs->close();
+
+        // Drop the oldsuccess field.
+        // Define field success to be dropped from ai_action_register.
+        $table = new xmldb_table('ai_action_register');
+        $field = new xmldb_field('oldsuccess');
+
+        // Conditionally launch drop field oldsuccess.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2024091600.00);
+    }
+
     return true;
 }
