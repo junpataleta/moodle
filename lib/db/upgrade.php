@@ -1365,5 +1365,18 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2024091000.01);
     }
 
+    if ($oldversion < 2024091600.00) {
+
+        // Changing type of field success on table ai_action_register to int.
+        $table = new xmldb_table('ai_action_register');
+        $field = new xmldb_field('success', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, null, 'actionid');
+
+        // Launch change of type for field success.
+        $dbman->change_field_type($table, $field);
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2024091600.00);
+    }
+
     return true;
 }
