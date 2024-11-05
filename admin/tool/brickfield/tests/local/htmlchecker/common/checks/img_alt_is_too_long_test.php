@@ -62,19 +62,19 @@ EOD;
      */
     public static function img_alt_text_provider(): array {
         return [
-            'Alt text <= 125 characters' => [
+            'Alt text <= 250 characters' => [
                 true,
-                str_repeat("Hello world!", 10),
+                str_repeat("Hello world!", 20),
             ],
-            'Alt text > 125 characters' => [
+            'Alt text > 250 characters' => [
                 false,
                 str_repeat("Hello world!", 25),
             ],
-            'Multi-byte alt text <= 125 characters' => [
+            'Multi-byte alt text <= 250 characters' => [
                 true,
-                str_repeat('こんにちは、世界！', 13),
+                str_repeat('こんにちは、世界！', 27),
             ],
-            'Multi-byte alt text > 125 characters' => [
+            'Multi-byte alt text > 250 characters' => [
                 false,
                 str_repeat('こんにちは、世界！', 30),
             ],
