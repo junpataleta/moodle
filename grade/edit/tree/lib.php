@@ -825,38 +825,38 @@ class grade_edit_tree_column_name extends grade_edit_tree_column {
             'category' => $params['eid']
         ]);
 
-        $mastercheckbox = '';
+        $togglercheckbox = '';
         if ($this->deepest_level > 1) {
             if (empty($params['eid'])) {
                 throw new Exception('Array key (eid) missing from 3rd param of ' .
                     'grade_edit_tree_column_select::get_category_cell($category, $levelclass, $params)');
             }
 
-            // Get toggle group for this master checkbox.
+            // Get toggle group for this toggler checkbox.
             $togglegroup = $this->get_checkbox_togglegroup($category);
-            // Set label for this master checkbox.
-            $masterlabel = $params['level'] === 1 ? get_string('all') : $params['name'];
-            // Build the master checkbox.
-            $mastercheckbox = new \core\output\checkbox_toggleall($togglegroup, true, [
+            // Set label for this toggler checkbox.
+            $togglerlabel = $params['level'] === 1 ? get_string('all') : $params['name'];
+            // Build the toggler checkbox.
+            $togglercheckbox = new \core\output\checkbox_toggleall($togglegroup, true, [
                 'id' => 'select_category_' . $category->id,
                 'name' => $togglegroup,
                 'value' => 1,
                 'classes' => 'itemselect ignoredirty',
-                'label' => $masterlabel,
+                'label' => $togglerlabel,
                 // Consistent label to prevent the select column from resizing.
-                'selectall' => $masterlabel,
-                'deselectall' => $masterlabel,
+                'selectall' => $togglerlabel,
+                'deselectall' => $togglerlabel,
                 'labelclasses' => 'accesshide',
             ]);
 
-            $mastercheckbox = $OUTPUT->render($mastercheckbox);
+            $togglercheckbox = $OUTPUT->render($togglercheckbox);
         }
 
         $moveaction = isset($params['moveaction']) ? $params['moveaction'] : '';
         $categorycell = parent::get_category_cell($category, $levelclass, $params);
         $categorycell->colspan = ($this->deepest_level + 2) - $params['level'];
         $rowtitle = html_writer::div($params['name'], 'rowtitle');
-        $categorycell->text = html_writer::div($mastercheckbox . $visibilitytoggle . $moveaction . $rowtitle, 'font-weight-bold');
+        $categorycell->text = html_writer::div($togglercheckbox . $visibilitytoggle . $moveaction . $rowtitle, 'font-weight-bold');
         return $categorycell;
     }
 
@@ -1202,33 +1202,33 @@ class grade_edit_tree_column_select extends grade_edit_tree_column {
             throw new Exception('Array key (eid) missing from 3rd param of grade_edit_tree_column_select::get_category_cell($category, $levelclass, $params)');
         }
 
-        // Get toggle group for this master checkbox.
+        // Get toggle group for this toggler checkbox.
         $togglegroup = $this->get_checkbox_togglegroup($category);
-        // Set label for this master checkbox.
-        $masterlabel = get_string('all');
+        // Set label for this toggler checkbox.
+        $togglerlabel = get_string('all');
         // Use category name if available.
         if ($category->fullname !== '?') {
-            $masterlabel = format_string($category->fullname, true, ['escape' => false]);
+            $togglerlabel = format_string($category->fullname, true, ['escape' => false]);
             // Limit the displayed category name to prevent the Select column from getting too wide.
-            if (core_text::strlen($masterlabel) > 20) {
-                $masterlabel = get_string('textellipsis', 'core', core_text::substr($masterlabel, 0, 12));
+            if (core_text::strlen($togglerlabel) > 20) {
+                $togglerlabel = get_string('textellipsis', 'core', core_text::substr($togglerlabel, 0, 12));
             }
         }
-        // Build the master checkbox.
-        $mastercheckbox = new \core\output\checkbox_toggleall($togglegroup, true, [
+        // Build the toggler checkbox.
+        $togglercheckbox = new \core\output\checkbox_toggleall($togglegroup, true, [
             'id' => 'select_category_' . $category->id,
             'name' => $togglegroup,
             'value' => 1,
             'classes' => 'itemselect ignoredirty',
-            'label' => $masterlabel,
+            'label' => $togglerlabel,
             // Consistent label to prevent the select column from resizing.
-            'selectall' => $masterlabel,
-            'deselectall' => $masterlabel,
+            'selectall' => $togglerlabel,
+            'deselectall' => $togglerlabel,
             'labelclasses' => 'm-0',
         ]);
 
         $categorycell = parent::get_category_cell($category, $levelclass, $params);
-        $categorycell->text = $OUTPUT->render($mastercheckbox);
+        $categorycell->text = $OUTPUT->render($togglercheckbox);
         return $categorycell;
     }
 
