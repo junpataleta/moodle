@@ -48,18 +48,29 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
                 array('class' => 'qtext'));
 
         $result .= html_writer::start_tag('div', array('class' => 'ablock'));
-        $result .= html_writer::start_tag('table', array('class' => 'answer'));
-        $result .= html_writer::start_tag('tbody');
+        $result .= html_writer::start_tag('table', [
+            'class' => 'answer',
+            'role' => 'presentation'],
+        );
+        $result .= html_writer::start_tag('tbody', [
+            'role' => 'presentation',
+        ]);
 
         $parity = 0;
         $i = 1;
         foreach ($stemorder as $key => $stemid) {
 
-            $result .= html_writer::start_tag('tr', array('class' => 'r' . $parity));
+            $result .= html_writer::start_tag('tr', [
+                'class' => 'r' . $parity,
+                'role' => 'presentation',
+            ]);
             $fieldname = 'sub' . $key;
 
-            $result .= html_writer::tag('td', $this->format_stem_text($qa, $stemid),
-                    array('class' => 'text'));
+            $label = html_writer::label($this->format_stem_text($qa, $stemid), 'menu' . $qa->get_qt_field_name('sub' . $key), false);
+            $result .= html_writer::tag('td', $label, [
+                'class' => 'text',
+                'role' => 'presentation',
+            ]);
 
             $classes = 'control';
             $feedbackimage = '';
@@ -77,14 +88,13 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
                 $feedbackimage = $this->feedback_image($fraction);
             }
 
-            $labeltext = $options->add_question_identifier_to_label(get_string('answer', 'qtype_match', $i));
             $result .= html_writer::tag('td',
-                    html_writer::label($labeltext,
-                            'menu' . $qa->get_qt_field_name('sub' . $key), false,
-                            array('class' => 'accesshide')) .
                     html_writer::select($choices, $qa->get_qt_field_name('sub' . $key), $selected,
                             array('0' => 'choose'), array('disabled' => $options->readonly, 'class' => 'custom-select ms-1')) .
-                    ' ' . $feedbackimage, array('class' => $classes));
+                    ' ' . $feedbackimage, [
+                'class' => $classes,
+                'role' => 'presentation',
+            ]);
 
             $result .= html_writer::end_tag('tr');
             $parity = 1 - $parity;
