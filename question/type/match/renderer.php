@@ -48,18 +48,18 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
                 array('class' => 'qtext'));
 
         $result .= html_writer::start_tag('div', array('class' => 'ablock'));
-        $result .= html_writer::start_tag('table', array('class' => 'answer'));
+        $result .= html_writer::start_tag('table', array('class' => 'answer', 'role' => 'presentation'));
         $result .= html_writer::start_tag('tbody');
 
         $parity = 0;
         foreach ($stemorder as $key => $stemid) {
 
-            $result .= html_writer::start_tag('tr', array('class' => 'r' . $parity));
+            $result .= html_writer::start_tag('tr', array('class' => 'r' . $parity, 'role' => 'presentation'));
             $fieldname = 'sub' . $key;
 
             $label = html_writer::label($this->format_stem_text($qa, $stemid), 'menu' . $qa->get_qt_field_name($fieldname), false);
             $result .= html_writer::tag('td', $label,
-                    array('class' => 'text'));
+                    array('class' => 'text', 'role' => 'presentation'));
 
             $classes = 'control';
             $feedbackimage = '';
@@ -80,7 +80,7 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
             $result .= html_writer::tag('td',
                     html_writer::select($choices, $qa->get_qt_field_name('sub' . $key), $selected,
                             array('0' => 'choose'), array('disabled' => $options->readonly, 'class' => 'custom-select ms-1')) .
-                    ' ' . $feedbackimage, array('class' => $classes));
+                    ' ' . $feedbackimage, array('class' => $classes, 'role' => 'presentation'));
 
             $result .= html_writer::end_tag('tr');
             $parity = 1 - $parity;
