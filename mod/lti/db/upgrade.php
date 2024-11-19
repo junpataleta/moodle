@@ -118,6 +118,9 @@ function xmldb_lti_upgrade($oldversion) {
 
     // Automatically generated Moodle v4.4.0 release upgrade line.
     // Put any upgrade step following this.
+
+    // Automatically generated Moodle v4.5.0 release upgrade line.
+    // Put any upgrade step following this.
     if ($oldversion < 2024042201) {
         // Capabilities have been renamed - modify any existing roles with custom changes.
 
@@ -162,9 +165,6 @@ function xmldb_lti_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2024042201, 'lti');
 
     }
-
-    // Automatically generated Moodle v4.5.0 release upgrade line.
-    // Put any upgrade step following this.
 
     return true;
 }
