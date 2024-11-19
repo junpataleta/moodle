@@ -43,23 +43,24 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
 
         $choices = $this->format_choices($question);
 
-        $result = '';
-        $result .= html_writer::tag('div', $question->format_questiontext($qa),
-                array('class' => 'qtext'));
+        $result = html_writer::tag('div', $question->format_questiontext($qa), ['class' => 'qtext']);
 
-        $result .= html_writer::start_tag('div', array('class' => 'ablock'));
-        $result .= html_writer::start_tag('table', array('class' => 'answer', 'role' => 'presentation'));
+        $result .= html_writer::start_tag('div', ['class' => 'ablock']);
+        $result .= html_writer::start_tag('table', ['class' => 'answer', 'role' => 'presentation']);
         $result .= html_writer::start_tag('tbody');
 
         $parity = 0;
         foreach ($stemorder as $key => $stemid) {
 
-            $result .= html_writer::start_tag('tr', array('class' => 'r' . $parity, 'role' => 'presentation'));
+            $result .= html_writer::start_tag('tr', ['class' => 'r' . $parity, 'role' => 'presentation']);
             $fieldname = 'sub' . $key;
 
             $itemtextid = $qa->get_qt_field_name($fieldname) . '_itemtext';
-            $result .= html_writer::tag('td', $this->format_stem_text($qa, $stemid),
-                    array('class' => 'text', 'id' => $itemtextid, 'role' => 'presentation'));
+            $result .= html_writer::tag('td', $this->format_stem_text($qa, $stemid), [
+                'class' => 'text',
+                'id' => $itemtextid,
+                'role' => 'presentation',
+            ]);
 
             $classes = 'control';
             $feedbackimage = '';
@@ -77,10 +78,21 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
                 $feedbackimage = $this->feedback_image($fraction);
             }
 
-            $result .= html_writer::tag('td',
-                    html_writer::select($choices, $qa->get_qt_field_name('sub' . $key), $selected,
-                            array('0' => 'choose'), array('disabled' => $options->readonly, 'class' => 'custom-select ms-1', 'aria-labelledby' => $itemtextid)) .
-                    ' ' . $feedbackimage, array('class' => $classes, 'role' => 'presentation'));
+            $select = html_writer::select(
+                $choices,
+                $qa->get_qt_field_name($fieldname),
+                $selected,
+                ['0' => 'choose'],
+                [
+                    'disabled' => $options->readonly,
+                    'class' => 'custom-select ms-1',
+                    'aria-labelledby' => $itemtextid
+                ]
+            );
+            $result .= html_writer::tag('td', $select . ' ' . $feedbackimage, [
+                'class' => $classes,
+                'role' => 'presentation',
+            ]);
 
             $result .= html_writer::end_tag('tr');
             $parity = 1 - $parity;
