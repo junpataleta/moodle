@@ -52,14 +52,14 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
         $result .= html_writer::start_tag('tbody');
 
         $parity = 0;
-        $i = 1;
         foreach ($stemorder as $key => $stemid) {
 
             $result .= html_writer::start_tag('tr', array('class' => 'r' . $parity));
             $fieldname = 'sub' . $key;
 
+            $itemtextid = $qa->get_qt_field_name($fieldname) . '_itemtext';
             $result .= html_writer::tag('td', $this->format_stem_text($qa, $stemid),
-                    array('class' => 'text'));
+                    array('class' => 'text', 'id' => $itemtextid));
 
             $classes = 'control';
             $feedbackimage = '';
@@ -77,18 +77,13 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
                 $feedbackimage = $this->feedback_image($fraction);
             }
 
-            $labeltext = $options->add_question_identifier_to_label(get_string('answer', 'qtype_match', $i));
             $result .= html_writer::tag('td',
-                    html_writer::label($labeltext,
-                            'menu' . $qa->get_qt_field_name('sub' . $key), false,
-                            array('class' => 'accesshide')) .
                     html_writer::select($choices, $qa->get_qt_field_name('sub' . $key), $selected,
-                            array('0' => 'choose'), array('disabled' => $options->readonly, 'class' => 'custom-select ms-1')) .
+                            array('0' => 'choose'), array('disabled' => $options->readonly, 'class' => 'custom-select ms-1', 'aria-labelledby' => $itemtextid)) .
                     ' ' . $feedbackimage, array('class' => $classes));
 
             $result .= html_writer::end_tag('tr');
             $parity = 1 - $parity;
-            $i++;
         }
         $result .= html_writer::end_tag('tbody');
         $result .= html_writer::end_tag('table');
