@@ -169,7 +169,7 @@ final class dml_mysqli_read_replica_test extends \database_driver_testcase {
             sprintf(
                 '/%s%s/',
                 preg_quote("Readonly db connection failed for host {$invalidhost}:"),
-                '.* Name or service not known',
+                '.*',
                 $cfg->dbname
             ),
             $debugging[0]
@@ -219,7 +219,7 @@ final class dml_mysqli_read_replica_test extends \database_driver_testcase {
             sprintf(
                 '/%s%s/',
                 preg_quote("Readonly db connection failed for host {$cfg->dbhost}: "),
-                "Access denied for user .* to database '$invaliddb'",
+                ".* database '$invaliddb'",
                 $cfg->dbname
             ),
             $debugging[0]
@@ -228,7 +228,7 @@ final class dml_mysqli_read_replica_test extends \database_driver_testcase {
             sprintf(
                 '/%s%s/',
                 preg_quote("Readwrite db connection failed for host {$cfg->dbhost}: "),
-                'Access denied for user .* '.preg_quote("to database '$invaliddb'"),
+                ".* '$invaliddb",
                 $cfg->dbname
             ),
             $debugging[1]

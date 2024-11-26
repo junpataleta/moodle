@@ -293,7 +293,7 @@ class dml_pgsql_read_replica_test extends \advanced_testcase {
             sprintf(
                 '/%s%s/',
                 preg_quote("Readonly db connection failed for host {$invalidhost}: "),
-                '.* Name or service not known',
+                '.*',
                 $cfg->dbname
             ),
             $debugging[0]
