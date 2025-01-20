@@ -127,7 +127,7 @@
                             {{/isdivider}}
                             {{^isdivider}}
                                 <li class="dropdown-item" role="option" id="{{id}}" data-value="{{value}}"
-                                {{#disableactive}}data-disableactive="true"{{/disableactive}}
+                                {{$optionattributes}}{{/optionattributes}}
                                 {{#selected}}aria-selected="true"{{/selected}}>
                                     {{name}}
                                 </li>
@@ -142,7 +142,7 @@
                 {{/isdivider}}
                 {{^isdivider}}
                     <li class="dropdown-item" role="option" id="{{id}}" data-value="{{value}}"
-                    {{#disableactive}}data-disableactive="true"{{/disableactive}}
+                    {{$optionattributes}}{{/optionattributes}}
                     {{#selected}}aria-selected="true"{{/selected}}>
                         {{name}}
                     </li>

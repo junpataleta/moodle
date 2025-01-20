@@ -74,7 +74,9 @@
     }
 }}
 <nav class="tertiary-navigation-selector">
-    {{>core/select_menu}}
+    {{<core/select_menu}}
+        {{$optionattributes}}data-disableactive="true"{{/optionattributes}}
+    {{/core/select_menu}}
 </nav>
 {{#js}}
     document.querySelector('#{{baseid}}').addEventListener('change', function(e) {

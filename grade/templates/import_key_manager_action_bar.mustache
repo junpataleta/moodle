@@ -105,7 +105,9 @@
         {{/generalnavselector}}
         {{#importselector}}
             <div class="navitem">
-                {{>core/select_menu}}
+                {{<core/select_menu}}
+                    {{$optionattributes}}data-disableactive="true"{{/optionattributes}}
+                {{/core/select_menu}}
             </div>
             {{#js}}
                 document.querySelector('#{{baseid}}').addEventListener('change', function(e) {

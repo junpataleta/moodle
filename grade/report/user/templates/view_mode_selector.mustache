@@ -53,7 +53,9 @@
     }
 }}
 <div class="view-user-selector">
-    {{>core/select_menu}}
+    {{<core/select_menu}}
+        {{$optionattributes}}data-disableactive="true"{{/optionattributes}}
+    {{/core/select_menu}}
 </div>
 {{#js}}
     document.querySelector('#{{baseid}}').addEventListener('change', function(e) {
