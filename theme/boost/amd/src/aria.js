@@ -233,6 +233,10 @@ const dropdownFix = () => {
  * A lot of Bootstrap's out of the box features don't work if dropdown items are not focusable.
  */
 const comboboxFix = () => {
+    let oldSelection = null;
+    let newSelection = null;
+    let selectInput = null;
+
     $(document).on('show.bs.dropdown', e => {
         if (e.relatedTarget.matches('[role="combobox"]')) {
             const combobox = e.relatedTarget;
@@ -375,8 +379,10 @@ const comboboxFix = () => {
         if (oldSelectedOption != option) {
             if (oldSelectedOption) {
                 oldSelectedOption.removeAttribute('aria-selected');
+                oldSelection = oldSelectedOption;
             }
             option.setAttribute('aria-selected', 'true');
+            newSelection = option;
         }
 
         if (combobox.hasAttribute('value')) {
@@ -394,10 +400,20 @@ const comboboxFix = () => {
             const inputElement = document.getElementById(combobox.dataset.inputElement);
             if (inputElement && (inputElement.value != option.dataset.value)) {
                 inputElement.value = option.dataset.value;
+                selectInput = inputElement;
                 inputElement.dispatchEvent(new Event('change', {bubbles: true}));
             }
         }
     };
+
+    window.addEventListener('beforeunload', () => {
+        if (oldSelection && newSelection) {
+            // Revert the aria-selection when the page is reloaded through a redirect.
+            newSelection.removeAttribute('aria-selected');
+            oldSelection.setAttribute('aria-selected', 'true');
+            selectInput.value = oldSelection.dataset.value;
+        }
+    });
 };
 
 /**
