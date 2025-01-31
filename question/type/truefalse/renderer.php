@@ -96,11 +96,12 @@ class qtype_truefalse_renderer extends qtype_renderer {
                 html_writer::tag('label', get_string('false', 'qtype_truefalse'),
                 array('for' => $falseattributes['id'], 'class' => 'ms-1'));
 
+        $questiontextid = $qa->get_qt_field_name('qtext');
         $result = '';
         $result .= html_writer::tag('div', $question->format_questiontext($qa),
-                array('class' => 'qtext'));
+                array('class' => 'qtext', 'id' => $questiontextid));
 
-        $result .= html_writer::start_tag('fieldset', array('class' => 'ablock'));
+        $result .= html_writer::start_tag('fieldset', array('class' => 'ablock', 'aria-describedby' => $questiontextid));
         if (!empty($question->showstandardinstruction)) {
             $legendclass = '';
             $questionnumber = $options->add_question_identifier_to_label(get_string('selectone', 'qtype_truefalse'), true, true);
