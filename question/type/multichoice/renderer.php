@@ -143,11 +143,15 @@ abstract class qtype_multichoice_renderer_base extends qtype_with_combined_feedb
             $classes[] = $class;
         }
 
+        $questiontextid = $qa->get_qt_field_name('qtext');
         $result = '';
         $result .= html_writer::tag('div', $question->format_questiontext($qa),
-                array('class' => 'qtext'));
+                array('class' => 'qtext', 'id' => $questiontextid));
 
-        $result .= html_writer::start_tag('fieldset', array('class' => 'ablock no-overflow visual-scroll-x'));
+        $result .= html_writer::start_tag('fieldset', array(
+            'class' => 'ablock no-overflow visual-scroll-x',
+            'aria-describedby' => $questiontextid,
+        ));
         if ($question->showstandardinstruction == 1) {
             $legendclass = '';
             $questionnumber = $options->add_question_identifier_to_label($this->prompt(), true, true);
