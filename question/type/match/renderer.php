@@ -80,6 +80,14 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
                 $feedbackimage = $this->feedback_image($fraction);
             }
 
+            // We only want to add the question text to the first answer field to
+            // avoid repetition of the question text for the subsequent answer fields.
+            if ($i == 1) {
+                $ariadescribedbyids = $questiontextid . ' ' . $itemtextid;
+            } else {
+                $ariadescribedbyids = $itemtextid;
+            }
+
             $labeltext = $options->add_question_identifier_to_label(get_string('answer', 'qtype_match', $i));
             $selectlabel = html_writer::label($labeltext, 'menu' . $qa->get_qt_field_name($fieldname), false, ['class' => 'accesshide']);
             $select = html_writer::select(
@@ -90,7 +98,7 @@ class qtype_match_renderer extends qtype_with_combined_feedback_renderer {
                 [
                     'disabled' => $options->readonly,
                     'class' => 'custom-select ms-1',
-                    'aria-describedby' => "$questiontextid $itemtextid",
+                    'aria-describedby' => $ariadescribedbyids,
                 ]
             );
             $result .= html_writer::tag('td', $selectlabel . $select . ' ' . $feedbackimage, [
