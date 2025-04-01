@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template tiny_ai/textinsert
+    @template tiny_aiplacement/textarea
 
-    Format generated text for insertion into the TinyMCE editor.
+    Template for the generated text content within the Tiny Editor.
 
     Classes required for JS:
     * none
@@ -26,18 +26,20 @@
     * none
 
     Context variables required for this template:
+    * elementid - The unique element id
+    * text - The generated text
 
     Example context (json):
     {
-        "prompttext": "prompt text",
-        "timecreated": "1681901609",
-        "editedtext": "returned AI content"
+        "elementid": "exampleId",
+        "text": "Example text"
     }
 }}
-
-<span
-    data-generated="true"
-    data-prompt="{{prompttext}}"
-    data-time-created="{{timecreated}}">
-    {{{editedtext}}}
-</span>
+<textarea
+    class="form-control h-100"
+    id="{{elementid}}_tiny_aiplacement_textresponse"
+    placeholder="{{#str}} textresponse_placeholder, tiny_aiplacement {{/str}}"
+    aria-label="{{#str}} textresponse_label, tiny_aiplacement {{/str}}"
+    autocomplete="off"
+    readonly
+>{{text}}</textarea>
