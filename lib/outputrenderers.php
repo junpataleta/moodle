@@ -5084,7 +5084,7 @@ EOD;
                 if ($element->getType() === 'group') {
                     // Group element.
                     // The id will be something like 'fgroup_id_NAME'. E.g. fgroup_id_mygroup.
-                    $elementcontext['wrapperid'] = $elementcontext['id'];
+                    $elementcontext['wrapperid'] = 'fgroupwrapper_' . $elementcontext['id'];
 
                     // Ensure group elements pass through the group name as the element name.
                     $elementcontext['name'] = $elementcontext['groupname'];
