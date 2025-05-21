@@ -55,10 +55,6 @@
     margin-top: 0;
 }
 
-.tiny-aiplacement-generate-text textarea:disabled {
-    background-color: unset;
-}
-
 .tiny_aiplacement_modal {
     min-height: 30em;
 }
