@@ -95,7 +95,7 @@ class badges extends system_report {
         $this->add_actions();
 
         // Set initial sorting by name.
-        $this->set_initial_sort_column('badge:namewithlink', SORT_ASC);
+        $this->set_initial_sort_column('badge:namewithimagelink', SORT_ASC);
         $this->set_default_no_results_notice(new lang_string('nomatchingbadges', 'core_badges'));
 
         // Set if report can be downloaded.
@@ -129,8 +129,7 @@ class badges extends system_report {
      */
     public function add_columns(string $badgeissuedalias): void {
         $columns = [
-            'badge:image',
-            'badge:namewithlink',
+            'badge:namewithimagelink',
             'badge:status',
             'badge:criteria',
         ];
@@ -138,15 +137,12 @@ class badges extends system_report {
         $canviewdraftbadges = $this->can_view_draft_badges();
         if (!$canviewdraftbadges) {
             // Remove status and recipients column.
-            unset($columns[2]);
+            unset($columns[1]);
         }
         $this->add_columns_from_entities($columns);
 
-        // Remove title from image column.
-        $this->get_column('badge:image')->set_title(null);
-
         // Change title from namewithlink column.
-        $this->get_column('badge:namewithlink')->set_title(new lang_string('name'));
+        $this->get_column('badge:namewithimagelink')->set_title(new lang_string('name'));
 
         // Recipients column.
         if ($canviewdraftbadges) {
@@ -193,7 +189,7 @@ class badges extends system_report {
                 return $OUTPUT->action_icon($badgeurl, $icon, null, null, true);
             });
 
-        $this->set_initial_sort_column('badge:namewithlink', SORT_ASC);
+        $this->set_initial_sort_column('badge:namewithimagelink', SORT_ASC);
     }
 
     /**
