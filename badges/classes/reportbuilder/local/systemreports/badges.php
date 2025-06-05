@@ -94,8 +94,6 @@ class badges extends system_report {
         $this->add_filters();
         $this->add_actions();
 
-        // Set initial sorting by name.
-        $this->set_initial_sort_column('badge:namewithimagelink', SORT_ASC);
         $this->set_default_no_results_notice(new lang_string('nomatchingbadges', 'core_badges'));
 
         // Set if report can be downloaded.
@@ -141,7 +139,7 @@ class badges extends system_report {
         }
         $this->add_columns_from_entities($columns);
 
-        // Change title from namewithlink column.
+        // Change title from namewithimagelink column.
         $this->get_column('badge:namewithimagelink')->set_title(new lang_string('name'));
 
         // Recipients column.
