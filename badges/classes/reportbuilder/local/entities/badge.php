@@ -131,7 +131,7 @@ class badge extends base {
         // Name with image and link.
         $columns[] = (new column(
             'namewithimagelink',
-            new lang_string('name'),
+            new lang_string('namewithimagelink', 'core_badges'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
