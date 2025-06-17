@@ -115,16 +115,11 @@
         </div>
     {{/maintenance}}
     {{#error}}
-        <a href="#" id="loginerrormessage" class="sr-only">{{error}}</a>
-        <div class="alert alert-danger" role="alert">{{error}}</div>
+        <div class="alert alert-danger" id="loginerrormessage">{{error}}</div>
     {{/error}}
     {{#info}}
-        <a href="#" id="logininfomessage" class="sr-only">{{info}}</a>
-        <div class="alert alert-info" role="alert">{{info}}</div>
+        <div class="alert alert-info" id="logininfomessage">{{info}}</div>
     {{/info}}
-    {{#cansignup}}
-        <a href="{{signupurl}}" class="sr-only">{{#str}} tocreatenewaccount {{/str}}</a>
-    {{/cansignup}}
     {{#showloginform}}
         <form class="login-form" action="{{loginurl}}" method="post" id="login">
             <input id="anchor" type="hidden" name="anchor" value="">
@@ -144,7 +139,8 @@
                     !}}value="{{username}}" {{!
                     !}}placeholder="{{^canloginbyemail}}{{#cleanstr}}username{{/cleanstr}}{{/canloginbyemail}}{{!
                     !}}{{#canloginbyemail}}{{#cleanstr}}usernameemail{{/cleanstr}}{{/canloginbyemail}}" {{!
-                    !}}autocomplete="username">
+                    !}}autocomplete="username" {{!
+                    !}}aria-describedby="{{#error}}loginerrormessage{{/error}} {{#info}}logininfomessage{{/info}}">
             </div>
             <div class="login-form-password mb-3">
                 <label for="password" class="sr-only">{{#str}} password {{/str}}</label>
@@ -235,9 +231,18 @@
             });
         {{/autofocusform}}
     {{/error}}
-    {{#error}}
-        document.getElementById('loginerrormessage').focus();
-    {{/error}}
+    require(['core/pending'], function(Pending) {
+        const errorMessage = document.getElementById('loginerrormessage')?.textContent.trim();
+        const infoMessage = document.getElementById('logininfomessage')?.textContent.trim();
+        if (errorMessage || infoMessage) {
+            const pendingJS = new Pending('login-move-focus');
+            setTimeout(function() {
+                // Focus on the username field on error or info.
+                document.getElementById('username').focus();
+                pendingJS.resolve();
+            }, 300);
+        }
+    });
     {{#togglepassword}}
         require(['core/togglesensitive'], function(ToggleSensitive) {
             ToggleSensitive.init("password", {{smallscreensonly}});
