@@ -115,16 +115,11 @@
         </div>
     {{/maintenance}}
     {{#error}}
-        <a href="#" id="loginerrormessage" class="sr-only">{{error}}</a>
-        <div class="alert alert-danger" role="alert">{{error}}</div>
+        <div class="alert alert-danger" role="alert" id="loginerrormessage" tabindex="-1">{{error}}</div>
     {{/error}}
     {{#info}}
-        <a href="#" id="logininfomessage" class="sr-only">{{info}}</a>
-        <div class="alert alert-info" role="alert">{{info}}</div>
+        <div class="alert alert-info" role="alert" id="logininfomessage">{{info}}</div>
     {{/info}}
-    {{#cansignup}}
-        <a href="{{signupurl}}" class="sr-only">{{#str}} tocreatenewaccount {{/str}}</a>
-    {{/cansignup}}
     {{#showloginform}}
         <form class="login-form" action="{{loginurl}}" method="post" id="login">
             <input id="anchor" type="hidden" name="anchor" value="">
@@ -144,7 +139,8 @@
                     !}}value="{{username}}" {{!
                     !}}placeholder="{{^canloginbyemail}}{{#cleanstr}}username{{/cleanstr}}{{/canloginbyemail}}{{!
                     !}}{{#canloginbyemail}}{{#cleanstr}}usernameemail{{/cleanstr}}{{/canloginbyemail}}" {{!
-                    !}}autocomplete="username">
+                    !}}autocomplete="username" {{!
+                    !}}{{#info}}aria-describedby="logininfomessage"{{/info}}>
             </div>
             <div class="login-form-password mb-3">
                 <label for="password" class="sr-only">{{#str}} password {{/str}}</label>
@@ -236,7 +232,10 @@
         {{/autofocusform}}
     {{/error}}
     {{#error}}
-        document.getElementById('loginerrormessage').focus();
+        setTimeout(function() {
+            // Focus on the error message after a short delay to ensure the page is fully loaded.
+            document.getElementById('loginerrormessage').focus();
+        }, 500);
     {{/error}}
     {{#togglepassword}}
         require(['core/togglesensitive'], function(ToggleSensitive) {
