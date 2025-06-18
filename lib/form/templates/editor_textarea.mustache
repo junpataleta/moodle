@@ -46,3 +46,8 @@
         <input name="{{name}}[format]" id="menu{{name}}format" type="hidden" value="{{format}}"/>
     {{/hasformats}}
 </div>
+{{#js}}
+    require(['core_form/textarea_resize_controls'], function(ResizeControls) {
+        ResizeControls.init('{{id}}');
+    });
+{{/js}}

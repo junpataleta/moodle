@@ -17,3 +17,8 @@
         >{{element.value}}</textarea>
     {{/element}}
 {{/ core_form/element-template }}
+{{#js}}
+    require(['core_form/textarea_resize_controls'], function(ResizeControls) {
+        ResizeControls.init('{{element.id}}');
+    });
+{{/js}}
