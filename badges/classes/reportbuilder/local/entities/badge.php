@@ -141,8 +141,9 @@ class badge extends base {
                     ON {$contextalias}.contextlevel = " . CONTEXT_COURSE . "
                    AND {$contextalias}.instanceid = {$badgealias}.courseid")
             ->add_fields(
-                "{$badgealias}.name, {$badgealias}.id, {$badgealias}.type, {$badgealias}.courseid, {$badgealias}.imagecaption"
+                "{$badgealias}.name, {$badgealias}.id, {$badgealias}.type, {$badgealias}.courseid"
             )
+            ->add_field($DB->sql_cast_to_char("{$badgealias}.imagecaption"), 'imagecaption')
             ->add_fields(context_helper::get_preload_record_columns_sql($contextalias))
             ->set_is_sortable(true)
             ->add_callback(static function($value, stdClass $badge): string {
