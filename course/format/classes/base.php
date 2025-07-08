@@ -1719,7 +1719,12 @@ abstract class base {
         if ($capabilities === null) {
             $capabilities = ['moodle/course:manageactivities'];
         }
-        return $PAGE->user_is_editing() && has_all_capabilities($capabilities, $coursecontext);
+        // Show the course editor if the user is:
+        // - The page's context is a course context.
+        // - Editing.
+        // - Has all the capabilities specified in $capabilities.
+        $iscoursecontext = $PAGE->context->contextlevel === CONTEXT_COURSE;
+        return $iscoursecontext && $PAGE->user_is_editing() && has_all_capabilities($capabilities, $coursecontext);
     }
 
     /**
