@@ -43,14 +43,13 @@
                 <input type="text"
                     id="searchinput-{{uniqid}}"
                     class="form-control withclear"
-                    placeholder="{{{ searchstring }}}"
-                    aria-label="{{{ searchstring }}}"
+                    placeholder="{{#searchplaceholder}}{{ . }}{{/searchplaceholder}}{{^searchplaceholder}}{{ searchstring }}{{/searchplaceholder}}"
                     name="{{{ inputname }}}"
                     data-region="input"
                     autocomplete="off"
                 >
                 <label for="searchinput-{{uniqid}}">
-                    <span class="visually-hidden">{{{ searchstring }}}</span>
+                    <span class="visually-hidden">{{#searchinputlabel}}{{ . }}{{/searchinputlabel}}{{^searchinputlabel}}{{{ searchstring }}}{{/searchinputlabel}}</span>
                 </label>
                 <a class="btn btn-close"
                     data-action="closesearch"
@@ -60,9 +59,9 @@
                 >
                     <span class="visually-hidden">{{#str}} closebuttontitle {{/str}}</span>
                 </a>
-                <button type="submit" class="btn btn-submit" data-action="submit">
+                <button type="submit" class="btn btn-submit" data-action="submit" title="{{#searchbuttonlabel}}{{ . }}{{/searchbuttonlabel}}{{^searchbuttonlabel}}{{ searchstring }}{{/searchbuttonlabel}}">
                     {{#pix}} a/search, core {{/pix}}
-                    <span class="visually-hidden">{{{ searchstring }}}</span>
+                    <span class="visually-hidden">{{#searchbuttonlabel}}{{{ . }}}{{/searchbuttonlabel}}{{^searchbuttonlabel}}{{{ searchstring }}}{{/searchbuttonlabel}}</span>
                 </button>
             </div>
         </form>
