@@ -197,7 +197,7 @@ XPATH
     public function i_search_for_string_in_messaging($string) {
         $messagedrawer = $this->find('css', '[data-region="message-drawer"]');
         $this->execute('behat_general::i_click_on_in_the', [
-            get_string('search', 'core'), 'field',
+            get_string('searchcombined', 'message'), 'field',
             $messagedrawer, 'NodeElement'
         ]);
 
