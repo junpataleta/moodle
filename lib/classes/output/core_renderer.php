@@ -3060,8 +3060,10 @@ EOD;
             'action' => new moodle_url('/search/index.php'),
             'hiddenfields' => (object) ['name' => 'context', 'value' => $this->page->context->id],
             'inputname' => 'q',
-            'searchstring' => get_string('search'),
-            ];
+            'searchplaceholder' => get_string('searchentiresite'),
+            'searchinputlabel' => get_string('sitewidesearch'),
+            'searchbuttonlabel' => get_string('performsitewidesearch'),
+        ];
         return $this->render_from_template('core/search_input_navbar', $data);
     }
 
