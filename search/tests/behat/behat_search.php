@@ -53,7 +53,7 @@ class behat_search extends behat_base {
 
         // Submit the form.
         $this->execute("behat_general::i_click_on_in_the",
-            [get_string('search', 'core'), 'button', '#usernavigation', 'css_element']);
+            [get_string('performsitewidesearch', 'core'), 'button', '#usernavigation', 'css_element']);
     }
 
     /**
