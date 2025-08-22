@@ -115,10 +115,10 @@
         </div>
     {{/maintenance}}
     {{#error}}
-        <div class="alert alert-danger" role="alert" id="loginerrormessage" tabindex="-1">{{error}}</div>
+        <div class="alert alert-danger" id="loginerrormessage">{{error}}</div>
     {{/error}}
     {{#info}}
-        <div class="alert alert-info" role="alert" id="logininfomessage">{{info}}</div>
+        <div class="alert alert-info" id="logininfomessage">{{info}}</div>
     {{/info}}
     {{#showloginform}}
         <form class="login-form" action="{{loginurl}}" method="post" id="login">
@@ -140,7 +140,7 @@
                     !}}placeholder="{{^canloginbyemail}}{{#cleanstr}}username{{/cleanstr}}{{/canloginbyemail}}{{!
                     !}}{{#canloginbyemail}}{{#cleanstr}}usernameemail{{/cleanstr}}{{/canloginbyemail}}" {{!
                     !}}autocomplete="username" {{!
-                    !}}{{#info}}aria-describedby="logininfomessage"{{/info}}>
+                    !}}aria-describedby=" {{#error}}loginerrormessage{{/error}} {{#info}}logininfomessage{{/info}}">
             </div>
             <div class="login-form-password mb-3">
                 <label for="password" class="visually-hidden">{{#str}} password {{/str}}</label>
@@ -231,12 +231,14 @@
             });
         {{/autofocusform}}
     {{/error}}
-    {{#error}}
+    const errorMessage = document.getElementById('loginerrormessage')?.textContent.trim();
+    const infoMessage = document.getElementById('logininfomessage')?.textContent.trim();
+    if (errorMessage || infoMessage) {
         setTimeout(function() {
-            // Focus on the error message after a short delay to ensure the page is fully loaded.
-            document.getElementById('loginerrormessage').focus();
-        }, 500);
-    {{/error}}
+            // Focus on the username field on error or info.
+            document.getElementById('username').focus();
+        }, 300);
+    }
     {{#togglepassword}}
         require(['core/togglesensitive'], function(ToggleSensitive) {
             ToggleSensitive.init("password", {{smallscreensonly}});
