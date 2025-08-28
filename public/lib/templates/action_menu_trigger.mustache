@@ -88,7 +88,6 @@
         tabindex="0"
         class="{{triggerextraclasses}} dropdown-toggle icon-no-margin"
         id="action-menu-toggle-{{instance}}"
-        aria-label="{{title}}"
         data-bs-toggle="dropdown"
         role="{{triggerrole}}"
         aria-haspopup="true"
@@ -100,14 +99,17 @@
     >
         {{{actiontext}}}
         {{{menutrigger}}}
-            {{#icon}}
-                {{#pix}}
-                    {{key}},{{component}},{{title}}
-                {{/pix}}
-            {{/icon}}
-            {{#rawicon}}{{{.}}}{{/rawicon}}
+        {{#icon}}
+            {{#pix}}
+                {{key}},{{component}}
+            {{/pix}}
+        {{/icon}}
+        {{#rawicon}}{{{.}}}{{/rawicon}}
+        {{#title}}
+            <span class="visually-hidden">{{title}}</span>
+        {{/title}}
         {{#menutrigger}}
-        <b class="caret"></b>
+        <b class="caret" aria-hidden="true"></b>
         {{/menutrigger}}
     </a>
     {{#secondary}}
