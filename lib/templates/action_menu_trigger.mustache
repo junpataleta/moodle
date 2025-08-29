@@ -94,6 +94,7 @@
         aria-haspopup="true"
         aria-expanded="false"
         aria-controls="action-menu-{{instance}}-menu"
+        {{^actiontext}} title="{{title}}" {{/actiontext}}
     {{#triggerattributes}}
         {{name}}="{{value}}"
     {{/triggerattributes}}
@@ -102,7 +103,7 @@
         {{{menutrigger}}}
             {{#icon}}
                 {{#pix}}
-                    {{key}},{{component}},{{title}}
+                    {{key}},{{component}}
                 {{/pix}}
             {{/icon}}
             {{#rawicon}}{{{.}}}{{/rawicon}}

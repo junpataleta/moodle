@@ -259,8 +259,9 @@ class system_report_table extends base_report_table {
         global $OUTPUT;
 
         $menu = new action_menu();
+        $menu->set_action_label(get_string('actions', 'core_reportbuilder'));
         $menu->set_menu_trigger(
-            $OUTPUT->pix_icon('i/menu', get_string('actions', 'core_reportbuilder')),
+            $OUTPUT->pix_icon('i/menu', ''),
             'btn btn-icon d-flex align-items-center justify-content-center no-caret',
         );
 
