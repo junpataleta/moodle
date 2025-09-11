@@ -54,6 +54,10 @@ class behat_partial_named_selector extends \Behat\Mink\Selector\PartialNamedSele
 
         $this->registerReplacement('%iconMatch%', "(contains(concat(' ', @class, ' '), ' icon ') or self::img)");
         $this->registerReplacement('%imgAltMatch%', './/*[%iconMatch% and (%altMatch% or %titleMatch%)]');
+        $this->registerReplacement(
+            '%linkMatch%',
+            '(%idMatch% or %tagTextMatch% or %titleMatch% or %relMatch% or %ariaLabelMatch%)'
+        );
         parent::__construct();
     }
 
