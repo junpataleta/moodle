@@ -48,11 +48,11 @@ Feature: Create shared categories and fields
     And "//div[contains(@class,'categoryinstance') and contains(.,'My course category') and .//span[contains(@class,'inplaceeditable')]]" "xpath_element" should exist
     And "//div[contains(@class,'categoryinstance') and contains(.,'My shared category') and .//span[contains(@class,'inplaceeditable')]]" "xpath_element" should not exist
     # Check that the move category option exists for course categories but not for shared categories.
-    And "//span[contains(@class,'movecategory')][.//span[@title='Move \"My course category\"']]" "xpath_element" should exist
-    And "//span[contains(@class,'movecategory')][.//span[@title='Move \"My shared category\"']]" "xpath_element" should not exist
+    And "Move \"My course category\"" "button" should exist
+    And "Move \"My shared category\"" "button" should not exist
     # Check that the move field option exists for course fields but not for shared fields.
-    And "//tr[@data-field-name='Course field 1']//span[@title='Move \"Course field 1\"']" "xpath_element" should exist
-    And "//tr[@data-field-name='Shared field 1']//span[@title='Move \"Shared field 1\"']" "xpath_element" should not exist
+    And "Move \"Course field 1\"" "button" should exist
+    And "Move \"Shared field 1\"" "button" should not exist
 
   Scenario: Select which shared custom fields categories are used in the course entity
     Given the following "custom field categories" exist:
