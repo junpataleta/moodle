@@ -115,10 +115,10 @@
         </div>
     {{/maintenance}}
     {{#error}}
-        <div class="alert alert-danger" id="loginerrormessage">{{error}}</div>
+        <div class="alert alert-danger" id="loginerrormessage" tabindex="-1">{{error}}</div>
     {{/error}}
     {{#info}}
-        <div class="alert alert-info" id="logininfomessage">{{info}}</div>
+        <div class="alert alert-info" id="logininfomessage" tabindex="-1">{{info}}</div>
     {{/info}}
     {{#showloginform}}
         <form class="login-form" action="{{loginurl}}" method="post" id="login">
@@ -220,10 +220,11 @@
             require(['core_form/events'], function(FormEvent) {
                 function autoFocus() {
                     const userNameField = document.getElementById('username');
-                    if (userNameField.value.length == 0) {
+                    const passwordField = document.getElementById('password');
+                    if (userNameField && userNameField.value.length == 0) {
                         userNameField.focus();
-                    } else {
-                        document.getElementById('password').focus();
+                    } else if (passwordField) {
+                        passwordField.focus();
                     }
                 }
                 autoFocus();
@@ -232,13 +233,24 @@
         {{/autofocusform}}
     {{/error}}
     require(['core/pending'], function(Pending) {
-        const errorMessage = document.getElementById('loginerrormessage')?.textContent.trim();
-        const infoMessage = document.getElementById('logininfomessage')?.textContent.trim();
+        const errorMessageDiv = document.getElementById('loginerrormessage');
+        const infoMessageDiv = document.getElementById('logininfomessage');
+        const errorMessage = errorMessageDiv?.textContent.trim();
+        const infoMessage = infoMessageDiv?.textContent.trim();
         if (errorMessage || infoMessage) {
             const pendingJS = new Pending('login-move-focus');
             setTimeout(function() {
+                const usernameField = document.getElementById('username');
                 // Focus on the username field on error or info.
-                document.getElementById('username').focus();
+                if (usernameField) {
+                    usernameField.focus();
+                } else if (errorMessage) {
+                    // On error, focus on the error message itself if the username field is not present.
+                    errorMessageDiv.focus();
+                } else if (infoMessage) {
+                    // On info message, focus on the info message itself if the username field is not present.
+                    infoMessageDiv.focus();
+                }
                 pendingJS.resolve();
             }, 300);
         }
