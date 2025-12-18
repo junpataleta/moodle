@@ -6,6 +6,7 @@
     Example context (json):
     {
         "title": "Help with something",
+        "alt": "Help with something",
         "url": "http://example.org/help",
         "linktext": "",
         "icon":{
@@ -21,6 +22,8 @@
     data-bs-container="body" data-bs-toggle="popover"
     data-bs-custom-class="help-popover"
     data-bs-placement="{{#ltr}}right{{/ltr}}{{^ltr}}left{{/ltr}}" data-bs-content="{{text}} {{completedoclink}}"
-    data-bs-html="true" tabindex="0" aria-label="{{#str}} help {{/str}}">
-  {{#pix}}help, core, {{{alt}}}{{/pix}}
+    data-bs-html="true" tabindex="0"
+>
+    {{#pix}} help, core {{/pix}}
+    <span class="visually-hidden">{{alt}}</span>
 </a>

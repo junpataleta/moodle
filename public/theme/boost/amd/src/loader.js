@@ -209,11 +209,16 @@ const enablePopovers = () => {
         if (e.target.classList.contains('help-icon')) {
             const tip = Bootstrap.Popover.getOrCreateInstance(e.target).tip;
             helpPopoverTriggers.set(tip, e.target);
-            tip.setAttribute('aria-label', e.target.getAttribute('aria-label'));
+            // Label the dialog with the trigger's own accessible name, which the help button
+            // carries as visually hidden text rather than as an aria-label.
+            const triggerLabel = e.target.getAttribute('aria-label') ?? e.target.textContent.trim();
+            if (triggerLabel) {
+                tip.setAttribute('aria-label', triggerLabel);
+            }
             // The trigger's aria-describedby points at the tip above. Per the accessible name/
             // description computation, a referenced element's own aria-label takes precedence
             // over its content, so pointing aria-describedby at the tip itself (which now has an
-            // aria-label) would make the description collapse to "Help" instead of the actual
+            // aria-label) would make the description collapse to that label instead of the actual
             // help text. Point it at the content element instead, which has no aria-label of
             // its own.
             const content = tip.querySelector('.popover-body');
