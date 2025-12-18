@@ -178,6 +178,11 @@ const enablePopovers = () => {
         if (!popoverTrigger) {
             return;
         }
+        if (popoverTrigger.classList.contains('help-icon') && popoverTrigger !== document.activeElement) {
+            // Safari and Firefox on macOS do not focus a <button> when it is clicked, and both the
+            // Escape key and focusout handling above rely on the trigger holding focus.
+            popoverTrigger.focus();
+        }
         const popover = Bootstrap.Popover.getOrCreateInstance(popoverTrigger);
         if (!popover._isShown()) {
             popover.show();
