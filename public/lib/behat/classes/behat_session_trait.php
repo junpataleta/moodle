@@ -72,6 +72,86 @@ trait behat_session_trait {
     }
 
     /**
+     * Get the accessible name of a NodeElement.
+     *
+     * @param NodeElement $element The element to get the accessible name for.
+     * @return string|null
+     */
+    protected function get_accessible_name(NodeElement $element): ?string {
+        // Check the element's aria-labelledby attribute.
+        if ($element->hasAttribute('aria-labelledby')) {
+            $labelledby = $element->getAttribute('aria-labelledby');
+            $ids = explode(' ', trim($labelledby));
+            $texts = [];
+            foreach ($ids as $id) {
+                if ($ref = $this->getSession()->getPage()->find('css', "#$id")) {
+                    $texts[] = trim($ref->getText());
+                }
+            }
+            $calculatedlabel =  trim(implode(' ', $texts));
+            if ($calculatedlabel) {
+                return $calculatedlabel;
+            } else {
+                // Warn developers about empty aria-label attributes to fix potential accessibility issues.
+                debugging("No accessible name determined from aria-labelledby attribute: " . $element->getOuterHtml());
+            }
+        }
+
+        // Otherwise, check the element's aria-label attribute.
+        if ($element->hasAttribute('aria-label')) {
+            $arialabel = $element->getAttribute('aria-label') ?? '';
+            $arialabel = trim($arialabel);
+            if ($arialabel) {
+                return $arialabel;
+            } else {
+                // Warn developers about empty aria-label attributes to fix potential accessibility issues.
+                debugging("Element has empty aria-label attribute: " . $element->getOuterHtml());
+            }
+        }
+
+        // Or check for a <label> tag associated with it.
+        if ($id = $element->getAttribute('id')) {
+            if ($labeltag = $this->getSession()->getPage()->find('css', "label[for='$id']")) {
+                return $labeltag->getText();
+            }
+        }
+
+        // For images, check the element's alt attribute.
+        if ($element->getTagName() === 'img' && $element->hasAttribute('alt')) {
+            $alttext = $element->getAttribute('alt') ?? '';
+            return trim($alttext);
+        }
+
+        // Try to fall back to the element text.
+        $text = $element->getText() ?? '';
+        $text = trim($text);
+        if ($text) {
+            return $text;
+        }
+
+        // Or fall back to the element value (e.g. buttons, links).
+        $value = $element->getValue() ?? '';
+        $value = trim($value);
+        if ($value) {
+            return $value;
+        }
+
+        // Or check for a title attribute in the element as a last resort.
+        if ($element->getAttribute('title')) {
+            $title = $element->getAttribute('title') ?? '';
+            $title = trim($title);
+            if ($title) {
+                // Using the title attribute for an element's accessible name is discourage. Warn developers know about this.
+                debugging("Using the title attribute as accessible name is discouraged: " . $element->getOuterHtml());
+            }
+            return $title;
+        }
+
+        // An accessible name was not found.
+        return null;
+    }
+
+    /**
      * Returns the first matching element.
      *
      * @link http://mink.behat.org/#traverse-the-page-selectors
@@ -88,9 +168,42 @@ trait behat_session_trait {
             return $locator;
         }
 
-        // Returns the first match.
         $items = $this->find_all($selector, $locator, $exception, $node, $timeout);
-        return count($items) ? reset($items) : null;
+
+        // Determine the best item to return when multiple items were found.
+        $itemsfound = count($items);
+        [
+            'selector' => $selector,
+            'locator' => $locator,
+        ] = $this->normalise_selector($selector, $locator, $node ?: $this->getSession()->getPage());
+
+        if ($itemsfound > 1 && !in_array($selector, ['css', 'xpath'])) {
+            /** @var NodeElement $item */
+            foreach ($items as $item) {
+                // Determine the found item's accessible name.
+                $accessiblename = $this->get_accessible_name($item);
+                if (empty($accessiblename)) {
+                    debugging("No accessible name found for element: " . $item->getOuterHtml());
+                    continue;
+                }
+
+                if ($accessiblename === $locator) {
+                    // Return the first item that exactly matches the locator string.
+                    return $item;
+                } else {
+                    if ($selector === 'named_partial' && is_array($locator)) {
+                        $locator = $locator[1];
+                    }
+                    if (core_text::strpos($locator, $accessiblename) === 0) {
+                        // If there's no exact match, return the first item that starts with the locator string.
+                        return $item;
+                    }
+                }
+            }
+        }
+
+        // Fall back to the first item found or return null if there were no items found.
+        return $itemsfound ? reset($items) : null;
     }
 
     /**
