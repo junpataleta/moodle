@@ -72,6 +72,136 @@ trait behat_session_trait {
     }
 
     /**
+     * Get the text that a locator is looking for, if it has any.
+     *
+     * @param mixed $locator The locator, which may be a string, or an array of (selector name, text).
+     * @return string|null The locator text, or null if the locator does not contain any text.
+     */
+    protected function get_locator_text($locator): ?string {
+        $text = is_array($locator) ? ($locator[1] ?? null) : $locator;
+        if (!is_string($text)) {
+            return null;
+        }
+
+        // Callers can pass the text as an escaped XPath literal. Use the text within it, in the same
+        // way that Mink does when it builds the XPath for the locator.
+        if (preg_match('/^\'([^\']*)\'$/', $text, $matches) || preg_match('/^"([^"]*)"$/', $text, $matches)) {
+            $text = $matches[1];
+        }
+
+        return trim($text);
+    }
+
+    /**
+     * Whether an element is hidden, and therefore not something that a locator is looking for.
+     *
+     * Pages contain markup for features that are not currently on screen, such as the message drawer,
+     * and the elements in them must not be preferred over the ones that can actually be seen.
+     *
+     * @param NodeElement $element The element to check.
+     * @return bool
+     */
+    protected function is_element_hidden(NodeElement $element): bool {
+        // Elements hidden from assistive technologies are never what a locator naming an element is
+        // looking for, whether or not they are on screen. Check this with and without JavaScript so
+        // that both kinds of run agree on which elements are candidates.
+        if ($element->find('xpath', './ancestor-or-self::*[@aria-hidden = "true"]') !== null) {
+            return true;
+        }
+
+        if ($this->running_javascript()) {
+            return !$element->isVisible();
+        }
+
+        // Visibility cannot be determined without JavaScript, so fall back to checking for the
+        // attributes and the classes that are used to hide an element.
+        $hiddenxpath = './ancestor-or-self::*['
+            . '@hidden'
+            . " or contains(concat(' ', normalize-space(@class), ' '), ' hidden ')"
+            . " or contains(concat(' ', normalize-space(@class), ' '), ' d-none ')"
+            . " or contains(translate(normalize-space(@style), ' ', ''), 'display:none')"
+            . ']';
+
+        return $element->find('xpath', $hiddenxpath) !== null;
+    }
+
+    /**
+     * Get the accessible name of a NodeElement.
+     *
+     * @param NodeElement $element The element to get the accessible name for.
+     * @return string|null
+     */
+    protected function get_accessible_name(NodeElement $element): ?string {
+        $page = $this->getSession()->getPage();
+
+        // Check the element's aria-labelledby attribute.
+        if ($labelledby = trim($element->getAttribute('aria-labelledby') ?? '')) {
+            $ids = preg_split('/\s+/', $labelledby, -1, PREG_SPLIT_NO_EMPTY);
+            $texts = [];
+            foreach ($ids as $id) {
+                // Note that the referenced element must be looked up by XPath rather than by CSS.
+                // Plenty of Moodle ids are not valid CSS identifiers, the question engine's
+                // "q1:1_answer0" being the most common shape, and a CSS lookup throws on those.
+                $idliteral = behat_context_helper::escape($id);
+                if ($ref = $page->find('xpath', "//*[@id = {$idliteral}]")) {
+                    $texts[] = trim($ref->getText());
+                }
+            }
+            $calculatedlabel = trim(implode(' ', $texts));
+            if ($calculatedlabel) {
+                return $calculatedlabel;
+            }
+        }
+
+        // Otherwise, check the element's aria-label attribute.
+        if ($arialabel = trim($element->getAttribute('aria-label') ?? '')) {
+            return $arialabel;
+        }
+
+        // Or check for a <label> tag associated with it.
+        if ($id = $element->getAttribute('id')) {
+            $idliteral = behat_context_helper::escape($id);
+            if ($labeltag = $page->find('xpath', "//label[@for = {$idliteral}]")) {
+                return trim($labeltag->getText());
+            }
+        }
+
+        $tagname = $element->getTagName();
+
+        // For images, check the element's alt attribute.
+        if ($tagname === 'img' && $element->hasAttribute('alt')) {
+            $alttext = $element->getAttribute('alt') ?? '';
+            return trim($alttext);
+        }
+
+        // Try to fall back to the element text.
+        $text = trim($element->getText() ?? '');
+        if ($text) {
+            return $text;
+        }
+
+        // For buttons, fall back to the button value.
+        if (
+            $tagname === 'button' ||
+            ($tagname === 'input' && in_array($element->getAttribute('type'), ['button', 'submit', 'reset']))
+        ) {
+            $value = trim($element->getValue() ?? '');
+            if ($value) {
+                return $value;
+            }
+        }
+
+        // Or check for a title attribute in the element as a last resort. Naming an element this way
+        // is discouraged, but it is still what assistive technologies will announce.
+        if ($title = trim($element->getAttribute('title') ?? '')) {
+            return $title;
+        }
+
+        // An accessible name was not found.
+        return null;
+    }
+
+    /**
      * Returns the first matching element.
      *
      * @link http://mink.behat.org/#traverse-the-page-selectors
@@ -88,9 +218,59 @@ trait behat_session_trait {
             return $locator;
         }
 
-        // Returns the first match.
         $items = $this->find_all($selector, $locator, $exception, $node, $timeout);
-        return count($items) ? reset($items) : null;
+        $itemsfound = count($items);
+
+        // Determine the best item to return when multiple items were found. Raw css and xpath
+        // locators are not names, so the items they match are left in the order they were found.
+        // Every other selector type normalises to a named selector, which does look elements up by
+        // name, so the selector does not need to be normalised here to know which is which.
+        $rawselectors = ['css', 'css_element', 'xpath', 'xpath_element'];
+        $locatortext = $itemsfound > 1 && !in_array($selector, $rawselectors, true)
+            ? $this->get_locator_text($locator)
+            : null;
+
+        if ($locatortext !== null && $locatortext !== '') {
+            $partialmatch = null;
+
+            /** @var NodeElement $item */
+            foreach ($items as $item) {
+                // Determine the found item's accessible name.
+                $accessiblename = $this->get_accessible_name($item);
+                if ($accessiblename === null || $accessiblename === '') {
+                    continue;
+                }
+
+                $isexactmatch = $accessiblename === $locatortext;
+                if (!$isexactmatch && !str_starts_with($accessiblename, $locatortext)) {
+                    continue;
+                }
+
+                // Only the items that are candidates are checked for visibility, because that costs
+                // a round trip to the driver for every item that it is called for.
+                if ($this->is_element_hidden($item)) {
+                    continue;
+                }
+
+                if ($isexactmatch) {
+                    // Return the first item that exactly matches the locator text.
+                    return $item;
+                }
+
+                if ($partialmatch === null) {
+                    // Remember the first item whose accessible name starts with the locator text, but
+                    // keep looking in case a later item is an exact match.
+                    $partialmatch = $item;
+                }
+            }
+
+            if ($partialmatch !== null) {
+                return $partialmatch;
+            }
+        }
+
+        // Fall back to the first item found or return null if there were no items found.
+        return $itemsfound ? reset($items) : null;
     }
 
     /**
