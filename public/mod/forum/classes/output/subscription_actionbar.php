@@ -148,7 +148,7 @@ class subscription_actionbar implements renderable, templatable {
      */
     private function create_view_manage_menu(array $menu, string $selected): select_menu {
         $selectmenu = new select_menu('selectviewandmanagesubscribers', $menu, $selected);
-        $selectmenu->set_label(get_string('subscribers', 'forum'), ['class' => 'accesshide']);
+        $selectmenu->set_label(get_string('subscribers', 'forum'), ['class' => 'visually-hidden']);
         return $selectmenu;
     }
 
@@ -164,7 +164,7 @@ class subscription_actionbar implements renderable, templatable {
      */
     private function create_legacy_view_manage_menu(array $menu, string $selected): url_select {
         $urlselect = new url_select($menu, $selected, null, 'selectviewandmanagesubscribers');
-        $urlselect->set_label(get_string('subscribers', 'forum'), ['class' => 'accesshide']);
+        $urlselect->set_label(get_string('subscribers', 'forum'), ['class' => 'visually-hidden']);
         return $urlselect;
     }
 

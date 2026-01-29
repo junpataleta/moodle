@@ -236,7 +236,7 @@ class participants extends \table_sql implements dynamic_table {
             'name' => 'user' . $data->id,
             'checked' => false,
             'label' => get_string('selectitem', 'moodle', fullname($data)),
-            'labelclasses' => 'accesshide',
+            'labelclasses' => 'visually-hidden',
         ]);
 
         return $OUTPUT->render($checkbox);

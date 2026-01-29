@@ -256,7 +256,7 @@ class summary_table extends table_sql {
             'name' => 'user' . $data->userid,
             'checked' => false,
             'label' => get_string('selectitem', 'moodle', fullname($data)),
-            'labelclasses' => 'accesshide',
+            'labelclasses' => 'visually-hidden',
         ]);
 
         return $OUTPUT->render($checkbox);

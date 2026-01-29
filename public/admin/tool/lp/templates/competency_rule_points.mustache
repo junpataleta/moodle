@@ -52,11 +52,11 @@
             <tr data-competency="{{id}}">
                 <th scope="row">{{{shortname}}}</th>
                 <td>
-                    <label class="accesshide" for="pointsforcompetency-{{id}}">{{#str}}pointsgivenfor, tool_lp, {{{competency.shortname}}}{{/str}}</label>
+                    <label class="visually-hidden" for="pointsforcompetency-{{id}}">{{#str}}pointsgivenfor, tool_lp, {{{competency.shortname}}}{{/str}}</label>
                     <input id="pointsforcompetency-{{id}}" type="number" min="0" value="{{points}}" name="points" class="form-control"/>
                 </td>
                 <td>
-                    <label class="accesshide" for="competency-{{id}}-isrequired">{{#str}}aisrequired, tool_lp, {{{competency.shortname}}}{{/str}}</label>
+                    <label class="visually-hidden" for="competency-{{id}}-isrequired">{{#str}}aisrequired, tool_lp, {{{competency.shortname}}}{{/str}}</label>
                     <input id="competency-{{id}}-isrequired" type="checkbox" value="1" name="required" {{#required}}checked{{/required}} />
                 </td>
             </tr>

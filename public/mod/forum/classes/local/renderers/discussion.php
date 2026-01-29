@@ -306,7 +306,7 @@ class discussion {
             null,
             'mode'
         );
-        $select->set_label(get_string('displaymode', 'forum'), ['class' => 'accesshide']);
+        $select->set_label(get_string('displaymode', 'forum'), ['class' => 'visually-hidden']);
 
         return $this->renderer->render($select);
     }

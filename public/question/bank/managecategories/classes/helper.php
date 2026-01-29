@@ -284,7 +284,7 @@ class helper {
             get_string('questioncategory', 'core_question'),
             'id_movetocategory',
             false,
-            ['class' => 'accesshide'],
+            ['class' => 'visually-hidden'],
         );
         $attrs = [
             'id' => 'id_movetocategory',

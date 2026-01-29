@@ -181,7 +181,7 @@ abstract class system_report extends base {
             'name' => 'report-select-row[]',
             'value' => $value,
             'label' => $label,
-            'labelclasses' => 'accesshide',
+            'labelclasses' => 'visually-hidden',
         ]);
     }
 

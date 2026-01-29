@@ -50,7 +50,7 @@ abstract class qtype_renderer extends plugin_renderer_base {
     }
 
     /**
-     * In the question output there are some class="accesshide" headers to help
+     * In the question output there are some class="visually-hidden" headers to help
      * screen-readers. This method returns the text to use for the heading above
      * the formulation_and_controls section.
      * @return string to use as the heading.

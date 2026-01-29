@@ -84,11 +84,11 @@ class data_field_url extends data_field_base {
 
         $str = '<div title="' . s($this->field->description) . '" class="d-flex flex-wrap align-items-center">';
 
-        $label = '<label for="' . $fieldid . '"><span class="accesshide">' . $this->field->name . '</span>';
+        $label = '<label for="' . $fieldid . '"><span class="visually-hidden">' . $this->field->name . '</span>';
         if ($this->field->required) {
             $image = $OUTPUT->pix_icon('req', get_string('requiredelement', 'form'));
             if ($autolinkable) {
-                $label .= html_writer::div(get_string('requiredelement', 'form'), 'accesshide');
+                $label .= html_writer::div(get_string('requiredelement', 'form'), 'visually-hidden');
             } else {
                 $label .= html_writer::div($image, 'inline-req');
             }
@@ -132,7 +132,7 @@ class data_field_url extends data_field_base {
     }
 
     function display_search_field($value = '') {
-        return '<label class="accesshide" for="f_' . $this->field->id . '">' . get_string('fieldname', 'data') . '</label>' .
+        return '<label class="visually-hidden" for="f_' . $this->field->id . '">' . get_string('fieldname', 'data') . '</label>' .
                '<input type="text" size="16" id="f_' . $this->field->id . '" '.
                ' name="f_' . $this->field->id . '" value="' . s($value) . '" class="form-control d-inline"/>';
     }

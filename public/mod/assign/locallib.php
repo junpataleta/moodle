@@ -2162,7 +2162,7 @@ class assign {
                 } else {
                     $displaygrade = format_float($grade, $this->get_grade_item()->get_decimals());
                 }
-                $o .= '<label class="accesshide" for="' . $fieldname . '">' . $fieldtitle . '</label>';
+                $o .= '<label class="visually-hidden" for="' . $fieldname . '">' . $fieldtitle . '</label>';
                 $o .= '<input type="text"
                               id="' . $fieldname . '"
                               name="' . $fieldname . '"
@@ -2205,7 +2205,7 @@ class assign {
                 }
             }
             if ($editing) {
-                $o .= '<label class="accesshide" for="' . $fieldname . '">' . $fieldtitle . '</label>';
+                $o .= '<label class="visually-hidden" for="' . $fieldname . '">' . $fieldtitle . '</label>';
                 $o .= '<select name="' . $fieldname . '" class="quickgrade">';
                 $o .= '<option value="-1">' . get_string('nograde') . '</option>';
                 foreach ($this->cache['scale'] as $optionid => $option) {

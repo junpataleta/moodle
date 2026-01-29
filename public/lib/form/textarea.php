@@ -102,7 +102,7 @@ class MoodleQuickForm_textarea extends HTML_QuickForm_textarea implements templa
 
         if ($this->_hiddenLabel){
             $this->_generateId();
-            return '<label class="accesshide" for="' . $this->getAttribute('id') . '" >' .
+            return '<label class="visually-hidden" for="' . $this->getAttribute('id') . '" >' .
                     $this->getLabel() . '</label>' . parent::toHtml();
         } else {
             return parent::toHtml();

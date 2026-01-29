@@ -76,7 +76,7 @@ class data_field_menu extends data_field_base {
         }
 
         $str .= '<label for="' . 'field_' . $this->field->id . '">';
-        $str .= html_writer::span($this->field->name, 'accesshide');
+        $str .= html_writer::span($this->field->name, 'visually-hidden');
         if ($this->field->required) {
             $image = $OUTPUT->pix_icon('req', get_string('requiredelement', 'form'));
             $str .= html_writer::div($image, 'inline-req');
@@ -123,7 +123,7 @@ class data_field_menu extends data_field_base {
         }
 
         $return = html_writer::label(get_string('fieldtypelabel', "datafield_" . $this->type),
-            'menuf_' . $this->field->id, false, array('class' => 'accesshide'));
+            'menuf_' . $this->field->id, false, array('class' => 'visually-hidden'));
         $return .= html_writer::select($options, 'f_'.$this->field->id, $content, array('' => get_string('menuchoose', 'data')),
                 ['class' => 'form-select']);
         return $return;

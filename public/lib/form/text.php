@@ -120,7 +120,7 @@ class MoodleQuickForm_text extends HTML_QuickForm_text implements templatable {
         $html = $this->_getTabs() . '<input' . $this->_getAttrString($this->_attributes) . ' />';
 
         if ($this->_hiddenLabel){
-            return '<label class="accesshide" for="'.$this->getAttribute('id').'" >'.
+            return '<label class="visually-hidden" for="'.$this->getAttribute('id').'" >'.
                         $this->getLabel() . '</label>' . $html;
         } else {
              return $html;

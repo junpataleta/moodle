@@ -64,7 +64,7 @@ class question_name_idnumber_tags_column extends viewquestionname_column_helper 
         // The non-breaking space '&nbsp;' is used in html to fix MDL-75051 (browser issues caused by chrome and Edge).
         if ($question->idnumber !== null && $question->idnumber !== '') {
             echo ' ' . \html_writer::span(
-                            \html_writer::span(get_string('idnumber', 'question') . '&nbsp;', 'accesshide')
+                            \html_writer::span(get_string('idnumber', 'question') . '&nbsp;', 'visually-hidden')
                             . \html_writer::span(s($question->idnumber), 'badge bg-primary text-white'), 'ms-1');
         }
 

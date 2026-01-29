@@ -176,7 +176,7 @@ class core_question_renderer extends plugin_renderer_base {
      */
     protected function add_part_heading($heading, $content) {
         if ($content) {
-            $content = html_writer::tag('h4', $heading, array('class' => 'accesshide')) . $content;
+            $content = html_writer::tag('h4', $heading, array('class' => 'visually-hidden')) . $content;
         }
         return $content;
     }

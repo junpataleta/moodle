@@ -47,7 +47,7 @@ var USP = {
     USERCOUNT: 'userCount'
 };
 var CSS = {
-    ACCESSHIDE: 'accesshide',
+    ACCESSHIDE: 'visually-hidden',
     AJAXCONTENT: 'usp-ajax-content',
     CHECKBOX: 'usp-checkbox',
     CLOSE: 'close',

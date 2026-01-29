@@ -163,7 +163,7 @@ define(
                             attr('aria-describedby', instr.attr('id')).
                             addClass('ignoredirty').
                             addClass('form-control'),
-                        lbl = $('<label class="accesshide">' + mainelement.attr('data-editlabel') + '</label>').
+                        lbl = $('<label class="visually-hidden">' + mainelement.attr('data-editlabel') + '</label>').
                             attr('for', inputelement.attr('id'));
                     el.html('').append(instr).append(lbl).append(inputelement);
 
@@ -199,7 +199,7 @@ define(
                     inputelement = $('<select></select>').
                         attr('id', uniqueId('id_inplacevalue_', 20)).
                         addClass('form-select'),
-                    lbl = $('<label class="accesshide">' + mainelement.attr('data-editlabel') + '</label>')
+                    lbl = $('<label class="visually-hidden">' + mainelement.attr('data-editlabel') + '</label>')
                         .attr('for', inputelement.attr('id'));
                 for (i in options) {
                     inputelement
@@ -238,7 +238,7 @@ define(
                         attr('id', uniqueId('id_inplacevalue_', 20)).
                         addClass('form-autocomplete-original-select').
                         addClass('form-select'),
-                    lbl = $('<label class="accesshide">' + mainelement.attr('data-editlabel') + '</label>')
+                    lbl = $('<label class="visually-hidden">' + mainelement.attr('data-editlabel') + '</label>')
                         .attr('for', inputelement.attr('id')),
                     options = args.options,
                     attributes = args.attributes,

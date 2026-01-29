@@ -1740,7 +1740,7 @@ Y.extend(DROPDOWN, M.core.dialogue, {
         body = this.bodyNode;
 
         headertext = Y.Node.create('<h3/>');
-        headertext.addClass('accesshide');
+        headertext.addClass('visually-hidden');
         headertext.setHTML(this.get('headerText'));
         body.prepend(headertext);
 

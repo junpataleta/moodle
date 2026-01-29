@@ -108,7 +108,7 @@ class checkbox_attribute extends element {
             return (
                 html_writer::tag('label',
                                  get_string($type . 'for', 'gradereport_singleview', $this->label),
-                                 ['for' => $this->name, 'class' => 'accesshide']) .
+                                 ['for' => $this->name, 'class' => 'visually-hidden']) .
                 html_writer::empty_tag('input', $attributes) .
                 html_writer::empty_tag('input', $hidden)
             );

@@ -1920,7 +1920,7 @@ dd:after {
             white-space: nowrap;
         }
         /** When accessible, we display the table only. */
-        &.accesshide {
+        &.visually-hidden {
             .chart-table-expand {
                 display: none;
             }

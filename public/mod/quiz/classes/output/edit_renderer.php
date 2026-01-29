@@ -918,8 +918,8 @@ class edit_renderer extends \plugin_renderer_base {
      */
     public function question_number(string $editablenumber, string $uncustomisednumber) {
         if ($editablenumber !== get_string('infoshort', 'quiz')) {
-            $editablenumber = html_writer::span(get_string('question'), 'accesshide') . ' ' . $editablenumber;
-            $uncustomisednumber = html_writer::span(get_string('question'), 'accesshide') . ' ' . $uncustomisednumber;
+            $editablenumber = html_writer::span(get_string('question'), 'visually-hidden') . ' ' . $editablenumber;
+            $uncustomisednumber = html_writer::span(get_string('question'), 'visually-hidden') . ' ' . $uncustomisednumber;
         }
         return html_writer::tag('span', $editablenumber, ['class' => 'slotnumber unshuffled']) .
                 html_writer::tag('span', $uncustomisednumber, ['class' => 'slotnumber shuffled']);

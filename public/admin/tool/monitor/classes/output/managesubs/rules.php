@@ -169,7 +169,7 @@ class rules extends \table_sql implements \renderable {
         $text = get_string('subscribeto', 'tool_monitor', $rule->get_name($this->context));
 
         if ($options instanceof \single_select) {
-            $options->set_label($text, array('class' => 'accesshide'));
+            $options->set_label($text, array('class' => 'visually-hidden'));
             return $OUTPUT->render($options);
         } else if ($options instanceof \moodle_url) {
             // A \moodle_url to subscribe.

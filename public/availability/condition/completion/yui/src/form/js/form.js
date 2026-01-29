@@ -25,7 +25,7 @@ M.availability_completion.form.getNode = function(json) {
     // Create HTML structure.
     var html = '<span class="col-form-label pe-3"> ' + M.util.get_string('title', 'availability_completion') + '</span>' +
                ' <span class="availability-group mb-3"><label>' +
-            '<span class="accesshide">' + M.util.get_string('label_cm', 'availability_completion') + ' </span>' +
+            '<span class="visually-hidden">' + M.util.get_string('label_cm', 'availability_completion') + ' </span>' +
             '<select class="form-select" name="cm" title="' + M.util.get_string('label_cm', 'availability_completion') + '">' +
             '<option value="0">' + M.util.get_string('choosedots', 'moodle') + '</option>';
     for (var i = 0; i < this.cms.length; i++) {
@@ -33,7 +33,7 @@ M.availability_completion.form.getNode = function(json) {
         // String has already been escaped using format_string.
         html += '<option value="' + cm.id + '">' + cm.name + '</option>';
     }
-    html += '</select></label> <label><span class="accesshide">' +
+    html += '</select></label> <label><span class="visually-hidden">' +
                 M.util.get_string('label_completion', 'availability_completion') +
             ' </span><select class="form-select" ' +
                             'name="e" title="' + M.util.get_string('label_completion', 'availability_completion') + '">' +
