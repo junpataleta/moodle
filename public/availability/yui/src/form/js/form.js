@@ -372,18 +372,18 @@ M.core_availability.List = function(json, root, parentRoot) {
         this.root = root;
     }
     // Create DIV structure (without kids).
-    this.node = Y.Node.create('<div class="availability-list"><h3 class="accesshide"></h3>' +
+    this.node = Y.Node.create('<div class="availability-list"><h3 class="visually-hidden"></h3>' +
             '<div class="availability-inner">' +
             '<div class="availability-header mb-1"><span>' +
             M.util.get_string('listheader_sign_before', 'availability') + '</span>' +
-            ' <label><span class="accesshide">' + M.util.get_string('label_sign', 'availability') +
+            ' <label><span class="visually-hidden">' + M.util.get_string('label_sign', 'availability') +
             ' </span><select class="availability-neg form-select mx-1"' +
             ' title="' + M.util.get_string('label_sign', 'availability') + '">' +
             '<option value="">' + M.util.get_string('listheader_sign_pos', 'availability') + '</option>' +
             '<option value="!">' + M.util.get_string('listheader_sign_neg', 'availability') + '</option></select></label> ' +
             '<span class="availability-single">' + M.util.get_string('listheader_single', 'availability') + '</span>' +
             '<span class="availability-multi">' + M.util.get_string('listheader_multi_before', 'availability') +
-            ' <label><span class="accesshide">' + M.util.get_string('label_multi', 'availability') + ' </span>' +
+            ' <label><span class="visually-hidden">' + M.util.get_string('label_multi', 'availability') + ' </span>' +
             '<select class="availability-op form-select mx-1"' +
             ' title="' + M.util.get_string('label_multi', 'availability') + '"><option value="&">' +
             M.util.get_string('listheader_multi_and', 'availability') + '</option>' +
@@ -985,7 +985,9 @@ M.core_availability.Item = function(json, root) {
     Y.augment(this.pluginNode, Y.EventTarget, true, null, {emitFacade: true});
     this.pluginNode.addTarget(this);
 
-    this.node = Y.Node.create('<div class="availability-item d-sm-flex align-items-center"><h3 class="accesshide"></h3></div>');
+    this.node = Y.Node.create(
+        '<div class="availability-item d-sm-flex align-items-center"><h3 class="visually-hidden"></h3></div>'
+    );
 
     // Add eye icon if required. This icon is added for root items, but may be
     // hidden depending on the selected list operator.

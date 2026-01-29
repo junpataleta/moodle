@@ -299,9 +299,9 @@ class mod_workshop_renderer extends plugin_renderer_base {
             'aria-describedby' => 'mod_workshop-userplanaccessibilitytitle',
         ));
         $o .= html_writer::span(get_string('userplanaccessibilitytitle', 'workshop', $numberofphases),
-            'accesshide', array('id' => 'mod_workshop-userplanaccessibilitytitle'));
+            'visually-hidden', array('id' => 'mod_workshop-userplanaccessibilitytitle'));
         $o .= html_writer::link('#mod_workshop-userplancurrenttasks', get_string('userplanaccessibilityskip', 'workshop'),
-            array('class' => 'accesshide'));
+            array('class' => 'visually-hidden'));
         foreach ($plan->phases as $phasecode => $phase) {
             $o .= html_writer::start_tag('dl', array('class' => 'phase'));
             $actions = '';
@@ -991,10 +991,10 @@ class mod_workshop_renderer extends plugin_renderer_base {
                 $accessibilitytext .= get_string('tasktodo', 'workshop') . ' ';
             }
             if (is_null($task->link)) {
-                $title = html_writer::tag('span', $accessibilitytext, array('class' => 'accesshide'));
+                $title = html_writer::tag('span', $accessibilitytext, array('class' => 'visually-hidden'));
                 $title .= $task->title;
             } else {
-                $title = html_writer::tag('span', $accessibilitytext, array('class' => 'accesshide'));
+                $title = html_writer::tag('span', $accessibilitytext, array('class' => 'visually-hidden'));
                 $title .= html_writer::link($task->link, $task->title);
             }
             $title = $this->output->container($title, 'title');

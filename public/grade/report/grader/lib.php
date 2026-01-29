@@ -664,7 +664,7 @@ class grade_report_grader extends grade_report {
         $fillercell->header = true;
         $fillercell->attributes['scope'] = 'col';
         $fillercell->attributes['class'] = 'cell topleft';
-        $fillercell->text = html_writer::span(get_string('participants'), 'accesshide');
+        $fillercell->text = html_writer::span(get_string('participants'), 'visually-hidden');
         $fillercell->colspan = $colspan;
         $fillercell->rowspan = $levels;
         $row = new html_table_row(array($fillercell));
@@ -1099,7 +1099,7 @@ class grade_report_grader extends grade_report {
 
                             $context->label = html_writer::label(
                                 get_string('useractivitygrade', 'gradereport_grader', $gradelabel),
-                                $attributes['id'], false, ['class' => 'accesshide']);
+                                $attributes['id'], false, ['class' => 'visually-hidden']);
                             $context->select = html_writer::select($scaleopt, 'grade['.$userid.']['.$item->id.']',
                                 $gradeval, [-1 => $nogradestr], $attributes);
                         } else if (!empty($scale)) {

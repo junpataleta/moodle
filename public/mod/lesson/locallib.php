@@ -539,7 +539,7 @@ function lesson_menu_block_contents($cmid, $lesson) {
         return null;
     }
 
-    $content = '<a href="#maincontent" class="accesshide">' .
+    $content = '<a href="#maincontent" class="visually-hidden">' .
         get_string('skip', 'lesson') .
         "</a>\n<div class=\"menuwrapper\">\n<ul>\n";
 

@@ -124,7 +124,7 @@ class data_field_textarea extends data_field_base {
         $format = 0;
         $str = '<div title="' . s($this->field->description) . '" class="d-inline-flex">';
         $str .= '<label for="' . $this->get_content_field_name() . '">';
-        $str .= html_writer::span($this->field->name, 'accesshide');
+        $str .= html_writer::span($this->field->name, 'visually-hidden');
         if ($this->field->required) {
             $image = $OUTPUT->pix_icon('req', get_string('requiredelement', 'form'));
             $str .= html_writer::div($image, 'inline-req');
@@ -241,7 +241,7 @@ class data_field_textarea extends data_field_base {
         $str .= '<div><textarea id="' . $this->get_content_field_name() . '" name="' . $this->get_content_field_name() . '" ' .
             'rows="'.$this->field->param3 . '" class="form-control" data-fieldtype="editor" ' .
             'cols="'.$this->field->param2.'" spellcheck="true">'.s($text).'</textarea></div>';
-        $str .= '<div><label class="accesshide" for="' . $field . '_content1">' . get_string('format') . '</label>';
+        $str .= '<div><label class="visually-hidden" for="' . $field . '_content1">' . get_string('format') . '</label>';
         $str .= '<select id="' . $field . '_content1" name="'.$field.'_content1" class="form-select mt-2">';
         foreach ($formats as $key=>$desc) {
             $selected = ($format == $key) ? 'selected="selected"' : '';
@@ -256,7 +256,7 @@ class data_field_textarea extends data_field_base {
     }
 
     function display_search_field($value = '') {
-        return '<label class="accesshide" for="f_' . $this->field->id . '">' . s($this->field->name) . '</label>' .
+        return '<label class="visually-hidden" for="f_' . $this->field->id . '">' . s($this->field->name) . '</label>' .
                '<input type="text" size="16" id="f_' . $this->field->id . '" name="f_' . $this->field->id . '" ' .
                'value="' . s($value) . '" class="form-control"/>';
     }

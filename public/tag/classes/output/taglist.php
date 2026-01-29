@@ -45,7 +45,7 @@ class taglist implements templatable {
     /** @var string */
     protected $label;
 
-    /** @var bool $accesshidelabel if true, the label should have class="accesshide" added. */
+    /** @var bool $accesshidelabel if true, the label should have class="visually-hidden" added. */
     protected $accesshidelabel;
 
     /** @var string */
@@ -67,7 +67,7 @@ class taglist implements templatable {
      * @param int $limit limit the number of tags to display, if size of $tags is more than this limit the "more" link
      *               will be appended to the end, JS will toggle the rest of the tags. 0 means no limit.
      * @param context $pagecontext specify if needed to overwrite the current page context for the view tag link
-     * @param bool $accesshidelabel if true, the label should have class="accesshide" added.
+     * @param bool $accesshidelabel if true, the label should have class="visually-hidden" added.
      * @param bool $displaylink Indicates whether the tag should be displayed as a link.
      */
     public function __construct($tags, $label = null, $classes = '',

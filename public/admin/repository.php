@@ -336,7 +336,7 @@ if (($action == 'edit') || ($action == 'new')) {
             $selectaction = new moodle_url($baseurl, ['sesskey' => sesskey(), 'repos' => $typename]);
             $select = new single_select($selectaction, 'action', $actionchoicesforexisting, $currentaction, null,
                 'applyto' . basename($typename));
-            $select->set_label(get_string('action'), array('class' => 'accesshide'));
+            $select->set_label(get_string('action'), array('class' => 'visually-hidden'));
 
             // Display up/down link
             $updown = '';
@@ -390,7 +390,7 @@ if (($action == 'edit') || ($action == 'new')) {
                 $selectaction = new moodle_url($baseurl, ['sesskey' => sesskey(), 'repos' => $plugin]);
                 $select = new single_select($selectaction, 'action', $actionchoicesfornew, 'delete', null,
                     'applyto' . basename($plugin));
-                $select->set_label(get_string('action'), array('class' => 'accesshide'));
+                $select->set_label(get_string('action'), array('class' => 'visually-hidden'));
                 $uninstall = '';
                 if ($uninstallurl = core_plugin_manager::instance()->get_uninstall_url('repository_' . $plugin, 'manage')) {
                     $uninstall = html_writer::link($uninstallurl, $struninstall);

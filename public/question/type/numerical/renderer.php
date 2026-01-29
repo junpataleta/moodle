@@ -99,7 +99,7 @@ class qtype_numerical_renderer extends qtype_renderer {
                     get_string('selectunit', 'qtype_numerical'),
                     'menu' . $qa->get_qt_field_name('unit'),
                     false,
-                    ['class' => 'accesshide']
+                    ['class' => 'visually-hidden']
                 );
                 $unitchoice .= html_writer::select(
                     $question->ap->get_unit_options(),

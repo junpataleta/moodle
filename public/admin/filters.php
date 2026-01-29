@@ -214,7 +214,7 @@ function get_table_row(\core\plugininfo\filter $plugininfo, stdClass $state,
 
     // Disable/off/on.
     $select = new single_select(filters_action_url($filter, 'setstate'), 'newstate', $activechoices, $state->active, null, 'active' . $filter);
-    $select->set_label(get_string('isactive', 'filters'), ['class' => 'accesshide']);
+    $select->set_label(get_string('isactive', 'filters'), ['class' => 'visually-hidden']);
     $row[] = $OUTPUT->render($select);
 
     // Re-order.
@@ -239,7 +239,7 @@ function get_table_row(\core\plugininfo\filter $plugininfo, stdClass $state,
     // Apply to strings.
     $select = new single_select(filters_action_url($filter, 'setapplyto'),
             'stringstoo', $applytochoices, $applytostrings, null, 'applyto' . $filter);
-    $select->set_label(get_string('applyto', 'filters'), ['class' => 'accesshide']);
+    $select->set_label(get_string('applyto', 'filters'), ['class' => 'visually-hidden']);
     $select->disabled = ($state->active == TEXTFILTER_DISABLED);
     $row[] = $OUTPUT->render($select);
 

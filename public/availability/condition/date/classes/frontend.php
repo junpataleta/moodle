@@ -147,7 +147,7 @@ class frontend extends \core_availability\frontend {
                 continue;
             }
             $html .= \html_writer::start_tag('label');
-            $html .= \html_writer::span(get_string($field) . ' ', 'accesshide');
+            $html .= \html_writer::span(get_string($field) . ' ', 'visually-hidden');
             // NOTE: The fields need to have these weird names in order that they
             // match the standard Moodle form control, otherwise the date selector
             // won't find them.

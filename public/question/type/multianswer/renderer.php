@@ -335,7 +335,7 @@ class qtype_multianswer_textfield_renderer extends qtype_multianswer_subq_render
         $output = html_writer::start_tag('span', ['class' => 'subquestion']);
 
         $output .= html_writer::tag('label', $this->get_answer_label(),
-                array('class' => 'subq accesshide', 'for' => $inputattributes['id']));
+                array('class' => 'subq visually-hidden', 'for' => $inputattributes['id']));
         $output .= html_writer::empty_tag('input', $inputattributes);
         $output .= $this->get_feedback_image($feedbackimg, $feedbackpopup);
         $output .= html_writer::end_tag('span');
@@ -405,7 +405,7 @@ class qtype_multianswer_multichoice_inline_renderer
 
         $output = html_writer::start_tag('span', array('class' => 'subquestion'));
         $output .= html_writer::tag('label', $this->get_answer_label(),
-                array('class' => 'subq accesshide', 'for' => $inputattributes['id']));
+                array('class' => 'subq visually-hidden', 'for' => $inputattributes['id']));
         $output .= $select;
         $output .= $this->get_feedback_image($feedbackimg, $feedbackpopup);
         $output .= html_writer::end_tag('span');

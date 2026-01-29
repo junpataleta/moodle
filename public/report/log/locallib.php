@@ -455,12 +455,12 @@ function report_log_print_mnet_selector_form($hostid, $course, $selecteduser=0, 
     echo "<input type=\"hidden\" name=\"showcourses\" value=\"$showcourses\" />\n";
     if (has_capability('report/log:view', $sitecontext) && $showcourses) {
         $cid = empty($course->id)? '1' : $course->id;
-        echo html_writer::label(get_string('selectacoursesite'), 'menuhost_course', false, array('class' => 'accesshide'));
+        echo html_writer::label(get_string('selectacoursesite'), 'menuhost_course', false, array('class' => 'visually-hidden'));
         echo html_writer::select($dropdown, "host_course", $hostid.'/'.$cid);
     } else {
         $courses = array();
         $courses[$course->id] = get_course_display_name_for_list($course) . ((empty($course->category)) ? ' ('.get_string('site').') ' : '');
-        echo html_writer::label(get_string('selectacourse'), 'menuid', false, array('class' => 'accesshide'));
+        echo html_writer::label(get_string('selectacourse'), 'menuid', false, array('class' => 'visually-hidden'));
         echo html_writer::select($courses,"id",$course->id, false);
         if (has_capability('report/log:view', $sitecontext)) {
             $a = new stdClass();
@@ -479,12 +479,12 @@ function report_log_print_mnet_selector_form($hostid, $course, $selecteduser=0, 
         else {
             $groups = array();
         }
-        echo html_writer::label(get_string('selectagroup'), 'menugroup', false, array('class' => 'accesshide'));
+        echo html_writer::label(get_string('selectagroup'), 'menugroup', false, array('class' => 'visually-hidden'));
         echo html_writer::select($groups, "group", $selectedgroup, get_string("allgroups"));
     }
 
     if ($showusers) {
-        echo html_writer::label(get_string('participantslist'), 'menuuser', false, array('class' => 'accesshide'));
+        echo html_writer::label(get_string('participantslist'), 'menuuser', false, array('class' => 'visually-hidden'));
         echo html_writer::select($users, "user", $selecteduser, get_string("allparticipants"));
     }
     else {
@@ -496,7 +496,7 @@ function report_log_print_mnet_selector_form($hostid, $course, $selecteduser=0, 
         else {
             $users[0] = get_string('allparticipants');
         }
-        echo html_writer::label(get_string('participantslist'), 'menuuser', false, array('class' => 'accesshide'));
+        echo html_writer::label(get_string('participantslist'), 'menuuser', false, array('class' => 'visually-hidden'));
         echo html_writer::select($users, "user", $selecteduser, false);
         $a = new stdClass();
         $a->url = "$CFG->wwwroot/report/log/index.php?chooselog=0&group=$selectedgroup&user=$selecteduser"
@@ -504,18 +504,18 @@ function report_log_print_mnet_selector_form($hostid, $course, $selecteduser=0, 
         print_string('logtoomanyusers','moodle',$a);
     }
 
-    echo html_writer::label(get_string('date'), 'menudate', false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('date'), 'menudate', false, array('class' => 'visually-hidden'));
     echo html_writer::select($dates, "date", $selecteddate, false);
-    echo html_writer::label(get_string('showreports'), 'menumodid', false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('showreports'), 'menumodid', false, array('class' => 'visually-hidden'));
     echo html_writer::select($activities, "modid", $selectedactivity, get_string("allactivities"));
-    echo html_writer::label(get_string('actions'), 'menumodaction', false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('actions'), 'menumodaction', false, array('class' => 'visually-hidden'));
     echo html_writer::select($actions, 'modaction', $modaction, get_string("allactions"));
 
     $logformats = array('showashtml' => get_string('displayonpage'),
                         'downloadascsv' => get_string('downloadtext'),
                         'downloadasods' => get_string('downloadods'),
                         'downloadasexcel' => get_string('downloadexcel'));
-    echo html_writer::label(get_string('logsformat', 'report_log'), 'menulogformat', false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('logsformat', 'report_log'), 'menulogformat', false, array('class' => 'visually-hidden'));
     echo html_writer::select($logformats, 'logformat', $logformat, false);
     echo '<input type="submit" value="'.get_string('gettheselogs').'" />';
     echo '</div>';

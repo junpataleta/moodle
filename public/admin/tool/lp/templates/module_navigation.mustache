@@ -34,7 +34,7 @@
 <input type="hidden" name="mod" value="{{moduleid}}"/>
 {{#hasmodules}}
 <span>
-<label for="module-nav-{{uniqid}}" class="accesshide">{{#str}}filterbyactivity, tool_lp{{/str}}</label>
+<label for="module-nav-{{uniqid}}" class="visually-hidden">{{#str}}filterbyactivity, tool_lp{{/str}}</label>
 <select id="module-nav-{{uniqid}}">
 {{#modules}}
 <option value="{{id}}" {{#selected}}selected="selected"{{/selected}}>{{name}}</option>

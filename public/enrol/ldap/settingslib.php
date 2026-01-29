@@ -144,7 +144,7 @@ class admin_setting_ldap_rolemapping extends \core_admin\setting {
                 ),
                 $contextid,
                 false,
-                ['class' => 'accesshide'],
+                ['class' => 'visually-hidden'],
             );
             $attrs = [
                 'type' => 'text',
@@ -173,7 +173,7 @@ class admin_setting_ldap_rolemapping extends \core_admin\setting {
                 ),
                 $memberattrid,
                 false,
-                ['class' => 'accesshide'],
+                ['class' => 'visually-hidden'],
             );
             $attrs = ['type' => 'text', 'size' => '15', 'id' => $memberattrid, 'name' => $memberattrname,
                 'value' => s($role['memberattribute']), 'class' => 'text-ltr'];

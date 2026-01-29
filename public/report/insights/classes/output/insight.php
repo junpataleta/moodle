@@ -199,7 +199,7 @@ class insight implements \renderable, \templatable {
                 'id' => 'id-select-' . $data->predictionid,
                 'name' => 'select-' . $data->predictionid,
                 'label' => get_string('selectprediction', 'report_insights', $data->sampledescription),
-                'labelclasses' => 'accesshide',
+                'labelclasses' => 'visually-hidden',
             ]);
             $data->toggleslave = $output->render($toggle);
         }

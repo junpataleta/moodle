@@ -1,0 +1,9 @@
+issueNumber: MDL-87345
+notes:
+  core:
+    - message: >-
+        Core no longer outputs the deprecated `.accesshide` class.
+        `get_accesshide()` and all core templates, renderers and JavaScript now
+        use Bootstrap's `.visually-hidden` class instead. CSS or JavaScript that
+        targets `.accesshide` in core markup must target `.visually-hidden`.
+      type: changed

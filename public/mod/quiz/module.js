@@ -267,9 +267,9 @@ M.mod_quiz.nav.update_flag_state = function(attemptid, questionid, newstate) {
     navlink.removeClass('flagged');
     if (newstate == 1) {
         navlink.addClass('flagged');
-        navlink.one('.accesshide .flagstate').setContent(M.util.get_string('flagged', 'question'));
+        navlink.one('.visually-hidden .flagstate').setContent(M.util.get_string('flagged', 'question'));
     } else {
-        navlink.one('.accesshide .flagstate').setContent('');
+        navlink.one('.visually-hidden .flagstate').setContent('');
     }
 };
 

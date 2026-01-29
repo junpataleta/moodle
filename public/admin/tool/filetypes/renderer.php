@@ -63,7 +63,7 @@ class tool_filetypes_renderer extends plugin_renderer_base {
             $headings->cells[] = new html_table_cell(get_string('extension', 'tool_filetypes'));
             if (!$restricted) {
                 $headings->cells[] =
-                        new html_table_cell(html_writer::span(get_string('edit'), 'accesshide'));
+                        new html_table_cell(html_writer::span(get_string('edit'), 'visually-hidden'));
             }
             $headings->cells[] = new html_table_cell(get_string('source', 'tool_filetypes'));
             $headings->cells[] = new html_table_cell(get_string('mimetype', 'tool_filetypes'));

@@ -50,16 +50,16 @@ M.availability_profile.form.getNode = function(json) {
         // String has already been escaped using format_string.
         html += '<option value="cf_' + fieldInfo.field + '">' + fieldInfo.display + '</option>';
     }
-    html += '</select></label> <label><span class="accesshide">' + M.util.get_string('label_operator', 'availability_profile') +
-            ' </span><select name="op" title="' + M.util.get_string('label_operator', 'availability_profile') + '"' +
-                     ' class="form-select">';
+    html += '</select></label> <label><span class="visually-hidden">' + M.util.get_string('label_operator', 'availability_profile')
+        + ' </span><select name="op" title="' + M.util.get_string('label_operator', 'availability_profile') + '"'
+        + ' class="form-select">';
     var operators = ['isequalto', 'contains', 'doesnotcontain', 'startswith', 'endswith',
             'isempty', 'isnotempty'];
     for (i = 0; i < operators.length; i++) {
         html += '<option value="' + operators[i] + '">' +
                 M.util.get_string('op_' + operators[i], 'availability_profile') + '</option>';
     }
-    html += '</select></label> <label><span class="accesshide">' + M.util.get_string('label_value', 'availability_profile') +
+    html += '</select></label> <label><span class="visually-hidden">' + M.util.get_string('label_value', 'availability_profile') +
             '</span><input name="value" type="text" class="form-control" style="width: 10em" title="' +
             M.util.get_string('label_value', 'availability_profile') + '"/></label></span>';
     var node = Y.Node.create('<span class="d-flex flex-wrap align-items-center">' + html + '</span>');

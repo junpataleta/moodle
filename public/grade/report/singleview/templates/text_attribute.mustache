@@ -35,7 +35,7 @@
     {{value}}
 {{/readonly}}
 {{^readonly}}
-    {{#label}}<label for="{{name}}" class="accesshide">{{label}}</label>{{/label}}
+    {{#label}}<label for="{{name}}" class="visually-hidden">{{label}}</label>{{/label}}
     <input id="{{name}}" data-uielement="text" name="{{name}}" type="{{#type}}{{.}}{{/type}}{{^type}}text{{/type}}" value="{{value}}" class="form-control" {{#disabled}}disabled{{/disabled}}{{!
         }} {{#isnumeric}} {{#min}}min="{{.}}" {{/min}} {{#max}}max="{{.}}" {{/max}} step="any" {{/isnumeric}}>
     <input type="hidden" name="old{{name}}" value="{{value}}">

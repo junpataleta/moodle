@@ -116,7 +116,7 @@ Y.Moodle.mod_quiz.util.slot = {
      */
     setNumber: function(slot, number) {
         var numbernode = slot.one(this.SELECTORS.NUMBER);
-        numbernode.setHTML('<span class="accesshide">' + this.CONSTANTS.QUESTION + '</span> ' + number);
+        numbernode.setHTML('<span class="visually-hidden">' + this.CONSTANTS.QUESTION + '</span> ' + number);
     },
 
     /**

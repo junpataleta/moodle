@@ -74,7 +74,7 @@ class report_action_menu implements templatable, renderable {
             $menu,
             $this->url->out(false),
         );
-        $reportselect->set_label(get_string('selectreport', 'lesson'), ['class' => 'accesshide']);
+        $reportselect->set_label(get_string('selectreport', 'lesson'), ['class' => 'visually-hidden']);
         $data = [
             'navigation' => $reportselect->export_for_template($output),
             'headinglevel' => $PAGE->activityheader->get_heading_level(),

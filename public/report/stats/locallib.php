@@ -46,7 +46,7 @@ function report_stats_mode_menu($course, $mode, $time, $url) {
     }
     $popupurl = $url."?course=$course->id&time=$time";
     $select = new single_select(new moodle_url($popupurl), 'mode', $options, $mode, null);
-    $select->set_label(get_string('reports'), array('class' => 'accesshide'));
+    $select->set_label(get_string('reports'), array('class' => 'visually-hidden'));
     $select->formid = 'switchmode';
     return $OUTPUT->render($select);
 }
