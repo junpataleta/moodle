@@ -1696,7 +1696,7 @@ function link_arrow_left($text, $url='', $accesshide=false, $addclass='', $addpa
 }
 
 /**
- * Return a HTML element with the class "accesshide", for accessibility.
+ * Return a HTML element with the class "visually-hidden", for accessibility.
  *
  * Please use cautiously - where possible, text should be visible!
  *
@@ -1707,7 +1707,7 @@ function link_arrow_left($text, $url='', $accesshide=false, $addclass='', $addpa
  * @return string HTML string.
  */
 function get_accesshide($text, $elem='span', $class='', $attrs='') {
-    return "<$elem class=\"accesshide $class\" $attrs>$text</$elem>";
+    return "<$elem class=\"visually-hidden $class\" $attrs>$text</$elem>";
 }
 
 /**

@@ -275,7 +275,7 @@ define([
             if (root.find('.dropzones .dropzone.group' + place.group + '.place' + i).length === 0) {
                 root.find('.dropzones').append('<div class="dropzone active group' + place.group +
                     ' place' + i + '" tabindex="0">' +
-                    '<span class="accesshide">' + label + '</span>&nbsp;</div>');
+                    '<span class="visually-hidden">' + label + '</span>&nbsp;</div>');
             }
             root.find('.dropzone.place' + i).width(maxWidth - 2).height(maxHeight - 2);
         }

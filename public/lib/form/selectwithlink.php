@@ -101,7 +101,7 @@ class MoodleQuickForm_selectwithlink extends HTML_QuickForm_select implements te
         $retval = '';
         if ($this->_hiddenLabel){
             $this->_generateId();
-            $retval = '<label class="accesshide" for="'.$this->getAttribute('id').'" >'.
+            $retval = '<label class="visually-hidden" for="'.$this->getAttribute('id').'" >'.
                         $this->getLabel().'</label>'.parent::toHtml();
         } else {
              $retval = parent::toHtml();

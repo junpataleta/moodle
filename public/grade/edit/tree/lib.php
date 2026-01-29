@@ -854,7 +854,7 @@ class grade_edit_tree_column_name extends grade_edit_tree_column {
                 // Consistent label to prevent the select column from resizing.
                 'selectall' => $togglerlabel,
                 'deselectall' => $togglerlabel,
-                'labelclasses' => 'accesshide',
+                'labelclasses' => 'visually-hidden',
             ]);
 
             $togglercheckbox = $OUTPUT->render($togglercheckbox);
@@ -902,7 +902,7 @@ class grade_edit_tree_column_name extends grade_edit_tree_column {
                 'id' => $checkboxid,
                 'name' => $checkboxid,
                 'label' => $label,
-                'labelclasses' => 'accesshide',
+                'labelclasses' => 'visually-hidden',
                 'classes' => 'itemselect ignoredirty',
             ]);
             $checkbox = $OUTPUT->render($checkbox);

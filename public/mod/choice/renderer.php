@@ -210,7 +210,7 @@ class mod_choice_renderer extends plugin_renderer_base {
                     'selectall' => $selectalltext,
                     'deselectall' => $deselectalltext,
                     'label' => $selectalltext,
-                    'labelclasses' => 'accesshide',
+                    'labelclasses' => 'visually-hidden',
                 ]);
 
                 $celltext .= html_writer::div($this->output->render($togglercheckbox));
@@ -276,7 +276,7 @@ class mod_choice_renderer extends plugin_renderer_base {
                                 'classes' => 'me-1',
                                 'value' => $checkboxvalue,
                                 'label' => $userfullname . ' ' . $options->text,
-                                'labelclasses' => 'accesshide',
+                                'labelclasses' => 'visually-hidden',
                             ]);
                             $checkbox = $this->output->render($targetcheckbox);
                         }

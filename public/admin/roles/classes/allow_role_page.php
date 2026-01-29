@@ -171,7 +171,7 @@ abstract class core_role_allow_role_page {
                 $tooltip = $this->get_cell_tooltip($fromrole, $targetrole);
                 $row[] = '<input type="checkbox" name="' . $name . '" id="' . $name .
                     '" title="' . $tooltip . '" value="1" ' . $checked . $disabled . '/>' .
-                    '<label for="' . $name . '" class="accesshide">' . $tooltip . '</label>';
+                    '<label for="' . $name . '" class="visually-hidden">' . $tooltip . '</label>';
             }
             $table->data[] = $row;
         }

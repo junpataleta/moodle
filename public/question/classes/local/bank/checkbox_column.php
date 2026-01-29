@@ -47,7 +47,7 @@ class checkbox_column extends column_base {
             'name' => 'qbheadercheckbox',
             'value' => '1',
             'label' => get_string('selectall'),
-            'labelclasses' => 'accesshide',
+            'labelclasses' => 'visually-hidden',
         ]);
 
         return $OUTPUT->render($togglercheckbox);
@@ -86,7 +86,7 @@ class checkbox_column extends column_base {
             'name' => "q{$question->id}",
             'value' => '1',
             'label' => get_string('select'),
-            'labelclasses' => 'accesshide',
+            'labelclasses' => 'visually-hidden',
         ]);
 
         echo $OUTPUT->render($checkbox);

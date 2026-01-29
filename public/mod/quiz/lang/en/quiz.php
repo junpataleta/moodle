@@ -795,8 +795,8 @@ $string['questiondraftwillnotwork'] = 'This question is in draft status. To use 
 $string['questioninuse'] = 'The question \'{$a->questionname}\' is currently being used in: <br />{$a->quiznames}<br />The question will not be deleted from these quizzes but only from the category list.';
 $string['questionmissing'] = 'Question for this session is missing';
 $string['questionname'] = 'Question name';
-$string['questionnonav'] = '<span class="accesshide">Question </span>{$a->number}<span class="accesshide"> {$a->attributes}</span>';
-$string['questionnonavinfo'] = '<span class="accesshide">Information </span>{$a->number}<span class="accesshide"> {$a->attributes}</span>';
+$string['questionnonav'] = '<span class="visually-hidden">Question </span>{$a->number}<span class="visually-hidden"> {$a->attributes}</span>';
+$string['questionnonavinfo'] = '<span class="visually-hidden">Information </span>{$a->number}<span class="visually-hidden"> {$a->attributes}</span>';
 $string['questionnotloaded'] = 'Question {$a} has not been loaded from the database';
 $string['questionorder'] = 'Question order';
 $string['questionposition'] = 'New position in order for question {$a}';

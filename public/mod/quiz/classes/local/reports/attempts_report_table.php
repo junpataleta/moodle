@@ -152,7 +152,7 @@ abstract class attempts_report_table extends \table_sql {
                 'name' => 'attemptid[]',
                 'value' => $attempt->attempt,
                 'label' => get_string('selectattempt', 'quiz'),
-                'labelclasses' => 'accesshide',
+                'labelclasses' => 'visually-hidden',
             ]);
             return $OUTPUT->render($checkbox);
         } else {
@@ -836,7 +836,7 @@ abstract class attempts_report_table extends \table_sql {
             'name' => $selectallid,
             'value' => 1,
             'label' => $selectalltext,
-            'labelclasses' => 'accesshide',
+            'labelclasses' => 'visually-hidden',
             'selectall' => $selectalltext,
             'deselectall' => $deselectalltext,
         ]);

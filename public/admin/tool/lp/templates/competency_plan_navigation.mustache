@@ -35,7 +35,7 @@
 <div class="float-sm-end border p-2 mb-2">
 {{#hascompetencies}}
 <span>
-<label for="competency-nav-{{uniqid}}" class="accesshide">{{#str}}jumptocompetency, tool_lp{{/str}}</label>
+<label for="competency-nav-{{uniqid}}" class="visually-hidden">{{#str}}jumptocompetency, tool_lp{{/str}}</label>
 <select class="form-select" id="competency-nav-{{uniqid}}">
 {{#competencies}}
 <option value="{{id}}" {{#selected}}selected="selected"{{/selected}}>{{{shortname}}} {{idnumber}}</option>

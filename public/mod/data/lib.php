@@ -379,7 +379,7 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
         }
 
         $str = '<div title="' . s($this->field->description) . '">';
-        $str .= '<label for="field_'.$this->field->id.'"><span class="accesshide">'.s($this->field->name).'</span>';
+        $str .= '<label for="field_' . $this->field->id . '"><span class="visually-hidden">' . s($this->field->name) . '</span>';
         if ($this->field->required) {
             $image = $OUTPUT->pix_icon('req', get_string('requiredelement', 'form'));
             $str .= html_writer::div($image, 'inline-req');
@@ -1803,7 +1803,7 @@ function data_print_preference_form($data, $perpage, $search, $sort='', $order='
     }
     echo '</optgroup>';
     echo '</select>';
-    echo '<label for="pref_order" class="accesshide">'.get_string('order').'</label>';
+    echo '<label for="pref_order" class="visually-hidden">' . get_string('order') . '</label>';
     echo '<select id="pref_order" name="order" class="form-select me-1">';
     if ($order == 'ASC') {
         echo '<option value="ASC" selected="selected">'.get_string('ascending','data').'</option>';
@@ -1912,10 +1912,10 @@ function data_print_preference_form($data, $perpage, $search, $sort='', $order='
     $fn = isset($search_array[DATA_FIRSTNAME]->data) ? $search_array[DATA_FIRSTNAME]->data : '';
     $ln = isset($search_array[DATA_LASTNAME]->data) ? $search_array[DATA_LASTNAME]->data : '';
     $patterns[]    = '/##firstname##/';
-    $replacement[] = '<label class="accesshide" for="u_fn">' . get_string('authorfirstname', 'data') . '</label>' .
+    $replacement[] = '<label class="visually-hidden" for="u_fn">' . get_string('authorfirstname', 'data') . '</label>' .
                      '<input type="text" class="form-control" size="16" id="u_fn" name="u_fn" value="' . s($fn) . '" />';
     $patterns[]    = '/##lastname##/';
-    $replacement[] = '<label class="accesshide" for="u_ln">' . get_string('authorlastname', 'data') . '</label>' .
+    $replacement[] = '<label class="visually-hidden" for="u_ln">' . get_string('authorlastname', 'data') . '</label>' .
                      '<input type="text" class="form-control" size="16" id="u_ln" name="u_ln" value="' . s($ln) . '" />';
 
     if (core_tag_tag::is_enabled('mod_data', 'data_records')) {

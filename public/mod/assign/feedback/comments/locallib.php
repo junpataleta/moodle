@@ -143,7 +143,7 @@ class assign_feedback_comments extends assign_feedback_plugin {
 
         $labeloptions = [
             'for' => $fieldid,
-            'class' => 'accesshide',
+            'class' => 'visually-hidden',
         ];
         $textareaoptions = [
             'name' => $fieldid,

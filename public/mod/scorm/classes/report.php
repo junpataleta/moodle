@@ -70,7 +70,7 @@ class report {
             'name' => 'scorm-selectall-attempts',
             'value' => 1,
             'label' => $selectalltext,
-            'labelclasses' => 'accesshide',
+            'labelclasses' => 'visually-hidden',
             'selectall' => $selectalltext,
             'deselectall' => $deselectalltext,
         ]);

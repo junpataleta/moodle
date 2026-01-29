@@ -70,7 +70,7 @@ class data_field_radiobutton extends data_field_base {
         }
 
         $str = '<div title="' . s($this->field->description) . '">';
-        $str .= '<fieldset><legend><span class="accesshide">' . s($this->field->name);
+        $str .= '<fieldset><legend><span class="visually-hidden">' . s($this->field->name);
 
         if ($this->field->required) {
             $str .= '&nbsp;' . get_string('requiredelement', 'form') . '</span></legend>';
@@ -123,7 +123,7 @@ class data_field_radiobutton extends data_field_base {
             }
         }
         $return = html_writer::label(get_string('fieldtypelabel', "datafield_" . $this->type),
-            'menuf_' . $this->field->id, false, array('class' => 'accesshide'));
+            'menuf_' . $this->field->id, false, array('class' => 'visually-hidden'));
         $return .= html_writer::select($options, 'f_'.$this->field->id, $value,
             ['' => 'choosedots'], ['class' => 'form-select']);
         return $return;

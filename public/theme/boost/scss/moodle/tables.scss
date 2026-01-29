@@ -58,8 +58,7 @@ table {
     // Fix visually hidden text in responsive tables.
     .table {
         margin-bottom: 0;
-        .visually-hidden,
-        .accesshide {
+        .visually-hidden {
             position: relative !important; /* stylelint-disable-line declaration-no-important */
             display: block;
         }

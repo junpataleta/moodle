@@ -2008,7 +2008,7 @@ function glossary_print_categories_menu($cm, $glossary, $hook, $category) {
      echo '<td align="center" style="width:20%">';
 
      $select = new single_select(new moodle_url("/mod/glossary/view.php", array('id'=>$cm->id, 'mode'=>'cat')), 'hook', $menu, $selected, null, "catmenu");
-     $select->set_label(get_string('categories', 'glossary'), array('class' => 'accesshide'));
+     $select->set_label(get_string('categories', 'glossary'), array('class' => 'visually-hidden'));
      echo $OUTPUT->render($select);
 
      echo '</td>';
@@ -2180,7 +2180,7 @@ function glossary_print_sorting_links($cm, $mode, $sortkey = '',$sortorder = '')
          }
          $sort        = get_string("sortby", "glossary");
      }
-     $current = '<span class="accesshide">'.get_string('current', 'glossary', "$currentsort $currentorder").'</span>';
+     $current = '<span class="visually-hidden">' . get_string('current', 'glossary', "$currentsort $currentorder") . '</span>';
      echo "<br />$current $sort: $sbtag<a title=\"$ssort $sordertitle\" href=\"$CFG->wwwroot/mod/glossary/view.php?id=$cm->id&amp;sortkey=$sorder$sneworder&amp;mode=$mode\">$ssort$sicon</a>$sendbtag | ".
                           "$fbtag<a title=\"$fsort $fordertitle\" href=\"$CFG->wwwroot/mod/glossary/view.php?id=$cm->id&amp;sortkey=$forder$fneworder&amp;mode=$mode\">$fsort$ficon</a>$fendbtag<br />";
 }

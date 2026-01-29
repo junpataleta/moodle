@@ -180,7 +180,7 @@ if (empty($availablefilters)) {
         } else {
             $activechoices[TEXTFILTER_INHERIT] = $strdefaultoff;
         }
-        $select = html_writer::label($filterinfo->localstate, 'menu'. $filter, false, ['class' => 'accesshide']);
+        $select = html_writer::label($filterinfo->localstate, 'menu'. $filter, false, ['class' => 'visually-hidden']);
         $select .= html_writer::select($activechoices, $filter, $filterinfo->localstate, false);
         $row[] = $select;
 

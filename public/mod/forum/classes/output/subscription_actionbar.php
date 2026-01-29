@@ -145,7 +145,7 @@ class subscription_actionbar implements renderable, templatable {
             $menu,
             $this->currenturl->out(false),
         );
-        $urlselect->set_label(get_string('subscribers', 'forum'), ['class' => 'accesshide']);
+        $urlselect->set_label(get_string('subscribers', 'forum'), ['class' => 'visually-hidden']);
         return $urlselect;
     }
 

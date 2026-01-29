@@ -198,7 +198,7 @@ foreach ($searchareas as $area) {
                 $laststatus = '';
             }
             $columns[] = $laststatus;
-            $accesshide = html_writer::span($area->get_visible_name(), 'accesshide');
+            $accesshide = html_writer::span($area->get_visible_name(), 'visually-hidden');
             $actions = [];
             $actions[] = $OUTPUT->pix_icon('t/delete', '') .
                     html_writer::link(admin_searcharea_action_url('delete', $areaid),

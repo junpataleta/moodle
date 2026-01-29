@@ -262,7 +262,7 @@ class core_course_management_renderer extends plugin_renderer_base {
         $countid = 'course-count-'.$category->id;
         $html .= html_writer::span(
                 html_writer::span($category->get_courses_count()) .
-                html_writer::span(get_string('courses'), 'accesshide', array('id' => $countid)) .
+                html_writer::span(get_string('courses'), 'visually-hidden', array('id' => $countid)) .
                 $courseicon,
                 'course-count text-muted',
                 array('aria-labelledby' => $countid)
@@ -379,7 +379,7 @@ class core_course_management_renderer extends plugin_renderer_base {
         $strgo = new lang_string('go');
 
         $html  = html_writer::start_div('category-bulk-actions bulk-actions');
-        $html .= html_writer::div(get_string('categorybulkaction'), 'accesshide', array('tabindex' => '0'));
+        $html .= html_writer::div(get_string('categorybulkaction'), 'visually-hidden', array('tabindex' => '0'));
         if (core_course_category::can_resort_any()) {
             $selectoptions = array(
                 'selectedcategories' => get_string('selectedcategories'),
@@ -755,7 +755,7 @@ class core_course_management_renderer extends plugin_renderer_base {
     public function course_bulk_actions(core_course_category $category) {
         $html  = html_writer::start_div('course-bulk-actions bulk-actions');
         if ($category->can_move_courses_out_of()) {
-            $html .= html_writer::div(get_string('coursebulkaction'), 'accesshide', array('tabindex' => '0'));
+            $html .= html_writer::div(get_string('coursebulkaction'), 'visually-hidden', array('tabindex' => '0'));
             $options = core_course_category::make_categories_list('moodle/category:manage');
             $select = html_writer::select(
                 $options,
@@ -782,7 +782,7 @@ class core_course_management_renderer extends plugin_renderer_base {
      */
     public function course_search_bulk_actions() {
         $html  = html_writer::start_div('course-bulk-actions bulk-actions');
-        $html .= html_writer::div(get_string('coursebulkaction'), 'accesshide', array('tabindex' => '0'));
+        $html .= html_writer::div(get_string('coursebulkaction'), 'visually-hidden', array('tabindex' => '0'));
         $options = core_course_category::make_categories_list('moodle/category:manage');
         $select = html_writer::select(
             $options,
@@ -1321,7 +1321,7 @@ class core_course_management_renderer extends plugin_renderer_base {
      * @return string
      */
     public function accessible_skipto_links($displaycategorylisting, $displaycourselisting, $displaycoursedetail) {
-        $html = html_writer::start_div('skiplinks accesshide');
+        $html = html_writer::start_div('skiplinks visually-hidden');
         $url = new moodle_url($this->page->url);
         if ($displaycategorylisting) {
             $url->set_anchor('category-listing');

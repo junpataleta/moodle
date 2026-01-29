@@ -30977,10 +30977,10 @@ dd:after {
 .chart-area .chart-table .chart-output-htmltable caption {
   white-space: nowrap;
 }
-.chart-area .chart-table.accesshide .chart-table-expand {
+.chart-area .chart-table.visually-hidden .chart-table-expand {
   display: none;
 }
-.chart-area .chart-table.accesshide .chart-table-data {
+.chart-area .chart-table.visually-hidden .chart-table-data {
   display: block;
 }
 
@@ -32984,7 +32984,7 @@ img.icon {
 /**
  Blocks
  */
-.blockmovetarget .accesshide {
+.blockmovetarget .visually-hidden {
   position: relative;
   left: initial;
 }
@@ -41585,8 +41585,7 @@ table .sticky-column {
 .table-responsive .table {
   margin-bottom: 0;
 }
-.table-responsive .table .visually-hidden,
-.table-responsive .table .accesshide {
+.table-responsive .table .visually-hidden {
   position: relative !important; /* stylelint-disable-line declaration-no-important */
   display: block;
 }

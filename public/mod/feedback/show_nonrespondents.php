@@ -273,7 +273,7 @@ if (empty($students)) {
                 'classes' => 'me-1',
                 'value' => $student->id,
                 'label' => get_string('includeuserinrecipientslist', 'mod_feedback', fullname($student)),
-                'labelclasses' => 'accesshide',
+                'labelclasses' => 'visually-hidden',
             ]);
             $data[] = $OUTPUT->render($checkbox);
         }

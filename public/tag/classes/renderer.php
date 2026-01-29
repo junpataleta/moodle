@@ -164,11 +164,11 @@ class core_tag_renderer extends plugin_renderer_base {
     protected function search_form($query = '', $tagcollid = 0) {
         $searchurl = new moodle_url('/tag/search.php');
         $output = '<form action="' . $searchurl . '" class="d-grid gap-2 d-sm-flex">';
-        $output .= '<label class="accesshide" for="searchform_query">' . get_string('searchtags', 'tag') . '</label>';
+        $output .= '<label class="visually-hidden" for="searchform_query">' . get_string('searchtags', 'tag') . '</label>';
         $output .= '<input id="searchform_query" name="query" type="text" class="form-control" value="' . s($query) . '" />';
         $tagcolls = core_tag_collection::get_collections_menu(false, true, get_string('inalltagcoll', 'tag'));
         if (count($tagcolls) > 1) {
-            $output .= '<label class="accesshide" for="searchform_tc">' . get_string('selectcoll', 'tag') . '</label>';
+            $output .= '<label class="visually-hidden" for="searchform_tc">' . get_string('selectcoll', 'tag') . '</label>';
             $output .= html_writer::select($tagcolls, 'tc', $tagcollid, null, array('id' => 'searchform_tc'));
         }
         $output .= '<input name="go" type="submit" class="btn btn-primary" value="' . s(get_string('search', 'tag')) . '" />';

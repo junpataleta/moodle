@@ -89,7 +89,7 @@ class data_field_picture extends data_field_base {
             $itemid = file_get_unused_draft_itemid();
         }
         $str = '<div title="' . s($this->field->description) . '">';
-        $str .= '<fieldset><legend><span class="accesshide">'.s($this->field->name);
+        $str .= '<fieldset><legend><span class="visually-hidden">' . s($this->field->name);
 
         if ($this->field->required) {
             $str .= '&nbsp;' . get_string('requiredelement', 'form') . '</span></legend>';
@@ -187,7 +187,7 @@ class data_field_picture extends data_field_base {
     }
 
     function display_search_field($value = '') {
-        return '<label class="accesshide" for="f_' . $this->field->id . '">' . get_string('fieldname', 'data') . '</label>' .
+        return '<label class="visually-hidden" for="f_' . $this->field->id . '">' . get_string('fieldname', 'data') . '</label>' .
                '<input type="text" size="16" id="f_' . $this->field->id . '" name="f_' . $this->field->id . '" ' .
                'value="' . s($value) . '" class="form-control"/>';
     }

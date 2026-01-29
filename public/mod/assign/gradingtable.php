@@ -1002,7 +1002,7 @@ class assign_grading_table extends table_sql implements renderable {
      * @return string
      */
     public function col_select(stdClass $row) {
-        $selectcol = '<label class="accesshide" for="selectuser_' . $row->userid . '">';
+        $selectcol = '<label class="visually-hidden" for="selectuser_' . $row->userid . '">';
         $selectcol .= get_string('selectuser', 'assign', $this->assignment->fullname($row));
         $selectcol .= '</label>';
         $selectcol .= '<input type="checkbox"

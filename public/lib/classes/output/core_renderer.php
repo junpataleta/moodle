@@ -1657,7 +1657,7 @@ class core_renderer extends renderer_base {
         } else {
             $position = get_string('moveblockafter', 'block', $previous);
         }
-        return html_writer::tag('a', html_writer::tag('span', $position, ['class' => 'accesshide']), ['href' => $target->url, 'class' => 'blockmovetarget']);
+        return html_writer::tag('a', html_writer::tag('span', $position, ['class' => 'visually-hidden']), ['href' => $target->url, 'class' => 'blockmovetarget']);
     }
 
     /**
@@ -2170,7 +2170,7 @@ class core_renderer extends renderer_base {
 
             $scalearray = [RATING_UNSET_RATING => $strrate . '...'] + $rating->settings->scale->scaleitems;
             $scaleattrs = ['class' => 'postratingmenu ratinginput', 'id' => 'menurating' . $rating->itemid];
-            $ratinghtml .= html_writer::label($rating->rating, 'menurating' . $rating->itemid, false, ['class' => 'accesshide']);
+            $ratinghtml .= html_writer::label($rating->rating, 'menurating' . $rating->itemid, false, ['class' => 'visually-hidden']);
             $ratinghtml .= html_writer::select($scalearray, 'rating', $rating->rating, false, $scaleattrs);
 
             // output submit button
@@ -4656,7 +4656,7 @@ EOD;
      * @param int $limit limit the number of tags to display, if size of $tags is more than this limit the "more" link
      *               will be appended to the end, JS will toggle the rest of the tags
      * @param context $pagecontext specify if needed to overwrite the current page context for the view tag link
-     * @param bool $accesshidelabel if true, the label should have class="accesshide" added.
+     * @param bool $accesshidelabel if true, the label should have class="visually-hidden" added.
      * @param bool $displaylink Indicates whether the tag should be displayed as a link.
      * @return string
      */
