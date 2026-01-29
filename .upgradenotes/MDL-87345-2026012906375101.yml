@@ -1,0 +1,7 @@
+issueNumber: MDL-87345
+notes:
+  theme_boost:
+    - message: >-
+        `.accesshide` has now been deprecated. Please use Bootstrap's
+        `.visually-hidden` class instead.
+      type: deprecated
