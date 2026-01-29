@@ -29489,23 +29489,6 @@ form.popupform div {
   overflow: auto;
 }
 
-.accesshide {
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
-}
-.accesshide:not(caption) {
-  position: absolute !important;
-}
-.accesshide * {
-  overflow: hidden !important;
-}
-
 span.hide,
 div.hide,
 .hidden {
@@ -45669,6 +45652,43 @@ body.behat-site .course-content .stateready .section .spinner::before,
   content: "Deprecated style in use (.course-content .stateready .section .spinner)" !important;
   color: #ca3120 !important;
   font-size: smaller !important;
+}
+
+.accesshide {
+  /* stylelint-disable declaration-no-important */
+  /* stylelint-enable */
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+body.behat-site .accesshide,
+.accesshide body.behat-site.accesshide, body.themedesignermode .accesshide,
+.accesshide body.themedesignermode.accesshide {
+  outline: 3px dotted #ca3120 !important;
+  background-color: #fceeed !important;
+}
+body.behat-site .accesshide::before,
+.accesshide body.behat-site.accesshide::before, body.themedesignermode .accesshide::before,
+.accesshide body.themedesignermode.accesshide::before {
+  content: "Deprecated style in use (.accesshide)" !important;
+  color: #ca3120 !important;
+  font-size: smaller !important;
+}
+.accesshide:not(caption) {
+  position: absolute !important;
+}
+.accesshide * {
+  overflow: hidden !important;
+}
+
+.table-responsive .table .accesshide {
+  position: relative !important; /* stylelint-disable-line declaration-no-important */
+  display: block;
 }
 
 /**

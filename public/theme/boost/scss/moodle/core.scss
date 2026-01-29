@@ -407,11 +407,6 @@ form.popupform div {
 
 // Accessibility features
 
-// Accessibility: text 'seen' by screen readers but not visual users.
-.accesshide {
-    @include visually-hidden();
-}
-
 span.hide,
 div.hide,
 .hidden {

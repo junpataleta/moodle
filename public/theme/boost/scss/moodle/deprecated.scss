@@ -47,5 +47,23 @@
     display: none;
 }
 
+//
+// Deprecated since Moodle 5.3.
+//
+
+// TODO: MDL-89288 Final deprecation in 6.0. Remove this rule then.
+// .accesshide is deprecated. Please use the standard Bootstrap class ".visually-hidden" instead.
+.accesshide {
+    @include deprecated-styles(".accesshide");
+    @include visually-hidden();
+}
+
+// TODO: MDL-89288 Final deprecation in 6.0. Remove this rule then.
+// Keep the responsive table fix in "tables.scss" working for .accesshide until it is finally removed.
+.table-responsive .table .accesshide {
+    position: relative !important; /* stylelint-disable-line declaration-no-important */
+    display: block;
+}
+
 // TODO: MDL-84465 Final deprecation in 6.0. Remove this line when the Bootstrap 4 backward compatibility period ends.
 @import "bs4-compat";
