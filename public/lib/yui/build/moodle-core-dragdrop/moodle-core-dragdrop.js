@@ -180,9 +180,10 @@ Y.extend(DRAGDROP, Y.Base, {
      */
     get_drag_handle: function(title, classname, iconclass) {
 
-        var dragelement = Y.Node.create('<span></span>')
+        var dragelement = Y.Node.create('<span class="btn btn-icon btn-sm"></span>')
             .addClass(classname)
             .setAttribute('title', title)
+            .setAttribute('aria-label', title)
             .setAttribute('tabIndex', 0)
             .setAttribute('data-draggroups', this.groups)
             .setAttribute('role', 'button');
