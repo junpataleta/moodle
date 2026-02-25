@@ -30,15 +30,20 @@
     *   - value Value of the selected item.
     *   - label HTML representing the value.
     * noSelectionString String to use when no items are selected
+    * selectionId The autocomplete instance's selectionId
 
     Example context (json):
-    { "items": [
-        { "label": "Item label with <strong>tags</strong>", "value": "5" },
-        { "label": "Another item label with <strong>tags</strong>", "value": "4" }
-    ], "noSelectionString": "No selection" }
+    {
+        "items": [
+            { "label": "Item label with <strong>tags</strong>", "value": "5" },
+            { "label": "Another item label with <strong>tags</strong>", "value": "4" }
+        ],
+        "noSelectionString": "No selection",
+        "selectionId": "1"
+    }
 }}
 {{#items}}
-    <span role="option" data-value="{{value}}" aria-selected="true" class="badge bg-secondary text-dark m-1" style="font-size: 100%">
+    <span role="option" data-value="{{value}}" aria-selected="true" class="badge bg-secondary text-dark m-1" style="font-size: 100%" aria-describedby="{{selectionId}}-remove-description">
         <span aria-hidden="true">× </span>{{{label}}}
     </span>
 {{/items}}
