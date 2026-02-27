@@ -33477,7 +33477,7 @@ div#dateselector-calendar-panel {
   vertical-align: middle;
 }
 
-.form-autocomplete-selection [data-active-selection=true] {
+.form-autocomplete-selection:focus [data-active-selection=true] {
   box-shadow: 0 0 0 0.2rem rgba(15, 108, 191, 0.75);
 }
 

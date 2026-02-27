@@ -330,7 +330,7 @@ div#dateselector-calendar-panel {
     vertical-align: middle;
 }
 
-.form-autocomplete-selection [data-active-selection=true] {
+.form-autocomplete-selection:focus [data-active-selection=true] {
     box-shadow: $input-btn-focus-box-shadow;
 }
 
