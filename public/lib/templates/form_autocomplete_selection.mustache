@@ -31,6 +31,13 @@
     * items List of items with label and value fields (used by the partial).
     * noSelectionString String to use when no items are selected (used by the partial).
 
+    Note: this template is always rendered with an empty "items" list (the real, current
+    selection is populated afterwards by JS). The "listbox" ARIA semantics (role,
+    aria-labelledby, tabindex, aria-required, aria-multiselectable) are therefore only ever
+    meaningful once there are items, so they are added/removed by
+    updateSelectionRegionAccessibility() in core/form-autocomplete instead of being hardcoded
+    here - a listbox role must not be exposed while it has no valid option/group children.
+
     Example context (json):
     { "multiple": true, "selectionId": 1, "items": [
         { "label": "Item label with <strong>tags</strong>", "value": "5" },
@@ -38,16 +45,11 @@
     ], "noSelectionString": "No selection" }
 }}
 <span class="visually-hidden" id="{{selectionId}}-label">{{#str}}selecteditems, form{{/str}}</span>
-<span class="d-none" id="{{selectionId}}-remove-description">{{#str}}pressentertoremove, form{{/str}}</span>
+<span class="visually-hidden" id="{{selectionId}}-remove-description">{{#str}}pressentertoremove, form{{/str}}</span>
 <div id="{{selectionId}}-announcer" aria-live="polite" role="status" class="visually-hidden"></div>
 <div{{!
     }} class="form-autocomplete-selection w-100 {{#multiple}}form-autocomplete-multiple{{/multiple}}"{{!
     }} id="{{selectionId}}"{{!
-    }} aria-labelledby="{{selectionId}}-label"{{!
-    }} role="listbox"{{!
-    }} aria-atomic="true"{{!
-    }} tabindex="0"{{!
-    }} {{#required}}aria-required="true"{{/required}}{{!
-    }} {{#multiple}}aria-multiselectable="true"{{/multiple}}>
+    }} aria-atomic="true">
     {{> core/form_autocomplete_selection_items }}
 </div>

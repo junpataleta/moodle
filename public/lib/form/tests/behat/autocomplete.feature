@@ -4,6 +4,7 @@ Feature: Autocomplete functionality in forms
   As a user
   I need to use the autocomplete form element
 
+  @accessibility
   Scenario: Use autocomplete element which accepts a single value
     Given the following "users" exist:
       | username | firstname | lastname |
@@ -13,19 +14,27 @@ Feature: Autocomplete functionality in forms
 
     When I navigate to "Users > Privacy and policies > Data requests" in site administration
     And I follow "New request"
+    And the page should meet accessibility standards
     And I open the autocomplete suggestions list
     And I click on "Jane Jones" item in the autocomplete list
 
     Then "Jane Jones" "autocomplete_selection" should exist
+    And the page should meet accessibility standards
+    And "//div[contains(@class, 'form-autocomplete-selection') and @role='listbox']" "xpath_element" should exist
     # Change selection
     And I open the autocomplete suggestions list
+    And the page should meet accessibility standards
     And I click on "Sam Smith" item in the autocomplete list
     And "Sam Smith" "autocomplete_selection" should exist
     And "Jane Jones" "autocomplete_selection" should not exist
+    And the page should meet accessibility standards
     # Remove selection
     And I click on "Sam Smith" "autocomplete_selection"
     And "Sam Smith" "autocomplete_selection" should not exist
+    And "//div[contains(@class, 'form-autocomplete-selection') and @role='listbox']" "xpath_element" should not exist
+    And "//div[contains(@class, 'form-autocomplete-selection') and @aria-activedescendant]" "xpath_element" should not exist
     And I should see "No selection" in the ".form-autocomplete-selection" "css_element"
+    And the page should meet accessibility standards
 
   @javascript
   Scenario: Single-select autocomplete can be cleared after being set
