@@ -31,6 +31,7 @@
     * selectionId The dom id of the current selection list.
     * downArrowId The dom id of the down arrow to open the suggestions.
     * placeholder The place holder text when the field is empty
+    * required True if the underlying select element is required
 
     Example context (json):
     { "inputID": 1, "suggestionsId": 2, "selectionId": 3, "downArrowId": 4, "placeholder": "Select something" }
@@ -51,6 +52,7 @@
     }} aria-owns="{{suggestionsId}} {{selectionId}}"{{!
     }} {{#tags}}data-tags="1"{{/tags}}{{!
     }} {{#multiple}}data-multiple="multiple"{{/multiple}}{{!
+    }} {{#required}}aria-required="true"{{/required}}{{!
     }}>
     <span class="form-autocomplete-downarrow position-absolute p-1" id="{{downArrowId}}">&#x25BC;</span>
 </div>
@@ -65,6 +67,7 @@
     }} aria-owns="{{selectionId}}"{{!
     }} {{#tags}}data-tags="1"{{/tags}}{{!
     }} {{#multiple}}data-multiple="multiple"{{/multiple}}{{!
+    }} {{#required}}aria-required="true"{{/required}}{{!
     }}>
 </div>
 {{/showSuggestions}}
