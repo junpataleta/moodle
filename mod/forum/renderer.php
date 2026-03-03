@@ -88,7 +88,13 @@ class mod_forum_renderer extends plugin_renderer_base {
         $output .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'sesskey', 'value'=>sesskey()));
 
         $existingcell = new html_table_cell();
-        $existingcell->text = $existinguc->display(true);
+        $existingsubslabel = html_writer::label(
+            get_string('existingsubscribers', 'forum'),
+            'existingsubscribers',
+            false,
+            ['class' => 'visually-hidden']
+        );
+        $existingcell->text =  $existingsubslabel . $existinguc->display(true);
         $existingcell->attributes['class'] = 'existing';
         $actioncell = new html_table_cell();
         $actioncell->text  = html_writer::start_tag('div', array());
@@ -98,11 +104,18 @@ class mod_forum_renderer extends plugin_renderer_base {
         $actioncell->text .= html_writer::end_tag('div', array());
         $actioncell->attributes['class'] = 'actions';
         $potentialcell = new html_table_cell();
-        $potentialcell->text = $potentialuc->display(true);
+        $potentialsubslabel = html_writer::label(
+            get_string('potentialsubscribers', 'forum'),
+            'potentialsubscribers',
+            false,
+            ['class' => 'visually-hidden']
+        );
+        $potentialcell->text = $potentialsubslabel . $potentialuc->display(true);
         $potentialcell->attributes['class'] = 'potential';
 
         $table = new html_table();
         $table->attributes['class'] = 'subscribertable boxaligncenter table-reboot';
+        $table->attributes['role'] = 'presentation';
         $table->data = array(new html_table_row(array($existingcell, $actioncell, $potentialcell)));
         $output .= html_writer::table($table);
 
