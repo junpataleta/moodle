@@ -60,9 +60,11 @@
             {{#uservisible}}
                 {{#isautomatic}}
                     <div class="completion-info" data-region="completion-info">
-                        <div class="automatic-completion-conditions" data-region ="completionrequirements" role="list" aria-label="{{#str}}completionrequirements, core_course, {{activityname}}{{/str}}">
-                            <div class="automatic-completion-title"><strong>{{#str}}completionrequirements, core_completion{{/str}}</strong></div>
-                            <ul class="activity-completion-list">
+                        <div class="automatic-completion-conditions" data-region="completionrequirements">
+                            <div class="automatic-completion-title" id="automatic-completion-conditions-title">
+                                <strong>{{#str}}completionrequirements, core_completion{{/str}}</strong>
+                            </div>
+                            <ul class="activity-completion-list" aria-labelledby="automatic-completion-conditions-title">
                                 {{#completiondetails}}
                                     {{> core_course/completion_automatic }}
                                 {{/completiondetails}}
