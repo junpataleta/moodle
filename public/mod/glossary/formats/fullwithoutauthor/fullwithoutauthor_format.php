@@ -68,9 +68,7 @@ function glossary_show_entry_fullwithoutauthor(
         echo '</td></tr>';
         echo "</table>\n";
     } else {
-        echo '<div class="text-center">';
-        print_string('noentry', 'glossary');
-        echo '</div>';
+        echo html_writer::div(get_string('noentry', 'glossary'), 'text-center');
     }
 }
 

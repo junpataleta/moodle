@@ -112,9 +112,7 @@ function glossary_show_entry_TEMPLATE(
         echo '</tr>';
         echo "</table>\n";
     } else {
-        echo '<div style="text-align:center">';
-        print_string('noentry', 'glossary');
-        echo '</div>';
+        echo html_writer::div(get_string('noentry', 'glossary'), 'text-center');
     }
 }
 
