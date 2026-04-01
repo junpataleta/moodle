@@ -56,9 +56,7 @@ function glossary_show_entry_fullwithauthor(
         echo '</div>';
         echo "</div>";
     } else {
-        echo '<div style="text-align:center">';
-        print_string('noentry', 'glossary');
-        echo '</div>';
+        echo html_writer::div(get_string('noentry', 'glossary'), 'text-center');
     }
 }
 
