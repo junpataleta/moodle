@@ -41,7 +41,7 @@ function glossary_show_entry_faq(
         $entry->course = $course->id;
 
         echo '<div class="entry mt-1">';
-        echo html_writer::tag('strong', get_string('answer', 'glossary') . ':') . '</b>';
+        echo html_writer::tag('strong', get_string('answer', 'glossary') . ':');
         glossary_print_entry_definition($entry, $glossary, $cm);
         glossary_print_entry_attachment($entry, $cm, 'html');
 
