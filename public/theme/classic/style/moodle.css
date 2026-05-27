@@ -40912,6 +40912,10 @@ div.editor_atto_toolbar button .icon {
 .courseindex .courseindex-item.pageitem a {
   color: #fff;
 }
+.courseindex .courseindex-item.pageitem .courseindex-link,
+.courseindex .courseindex-item.pageitem .courseindex-chevron {
+  color: #fff;
+}
 .courseindex .courseindex-item .completioninfo {
   min-width: 20px;
 }
