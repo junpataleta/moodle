@@ -41014,6 +41014,8 @@ div.editor_atto_toolbar button .icon {
 .courseindex .courseindex-item.dimmed .courseindex-chevron {
   color: #6a737b;
 }
+.courseindex .courseindex-item.dimmed.pageitem .courseindex-link,
+.courseindex .courseindex-item.dimmed.pageitem .courseindex-chevron,
 .courseindex .courseindex-item.dimmed .pageitem .courseindex-link,
 .courseindex .courseindex-item.dimmed .pageitem .courseindex-chevron {
   color: #ffffff;
