@@ -1,6 +1,8 @@
 $courseindex-link-color: $list-group-action-color !default;
 $courseindex-link-color-selected: color-contrast($primary) !default;
-$courseindex-link-dimmed-color: var(--#{$prefix}gray-600) !default;
+// The normal links are the body colour at .75 opacity. A lower opacity keeps hidden items dimmer than those in both
+// colour modes while still reaching 4.5:1 on the drawer, which a grey from the palette cannot do in both.
+$courseindex-link-dimmed-color: rgba(var(--#{$prefix}body-color-rgb), .65) !default;
 $courseindex-link-hover-color: var(--#{$prefix}black) !default;
 $courseindex-item-dragging-bg: shift-color($info, -90%) !default;
 $courseindex-item-dragging-border: shift-color($info, -70%) !default;
@@ -130,6 +132,10 @@ $courseindex-item-current: $primary !default;
                 color: $courseindex-link-dimmed-color;
             }
 
+            // The dimmed colour is not readable on the selected item background, so
+            // selected items keep the selected text colour. The descendant selector
+            // covers a selected subsection inside a hidden delegated activity.
+            &.pageitem,
             .pageitem {
                 .courseindex-link,
                 .courseindex-chevron {
