@@ -130,6 +130,10 @@ $courseindex-item-current: $primary !default;
                 color: $courseindex-link-dimmed-color;
             }
 
+            // The dimmed colour is not readable on the selected item background, so
+            // selected items keep the selected text colour. The descendant selector
+            // covers a selected subsection inside a hidden delegated activity.
+            &.pageitem,
             .pageitem {
                 .courseindex-link,
                 .courseindex-chevron {
