@@ -392,6 +392,26 @@ Feature: Course index depending on role
     # Label intro text should be displayed if label name is not set.
     And I should see "Test label 2" in the "courseindex-content" "region"
 
+  @javascript @accessibility
+  Scenario: Selected course index items remain accessible
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage with editing mode on
+    And I hide section "2"
+    And I open "Activity sample 3" actions menu
+    And I choose "Hide" in the open action menu
+    When I click on "Section 1" "link" in the "courseindex-content" "region"
+    And I wait until the page is ready
+    Then the page should meet accessibility standards
+    And I click on "Section 2" "link" in the "courseindex-content" "region"
+    And I wait until the page is ready
+    And the page should meet accessibility standards
+    And I click on "Activity sample 1" "link" in the "courseindex-content" "region"
+    And I wait until the page is ready
+    And the page should meet accessibility standards
+    And I click on "Activity sample 3" "link" in the "courseindex-content" "region"
+    And I wait until the page is ready
+    And the page should meet accessibility standards
+
   @javascript
   Scenario: Change the section name inline in section page
     When I am on the "Course 1 > Section 2" "course > section" page logged in as "teacher1"
