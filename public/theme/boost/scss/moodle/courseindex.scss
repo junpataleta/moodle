@@ -133,6 +133,13 @@ $courseindex-item-current: $primary !default;
             a {
                 color: $courseindex-link-color-selected;
             }
+            // Ensure hidden (dimmed) items have sufficient colour contrast when selected.
+            // The .dimmed .courseindex-link rule has the same specificity (0,3,0) but comes
+            // earlier in the file, so this later declaration correctly overrides it.
+            .courseindex-link,
+            .courseindex-chevron {
+                color: $courseindex-link-color-selected;
+            }
         }
 
         // Completion.
