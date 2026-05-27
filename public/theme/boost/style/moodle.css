@@ -46694,12 +46694,14 @@ div.editor_atto_toolbar button .icon {
   border-color: var(--bs-gray-300);
 }
 .courseindex .courseindex-item.dimmed {
-  color: var(--bs-gray-600);
+  color: rgba(var(--bs-body-color-rgb), 0.65);
 }
 .courseindex .courseindex-item.dimmed .courseindex-link,
 .courseindex .courseindex-item.dimmed .courseindex-chevron {
-  color: var(--bs-gray-600);
+  color: rgba(var(--bs-body-color-rgb), 0.65);
 }
+.courseindex .courseindex-item.dimmed.pageitem .courseindex-link,
+.courseindex .courseindex-item.dimmed.pageitem .courseindex-chevron,
 .courseindex .courseindex-item.dimmed .pageitem .courseindex-link,
 .courseindex .courseindex-item.dimmed .pageitem .courseindex-chevron {
   color: #ffffff;
