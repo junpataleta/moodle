@@ -42,7 +42,7 @@
     }}>
     {{> core_calendar/month_navigation }}
     {{> core/overlay_loading}}
-    <table id="month-detailed-{{uniqid}}-{{calendarinstanceid}}" class="calendarmonth calendartable table-reboot mb-0">
+    <table id="month-detailed-{{uniqid}}-{{calendarinstanceid}}" class="calendarmonth calendartable table-reboot mb-0" role="grid" aria-label="{{#str}}calendar, core_calendar{{/str}}">
         <thead>
             <tr>
                 {{# daynames }}
@@ -68,6 +68,8 @@
                             }}{{#defaulteventcontext}} clickable{{/defaulteventcontext}}{{!
                             }}{{#hasevents}} hasevent{{/hasevents}}{{!
                         }}"
+                        role="gridcell"
+                        tabindex="-1"
                         data-day="{{mday}}"
                         data-day-timestamp="{{timestamp}}"
                         data-drop-zone="month-view-day"

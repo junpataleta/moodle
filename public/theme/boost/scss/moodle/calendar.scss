@@ -260,6 +260,16 @@ $calendarCurrentDateBackground: $primary;
                 box-shadow: $input-btn-focus-box-shadow;
             }
 
+            // Focus indicator for calendar grid cells during keyboard navigation (ARIA APG Grid Pattern).
+            // outline is used instead of box-shadow because border-collapse: collapse clips box-shadows on td elements.
+            &[role="gridcell"].calendar-grid-focused {
+                outline: $input-btn-focus-width solid $input-btn-focus-color;
+                outline-offset: -#{$input-btn-focus-width};
+                border-radius: .25rem;
+                position: relative;
+                z-index: 1;
+            }
+
             .day-number-circle {
                 display: inline-block;
                 line-height: 0;

@@ -28,6 +28,7 @@ define([
     'jquery',
     'core/templates',
     'core/notification',
+    'core/modal_events',
     'core_calendar/repository',
     'core_calendar/events',
     'core_calendar/view_manager',
@@ -40,6 +41,7 @@ function(
     $,
     Templates,
     Notification,
+    ModalEvents,
     CalendarRepository,
     CalendarEvents,
     CalendarViewManager,
@@ -52,7 +54,8 @@ function(
     var SELECTORS = {
         ROOT: "[data-region='calendar']",
         DAY: "[data-region='day']",
-        NEW_EVENT_BUTTON: "[data-action='new-event-button']",
+        GRID: "[role='grid']",
+        GRIDCELL: "[role='gridcell']",
         DAY_CONTENT: "[data-region='day-content']",
         LOADING_ICON: '.loading-icon',
         VIEW_DAY_LINK: "[data-action='view-day-link']",
@@ -62,6 +65,38 @@ function(
         DAY_NUMBER: '.day-number',
         SCREEN_READER_ANNOUNCEMENTS: '.calendar-announcements',
         CURRENT_MONTH: '.calendar-controls .current'
+    };
+
+    var GRID_NAVIGATION_EVENT_NAMESPACE = '.calendarGridNavigation';
+
+    /**
+     * Configure the tabindex state of the current grid cells.
+     *
+     * @param {object} root The calendar root element
+     * @param {string|null} focusedDayTimestamp The timestamp to restore focus to, if any.
+     * @return {object|null}
+     */
+    var configureGridTabStops = function(root, focusedDayTimestamp) {
+        var gridCells = root.find(SELECTORS.GRIDCELL);
+
+        if (!gridCells.length) {
+            return null;
+        }
+
+        gridCells.attr('tabindex', '-1').removeClass('calendar-grid-focused');
+
+        var focusCell = null;
+        if (focusedDayTimestamp) {
+            focusCell = gridCells.filter('[data-day-timestamp="' + focusedDayTimestamp + '"]').first();
+        }
+
+        if (!focusCell || !focusCell.length) {
+            focusCell = gridCells.first();
+        }
+
+        focusCell.attr('tabindex', '0');
+
+        return focusCell;
     };
 
     /**
@@ -127,6 +162,146 @@ function(
     };
 
     /**
+     * Initialize grid keyboard navigation (ARIA APG Grid Pattern).
+     * Allows users to navigate day cells with arrow keys and activate new event form with Enter/Space.
+     *
+     * @param {object} root The calendar root element
+     * @param {object} eventFormModalPromise A promise resolved with the event form modal
+     */
+    var initializeGridKeyboardNavigation = function(root, eventFormModalPromise) {
+        var grid = root.find(SELECTORS.GRID);
+        root.off(GRID_NAVIGATION_EVENT_NAMESPACE);
+
+        if (!grid.length) {
+            return;
+        }
+
+        var pendingFocusTimestamp = root.data('calendarGridPendingFocusTimestamp') || null;
+        var focusCell = configureGridTabStops(root, pendingFocusTimestamp);
+        if (pendingFocusTimestamp && focusCell && focusCell.length) {
+            focusCell.addClass('calendar-grid-focused').focus();
+            root.removeData('calendarGridPendingFocusTimestamp');
+        }
+
+        // Handle keyboard navigation within the grid.
+        root.on('keydown' + GRID_NAVIGATION_EVENT_NAMESPACE, SELECTORS.GRIDCELL, function(e) {
+            var currentCell = $(e.target).closest(SELECTORS.GRIDCELL);
+            var gridCells = root.find(SELECTORS.GRIDCELL);
+            var currentIndex = gridCells.index(currentCell);
+            var cols = 7; // Calendar has 7 days per week
+            var newIndex = null;
+
+            switch (e.which) {
+                case 37: // Left arrow
+                    if (currentIndex > 0) {
+                        newIndex = currentIndex - 1;
+                    }
+                    break;
+                case 39: // Right arrow
+                    if (currentIndex < gridCells.length - 1) {
+                        newIndex = currentIndex + 1;
+                    }
+                    break;
+                case 38: // Up arrow
+                    if (currentIndex >= cols) {
+                        newIndex = currentIndex - cols;
+                    }
+                    break;
+                case 40: // Down arrow
+                    if (currentIndex + cols < gridCells.length) {
+                        newIndex = currentIndex + cols;
+                    }
+                    break;
+                case 36: // Home key - first cell in row
+                    newIndex = Math.floor(currentIndex / cols) * cols;
+                    break;
+                case 35: // End key - last cell in row
+                    newIndex = Math.floor(currentIndex / cols) * cols + (cols - 1);
+                    if (newIndex >= gridCells.length) {
+                        newIndex = gridCells.length - 1;
+                    }
+                    break;
+                case 13: // Enter key
+                case 32: // Space key
+                    // Store the focused cell timestamp to restore focus after modal closes.
+                    root.data('calendarGridPendingFocusTimestamp', currentCell.attr('data-day-timestamp'));
+                    // Trigger new event creation for this day
+                    triggerNewEventForCell(root, currentCell, eventFormModalPromise);
+                    e.preventDefault();
+                    return;
+            }
+
+            if (newIndex !== null && newIndex !== currentIndex) {
+                var newCell = gridCells.eq(newIndex);
+                // Update tabindex and focus indicator class for roving tabindex pattern
+                currentCell.attr('tabindex', '-1').removeClass('calendar-grid-focused');
+                newCell.attr('tabindex', '0').addClass('calendar-grid-focused');
+                newCell.focus();
+                e.preventDefault();
+            }
+        });
+
+        // Handle focus/blur to update focus indicator class.
+        root.on('focusin' + GRID_NAVIGATION_EVENT_NAMESPACE, SELECTORS.GRIDCELL, function() {
+            $(this).addClass('calendar-grid-focused');
+        });
+
+        root.on('focusout' + GRID_NAVIGATION_EVENT_NAMESPACE, SELECTORS.GRIDCELL, function() {
+            $(this).removeClass('calendar-grid-focused');
+        });
+    };
+
+    /**
+     * Trigger the new event modal for a specific day cell.
+     * Restores focus to the cell when the modal is closed.
+     *
+     * @param {object} root The calendar root element
+     * @param {object} cell The jQuery gridcell element
+     * @param {object} eventFormModalPromise A promise resolved with the event form modal
+     */
+    var triggerNewEventForCell = function(root, cell, eventFormModalPromise) {
+        var startTime = cell.attr('data-new-event-timestamp');
+        if (!startTime) {
+            return;
+        }
+
+        eventFormModalPromise.then(function(modal) {
+            var wrapper = cell.closest(CalendarSelectors.wrapper);
+            modal.setCourseId(wrapper.data('courseid'));
+
+            var categoryId = wrapper.data('categoryid');
+            if (typeof categoryId !== 'undefined') {
+                modal.setCategoryId(categoryId);
+            }
+
+            modal.setContextId(wrapper.data('contextId'));
+            modal.setStartTime(startTime);
+            root.data('calendarGridModalSaved', false);
+
+            var restoreFocus = function() {
+                var focusedDayTimestamp = root.data('calendarGridPendingFocusTimestamp') || null;
+                var focusedCell = configureGridTabStops(root, focusedDayTimestamp);
+
+                if (focusedCell && focusedCell.length && focusedDayTimestamp) {
+                    focusedCell.addClass('calendar-grid-focused').focus();
+                }
+            };
+
+            modal.getRoot().one(ModalEvents.hidden, function() {
+                window.setTimeout(function() {
+                    if (!root.data('calendarGridModalSaved')) {
+                        restoreFocus();
+                        root.removeData('calendarGridPendingFocusTimestamp');
+                    }
+                }, 0);
+            });
+
+            modal.show();
+            return;
+        }).catch(Notification.exception);
+    };
+
+    /**
      * Listen to and handle any calendar events fired by the calendar UI.
      *
      * @method registerCalendarEventListeners
@@ -137,12 +312,15 @@ function(
         var body = $('body');
 
         body.on(CalendarEvents.created, function() {
+            root.data('calendarGridModalSaved', true);
             CalendarViewManager.reloadCurrentMonth(root);
         });
         body.on(CalendarEvents.deleted, function() {
+            root.data('calendarGridModalSaved', true);
             CalendarViewManager.reloadCurrentMonth(root);
         });
         body.on(CalendarEvents.updated, function() {
+            root.data('calendarGridModalSaved', true);
             CalendarViewManager.reloadCurrentMonth(root);
         });
         body.on(CalendarEvents.editActionEvent, function(e, url) {
@@ -160,6 +338,10 @@ function(
             const monthName = body.find(SELECTORS.CURRENT_MONTH).text();
             const monthAnnoucement = await Str.get_string('newmonthannouncement', 'calendar', monthName);
             body.find(SELECTORS.SCREEN_READER_ANNOUNCEMENTS).html(monthAnnoucement);
+        });
+
+        body.on(CalendarEvents.viewUpdated, function() {
+            initializeGridKeyboardNavigation(root, eventFormModalPromise);
         });
 
         CalendarCrud.registerEditListeners(root, eventFormModalPromise);
@@ -227,6 +409,9 @@ function(
         registerCalendarEventListeners(root, eventFormPromise);
 
         if (contextId) {
+            // Initialize ARIA Grid keyboard navigation
+            initializeGridKeyboardNavigation(root, eventFormPromise);
+
             // Bind click events to calendar days.
             root.on('click', SELECTORS.DAY, function(e) {
                 var target = $(e.target);
@@ -246,21 +431,9 @@ function(
                     const hasViewDayLink = target.closest(SELECTORS.VIEW_DAY_LINK).length;
                     const shouldShowNewEventModal = !hasViewDayLink;
                     if (shouldShowNewEventModal) {
-                        var startTime = $(this).attr('data-new-event-timestamp');
-                        eventFormPromise.then(function(modal) {
-                            var wrapper = target.closest(CalendarSelectors.wrapper);
-                            modal.setCourseId(wrapper.data('courseid'));
-
-                            var categoryId = wrapper.data('categoryid');
-                            if (typeof categoryId !== 'undefined') {
-                                modal.setCategoryId(categoryId);
-                            }
-
-                            modal.setContextId(wrapper.data('contextId'));
-                            modal.setStartTime(startTime);
-                            modal.show();
-                            return;
-                        }).catch(Notification.exception);
+                        var dayCell = $(this);
+                        root.data('calendarGridPendingFocusTimestamp', dayCell.attr('data-day-timestamp'));
+                        triggerNewEventForCell(root, dayCell, eventFormPromise);
                     }
                 }
                 e.preventDefault();
