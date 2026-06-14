@@ -341,9 +341,12 @@ function book_get_toc($chapters, $chapter, $book, $cm, $edit) {
                     'sesskey'   => sesskey(),
                     'confirm'   => 1,
                 ]),
-                $OUTPUT->pix_icon('t/delete', get_string('deletechapter', 'mod_book', $title)),
+                $OUTPUT->pix_icon('t/delete', null),
                 $deleteaction,
-                ['title' => get_string('deletechapter', 'mod_book', $titleunescaped)]
+                [
+                    'title' => get_string('deletechapter', 'mod_book', $titleunescaped),
+                    'aria-label' => get_string('deletechapter', 'mod_book', $titleunescaped),
+                ]
             );
 
             if ($ch->hidden) {
