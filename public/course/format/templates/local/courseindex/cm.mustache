@@ -29,9 +29,13 @@
         "uniqid": "0",
         "accessvisible": 1,
         "hascmrestrictions": 0,
-        "indent": 1
+        "indent": 1,
+        "cmtemplateexample": 1
     }
 }}
+{{#cmtemplateexample}}
+<ul role="tree">
+{{/cmtemplateexample}}
 <li class="courseindex-item
         {{#isactive}}active{{/isactive}}
         {{#hascmrestrictions}}restrictions{{/hascmrestrictions}}
@@ -42,7 +46,7 @@
     id="course-index-cm-{{id}}"
     data-for="cm"
     data-id="{{id}}"
-    role="treeitem"
+    role="{{#hasdelegatedsection}}none{{/hasdelegatedsection}}{{^hasdelegatedsection}}treeitem{{/hasdelegatedsection}}"
 >
     {{^hasdelegatedsection}}
         <span class="completioninfo" data-for="cm_completion" data-value="NaN"></span>
@@ -71,6 +75,9 @@
         {{/sectioninfo}}
     {{/hasdelegatedsection}}
 </li>
+{{#cmtemplateexample}}
+</ul>
+{{/cmtemplateexample}}
 {{$ core_courseformat/local/courseindex/cm-js}}
 {{#js}}
 require(['core_courseformat/local/courseindex/cm'], function(component) {

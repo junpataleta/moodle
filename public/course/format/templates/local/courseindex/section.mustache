@@ -31,6 +31,7 @@
         "current": 1,
         "visible": 1,
         "hasrestrictions": 0,
+        "sectiontemplateexample": 1,
         "cms": [
             {
                 "id": 10,
@@ -56,6 +57,9 @@
         ]
     }
 }}
+{{#sectiontemplateexample}}
+<div role="tree">
+{{/sectiontemplateexample}}
 <div
     class="courseindex-section {{#current}}current{{/current}} {{#component}}delegated-section{{/component}}"
     id="course-index-section-{{id}}"
@@ -64,6 +68,8 @@
     data-number="{{number}}"
     role="treeitem"
     aria-owns="courseindexcollapse{{number}}"
+    aria-labelledby="courseindexsection{{number}}-title"
+    aria-expanded="{{^indexcollapsed}}true{{/indexcollapsed}}{{#indexcollapsed}}false{{/indexcollapsed}}"
 >
     <div class="courseindex-item d-flex
             {{^visible}}dimmed{{/visible}}
@@ -94,6 +100,7 @@
         {{! We display a link when there is a sectionurl, otherwise a span. The data-for attribute is required by JS. }}
         {{#sectionurl}}
             <a href="{{{sectionurl}}}"
+                id="courseindexsection{{number}}-title"
                 class="courseindex-link text-truncate"
                 data-action="togglecourseindexsection"
                 data-for="section_title"
@@ -104,6 +111,7 @@
         {{/sectionurl}}
         {{^sectionurl}}
             <span
+                id="courseindexsection{{number}}-title"
                 class="text-truncate"
                 data-action="togglecourseindexsection"
                 data-for="section_title"
@@ -121,7 +129,7 @@
     </div>
     <div id="courseindexcollapse{{number}}"
         class="courseindex-item-content collapse {{^indexcollapsed}}show{{/indexcollapsed}}"
-        aria-labelledby="courseindexsection{{number}}" role="group"
+        aria-labelledby="courseindexsection{{number}}-title" role="group"
     >
         <ul class="courseindex-sectioncontent unlist" data-for="cmlist" data-id="{{id}}" role="group">
             {{#cms}}
@@ -130,6 +138,9 @@
         </ul>
     </div>
 </div>
+{{#sectiontemplateexample}}
+</div>
+{{/sectiontemplateexample}}
 {{$ core_courseformat/local/courseindex/section-js}}
 {{#js}}
 require(['core_courseformat/local/courseindex/section'], function(component) {

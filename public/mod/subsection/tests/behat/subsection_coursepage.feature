@@ -34,6 +34,18 @@ Feature: Users view subsections on course page
     And I click on "Expand" "link" in the "Subsection1" "activity"
     And I click on "Page1 in Subsection1" "link" in the "Subsection1" "activity"
 
+  @javascript @accessibility
+  Scenario: Subsections expose a single treeitem role in the course index
+    When I log in as "student1"
+    And I am on "Course 1" course homepage
+    Then "//div[@id='course-index']//li[@role='none']/div[@role='treeitem'][@aria-labelledby = .//a[normalize-space()='Subsection1']/@id]" "xpath_element" should exist
+    And "#course-index [data-for='cm'][role='treeitem'] > [data-for='section'][role='treeitem']" "css_element" should not exist
+    And the "aria-expanded" attribute of "//div[@id='course-index']//li[@role='none'][.//a[normalize-space()='Subsection1']]/div[@data-for='section']" "xpath_element" should contain "true"
+    And I click on "//div[@id='course-index']//li[@role='none'][.//a[normalize-space()='Subsection1']]//a[@data-bs-toggle='collapse']" "xpath_element"
+    And the "aria-expanded" attribute of "//div[@id='course-index']//li[@role='none'][.//a[normalize-space()='Subsection1']]/div[@data-for='section']" "xpath_element" should contain "false"
+    And I click on "//div[@id='course-index']//li[@role='none'][.//a[normalize-space()='Subsection1']]//a[@data-bs-toggle='collapse']" "xpath_element"
+    And the "aria-expanded" attribute of "//div[@id='course-index']//li[@role='none'][.//a[normalize-space()='Subsection1']]/div[@data-for='section']" "xpath_element" should contain "true"
+
   @javascript
   Scenario: Teacher can create activities inside subsections on course page
     When I log in as "teacher1"

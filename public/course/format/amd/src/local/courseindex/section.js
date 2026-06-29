@@ -41,6 +41,7 @@ export default class Component extends DndSection {
             SECTION: `[data-for='section']`,
             SECTION_ITEM: `[data-for='section_item']`,
             SECTION_TITLE: `[data-for='section_title']`,
+            SECTION_CONTENT: `.courseindex-item-content`,
             CM_LAST: `[data-for="cm"]:last-child`,
             DND_ALLOWED: `[data-courseindexdndallowed='true']`,
         };
@@ -87,6 +88,9 @@ export default class Component extends DndSection {
     stateReady(state) {
         this.configState(state);
         const sectionItem = this.getElement(this.selectors.SECTION_ITEM);
+        const sectionContent = this.getElement(this.selectors.SECTION_CONTENT);
+        sectionContent.addEventListener('shown.bs.collapse', () => this.element.setAttribute('aria-expanded', 'true'));
+        sectionContent.addEventListener('hidden.bs.collapse', () => this.element.setAttribute('aria-expanded', 'false'));
         // Drag and drop is only available for components compatible course formats.
         if (this.reactive.isEditing && this.reactive.supportComponents && document.querySelector(this.selectors.DND_ALLOWED)) {
             // Init the inner dragable element passing the full section as affected region.
