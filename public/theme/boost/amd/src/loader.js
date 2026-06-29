@@ -58,37 +58,152 @@ const rememberTabs = () => {
  */
 const enablePopovers = () => {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    const focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
+    const getTabbableElements = container => {
+        const elements = [...container.querySelectorAll(focusableSelector)].filter(element => {
+            if (element.matches(':disabled, input[type="hidden"]') || element.tabIndex < 0) {
+                return false;
+            }
+            const style = getComputedStyle(element);
+            return style.visibility !== 'hidden' && style.display !== 'none' && element.getClientRects().length > 0;
+        });
+        const tabbableRadios = new Set();
+        elements.filter(element => element.matches('input[type="radio"][name]')).forEach(radio => {
+            const group = elements.filter(element => element.matches('input[type="radio"]')
+                && element.name === radio.name && element.form === radio.form);
+            tabbableRadios.add(group.find(element => element.checked) ?? group[0]);
+        });
+        return elements.filter(element => !element.matches('input[type="radio"][name]') || tabbableRadios.has(element))
+            .sort((elementA, elementB) => {
+                if (elementA.tabIndex === elementB.tabIndex) {
+                    return 0;
+                }
+                if (elementA.tabIndex === 0) {
+                    return 1;
+                }
+                if (elementB.tabIndex === 0) {
+                    return -1;
+                }
+                return elementA.tabIndex - elementB.tabIndex;
+            });
+    };
     const popoverConfig = {
         container: 'body',
         trigger: 'focus',
         allowList: Object.assign(DefaultAllowlist, {table: [], thead: [], tbody: [], tr: [], th: [], td: []}),
     };
-    [...popoverTriggerList].map(popoverTriggerEl => new Bootstrap.Popover(popoverTriggerEl, popoverConfig));
+    const initialisePopover = popoverTriggerEl => {
+        const isHelpPopover = popoverTriggerEl.classList.contains('help-icon');
+        const config = isHelpPopover
+            ? {
+                ...popoverConfig,
+                trigger: 'manual',
+                template: Bootstrap.Popover.Default.template.replace('role="tooltip"', 'role="dialog"'),
+            }
+            : popoverConfig;
+        const popover = new Bootstrap.Popover(popoverTriggerEl, config);
+        if (isHelpPopover) {
+            popoverTriggerEl.setAttribute('aria-haspopup', 'dialog');
+        }
+        return popover;
+    };
+    [...popoverTriggerList].map(initialisePopover);
 
     // Enable dynamically created popovers inside modals.
     document.addEventListener('core/modal:bodyRendered', (e) => {
         const modal = e.target;
         const popoverTriggerList = modal.querySelectorAll('[data-bs-toggle="popover"]');
-        [...popoverTriggerList].map(popoverTriggerEl => new Bootstrap.Popover(popoverTriggerEl, popoverConfig));
+        [...popoverTriggerList].map(initialisePopover);
     });
 
     document.addEventListener('keydown', e => {
         const popoverTrigger = e.target.closest('[data-bs-toggle="popover"]');
+        const helpPopover = e.target.closest('.help-popover');
+        const helpPopoverTrigger = helpPopover
+            ? document.querySelector(`[aria-describedby="${helpPopover.id}"]`)
+            : null;
         if (e.key === 'Escape' && popoverTrigger) {
             Bootstrap.Popover.getOrCreateInstance(popoverTrigger).hide();
+        }
+        if (e.key === 'Escape' && helpPopoverTrigger) {
+            Bootstrap.Popover.getOrCreateInstance(helpPopoverTrigger).hide();
+            helpPopoverTrigger.focus();
         }
         if (e.key === 'Enter' && popoverTrigger) {
             Bootstrap.Popover.getOrCreateInstance(popoverTrigger).show();
         }
+        if (e.key === 'Tab' && !e.shiftKey && popoverTrigger?.classList.contains('help-icon')) {
+            const popover = Bootstrap.Popover.getOrCreateInstance(popoverTrigger);
+            const firstFocusableElement = getTabbableElements(popover.tip)[0];
+            if (popover._isShown() && firstFocusableElement) {
+                e.preventDefault();
+                firstFocusableElement.focus();
+            }
+        }
+        if (e.key === 'Tab' && helpPopoverTrigger) {
+            const popoverFocusableElements = getTabbableElements(helpPopover);
+            const focusedElementIndex = popoverFocusableElements.indexOf(e.target);
+            if (e.shiftKey && focusedElementIndex === 0) {
+                e.preventDefault();
+                helpPopoverTrigger.focus();
+                return;
+            }
+            if (e.shiftKey || focusedElementIndex !== popoverFocusableElements.length - 1) {
+                return;
+            }
+            const focusableElements = getTabbableElements(document)
+                .filter(element => !element.closest('.help-popover'));
+            const triggerIndex = focusableElements.indexOf(helpPopoverTrigger);
+            const nextFocusableElement = focusableElements[triggerIndex + 1];
+            if (nextFocusableElement) {
+                e.preventDefault();
+                nextFocusableElement.focus();
+            }
+        }
     });
     document.addEventListener('click', e => {
         const popoverTrigger = e.target.closest('[data-bs-toggle="popover"]');
+        document.querySelectorAll('.help-icon[aria-describedby]').forEach(trigger => {
+            const triggerPopover = Bootstrap.Popover.getOrCreateInstance(trigger);
+            if (trigger !== popoverTrigger && !triggerPopover.tip?.contains(e.target)) {
+                triggerPopover.hide();
+            }
+        });
         if (!popoverTrigger) {
             return;
         }
         const popover = Bootstrap.Popover.getOrCreateInstance(popoverTrigger);
         if (!popover._isShown()) {
             popover.show();
+        }
+    });
+    document.addEventListener('focusin', e => {
+        const popoverTrigger = e.target.closest('.help-icon[data-bs-toggle="popover"]');
+        if (popoverTrigger) {
+            Bootstrap.Popover.getOrCreateInstance(popoverTrigger).show();
+        }
+    });
+    document.addEventListener('focusout', e => {
+        const popoverTrigger = e.target.closest('.help-icon[data-bs-toggle="popover"]');
+        const helpPopover = e.target.closest('.help-popover');
+        const trigger = popoverTrigger ?? (helpPopover
+            ? document.querySelector(`[aria-describedby="${helpPopover.id}"]`)
+            : null);
+        if (!trigger) {
+            return;
+        }
+        const popover = Bootstrap.Popover.getOrCreateInstance(trigger);
+        const popoverElement = helpPopover ?? popover.tip;
+        if (!trigger.contains(e.relatedTarget) && !popoverElement?.contains(e.relatedTarget)) {
+            popover.hide();
+        }
+    });
+    document.addEventListener('inserted.bs.popover', e => {
+        if (e.target.classList.contains('help-icon')) {
+            Bootstrap.Popover.getOrCreateInstance(e.target).tip.setAttribute(
+                'aria-label',
+                e.target.getAttribute('aria-label')
+            );
         }
     });
 };
