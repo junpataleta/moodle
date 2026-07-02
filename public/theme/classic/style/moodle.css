@@ -40774,10 +40774,8 @@ div.editor_atto_toolbar button .icon {
   border-right: 0;
 }
 
-.drawer-primary .drawerheader .drawerheading {
-  min-width: 0;
-}
 .drawer-primary .drawerheader [data-region=site-home-link] {
+  min-width: 0;
   max-width: 100%;
   overflow: hidden;
 }

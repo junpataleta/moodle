@@ -32,11 +32,8 @@
 }
 
 .drawer-primary .drawerheader {
-    .drawerheading {
-        min-width: 0;
-    }
-
     [data-region="site-home-link"] {
+        min-width: 0;
         max-width: 100%;
         overflow: hidden;
     }
