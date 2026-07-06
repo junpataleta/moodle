@@ -216,6 +216,11 @@ export default class {
         }
         if (data.targetSectionId) {
             feedbackParams.targetSectionName = stateManager.get('section', data.targetSectionId).title;
+        } else if (data.targetCmId) {
+            // The target section can also be derived from the target cm when only the latter is provided
+            // (e.g. dropping an activity right above another one).
+            const targetCm = stateManager.get('cm', data.targetCmId);
+            feedbackParams.targetSectionName = stateManager.get('section', targetCm.sectionid).title;
         }
         if (data.targetCmId) {
             feedbackParams.targetCmName = stateManager.get('cm', data.targetCmId).name;
@@ -364,10 +369,12 @@ export default class {
         }
         const course = stateManager.get('course');
         this.cmLock(stateManager, cmids, true);
+        const logEntry = this._getLoggerEntry(stateManager, 'cm_move', cmids, {targetSectionId, targetCmId});
         const updates = await this._callEditWebservice('cm_move', course.id, cmids, targetSectionId, targetCmId);
         this.bulkReset(stateManager);
         stateManager.processUpdates(updates);
         this.cmLock(stateManager, cmids, false);
+        stateManager.addLoggerEntry(await logEntry);
     }
 
     /**
@@ -383,10 +390,12 @@ export default class {
         }
         const course = stateManager.get('course');
         this.sectionLock(stateManager, sectionIds, true);
+        const logEntry = this._getLoggerEntry(stateManager, 'section_move_after', sectionIds, {targetSectionId});
         const updates = await this._callEditWebservice('section_move_after', course.id, sectionIds, targetSectionId);
         this.bulkReset(stateManager);
         stateManager.processUpdates(updates);
         this.sectionLock(stateManager, sectionIds, false);
+        stateManager.addLoggerEntry(await logEntry);
     }
 
     /**
