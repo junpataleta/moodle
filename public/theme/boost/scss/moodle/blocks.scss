@@ -195,21 +195,9 @@ $blocks-plus-gutter: calc(#{$blocks-column-width} + (#{$grid-gutter-width} * 0.5
 
 .block_recentlyaccessedcourses {
     .paging-bar-container {
-        margin-top: -2.4rem;
+        margin-top: 0;
         padding-right: 0.5rem;
         justify-content: flex-end;
-    }
-    @include media-breakpoint-down(sm) {
-        .paging-bar-container {
-            margin-top: 0;
-        }
-    }
-}
-#block-region-side-pre {
-    .block_recentlyaccessedcourses {
-        .paging-bar-container {
-            margin-top: 0;
-        }
     }
 }
 
