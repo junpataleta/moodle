@@ -29680,18 +29680,9 @@ img.icon {
 }
 
 .block_recentlyaccessedcourses .paging-bar-container {
-  margin-top: -2.4rem;
+  margin-top: 0;
   padding-right: 0.5rem;
   justify-content: flex-end;
-}
-@media (max-width: 575.98px) {
-  .block_recentlyaccessedcourses .paging-bar-container {
-    margin-top: 0;
-  }
-}
-
-#block-region-side-pre .block_recentlyaccessedcourses .paging-bar-container {
-  margin-top: 0;
 }
 
 .block_recentlyaccesseditems .activityiconcontainer {
