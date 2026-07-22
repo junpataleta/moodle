@@ -19,6 +19,7 @@ var SELECTORS = {
         COLLAPSED: '.collapsed',
         FIELDSETCOLLAPSIBLE: 'fieldset.collapsible',
         FIELDSETLEGENDLINK: 'fieldset.collapsible .fheader',
+        FHEADER: '.fheader',
         LEGENDFTOGGLER: 'legend.ftoggler'
     },
     CSS = {
@@ -70,7 +71,9 @@ Y.extend(SHORTFORMS, Y.Base, {
         form.delegate('click', this.switch_state, SELECTORS.FIELDSETLEGENDLINK, this);
 
         // Handle event, when there's an error in collapsed section.
-        Y.Global.on(M.core.globalEvents.FORM_ERROR, this.expand_fieldset, this);
+        require(['core_form/events'], function(FormEvents) {
+            form.getDOMNode().addEventListener(FormEvents.eventTypes.formError, this.expand_fieldset.bind(this));
+        }.bind(this));
     },
 
     /**
@@ -107,7 +110,7 @@ Y.extend(SHORTFORMS, Y.Base, {
     switch_state: function(e) {
         e.preventDefault();
         var fieldset = e.target.ancestor(SELECTORS.FIELDSETCOLLAPSIBLE);
-        var headerlink = fieldset.one('.fheader');
+        var headerlink = fieldset.one(SELECTORS.FHEADER);
         // Bootstrap's own collapse component (data-bs-toggle) handles this same click in the
         // capture phase, before this bubble-phase handler runs, so headerlink's own class
         // already reflects the real, just-updated state. Reading it here - rather than
@@ -121,19 +124,50 @@ Y.extend(SHORTFORMS, Y.Base, {
      * Expand the fieldset, which contains an error.
      *
      * @method expand_fieldset
-     * @param {EventFacade} e
+     * @param {CustomEvent} e
      */
     expand_fieldset: function(e) {
-        e.stopPropagation();
-        var formid = e.formid;
-        if (formid === this.form.getAttribute('id')) {
-            var errorfieldset = Y.one('#' + e.elementid).ancestor('fieldset');
-            if (errorfieldset) {
-                this.set_state(errorfieldset, false);
+        var errorfieldset = this.get_error_fieldset(e);
+        if (errorfieldset) {
+            var headerlink = errorfieldset.one(SELECTORS.FHEADER);
+            // Check headerlink's own class, not errorfieldset's: it's the one Bootstrap's
+            // collapse component keeps correct regardless of how the section was last
+            // collapsed/expanded (a direct click, or "Expand all"/"Collapse all"), whereas
+            // errorfieldset's class is only ever updated by a direct click on its own header
+            // and can go stale otherwise (see MDL-89207).
+            if (headerlink && headerlink.hasClass(CSS.COLLAPSED)) {
+                headerlink.getDOMNode().click();
+                return;
             }
-
+            this.set_state(errorfieldset, false);
         }
-   }
+    },
+
+    /**
+     * Get a fieldset containing an error from a DOM event.
+     *
+     * @method get_error_fieldset
+     * @param {CustomEvent} e
+     * @return {Node|null}
+     */
+    get_error_fieldset: function(e) {
+        var formid = this.form.getAttribute('id');
+        if (e.target) {
+            var errorelementdom = Y.one(e.target);
+            if (!errorelementdom) {
+                return null;
+            }
+            var errorfieldset = errorelementdom.ancestor('fieldset');
+            if (!errorfieldset) {
+                return null;
+            }
+            var errorform = errorfieldset.ancestor('form');
+            if (errorform && errorform.getAttribute('id') === formid) {
+                return errorfieldset;
+            }
+        }
+        return null;
+    }
 }, {
     NAME: 'moodle-form-shortforms',
     ATTRS: ATTRS
