@@ -1305,7 +1305,7 @@ class core_course_management_renderer extends plugin_renderer_base {
      * @return string
      */
     public function accessible_skipto_links($displaycategorylisting, $displaycourselisting, $displaycoursedetail) {
-        $html = html_writer::start_div('skiplinks accesshide');
+        $html = html_writer::start_div('skiplinks');
         $url = new moodle_url($this->page->url);
         if ($displaycategorylisting) {
             $url->set_anchor('category-listing');
