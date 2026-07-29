@@ -107,7 +107,7 @@ class MoodleQuickForm_url extends HTML_QuickForm_text implements templatable {
 
         if ($this->_hiddenLabel) {
             $this->_generateId();
-            $str = '<label class="visually-hidden" for="'.$this->getAttribute('id').'" >'.
+            $str = '<label class="visually-hidden" for="' . $this->getAttribute('id') . '" >' .
                         $this->getLabel().'</label>'.parent::toHtml();
         } else {
             $str = parent::toHtml();

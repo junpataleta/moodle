@@ -1099,7 +1099,10 @@ class grade_report_grader extends grade_report {
 
                             $context->label = html_writer::label(
                                 get_string('useractivitygrade', 'gradereport_grader', $gradelabel),
-                                $attributes['id'], false, ['class' => 'visually-hidden']);
+                                $attributes['id'],
+                                false,
+                                ['class' => 'visually-hidden']
+                            );
                             $context->select = html_writer::select($scaleopt, 'grade['.$userid.']['.$item->id.']',
                                 $gradeval, [-1 => $nogradestr], $attributes);
                         } else if (!empty($scale)) {

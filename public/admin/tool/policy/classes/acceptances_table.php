@@ -478,8 +478,11 @@ class acceptances_table extends \table_sql {
                 $row->select = \html_writer::empty_tag('input',
                     ['type' => 'checkbox', 'name' => 'userids[]', 'value' => $row->id, 'class' => 'usercheckbox',
                     'id' => 'selectuser' . $row->id]) .
-                \html_writer::tag('label', get_string('selectuser', 'tool_policy', $this->username($row->user, false)),
-                    ['for' => 'selectuser' . $row->id, 'class' => 'visually-hidden']);
+                \html_writer::tag(
+                    'label',
+                    get_string('selectuser', 'tool_policy', $this->username($row->user, false)),
+                    ['for' => 'selectuser' . $row->id, 'class' => 'visually-hidden']
+                );
                 $this->canagreeany = true;
             }
         }

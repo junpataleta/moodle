@@ -112,7 +112,7 @@ case 'renameform':
     $home_url->param('draftpath', $draftpath);
     $home_url->param('action', 'rename');
     echo ' <form method="post" action="'.$home_url->out().'">';
-    echo html_writer::label(get_string('enternewname', 'repository'), 'newfilename', array('class' => 'visually-hidden'));
+    echo html_writer::label(get_string('enternewname', 'repository'), 'newfilename', ['class' => 'visually-hidden']);
     echo '  <input id="newfilename" name="newfilename" type="text" value="'.s($filename).'" />';
     echo '  <input name="filename" type="hidden" value="'.s($filename).'" />';
     echo '  <input name="draftpath" type="hidden" value="'.s($draftpath).'" />';
@@ -217,7 +217,7 @@ case 'mkdirform':
     $home_url->param('draftpath', $draftpath);
     $home_url->param('action', 'mkdir');
     echo ' <form method="post" action="'.$home_url->out().'">';
-    echo html_writer::label(get_string('entername', 'repository'), 'newdirname', array('class' => 'visually-hidden'));
+    echo html_writer::label(get_string('entername', 'repository'), 'newdirname', ['class' => 'visually-hidden']);
     echo '  <input name="newdirname" id="newdirname" type="text" />';
     echo '  <input name="draftpath" type="hidden" value="'.s($draftpath).'" />';
     echo '  <input type="submit" value="'.s(get_string('makeafolder', 'moodle')).'" />';

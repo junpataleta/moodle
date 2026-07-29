@@ -441,7 +441,8 @@ class lesson_page_type_matching extends lesson_page {
                 $data .= strip_tags(format_string($answer->answer)) . ' ';
                 if ($useranswer != null) {
                     $userresponse = explode(",", $useranswer->useranswer);
-                    $data .= '<label class="visually-hidden" for="stu_answer_response_' . $n . '">' . get_string('matchesanswer', 'lesson') . '</label>';
+                    $data .= '<label class="visually-hidden" for="stu_answer_response_' . $n . '">' .
+                             get_string('matchesanswer', 'lesson') . '</label>';
                     $data .= "<select class=\"form-select\" id=\"stu_answer_response_" . $n . "\" " .
                              "disabled=\"disabled\"><option selected=\"selected\">";
                     if (array_key_exists($i, $userresponse)) {
@@ -449,7 +450,8 @@ class lesson_page_type_matching extends lesson_page {
                     }
                     $data .= "</option></select>";
                 } else {
-                    $data .= '<label class="visually-hidden" for="answer_response_' . $n . '">' . get_string('matchesanswer', 'lesson') . '</label>';
+                    $data .= '<label class="visually-hidden" for="answer_response_' . $n . '">' .
+                             get_string('matchesanswer', 'lesson') . '</label>';
                     $data .= "<select class=\"form-select\" id=\"answer_response_" . $n . "\" " .
                              "disabled=\"disabled\"><option selected=\"selected\">".strip_tags(format_string($answer->response))."</option></select>";
                 }

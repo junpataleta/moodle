@@ -86,7 +86,7 @@ class MoodleQuickForm_select extends HTML_QuickForm_select implements templatabl
         }
         if ($this->_hiddenLabel){
             $this->_generateId();
-            $html .= '<label class="visually-hidden" for="'.$this->getAttribute('id').'" >'.$this->getLabel().'</label>';
+            $html .= '<label class="visually-hidden" for="' . $this->getAttribute('id') . '" >' . $this->getLabel() . '</label>';
         }
         $html .= parent::toHtml();
         return $html;

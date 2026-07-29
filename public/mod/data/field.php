@@ -465,7 +465,7 @@ if (($mode == 'new') && (!empty($newtype))) { // Adding a new field.
 
     $options = array(0 => get_string('ascending', 'data'),
                      1 => get_string('descending', 'data'));
-    echo html_writer::label(get_string('sortby'), 'menudefaultsortdir', false, array('class' => 'visually-hidden'));
+    echo html_writer::label(get_string('sortby'), 'menudefaultsortdir', false, ['class' => 'visually-hidden']);
     echo html_writer::select($options, 'defaultsortdir', $data->defaultsortdir, false, ['class' => 'form-select']);
     echo '<input type="submit" class="btn btn-secondary" value="'.get_string('save', 'data').'" />';
     echo '</div>';

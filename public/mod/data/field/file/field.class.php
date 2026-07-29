@@ -70,7 +70,7 @@ class data_field_file extends data_field_base {
 
         // database entry label
         $html = '<div title="' . s($this->field->description) . '">';
-        $html .= '<fieldset><legend><span class="visually-hidden">'.s($this->field->name);
+        $html .= '<fieldset><legend><span class="visually-hidden">' . s($this->field->name);
 
         if ($this->field->required) {
             $html .= '&nbsp;' . get_string('requiredelement', 'form') . '</span></legend>';
