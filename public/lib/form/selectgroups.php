@@ -329,7 +329,7 @@ class MoodleQuickForm_selectgroups extends HTML_QuickForm_element implements tem
             $strHtml .= $tabs;
             if ($this->_hiddenLabel){
                 $this->_generateId();
-                $strHtml .= '<label class="visually-hidden" for="'.$this->getAttribute('id').'" >'.
+                $strHtml .= '<label class="visually-hidden" for="' . $this->getAttribute('id') . '" >' .
                             $this->getLabel().'</label>';
             }
             $strHtml .=  '<select' . $attrString . ">\n";

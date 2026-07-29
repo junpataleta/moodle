@@ -78,14 +78,14 @@ $table = new html_table();
 $table->width = '*';
 $table->align = array('left','left','left','left','left','left');
 
-$reporttypemenu = html_writer::label(get_string('statsreporttype'), 'menureport', false, array('class' => 'visually-hidden'));
+$reporttypemenu = html_writer::label(get_string('statsreporttype'), 'menureport', false, ['class' => 'visually-hidden']);
 $reporttypemenu .= html_writer::select($reportoptions,'report',$report, false);
-$timeoptionsmenu = html_writer::label(get_string('time'), 'menutime', false, array('class' => 'visually-hidden'));
+$timeoptionsmenu = html_writer::label(get_string('time'), 'menutime', false, ['class' => 'visually-hidden']);
 $timeoptionsmenu .= html_writer::select($timeoptions,'time',$time, false);
 
 $table->data[] = array(get_string('statsreporttype'),$reporttypemenu,
                        get_string('statstimeperiod'),$timeoptionsmenu,
-                       html_writer::label(get_string('numberofcourses'), 'numcourses', false, array('class' => 'visually-hidden')) .
+                       html_writer::label(get_string('numberofcourses'), 'numcourses', false, ['class' => 'visually-hidden']) .
                        html_writer::empty_tag('input', array('type' => 'text', 'class' => 'form-control',
                            'id' => 'numcourses', 'name' => 'numcourses', 'size' => '3', 'maxlength' => '2',
                            'value' => $numcourses)),

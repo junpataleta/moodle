@@ -2406,7 +2406,7 @@ function forum_print_mode_form($id, $mode, $forumtype='') {
             null,
             "mode"
         );
-        $select->set_label(get_string('displaymode', 'forum'), array('class' => 'visually-hidden'));
+        $select->set_label(get_string('displaymode', 'forum'), ['class' => 'visually-hidden']);
         $select->class = "forummode";
     } else {
         $select = new single_select(
@@ -2418,7 +2418,7 @@ function forum_print_mode_form($id, $mode, $forumtype='') {
             null,
             "mode"
         );
-        $select->set_label(get_string('displaymode', 'forum'), array('class' => 'visually-hidden'));
+        $select->set_label(get_string('displaymode', 'forum'), ['class' => 'visually-hidden']);
     }
     echo $OUTPUT->render($select);
 }

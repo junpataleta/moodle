@@ -1160,7 +1160,7 @@ if (!empty($CFG->enableplagiarism)) {
 }
 
 if (!empty($formheading)) {
-    echo $OUTPUT->heading($formheading, 2, array('class' => 'visually-hidden'));
+    echo $OUTPUT->heading($formheading, 2, ['class' => 'visually-hidden']);
 }
 
 if (!empty($postentity)) {

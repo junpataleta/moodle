@@ -211,7 +211,7 @@ echo get_string('username') . ":\n";
 if (!empty($formerror['username'])) {
     echo '<span class="error"> * </span>';
 }
-echo html_writer::label(get_string('username'), 'menuusername', false, array('class' => 'visually-hidden'));
+echo html_writer::label(get_string('username'), 'menuusername', false, ['class' => 'visually-hidden']);
 echo '<input id="menuusername" type="text" name="username" size="20" maxlength="100" />';
 
 // choose a remote host

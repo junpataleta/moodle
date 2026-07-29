@@ -379,7 +379,7 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
         }
 
         $str = '<div title="' . s($this->field->description) . '">';
-        $str .= '<label for="field_'.$this->field->id.'"><span class="visually-hidden">'.s($this->field->name).'</span>';
+        $str .= '<label for="field_' . $this->field->id . '"><span class="visually-hidden">' . s($this->field->name) . '</span>';
         if ($this->field->required) {
             $image = $OUTPUT->pix_icon('req', get_string('requiredelement', 'form'));
             $str .= html_writer::div($image, 'inline-req');
@@ -1803,7 +1803,7 @@ function data_print_preference_form($data, $perpage, $search, $sort='', $order='
     }
     echo '</optgroup>';
     echo '</select>';
-    echo '<label for="pref_order" class="visually-hidden">'.get_string('order').'</label>';
+    echo '<label for="pref_order" class="visually-hidden">' . get_string('order') . '</label>';
     echo '<select id="pref_order" name="order" class="form-select me-1">';
     if ($order == 'ASC') {
         echo '<option value="ASC" selected="selected">'.get_string('ascending','data').'</option>';
