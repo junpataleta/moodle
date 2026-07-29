@@ -99,7 +99,7 @@ class qformat_xhtml extends qformat_default {
             case 'shortanswer':
                 $expout .= html_writer::start_tag('ul', array('class' => 'shortanswer'));
                 $expout .= html_writer::start_tag('li');
-                $expout .= html_writer::label(get_string('answer'), 'quest_'.$id, false, array('class' => 'visually-hidden'));
+                $expout .= html_writer::label(get_string('answer'), 'quest_' . $id, false, ['class' => 'visually-hidden']);
                 $expout .= html_writer::empty_tag('input', array('id' => "quest_{$id}", 'name' => "quest_{$id}", 'type' => 'text'));
                 $expout .= html_writer::end_tag('li');
                 $expout .= html_writer::end_tag('ul');
@@ -107,7 +107,7 @@ class qformat_xhtml extends qformat_default {
             case 'numerical':
                 $expout .= html_writer::start_tag('ul', array('class' => 'numerical'));
                 $expout .= html_writer::start_tag('li');
-                $expout .= html_writer::label(get_string('answer'), 'quest_'.$id, false, array('class' => 'visually-hidden'));
+                $expout .= html_writer::label(get_string('answer'), 'quest_' . $id, false, ['class' => 'visually-hidden']);
                 $expout .= html_writer::empty_tag('input', array('id' => "quest_{$id}", 'name' => "quest_{$id}", 'type' => 'text'));
                 $expout .= html_writer::end_tag('li');
                 $expout .= html_writer::end_tag('ul');
@@ -134,8 +134,12 @@ class qformat_xhtml extends qformat_default {
                     // Build drop down for answers.
                     $questiontext = $this->repchar( $subquestion->questiontext );
                     if ($questiontext != '') {
-                        $dropdown = html_writer::label(get_string('answer', 'qtype_match', $option+1), 'quest_'.$id.'_'.$option,
-                                false, array('class' => 'visually-hidden'));
+                        $dropdown = html_writer::label(
+                            get_string('answer', 'qtype_match', $option + 1),
+                            'quest_' . $id . '_' . $option,
+                            false,
+                            ['class' => 'visually-hidden']
+                        );
                         $dropdown .= html_writer::select($selectoptions, "quest_{$id}_{$option}", '', false,
                                 array('id' => "quest_{$id}_{$option}"));
                         $expout .= html_writer::tag('li', $questiontext);

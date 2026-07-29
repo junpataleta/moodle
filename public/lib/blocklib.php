@@ -2467,7 +2467,7 @@ function block_add_block_ui($page, $output) {
 
     $actionurl = new moodle_url($page->url, array('sesskey'=>sesskey()));
     $select = new single_select($actionurl, 'bui_addblock', $menu, null, array(''=>get_string('adddots')), 'add_block');
-    $select->set_label(get_string('addblock'), array('class' => 'visually-hidden'));
+    $select->set_label(get_string('addblock'), ['class' => 'visually-hidden']);
     $bc->content = $OUTPUT->render($select);
     return $bc;
 }

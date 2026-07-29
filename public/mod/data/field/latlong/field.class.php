@@ -127,7 +127,7 @@ class data_field_latlong extends data_field_base {
         }
         $latlongsrs->close();
 
-        $classes = array('class' => 'visually-hidden');
+        $classes = ['class' => 'visually-hidden'];
         $return = html_writer::label(get_string('latlong', 'data'), 'menuf_'.$this->field->id, false, $classes);
         $classes = ['class' => 'form-select'];
         $return .= html_writer::select($options, 'f_'.$this->field->id, $value, array('' => get_string('menuchoose', 'data')),

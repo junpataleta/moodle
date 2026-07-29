@@ -1657,7 +1657,11 @@ class core_renderer extends renderer_base {
         } else {
             $position = get_string('moveblockafter', 'block', $previous);
         }
-        return html_writer::tag('a', html_writer::tag('span', $position, ['class' => 'visually-hidden']), ['href' => $target->url, 'class' => 'blockmovetarget']);
+        return html_writer::tag(
+            'a',
+            html_writer::tag('span', $position, ['class' => 'visually-hidden']),
+            ['href' => $target->url, 'class' => 'blockmovetarget']
+        );
     }
 
     /**
@@ -2170,7 +2174,12 @@ class core_renderer extends renderer_base {
 
             $scalearray = [RATING_UNSET_RATING => $strrate . '...'] + $rating->settings->scale->scaleitems;
             $scaleattrs = ['class' => 'postratingmenu ratinginput', 'id' => 'menurating' . $rating->itemid];
-            $ratinghtml .= html_writer::label($rating->rating, 'menurating' . $rating->itemid, false, ['class' => 'visually-hidden']);
+            $ratinghtml .= html_writer::label(
+                $rating->rating,
+                'menurating' . $rating->itemid,
+                false,
+                ['class' => 'visually-hidden']
+            );
             $ratinghtml .= html_writer::select($scalearray, 'rating', $rating->rating, false, $scaleattrs);
 
             // output submit button

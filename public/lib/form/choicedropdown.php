@@ -133,7 +133,7 @@ class MoodleQuickForm_choicedropdown extends HTML_QuickForm_select implements te
         $html = '';
         if ($this->_hiddenLabel) {
             $this->_generateId();
-            $html .= '<label class="visually-hidden" for="'.$this->getAttribute('id').'" >'.$this->getLabel().'</label>';
+            $html .= '<label class="visually-hidden" for="' . $this->getAttribute('id') . '" >' . $this->getLabel() . '</label>';
         }
         $html .= parent::toHtml();
         return $html;

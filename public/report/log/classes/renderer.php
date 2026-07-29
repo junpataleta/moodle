@@ -102,7 +102,7 @@ class report_log_renderer extends plugin_renderer_base {
         // Add group selector.
         $groups = $reportlog->get_group_list();
         if (!empty($groups)) {
-            echo html_writer::label(get_string('selectagroup'), 'menugroup', false, array('class' => 'visually-hidden'));
+            echo html_writer::label(get_string('selectagroup'), 'menugroup', false, ['class' => 'visually-hidden']);
             echo html_writer::select($groups, "group", $reportlog->groupid, get_string("allgroups"));
         }
 
@@ -110,7 +110,7 @@ class report_log_renderer extends plugin_renderer_base {
         $users = $reportlog->get_user_list();
 
         if ($reportlog->showusers) {
-            echo html_writer::label(get_string('selctauser'), 'menuuser', false, array('class' => 'visually-hidden'));
+            echo html_writer::label(get_string('selctauser'), 'menuuser', false, ['class' => 'visually-hidden']);
             echo html_writer::select($users, "user", $reportlog->userid, get_string("allparticipants"));
         } else {
             $users = array();
@@ -119,7 +119,7 @@ class report_log_renderer extends plugin_renderer_base {
             } else {
                 $users[0] = get_string('allparticipants');
             }
-            echo html_writer::label(get_string('selctauser'), 'menuuser', false, array('class' => 'visually-hidden'));
+            echo html_writer::label(get_string('selctauser'), 'menuuser', false, ['class' => 'visually-hidden']);
             echo html_writer::select($users, "user", $reportlog->userid, false);
             $a = new stdClass();
             $a->url = new moodle_url('/report/log/index.php', array('chooselog' => 0,
@@ -134,25 +134,25 @@ class report_log_renderer extends plugin_renderer_base {
 
         // Add date selector.
         $dates = $reportlog->get_date_options();
-        echo html_writer::label(get_string('date'), 'menudate', false, array('class' => 'visually-hidden'));
+        echo html_writer::label(get_string('date'), 'menudate', false, ['class' => 'visually-hidden']);
         echo html_writer::select($dates, "date", $reportlog->date, get_string("alldays"));
 
         // Add activity selector.
         echo $this->get_activity_selector_field($reportlog);
 
         // Add actions selector.
-        echo html_writer::label(get_string('actions'), 'menumodaction', false, array('class' => 'visually-hidden'));
+        echo html_writer::label(get_string('actions'), 'menumodaction', false, ['class' => 'visually-hidden']);
         echo html_writer::select($reportlog->get_actions(), 'modaction', $reportlog->action,
             get_string("allactions"));
 
         // Add origin.
         $origin = $reportlog->get_origin_options();
-        echo html_writer::label(get_string('origin', 'report_log'), 'menuorigin', false, array('class' => 'visually-hidden'));
+        echo html_writer::label(get_string('origin', 'report_log'), 'menuorigin', false, ['class' => 'visually-hidden']);
         echo html_writer::select($origin, 'origin', $reportlog->origin, false);
 
         // Add edulevel.
         $edulevel = $reportlog->get_edulevel_options();
-        echo html_writer::label(get_string('edulevel'), 'menuedulevel', false, array('class' => 'visually-hidden'));
+        echo html_writer::label(get_string('edulevel'), 'menuedulevel', false, ['class' => 'visually-hidden']);
         echo html_writer::select($edulevel, 'edulevel', $reportlog->edulevel, false) .$this->help_icon('edulevel');
 
         // Add reader option.
@@ -163,8 +163,12 @@ class report_log_renderer extends plugin_renderer_base {
                 $attributes = array('type' => 'hidden', 'name' => 'logreader', 'value' => key($readers));
                 echo html_writer::empty_tag('input', $attributes);
             } else {
-                echo html_writer::label(get_string('selectlogreader', 'report_log'), 'menureader', false,
-                        array('class' => 'visually-hidden'));
+                echo html_writer::label(
+                    get_string('selectlogreader', 'report_log'),
+                    'menureader',
+                    false,
+                    ['class' => 'visually-hidden']
+                );
                 echo html_writer::select($readers, 'logreader', $reportlog->selectedlogreader, false);
             }
             echo html_writer::end_div();
