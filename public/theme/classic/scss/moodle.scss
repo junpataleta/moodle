@@ -11,12 +11,12 @@ img.userpicture {
 .path-mod-forum {
     // Style for the forum subscription mode node.
     .subscriptionmode {
-        color: $body-color;
+        color: var(--#{$prefix}body-color);
     }
 
     // Style for the currently selected subscription mode.
     .activesetting {
-        color: $body-color;
+        color: var(--#{$prefix}body-color);
         font-weight: bold;
     }
 }

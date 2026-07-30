@@ -4,7 +4,7 @@ body {
 }
 .region-main .region-main-content {
     padding: 0.875rem;
-    background-color: $body-bg;
+    background-color: var(--#{$prefix}body-bg);
     border: $card-border-width solid $card-border-color;
     @include border-radius($card-border-radius);
 }

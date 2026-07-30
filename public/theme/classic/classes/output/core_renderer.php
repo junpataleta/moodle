@@ -37,5 +37,14 @@ defined('MOODLE_INTERNAL') || die;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class core_renderer extends \core_renderer {
-
+    /**
+     * Returns the navbar menu for switching between the light and dark colour modes.
+     *
+     * Classic inherits Boost's stylesheets, so it gets the same colour modes and uses Boost's menu for them.
+     *
+     * @return string HTML for the colour mode menu, or an empty string.
+     */
+    public function colour_mode_menu(): string {
+        return \theme_boost\colour_mode::render_menu($this);
+    }
 }
