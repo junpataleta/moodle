@@ -278,6 +278,12 @@ $divider-hover-color: $primary !default;
         background-color: var(--#{$prefix}gray-200);
         .activityiconcontainer {
             mix-blend-mode: multiply;
+
+            // Multiplying with a dark surface takes everything to black. Screen is the counterpart which blends
+            // into a dark surface the way multiply blends into a light one.
+            @include dark-mode {
+                mix-blend-mode: screen;
+            }
         }
         .badge {
             background-color: transparent;
@@ -302,6 +308,11 @@ $divider-hover-color: $primary !default;
             .activityiconcontainer,
             .badge {
                 mix-blend-mode: multiply;
+
+                // See the hidden activity icon above: multiply hides an icon on a dark card.
+                @include dark-mode {
+                    mix-blend-mode: screen;
+                }
             }
         }
     }

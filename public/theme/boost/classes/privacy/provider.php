@@ -24,7 +24,9 @@
 
 namespace theme_boost\privacy;
 
-use \core_privacy\local\metadata\collection;
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\writer;
+use theme_boost\colour_mode;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -46,6 +48,9 @@ class provider implements
     /** The user preferences for the blocks drawer. */
     const DRAWER_OPEN_BLOCK = 'drawer-open-block';
 
+    /** The user preference for the light or dark colour mode. */
+    const COLOUR_MODE = \theme_boost\colour_mode::PREFERENCE;
+
     /**
      * Returns meta data about this system.
      *
@@ -55,6 +60,7 @@ class provider implements
     public static function get_metadata(collection $items): collection {
         $items->add_user_preference(self::DRAWER_OPEN_INDEX, 'privacy:metadata:preference:draweropenindex');
         $items->add_user_preference(self::DRAWER_OPEN_BLOCK, 'privacy:metadata:preference:draweropenblock');
+        $items->add_user_preference(self::COLOUR_MODE, 'privacy:metadata:preference:colourmode');
         return $items;
     }
 
@@ -92,6 +98,17 @@ class provider implements
                 self::DRAWER_OPEN_BLOCK,
                 $draweropenblockpref,
                 $preferencestring
+            );
+        }
+
+        $colourmodepref = get_user_preferences(self::COLOUR_MODE, null, $userid);
+
+        if (\theme_boost\colour_mode::is_valid_mode($colourmodepref)) {
+            \core_privacy\local\request\writer::export_user_preference(
+                'theme_boost',
+                self::COLOUR_MODE,
+                $colourmodepref,
+                get_string('privacy:colourmode:' . $colourmodepref, 'theme_boost')
             );
         }
     }
