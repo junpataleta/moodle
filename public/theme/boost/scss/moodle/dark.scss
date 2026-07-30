@@ -1,0 +1,350 @@
+/**
+ * Dark colour mode.
+ *
+ * Boost uses the Bootstrap 5.3 colour modes API, so this whole file is emitted under [data-bs-theme="dark"] and
+ * applies when the html tag carries that attribute. See theme_boost\colour_mode for how the attribute gets there.
+ *
+ * Most of the work is done by re-pointing the greyscale custom properties: the rest of Boost refers to greys through
+ * var(--#{$prefix}gray-*), so remapping them here flips almost every surface, border and piece of secondary text at
+ * once. Only colours which cannot invert (anything sitting on a fixed, non-inverting background) are restyled by hand
+ * further down.
+ */
+
+// The dark greyscale. This is not a straight inversion of the light ramp: in dark mode raised surfaces are lighter
+// than the page rather than darker, so the surface colours are ordered page < recessed < raised.
+$dark-surface-raised:   $gray-800 !default;                        // Cards, modals, dropdowns.
+$dark-surface-page:     $gray-900 !default;                        // Page background. Matches Bootstrap's $body-bg-dark.
+$dark-surface-recessed: mix($gray-800, $gray-900, 50%) !default;   // Drawers, table stripes, hovered rows.
+
+// The knob of an unchecked switch, light enough to stay visible against the dark track.
+$form-switch-color-dark-boost: rgba($white, .55) !default;
+$form-switch-bg-image-dark-boost: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#{$form-switch-color-dark-boost}'/></svg>") !default;
+
+// The contrast the derived dark colours must reach against the surface they are drawn on. 4.6 rather than the 4.5
+// WCAG AA asks for, so that a colour which lands exactly on the threshold here is not reported as a failure by
+// checkers which round differently.
+$dark-min-contrast: 4.6 !default;
+
+/**
+ * Lighten a colour until it is readable on a dark surface.
+ *
+ * The theme colours are chosen for a white page and are mostly too dark to use as text once the page is dark. This
+ * tints them in 5% steps and returns the first tint which reaches the required contrast, so that the dark palette
+ * keeps meeting WCAG AA even when a site changes the brand colour.
+ *
+ * @param {Color} $color The colour to lighten.
+ * @param {Color} $background The surface the colour is drawn on.
+ * @param {Number} $min The contrast ratio to reach.
+ * @return {Color}
+ */
+@function dark-readable($color, $background: $dark-surface-raised, $min: $dark-min-contrast) {
+    $readable: $color;
+    @for $step from 1 through 20 {
+        @if contrast-ratio($background, $readable) < $min {
+            $readable: tint-color($color, percentage($step * 0.05));
+        }
+    }
+    @return $readable;
+}
+
+@include color-mode(dark) {
+    // Surfaces.
+    --#{$prefix}white: #{$dark-surface-raised};
+    --#{$prefix}gray-100: #{$dark-surface-page};
+    --#{$prefix}gray-200: #{$dark-surface-recessed};
+
+    // Borders.
+    --#{$prefix}gray-300: #{$gray-700};
+    --#{$prefix}gray-400: #{$gray-600};
+
+    // Gray 500 is used both for placeholder text and for input borders. The light value only reaches 3.8:1 against
+    // a raised surface, so lift it halfway to gray 400 to clear the 4.5:1 threshold for text.
+    --#{$prefix}gray-500: #{mix($gray-400, $gray-500, 50%)};
+
+    // Text.
+    --#{$prefix}gray-600: #{$gray-400};
+    --#{$prefix}gray-700: #{$gray-300};
+    --#{$prefix}gray-800: #{$gray-200};
+    --#{$prefix}gray-900: #{$gray-100};
+    --#{$prefix}black: #{$gray-100};
+
+    // Design system tokens. These are emitted as custom properties on :root, so they only need re-pointing.
+    --mds-bg-surface-default: #{$dark-surface-raised};
+    --mds-bg-surface-strong: #{$gray-700};
+    --mds-bg-surface-subtle: #{$dark-surface-recessed};
+    --mds-bg-interactive-secondary-default: #{$gray-700};
+    --mds-bg-interactive-secondary-hover: #{$gray-600};
+    --mds-bg-interactive-secondary-active: #{$gray-600};
+    --mds-bg-interactive-secondary-disabled: #{$dark-surface-recessed};
+    --mds-bg-nav-pill-hover: #{$gray-700};
+    --mds-bg-nav-pill-pressed: #{$gray-600};
+    --mds-bg-nav-pill-selected: #{$gray-700};
+    --mds-bg-feedback-secondary-default: #{$gray-700};
+    --mds-bg-feedback-secondary-subtle: #{$dark-surface-recessed};
+    --mds-border-default: #{$gray-700};
+    --mds-border-subtle: #{$dark-surface-recessed};
+    --mds-border-translucent: #{rgba($white, .15)};
+    --mds-border-feedback-secondary: #{$gray-700};
+    --mds-border-interactive-secondary-default: #{$gray-600};
+    --mds-border-interactive-secondary-hover: #{$gray-500};
+    --mds-border-interactive-secondary-active: #{$gray-500};
+    --mds-border-interactive-secondary-disabled: #{$gray-700};
+    --mds-text-default: #{$gray-300};
+    --mds-text-emphasis: #{$gray-100};
+    --mds-text-subtle: #{$gray-400};
+    // Muted text still has to reach 4.5:1 on a raised surface, which gray 500 does not manage in dark mode.
+    --mds-text-muted: #{$gray-400};
+    --mds-text-inverse: #{$gray-900};
+    --mds-text-feedback-secondary: #{$gray-300};
+
+    // Links and coloured text. Bootstrap's dark defaults tint the theme colours by 40%, which lands just under
+    // WCAG AA against a raised surface, so derive them instead.
+    --#{$prefix}link-color: #{dark-readable($primary)};
+    --#{$prefix}link-color-rgb: #{to-rgb(dark-readable($primary))};
+    --#{$prefix}link-hover-color: #{dark-readable($primary, $min: 7)};
+    --#{$prefix}link-hover-color-rgb: #{to-rgb(dark-readable($primary, $min: 7))};
+    // Only the hued theme colours: Bootstrap's light, dark and secondary emphasis colours are already greys chosen
+    // for a dark background, and tinting them would make them worse.
+    @each $name in ("primary", "success", "info", "warning", "danger") {
+        --#{$prefix}#{$name}-text-emphasis: #{dark-readable(map-get($theme-colors, $name))};
+    }
+
+    // The focus ring has to be visible against the dark surfaces it is drawn on (WCAG 2.2 focus appearance). Focus
+    // indicators are non-text, so the 3:1 threshold applies.
+    --#{$prefix}focus-ring-color: #{rgba(dark-readable($primary, $min: 3), $focus-ring-opacity)};
+
+    --mds-text-link-primary-default: #{dark-readable($primary)};
+    --mds-text-link-primary-hover: #{dark-readable($primary, $min: 7)};
+    --mds-text-link-primary-disabled: #{$gray-500};
+    --mds-text-feedback-primary: #{dark-readable($primary)};
+    --mds-text-feedback-danger: #{dark-readable($danger)};
+    --mds-text-feedback-info: #{dark-readable($info)};
+    --mds-text-feedback-success: #{dark-readable($success)};
+    --mds-text-feedback-warning: #{dark-readable($warning)};
+
+    // Feedback surfaces. The "light" and "subtle" tints are far too bright to sit behind dark mode text.
+    @each $name, $color in ("primary": $primary, "danger": $danger, "info": $info, "success": $success, "warning": $warning) {
+        --mds-bg-feedback-#{$name}-light: #{shade-color($color, 75%)};
+        --mds-bg-feedback-#{$name}-subtle: #{shade-color($color, 60%)};
+        --mds-border-feedback-#{$name}: #{shade-color($color, 40%)};
+    }
+    --mds-bg-interactive-primary-default-light: #{shade-color($primary, 75%)};
+    --mds-bg-interactive-danger-default-light: #{shade-color($danger, 75%)};
+
+    // The tints declared in variables.scss and core.scss. The pale light mode versions only work behind dark text,
+    // and the text on them comes from the body, so they are shaded rather than tinted here.
+    @each $name, $color in ("success": $success, "info": $info, "warning": $warning, "danger": $danger) {
+        --#{$prefix}state-#{$name}-bg: #{shade-color($color, 70%)};
+        --#{$prefix}state-#{$name}-border: #{shade-color($color, 40%)};
+    }
+    --#{$prefix}collapse-list-item-hover-bg: #{shade-color($info, 70%)};
+    --#{$prefix}collapse-list-item-hover-border: #{shade-color($info, 40%)};
+
+    // The .text-* utilities take the raw theme colour, which is chosen for a white page. Re-pointing the colour
+    // inside the utility itself leaves .bg-* and the other consumers of the same variable alone.
+    @each $name in ("primary", "success", "info", "warning", "danger") {
+        .text-#{$name} {
+            --#{$prefix}#{$name}-rgb: #{to-rgb(dark-readable(map-get($theme-colors, $name)))};
+        }
+    }
+
+    // Question feedback blocks are tinted with the theme colours for a white page, and their contents (links most
+    // of all) take the body colour, so the tints are shaded to suit a dark page instead.
+    .que {
+        .outcome,
+        .comment {
+            @include gradient-bg(shade-color($warning, 70%));
+            border-color: #{shade-color($warning, 40%)};
+            color: var(--#{$prefix}body-color);
+
+            a {
+                color: var(--#{$prefix}link-color);
+            }
+        }
+
+        .formulation {
+            @include gradient-bg(shade-color($info, 70%));
+            border-color: #{shade-color($info, 40%)};
+            color: var(--#{$prefix}body-color);
+        }
+    }
+
+    // Activity icons are recoloured with an SVG filter rather than a CSS colour, so they need re-filtering with a
+    // lighter tint. Several of the activity hues (the browns and indigos especially) are unreadable against a dark
+    // page otherwise.
+    @each $type, $value in $activity-icon-colors {
+        --activity#{$type}: #{tint-color($value, 30%)};
+
+        .activityiconcontainer.#{$type}:not(.isbranded) {
+            .activityicon,
+            .icon {
+                &:not(.nofilter) {
+                    @include recolor-icon(tint-color($value, 30%), 1);
+                }
+            }
+        }
+    }
+
+    // WCAG 1.4.1: a link sitting in a block of text has to be told apart from that text by something other than
+    // colour. In light mode the link colour is just dark enough against the body text to qualify on contrast alone
+    // (3.07:1), but no colour can manage that on a dark page: a link needs 3:1 against the body text and 4.5:1
+    // against the surface behind it, and on dark those two ranges do not overlap. So prose links are underlined.
+    #page-header,
+    #region-main,
+    #page-footer,
+    .block_html .card-text {
+        a:not(.btn):not(.nav-link):not(.dropdown-item):not(.list-group-item):not(.page-link) {
+            text-decoration: underline;
+        }
+    }
+
+    // The feedback dependency hint is drawn in the danger colour itself, which is picked for a white page.
+    .path-mod-feedback span.feedback_depend {
+        color: var(--#{$prefix}danger-text-emphasis);
+    }
+
+    // The calendar hover tint is a fixed light grey, which hides the date it is meant to highlight.
+    .maincalendar .clickable:hover,
+    .clickable:not(.today):hover .day-number-circle {
+        background-color: var(--#{$prefix}gray-200);
+    }
+
+    // Calendar events are colour-coded with pale tints which carry the meaning, and their action links already use
+    // a fixed dark blue chosen to sit on them, so the tints stay and the rest of the text goes dark to match.
+    .calendar_event_category,
+    .calendar_event_course,
+    .calendar_event_site,
+    .calendar_event_group,
+    .calendar_event_user,
+    .calendar_event_other {
+        color: $gray-900;
+    }
+
+    // The forum darkens its muted text to reach the contrast ratio against a white page, which leaves it below the
+    // threshold once the page is dark.
+    .path-mod-forum {
+        .text-muted,
+        .dimmed_text {
+            color: var(--#{$prefix}gray-600) !important; // stylelint-disable-line declaration-no-important
+        }
+    }
+
+    // The quiz navigation buttons colour-code the answer state with pale tints which have to stay recognisable, so
+    // those buttons keep a dark label rather than following the body colour.
+    .path-mod-quiz #mod_quiz_navblock {
+        .qnbutton.correct,
+        .qnbutton.incorrect,
+        .qnbutton.partiallycorrect {
+            color: $gray-900;
+        }
+    }
+
+    // Bootstrap compiles the dropdown header colour from the light greyscale and has no dark counterpart for it.
+    .dropdown-menu {
+        --#{$prefix}dropdown-header-color: var(--#{$prefix}gray-600);
+    }
+
+    // Outline buttons paint their label in the theme colour itself, which is picked for a white page. Boost's own
+    // overrides for secondary, info and warning are darkened further still, taking .btn-outline-secondary down to
+    // 2.4:1 on a dark surface.
+    @each $name, $color in $theme-colors {
+        .btn-outline-#{$name} {
+            @include button-outline-variant(dark-readable($color));
+        }
+    }
+
+    // The AI course assist button ships a dark and a white sparkles image and swaps between them on hover, on the
+    // assumption that the button is light until it fills with colour. In dark mode that is the other way round.
+    .course-assist-controls .ai-action {
+        .ai-course-assist-sparkles-icon.white {
+            display: inline-block;
+        }
+
+        .ai-course-assist-sparkles-icon:not(.white) {
+            display: none;
+        }
+
+        &:not([disabled]):hover {
+            .ai-course-assist-sparkles-icon.white {
+                display: none;
+            }
+
+            .ai-course-assist-sparkles-icon:not(.white) {
+                display: inline-block;
+            }
+        }
+    }
+
+    .course-assist-controls.show .ai-action:not([disabled]) {
+        .ai-course-assist-sparkles-icon.white {
+            display: none;
+        }
+
+        .ai-course-assist-sparkles-icon:not(.white) {
+            display: inline-block;
+        }
+    }
+
+    // Icons in Moodle's monochrome pix namespaces carry no fill, so as an <img> they paint black whatever the
+    // colour mode. Most reach the page as font icons through the icon system, but the ones with no Font Awesome
+    // equivalent, and the few emitted as an <img> so that JavaScript can swap the src, need inverting. The
+    // activity icons below set their own filter and are not affected.
+    img.icon[src*="/t/"],
+    img.icon[src*="/e/"],
+    img.icon[src*="/a/"] {
+        filter: invert(1);
+    }
+
+    // The edit mode switch paints its own knob, in a grey which happens to be the same colour the track takes in
+    // dark mode, leaving the control looking like a plain filled pill.
+    .editmode-switch-form .form-check.form-switch .form-check-input:not(:checked) {
+        background-image: escape-svg(url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#{$gray-100}'/></svg>"));
+    }
+
+    // Bootstrap draws the knob of an unchecked switch at 25% white, which does not reach the 3:1 that WCAG asks of
+    // a control's visual state. Boost already darkens the light mode knob for the same reason.
+    .form-switch .form-check-input:not(:checked):not(:focus) {
+        --#{$prefix}form-switch-bg: #{escape-svg($form-switch-bg-image-dark-boost)};
+    }
+
+    // Moodle uses .bg-white to mean "a raised surface" rather than literally white. The utility is generated from
+    // --#{$prefix}white-rgb, which is left alone so that .text-white keeps working on top of the theme colours.
+    .bg-white {
+        background-color: var(--#{$prefix}white) !important; // stylelint-disable-line declaration-no-important
+    }
+
+    // The login page keeps a photographic panel on one side, so its content stays light whatever the colour mode.
+    body.pagelayout-login #page .login-layout-left {
+        color: $white;
+    }
+
+    // The Atto editor draws its own chrome from a set of fixed light colours.
+    .editor_atto_content_wrap,
+    .editor_atto_content {
+        background-color: var(--#{$prefix}white);
+        color: var(--#{$prefix}gray-900);
+    }
+
+    .editor_atto_toolbar {
+        background-color: var(--#{$prefix}gray-200);
+        border-color: var(--#{$prefix}gray-300);
+
+        button {
+            background: var(--#{$prefix}white);
+            color: var(--#{$prefix}gray-700);
+            border-color: var(--#{$prefix}gray-300);
+        }
+    }
+
+    // TinyMCE renders the editing area in an iframe which defaults to a white page.
+    .tox .tox-edit-area__iframe {
+        background-color: var(--#{$prefix}white);
+    }
+
+    // Drop shadows do almost nothing on dark surfaces, so raised elements lean on their borders instead.
+    .card,
+    .dropdown-menu,
+    .modal-content {
+        border-color: var(--#{$prefix}gray-300);
+    }
+}
