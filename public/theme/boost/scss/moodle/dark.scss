@@ -244,6 +244,22 @@ $dark-min-contrast: 4.6 !default;
         --#{$prefix}dropdown-header-color: var(--#{$prefix}gray-600);
     }
 
+    // Links inside an alert are darkened to sit on the pale light mode tint, which leaves them all but invisible
+    // once Bootstrap swaps that tint for a dark one. Derived against the dark tint instead.
+    @each $color, $value in $theme-colors {
+        .alert-#{$color} {
+            $alert-bg: shade-color($value, 80%);
+
+            a {
+                color: dark-readable($value, $alert-bg);
+            }
+
+            .btn-close {
+                color: dark-readable($value, $alert-bg, $min: 7);
+            }
+        }
+    }
+
     // Outline buttons paint their label in the theme colour itself, which is picked for a white page. Boost's own
     // overrides for secondary, info and warning are darkened further still, taking .btn-outline-secondary down to
     // 2.4:1 on a dark surface.

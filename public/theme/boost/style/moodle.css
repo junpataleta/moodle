@@ -50980,6 +50980,54 @@ input[type=button].btn-block {
 [data-bs-theme=dark] .dropdown-menu {
   --bs-dropdown-header-color: var(--bs-gray-600);
 }
+[data-bs-theme=dark] .alert-primary a {
+  color: #3f89cc;
+}
+[data-bs-theme=dark] .alert-primary .btn-close {
+  color: #6fa7d9;
+}
+[data-bs-theme=dark] .alert-secondary a {
+  color: #ced4da;
+}
+[data-bs-theme=dark] .alert-secondary .btn-close {
+  color: #ced4da;
+}
+[data-bs-theme=dark] .alert-success a {
+  color: #538e51;
+}
+[data-bs-theme=dark] .alert-success .btn-close {
+  color: #86af84;
+}
+[data-bs-theme=dark] .alert-info a {
+  color: #1a8ea1;
+}
+[data-bs-theme=dark] .alert-info .btn-close {
+  color: #66b3c0;
+}
+[data-bs-theme=dark] .alert-warning a {
+  color: #f0ad4e;
+}
+[data-bs-theme=dark] .alert-warning .btn-close {
+  color: #f0ad4e;
+}
+[data-bs-theme=dark] .alert-danger a {
+  color: #d55a4d;
+}
+[data-bs-theme=dark] .alert-danger .btn-close {
+  color: #e28e84;
+}
+[data-bs-theme=dark] .alert-light a {
+  color: #f8f9fa;
+}
+[data-bs-theme=dark] .alert-light .btn-close {
+  color: #f8f9fa;
+}
+[data-bs-theme=dark] .alert-dark a {
+  color: #777a7c;
+}
+[data-bs-theme=dark] .alert-dark .btn-close {
+  color: #999b9d;
+}
 [data-bs-theme=dark] .btn-outline-primary {
   --bs-btn-color: #7baedc;
   --bs-btn-border-color: #7baedc;
