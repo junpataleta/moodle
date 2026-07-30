@@ -1145,10 +1145,10 @@ class core_admin_renderer extends plugin_renderer_base {
                 if ($isstandard = $plugin->is_standard()) {
                     $row->attributes['class'] .= ' standard';
                     $sourcelabel = html_writer::span(get_string('sourcestd', 'core_plugin'),
-                        'sourcetext badge bg-secondary text-dark');
+                        'sourcetext badge text-bg-secondary');
                 } else {
                     $row->attributes['class'] .= ' extension';
-                    $sourcelabel = html_writer::span(get_string('sourceext', 'core_plugin'), 'sourcetext badge bg-info text-white');
+                    $sourcelabel = html_writer::span(get_string('sourceext', 'core_plugin'), 'sourcetext badge text-bg-info');
                 }
 
                 $coredependency = $plugin->is_core_dependency_satisfied($version);
