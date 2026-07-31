@@ -29,3 +29,18 @@
         max-height: calc((100vh - 8px * 2) - var(--navbar-height)) !important; /* stylelint-disable-line declaration-no-important */
     }
 }
+
+/* The iframe element itself, so that a dark page does not flash white in the moment before the content stylesheet
+   is applied inside it. The content document carries its own background once that stylesheet loads. */
+[data-bs-theme="dark"] .tox .tox-edit-area__iframe {
+    background-color: var(--bs-body-bg);
+}
+
+/* Moodle supplies its toolbar icons to TinyMCE as an external reference inside an <image> element, which is an
+   isolated document: neither currentColor nor a fill from this stylesheet reaches inside it. The icons are monochrome
+   and drawn in near black for a light toolbar, so a filter is the only way to light them for a dark one. The
+   hue-rotate keeps the few icons which carry a brand colour roughly on hue while their lightness flips.
+   TinyMCE's own icons already follow the skin and are not marked with data-buttonsource, so they are untouched. */
+[data-bs-theme="dark"] .tox svg[data-buttonsource="moodle"] {
+    filter: invert(1) hue-rotate(180deg);
+}
