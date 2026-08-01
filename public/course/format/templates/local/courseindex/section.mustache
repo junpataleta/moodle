@@ -31,7 +31,6 @@
         "current": 1,
         "visible": 1,
         "hasrestrictions": 0,
-        "sectiontemplateexample": 1,
         "cms": [
             {
                 "id": 10,
@@ -57,19 +56,19 @@
         ]
     }
 }}
-{{#sectiontemplateexample}}
-<div role="tree">
-{{/sectiontemplateexample}}
 <div
     class="courseindex-section {{#current}}current{{/current}} {{#component}}delegated-section{{/component}}"
     id="course-index-section-{{id}}"
     data-for="section"
     data-id="{{id}}"
     data-number="{{number}}"
+    {{! Delegated sections are exposed as a single tree item by the activity wrapping them. }}
+    {{^component}}
     role="treeitem"
     aria-owns="courseindexcollapse{{number}}"
     aria-labelledby="courseindexsection{{number}}-title"
     aria-expanded="{{^indexcollapsed}}true{{/indexcollapsed}}{{#indexcollapsed}}false{{/indexcollapsed}}"
+    {{/component}}
 >
     <div class="courseindex-item d-flex
             {{^visible}}dimmed{{/visible}}
@@ -138,9 +137,6 @@
         </ul>
     </div>
 </div>
-{{#sectiontemplateexample}}
-</div>
-{{/sectiontemplateexample}}
 {{$ core_courseformat/local/courseindex/section-js}}
 {{#js}}
 require(['core_courseformat/local/courseindex/section'], function(component) {
