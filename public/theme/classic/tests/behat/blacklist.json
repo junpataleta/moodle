@@ -15,7 +15,8 @@
         "badges/tests/behat/badge_navigation.feature",
         "lib/tests/behat/menu_navigation_single_activity.feature",
         "lib/tests/behat/menu_navigation_topics.feature",
-        "course/format/tests/behat/course_linear_navigation.feature"
+        "course/format/tests/behat/course_linear_navigation.feature",
+        "mod/subsection/tests/behat/subsection_courseindex.feature"
     ],
     "tags": [
         "addablocklink"
