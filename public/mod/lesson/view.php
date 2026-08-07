@@ -259,7 +259,7 @@ if ($pageid != LESSON_EOL) {
         echo $lessonoutput->ongoing_score($lesson);
     }
     if ($lesson->displayleft) {
-        echo '<a name="maincontent" id="maincontent" title="' . get_string('anchortitle', 'lesson') . '"></a>';
+        echo $OUTPUT->skip_link_target('lessoncontent');
     }
     echo $lessoncontent;
     echo $lessonoutput->progress_bar($lesson);
