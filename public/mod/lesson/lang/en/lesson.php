@@ -67,7 +67,6 @@ $string['allowofflineattempts_help'] = 'If enabled, a mobile app user can downlo
 All the possible answers and correct responses will be downloaded as well.
 Note: It is not possible for a lesson to be attempted offline if it has a time limit.';
 $string['and'] = 'AND';
-$string['anchortitle'] = 'Start of main content';
 $string['answer'] = 'Answer';
 $string['answeredcorrectly'] = 'answered correctly.';
 $string['answersfornumerical'] = 'Answers for numerical questions should be matched pairs of minimum and maximum values';
@@ -629,3 +628,6 @@ $string['groupoverridesdeleted'] = 'Group overrides deleted';
 $string['preview'] = 'Preview';
 $string['previewlesson'] = 'Preview {$a}';
 $string['viewreports2'] = 'View {$a} completed attempts';
+
+// Deprecated since Moodle 5.3.
+$string['anchortitle'] = 'Start of main content';
