@@ -88,7 +88,7 @@ $editbuttons = new \mod_lesson\output\edit_action_buttons($lesson, $page->id ?? 
 echo $lessonoutput->render($editbuttons);
 
 if ($lesson->displayleft) {
-    echo '<a name="maincontent" id="maincontent" title="'.get_string('anchortitle', 'lesson').'"></a>';
+    echo $OUTPUT->skip_link_target('lessoncontent');
 }
 // This calculates and prints the ongoing score message
 if ($lesson->ongoing && !$reviewmode) {
