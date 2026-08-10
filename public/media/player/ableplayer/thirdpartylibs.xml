@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>amd/src/ableplayer</location>
+        <name>Able Player</name>
+        <description>Fully accessible cross-browser HTML5 media player. The bundle also contains DOMPurify, declared separately below, and Able Player's own translations.</description>
+        <version>5.0.0</version>
+        <license>MIT</license>
+        <repository>https://github.com/ableplayer/ableplayer</repository>
+        <copyrights>
+            <copyright>2014-2025 The Able Player Contributors</copyright>
+        </copyrights>
+        <customised/>
+    </library>
+    <library>
+        <location>amd/src/ableplayer</location>
+        <name>DOMPurify</name>
+        <description>XSS sanitizer for HTML, MathML and SVG. Bundled inside the Able Player build by upstream and used unmodified. Dual licensed, Apache License 2.0 or Mozilla Public License 2.0.</description>
+        <version>3.4.0</version>
+        <license>Apache</license>
+        <licenseversion>2.0</licenseversion>
+        <repository>https://github.com/cure53/DOMPurify</repository>
+        <copyrights>
+            <copyright>Cure53 and other contributors</copyright>
+        </copyrights>
+    </library>
+    <library>
+        <location>styles.css</location>
+        <name>Able Player styles</name>
+        <description>Stylesheet for the Able Player media player.</description>
+        <version>5.0.0</version>
+        <license>MIT</license>
+        <repository>https://github.com/ableplayer/ableplayer</repository>
+        <copyrights>
+            <copyright>2014-2025 The Able Player Contributors</copyright>
+        </copyrights>
+        <customised/>
+    </library>
+</libraries>
