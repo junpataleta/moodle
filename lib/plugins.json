@@ -257,6 +257,7 @@
             "toolsettings"
         ],
         "media": [
+            "ableplayer",
             "html5audio",
             "html5video",
             "videojs",
