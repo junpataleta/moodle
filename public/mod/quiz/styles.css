@@ -162,7 +162,7 @@
 .path-mod-quiz .qnbutton.notyetanswered,
 .path-mod-quiz .qnbutton.requiresgrading,
 .path-mod-quiz .qnbutton.invalidanswer {
-    background-color: var(--bs-body-bg);
+    background-color: var(--bs-white);
 }
 
 .path-mod-quiz .qnbutton.correct {
@@ -309,7 +309,7 @@ body.path-mod-quiz table tbody tr.gradedattempt > td.sticky-column {
 body.path-mod-quiz table tbody tr > td.sticky-column,
 body.path-mod-quiz table thead tr > th.sticky-column,
 body.path-mod-quiz table tbody tr:not(.gradedattempt):hover td.sticky-column {
-    background-color: var(--bs-body-bg);
+    background-color: var(--bs-white);
 }
 
 /** Mod quiz summary **/
@@ -666,7 +666,7 @@ table.quizreviewsummary td.cell {
 }
 
 #page-mod-quiz-edit ul.slots li.section li.activity .instancemaxmarkcontainer {
-    background: var(--bs-body-bg);
+    background: var(--bs-white);
     padding: 0.5em 0 0.5em 0.1em;
     margin: 2px;
 }
@@ -960,7 +960,7 @@ table.quizreviewsummary td.cell {
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--bs-body-bg);
+    background: var(--bs-white);
     text-align: center;
     opacity: 0.5;
     padding-top: 50px;
@@ -1029,7 +1029,7 @@ table.quizreviewsummary td.cell {
 .questionbank .categorysortopotionscontainer,
 .questionbank .categorypagingbarcontainer,
 .questionbank .categoryselectallcontainer {
-    background-color: var(--bs-body-bg);
+    background-color: var(--bs-white);
 }
 
 /* Bulk edit actions */
