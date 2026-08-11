@@ -160,4 +160,45 @@ final class colour_mode_test extends \advanced_testcase {
         $PAGE->force_theme('classic');
         $this->assertTrue(colour_mode::is_boost_theme());
     }
+
+    /**
+     * The switcher is only rendered for people who can store a choice, since nobody else can act on it.
+     */
+    public function test_render_menu(): void {
+        global $PAGE;
+
+        $PAGE->set_url('/');
+        $PAGE->force_theme('boost');
+        $output = $PAGE->get_renderer('core');
+
+        $this->setUser($this->getDataGenerator()->create_user());
+        $this->assertStringContainsString('colourmode-menu', colour_mode::render_menu($output));
+
+        $this->setGuestUser();
+        $this->assertSame('', colour_mode::render_menu($output));
+
+        $this->setUser(null);
+        $this->assertSame('', colour_mode::render_menu($output));
+
+        $this->setUser($this->getDataGenerator()->create_user());
+        set_config('enablecolourmodes', 0, 'theme_boost');
+        $this->assertSame('', colour_mode::render_menu($output));
+    }
+
+    /**
+     * With colour modes turned off the html tag is left exactly as it was before the feature existed.
+     */
+    public function test_html_attributes_when_disabled(): void {
+        global $PAGE;
+
+        $this->setUser($this->getDataGenerator()->create_user());
+        $PAGE->set_url('/');
+        $PAGE->force_theme('boost');
+        set_config('enablecolourmodes', 0, 'theme_boost');
+
+        $hook = new \core\hook\output\before_html_attributes($PAGE->get_renderer('core'));
+        hook_listener::before_html_attributes_listener($hook);
+
+        $this->assertSame([], $hook->get_attributes());
+    }
 }
