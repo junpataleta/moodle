@@ -1,0 +1,9 @@
+issueNumber: MDL-89214
+notes:
+  core_course:
+    - message: >-
+        Dropping an image into a course section and choosing "Add media to
+        course page" now opens an image-details dialogue before the Text and
+        media activity is created, so authors can set alternative text, mark the
+        image decorative and choose its display size.
+      type: improved

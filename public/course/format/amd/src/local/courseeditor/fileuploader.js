@@ -38,6 +38,7 @@ import {getFirst} from 'core/normalise';
 import {prefetchStrings} from 'core/prefetch';
 import {getString, getStrings} from 'core/str';
 import {getCourseEditor} from 'core_courseformat/courseeditor';
+import {getImageDetails} from 'core_course/dndupload_imagedetails';
 import {processMonitor} from 'core/process_monitor';
 import {debounce} from 'core/utils';
 
@@ -45,6 +46,16 @@ import {debounce} from 'core/utils';
 const UPLOADURL = Config.wwwroot + '/course/dndupload.php';
 const DEBOUNCETIMER = 500;
 const USERCANIGNOREFILESIZELIMITS = -1;
+
+// The module whose "Add media to course page" shortcut collects image details (alternative text,
+// decorative flag and display size) before creating a Text and media activity from a dropped image.
+const MEDIAMODULE = 'label';
+
+// Web image file extensions eligible for the image-details modal. These mirror the server-side
+// 'web_image' typegroup (file_get_typegroup('extension', 'web_image')) that the label handler uses to
+// decide whether the dropped file is a web image, so the modal is only offered for files the server
+// will actually treat as one - rather than for any image/* MIME type.
+const WEB_IMAGE_EXTENSIONS = ['gif', 'jpe', 'jpeg', 'jpg', 'png', 'svg', 'svgz', 'webp'];
 
 /** @var {ProcessQueue} uploadQueue the internal uploadQueue instance.  */
 let uploadQueue = null;
@@ -72,13 +83,15 @@ class FileUploader {
      * @param {number} sectionNum the section number
      * @param {File} fileInfo the file information object
      * @param {Handler} handler the file selected file handler
+     * @param {?Object} imageDetails optional image details (alt, presentation, width, height) for image uploads
      */
-    constructor(courseId, sectionId, sectionNum, fileInfo, handler) {
+    constructor(courseId, sectionId, sectionNum, fileInfo, handler, imageDetails = null) {
         this.courseId = courseId;
         this.sectionId = sectionId;
         this.sectionNum = sectionNum;
         this.fileInfo = fileInfo;
         this.handler = handler;
+        this.imageDetails = imageDetails;
     }
 
     /**
@@ -186,6 +199,15 @@ class FileUploader {
         formData.append('section', this.sectionNum);
         formData.append('module', this.handler.module);
         formData.append('type', 'Files');
+        // Image details supplied by the "Add media to course page" shortcut, so the author can set
+        // alternative text, mark the image decorative and choose its display size before it is added.
+        if (this.imageDetails !== null) {
+            formData.append('imagedetailsset', 1);
+            formData.append('imagealt', this.imageDetails.alt);
+            formData.append('imagepresentation', this.imageDetails.presentation ? 1 : 0);
+            formData.append('imagewidth', this.imageDetails.width);
+            formData.append('imageheight', this.imageDetails.height);
+        }
         return formData;
     }
 
@@ -524,9 +546,38 @@ const queueFileUpload = async function(courseId, sectionId, sectionNum, fileInfo
     if (!handler) {
         return;
     }
-    const fileProcessor = new FileUploader(courseId, sectionId, sectionNum, fileInfo, handler);
+    // For the "Add media to course page" shortcut with an image, collect the image details (alt text,
+    // decorative flag and display size) before uploading, so the author can make the image accessible.
+    // Cancelling the image-details modal abandons the shortcut and creates no activity.
+    let imageDetails = null;
+    if (handler.module === MEDIAMODULE && isWebImage(fileInfo)) {
+        imageDetails = await getImageDetails(fileInfo);
+        if (imageDetails === null) {
+            return;
+        }
+    }
+    const fileProcessor = new FileUploader(courseId, sectionId, sectionNum, fileInfo, handler, imageDetails);
     uploadQueue.addPending(fileInfo.name, fileProcessor.getExecutionFunction());
 };
+
+/**
+ * Check whether a dropped file is a web image, and so eligible for the image-details modal.
+ *
+ * The check is by file extension against the server 'web_image' typegroup, matching how the label
+ * handler decides to treat the file as a web image, so the modal is not shown for image MIME types
+ * (e.g. image/tiff) that the server would not handle as a web image.
+ *
+ * @param {File} fileInfo the file information object
+ * @returns {boolean} true if the file extension is a web image extension
+ */
+function isWebImage(fileInfo) {
+    if (!fileInfo || !fileInfo.name) {
+        return false;
+    }
+    const dotpos = fileInfo.name.lastIndexOf('.');
+    const extension = dotpos === -1 ? '' : fileInfo.name.substring(dotpos + 1).toLowerCase();
+    return WEB_IMAGE_EXTENSIONS.includes(extension);
+}
 
 /**
  * Upload a file to the course.
