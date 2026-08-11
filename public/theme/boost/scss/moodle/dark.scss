@@ -80,6 +80,9 @@
     --mds-text-link-primary-hover: #{dark-readable($primary, $min: 7)};
     --mds-text-link-primary-disabled: #{$gray-500};
     --mds-text-feedback-primary: #{dark-readable($primary)};
+    // The danger text tokens drive the invalid state of the design system form controls and the required marker.
+    --mds-text-danger: #{dark-readable($danger)};
+    --mds-text-danger-disabled: #{dark-readable($danger, $min: 3)};
     --mds-text-feedback-danger: #{dark-readable($danger)};
     --mds-text-feedback-info: #{dark-readable($info)};
     --mds-text-feedback-success: #{dark-readable($success)};
@@ -124,10 +127,36 @@
         }
     }
 
-    // Moodle uses .bg-white to mean "a raised surface" rather than literally white. The utility is generated from
-    // --#{$prefix}white-rgb, which is left alone so that .text-white keeps working on top of the theme colours.
+    // Moodle uses .bg-white to mean "a raised surface" rather than literally white, and .bg-light to mean a recessed
+    // one. Both utilities are generated from the -rgb custom properties, which are left alone so that .text-white and
+    // .text-light keep working on top of the theme colours.
     .bg-white {
         background-color: var(--#{$prefix}white) !important; // stylelint-disable-line declaration-no-important
+    }
+
+    .bg-light {
+        background-color: var(--#{$prefix}tertiary-bg) !important; // stylelint-disable-line declaration-no-important
+    }
+
+    // $secondary is a compile time literal, so the solid secondary button cannot be reached by re-pointing a custom
+    // property. It is the Cancel button on every form, so it cannot stay the light island it is by default.
+    //
+    // Gray 500 rather than anything darker: a filled button is told apart from the surface behind it by its own fill,
+    // which WCAG 1.4.11 asks to reach 3:1, and gray 500 is the first step on the ramp which does that against a raised
+    // surface. It is light enough to take dark text, which is where the 4.5:1 for the label comes from.
+    .btn-secondary {
+        --#{$prefix}btn-color: #{color-contrast($gray-500)};
+        --#{$prefix}btn-bg: #{$gray-500};
+        --#{$prefix}btn-border-color: #{$gray-500};
+        --#{$prefix}btn-hover-color: #{color-contrast($gray-400)};
+        --#{$prefix}btn-hover-bg: #{$gray-400};
+        --#{$prefix}btn-hover-border-color: #{$gray-400};
+        --#{$prefix}btn-active-color: #{color-contrast($gray-400)};
+        --#{$prefix}btn-active-bg: #{$gray-400};
+        --#{$prefix}btn-active-border-color: #{$gray-400};
+        --#{$prefix}btn-disabled-color: #{color-contrast($gray-500)};
+        --#{$prefix}btn-disabled-bg: #{$gray-500};
+        --#{$prefix}btn-disabled-border-color: #{$gray-500};
     }
 
     // Drop shadows do almost nothing on dark surfaces, so raised elements lean on their borders instead.

@@ -49,7 +49,7 @@ class provider implements
     const DRAWER_OPEN_BLOCK = 'drawer-open-block';
 
     /** The user preference for the light or dark colour mode. */
-    const COLOUR_MODE = \theme_boost\colour_mode::PREFERENCE;
+    public const COLOUR_MODE = colour_mode::PREFERENCE;
 
     /**
      * Returns meta data about this system.
@@ -103,7 +103,7 @@ class provider implements
 
         $colourmodepref = get_user_preferences(self::COLOUR_MODE, null, $userid);
 
-        if (\theme_boost\colour_mode::is_valid_mode($colourmodepref)) {
+        if (colour_mode::is_valid_mode($colourmodepref)) {
             \core_privacy\local\request\writer::export_user_preference(
                 'theme_boost',
                 self::COLOUR_MODE,
