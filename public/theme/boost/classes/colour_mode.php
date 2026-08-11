@@ -76,7 +76,11 @@ class colour_mode {
      * @return bool
      */
     public static function is_enabled(): bool {
-        if (defined('BEHAT_SITE_RUNNING') && self::is_valid_mode(behat_get_colour_mode())) {
+        if (
+            defined('BEHAT_SITE_RUNNING')
+            && function_exists('behat_get_colour_mode')
+            && self::is_valid_mode(behat_get_colour_mode())
+        ) {
             return true;
         }
 

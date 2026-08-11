@@ -128,7 +128,10 @@ if ($ADMIN->fulltree) {
     }
     $setting = new admin_setting_configselect($name, $title, $description, \theme_boost\colour_mode::AUTO, $choices);
     $page->add($setting);
-    $page->hide_if('theme_boost/defaultcolourmode', 'theme_boost/enablecolourmodes', 'notchecked');
+    // The dependency goes on the tabs page rather than the tab: admin/settings.php reads the dependencies from the
+    // top level page, and theme_boost_admin_settingspage_tabs::add_tab() copies a tab's settings up but not its
+    // dependencies, so one recorded on the tab never reaches the JavaScript.
+    $settings->hide_if('theme_boost/defaultcolourmode', 'theme_boost/enablecolourmodes', 'notchecked');
 
     $settings->add($page);
 }
