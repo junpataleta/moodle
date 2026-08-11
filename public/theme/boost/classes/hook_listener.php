@@ -95,10 +95,15 @@ class hook_listener {
     }
 
     /**
-     * Add the script which resolves the "auto" colour mode against the device colour scheme.
+     * Add the script which settles the colour mode before the page is painted.
      *
-     * This has to run synchronously in the head, before the page is painted, otherwise people using the dark colour
-     * scheme get a flash of the light theme on every page load.
+     * It does two things, both of which have to happen synchronously in the head or the person gets a flash of the
+     * wrong colours on every page load: it resolves "auto" against the colour scheme reported by the device, and on a
+     * page where the server could not read a user preference it restores the mode this browser last rendered.
+     *
+     * That second part is what keeps the login page, and every other page seen while logged out, in the mode the
+     * person chose. The preference stays authoritative whenever it can be read; the browser copy is only a fallback,
+     * and is refreshed from the preference on every page which has one.
      *
      * @param before_standard_head_html_generation $hook The hook object.
      */
@@ -109,21 +114,53 @@ class hook_listener {
             return;
         }
 
-        // Behat sites keep the colour mode the server decided on: which mode "auto" resolves to depends on the
-        // machine running the browser, which would make every colour assertion in the suite non-deterministic.
+        // Behat sites keep the colour mode the server decided on. Which mode "auto" resolves to depends on the machine
+        // running the browser, and a mode restored from browser storage would outlive the scenario which set it, so
+        // both would make colour assertions non-deterministic.
         if (defined('BEHAT_SITE_RUNNING')) {
             return;
         }
 
-        $js = <<<'EOF'
+        $config = json_encode([
+            'key' => colour_mode::PREFERENCE,
+            'modes' => colour_mode::get_modes(),
+            'auto' => colour_mode::AUTO,
+            'dark' => colour_mode::DARK,
+            'light' => colour_mode::LIGHT,
+            // Remember the mode when it came from the user, and restore it when the server had no way to know it.
+            'remember' => colour_mode::has_user_choice(),
+            'restore' => !colour_mode::can_choose_mode(),
+        ]);
+
+        $js = <<<EOF
             (function() {
+                var config = {$config};
+                var root = document.documentElement;
+
+                if (config.restore) {
+                    try {
+                        var stored = window.localStorage.getItem(config.key);
+                        if (config.modes.indexOf(stored) !== -1) {
+                            root.setAttribute('data-colourmode', stored);
+                        }
+                    } catch (e) {
+                        // Storage can be unavailable or full; the site default is a fine fallback.
+                    }
+                } else if (config.remember) {
+                    try {
+                        window.localStorage.setItem(config.key, root.getAttribute('data-colourmode'));
+                    } catch (e) {
+                        // Nothing to do: the preference is stored server side, this is only a copy for logged out pages.
+                    }
+                }
+
                 var query = window.matchMedia('(prefers-color-scheme: dark)');
                 var resolve = function() {
-                    var root = document.documentElement;
-                    if (root.getAttribute('data-colourmode') !== 'auto') {
-                        return;
-                    }
-                    root.setAttribute('data-bs-theme', query.matches ? 'dark' : 'light');
+                    var mode = root.getAttribute('data-colourmode');
+                    root.setAttribute(
+                        'data-bs-theme',
+                        mode === config.auto ? (query.matches ? config.dark : config.light) : mode
+                    );
                 };
                 resolve();
                 query.addEventListener('change', resolve);

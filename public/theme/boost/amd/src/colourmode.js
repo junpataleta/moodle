@@ -59,6 +59,24 @@ const resolveMode = (mode) => {
 };
 
 /**
+ * Remember the chosen mode in this browser.
+ *
+ * The user preference is what the server reads, but it cannot be read on a page where nobody is logged in. The copy
+ * kept here is what the script in the page head falls back to, so that the login page stays in the mode the person
+ * chose rather than flipping to the site default on the way out and back again on the way in.
+ *
+ * @param {String} mode One of the MODES values.
+ */
+const rememberMode = (mode) => {
+    try {
+        window.localStorage.setItem(PREFERENCE, mode);
+    } catch (e) {
+        // Storage can be unavailable or full. The preference is still stored server side, so only the logged out
+        // pages lose the choice, which is where this started.
+    }
+};
+
+/**
  * Apply a colour mode to the page and remember it for the next page load.
  *
  * @param {String} mode One of the MODES values.
@@ -90,6 +108,7 @@ const applyMode = (mode) => {
     });
 
     setUserPreference(PREFERENCE, mode);
+    rememberMode(mode);
 };
 
 /**

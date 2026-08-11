@@ -88,6 +88,19 @@ class colour_mode {
     }
 
     /**
+     * Whether the mode this page was rendered with came from a choice the user made.
+     *
+     * False when it came from the site default, either because the user has not chosen a mode or because they cannot
+     * store one. The browser uses this to decide whether the mode on the page is worth remembering for the pages where
+     * the server cannot read a preference: see hook_listener::before_standard_head_html_generation_listener().
+     *
+     * @return bool
+     */
+    public static function has_user_choice(): bool {
+        return self::can_choose_mode() && self::is_valid_mode(get_user_preferences(self::PREFERENCE));
+    }
+
+    /**
      * The colour mode used for users who have not chosen one.
      *
      * A Behat run started with --colourmode takes precedence over the site setting, so that the whole suite can be

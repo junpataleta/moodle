@@ -162,6 +162,28 @@ final class colour_mode_test extends \advanced_testcase {
     }
 
     /**
+     * A mode which came from the site default is not a choice the user made, and is not worth remembering.
+     */
+    public function test_has_user_choice(): void {
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        $this->assertFalse(colour_mode::has_user_choice());
+
+        set_user_preference(colour_mode::PREFERENCE, colour_mode::DARK, $user);
+        $this->assertTrue(colour_mode::has_user_choice());
+
+        set_user_preference(colour_mode::PREFERENCE, 'chartreuse', $user);
+        $this->assertFalse(colour_mode::has_user_choice());
+
+        set_user_preference(colour_mode::PREFERENCE, colour_mode::DARK, $user);
+        $this->setGuestUser();
+        $this->assertFalse(colour_mode::has_user_choice());
+
+        $this->setUser(null);
+        $this->assertFalse(colour_mode::has_user_choice());
+    }
+
+    /**
      * The switcher is only rendered for people who can store a choice, since nobody else can act on it.
      */
     public function test_render_menu(): void {
@@ -183,6 +205,38 @@ final class colour_mode_test extends \advanced_testcase {
         $this->setUser($this->getDataGenerator()->create_user());
         set_config('enablecolourmodes', 0, 'theme_boost');
         $this->assertSame('', colour_mode::render_menu($output));
+    }
+
+    /**
+     * The head script tells the browser to remember a chosen mode, and to restore it where the server cannot read one.
+     */
+    public function test_head_script(): void {
+        global $PAGE;
+
+        $PAGE->set_url('/');
+        $PAGE->force_theme('boost');
+
+        // Nobody logged in: the server cannot know the mode, so the browser restores its own copy.
+        $this->setUser(null);
+        $hook = new \core\hook\output\before_standard_head_html_generation($PAGE->get_renderer('core'));
+        hook_listener::before_standard_head_html_generation_listener($hook);
+        $this->assertStringContainsString('"restore":true', $hook->get_output());
+        $this->assertStringContainsString('"remember":false', $hook->get_output());
+
+        // A user who has chosen a mode: the server rendered their choice, so the browser records it for later.
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        set_user_preference(colour_mode::PREFERENCE, colour_mode::DARK, $user);
+        $hook = new \core\hook\output\before_standard_head_html_generation($PAGE->get_renderer('core'));
+        hook_listener::before_standard_head_html_generation_listener($hook);
+        $this->assertStringContainsString('"remember":true', $hook->get_output());
+        $this->assertStringContainsString('"restore":false', $hook->get_output());
+
+        // Turned off for the site: no script at all.
+        set_config('enablecolourmodes', 0, 'theme_boost');
+        $hook = new \core\hook\output\before_standard_head_html_generation($PAGE->get_renderer('core'));
+        hook_listener::before_standard_head_html_generation_listener($hook);
+        $this->assertSame('', $hook->get_output());
     }
 
     /**
