@@ -34569,7 +34569,7 @@ a.ygtvspacer:hover {
   color: var(--bs-body-color);
 }
 [data-bs-theme=dark] .message-app .message.send .time {
-  color: var(--bs-secondary-color);
+  color: var(--bs-body-color);
 }
 [data-bs-theme=dark] .message-app .message.send .tail {
   border-bottom-color: var(--bs-gray-300);

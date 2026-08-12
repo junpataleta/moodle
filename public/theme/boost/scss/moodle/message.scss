@@ -576,8 +576,10 @@ $message-day-color: color-contrast($message-app-bg) !default;
             @include dark-mode {
                 background-color: var(--#{$prefix}gray-300);
                 color: var(--#{$prefix}body-color);
+                // The light mode value mixes the send colour at 100%, so this timestamp is not muted: the muted
+                // colour only reaches 4.36:1 on the bubble, where the body colour reaches 6.28:1.
                 .time {
-                    color: var(--#{$prefix}secondary-color);
+                    color: var(--#{$prefix}body-color);
                 }
                 .tail {
                     border-bottom-color: var(--#{$prefix}gray-300);
