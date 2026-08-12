@@ -58,7 +58,9 @@ $divider-hover-color: $primary !default;
 .section-collapsemenu {
     @include collapsemenu-toggle;
     padding: map-get($spacers, 2) .75rem;
-    color: $gray-600;
+    // The custom property, not the SCSS variable: this toggle sits on the page rather than in a card, and gray 600
+    // only reaches 3.35:1 there once the page is dark. The light value is unchanged.
+    color: var(--#{$prefix}gray-600);
     line-height: 1;
     background: none;
     border: 0;

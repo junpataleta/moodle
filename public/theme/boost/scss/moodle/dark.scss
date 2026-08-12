@@ -138,6 +138,15 @@
         background-color: var(--#{$prefix}tertiary-bg) !important; // stylelint-disable-line declaration-no-important
     }
 
+    // .text-dark is right where it sits on a fill which does not follow the mode, which is most of its uses in core:
+    // 33 of them pair it with bg-warning and 23 with bg-secondary, and both of those stay light here. The exception is
+    // the fill immediately above, which does follow the mode, so dark text on it has to follow as well. Re-pointing
+    // the variable the utility reads leaves every other use of .text-dark alone.
+    .bg-light.text-dark,
+    .bg-light .text-dark {
+        --#{$prefix}dark-rgb: #{to-rgb($gray-200)};
+    }
+
     // $secondary is a compile time literal, so the solid secondary button cannot be reached by re-pointing a custom
     // property. It is the Cancel button on every form, so it cannot stay the light island it is by default.
     //

@@ -33113,7 +33113,7 @@ table.calendartable caption {
 
 .section-collapsemenu {
   padding: 0.5rem 0.75rem;
-  color: #6a737b;
+  color: var(--bs-gray-600);
   line-height: 1;
   background: none;
   border: 0;
@@ -44382,9 +44382,17 @@ div.editor_atto_toolbar button .icon {
 .courseindex .courseindex-item .completioninfo.completion_complete {
   color: #357a32;
 }
+[data-bs-theme=dark] .courseindex .courseindex-item .completioninfo.completion_complete {
+  color: var(--bs-success-text-emphasis);
+}
+
 .courseindex .courseindex-item .completioninfo.completion_fail {
   color: #ca3120;
 }
+[data-bs-theme=dark] .courseindex .courseindex-item .completioninfo.completion_fail {
+  color: var(--bs-danger-text-emphasis);
+}
+
 .courseindex .courseindex-item.indented {
   margin-left: 1rem;
 }
@@ -51438,6 +51446,10 @@ input[type=button].btn-block {
 }
 [data-bs-theme=dark] .bg-light {
   background-color: var(--bs-tertiary-bg) !important;
+}
+[data-bs-theme=dark] .bg-light.text-dark,
+[data-bs-theme=dark] .bg-light .text-dark {
+  --bs-dark-rgb: 233, 236, 239;
 }
 [data-bs-theme=dark] .btn-secondary {
   --bs-btn-color: #000000;
