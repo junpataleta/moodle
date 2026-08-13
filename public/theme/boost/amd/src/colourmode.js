@@ -62,18 +62,18 @@ const resolveMode = (mode) => {
  * Remember the chosen mode in this browser.
  *
  * The user preference is what the server reads, but it cannot be read on a page where nobody is logged in. The copy
- * kept here is what the script in the page head falls back to, so that the login page stays in the mode the person
+ * kept in this cookie is what the server falls back to there, so that the login page stays in the mode the person
  * chose rather than flipping to the site default on the way out and back again on the way in.
  *
  * @param {String} mode One of the MODES values.
  */
 const rememberMode = (mode) => {
-    try {
-        window.localStorage.setItem(PREFERENCE, mode);
-    } catch (e) {
-        // Storage can be unavailable or full. The preference is still stored server side, so only the logged out
-        // pages lose the choice, which is where this started.
+    const menu = document.querySelector(SELECTORS.MENU);
+    if (!menu || !Object.values(MODES).includes(mode)) {
+        return;
     }
+
+    document.cookie = `${PREFERENCE}=${mode}${menu.dataset.cookieattributes}`;
 };
 
 /**
@@ -119,6 +119,11 @@ export const init = () => {
         return;
     }
     registered = true;
+
+    // Refresh the copy from the mode the server resolved for this page, so that it belongs to whoever is logged in
+    // now. Without this it would still hold the mode of the last person to choose one on this browser, and they
+    // would get it back the moment they logged out.
+    rememberMode(document.documentElement.dataset.colourmode);
 
     document.addEventListener('click', (e) => {
         const option = e.target.closest(SELECTORS.OPTION);

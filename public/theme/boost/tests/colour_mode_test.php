@@ -32,6 +32,11 @@ final class colour_mode_test extends \advanced_testcase {
         set_config('enablecolourmodes', 1, 'theme_boost');
     }
 
+    public function tearDown(): void {
+        unset($_COOKIE[colour_mode::PREFERENCE]);
+        parent::tearDown();
+    }
+
     /**
      * The site default is used by people who have not chosen a mode of their own.
      */
@@ -162,25 +167,64 @@ final class colour_mode_test extends \advanced_testcase {
     }
 
     /**
-     * A mode which came from the site default is not a choice the user made, and is not worth remembering.
+     * The cookie stands in for the preference on a page where nobody is logged in, and nowhere else.
      */
-    public function test_has_user_choice(): void {
+    public function test_get_current_mode_uses_cookie_where_there_is_no_preference(): void {
+        set_config('defaultcolourmode', colour_mode::LIGHT, 'theme_boost');
+        $_COOKIE[colour_mode::PREFERENCE] = colour_mode::DARK;
+
+        // Nobody logged in, and a guest: neither can have a preference, so the cookie is what there is.
+        $this->setUser(null);
+        $this->assertEquals(colour_mode::DARK, colour_mode::get_current_mode());
+
+        $this->setGuestUser();
+        $this->assertEquals(colour_mode::DARK, colour_mode::get_current_mode());
+
+        // A user who has not chosen a mode gets the site default, not whatever the last person on this browser
+        // happened to choose.
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
-        $this->assertFalse(colour_mode::has_user_choice());
+        $this->assertEquals(colour_mode::LIGHT, colour_mode::get_current_mode());
 
-        set_user_preference(colour_mode::PREFERENCE, colour_mode::DARK, $user);
-        $this->assertTrue(colour_mode::has_user_choice());
+        // And a user who has chosen one gets their own.
+        set_user_preference(colour_mode::PREFERENCE, colour_mode::AUTO, $user);
+        $this->assertEquals(colour_mode::AUTO, colour_mode::get_current_mode());
+    }
 
-        set_user_preference(colour_mode::PREFERENCE, 'chartreuse', $user);
-        $this->assertFalse(colour_mode::has_user_choice());
-
-        set_user_preference(colour_mode::PREFERENCE, colour_mode::DARK, $user);
-        $this->setGuestUser();
-        $this->assertFalse(colour_mode::has_user_choice());
-
+    /**
+     * The cookie comes from the browser, so a value which is not a colour mode is discarded rather than rendered.
+     */
+    public function test_get_current_mode_ignores_an_untrusted_cookie(): void {
+        set_config('defaultcolourmode', colour_mode::LIGHT, 'theme_boost');
         $this->setUser(null);
-        $this->assertFalse(colour_mode::has_user_choice());
+
+        $_COOKIE[colour_mode::PREFERENCE] = 'chartreuse';
+        $this->assertEquals(colour_mode::LIGHT, colour_mode::get_current_mode());
+
+        // A request can present a cookie as an array.
+        $_COOKIE[colour_mode::PREFERENCE] = [colour_mode::DARK];
+        $this->assertEquals(colour_mode::LIGHT, colour_mode::get_current_mode());
+    }
+
+    /**
+     * The cookie is written with the site's own cookie configuration.
+     */
+    public function test_get_cookie_attributes(): void {
+        global $CFG;
+
+        $CFG->sessioncookiepath = '/moodle/';
+        $CFG->sessioncookiedomain = '';
+        $CFG->cookiesecure = false;
+
+        $attributes = colour_mode::get_cookie_attributes();
+        $this->assertStringContainsString('Path=/moodle/', $attributes);
+        $this->assertStringContainsString('SameSite=Lax', $attributes);
+        $this->assertStringContainsString('Max-Age=' . YEARSECS, $attributes);
+        $this->assertStringNotContainsString('Domain=', $attributes);
+        $this->assertStringNotContainsString('Secure', $attributes);
+
+        $CFG->sessioncookiedomain = '.example.com';
+        $this->assertStringContainsString('Domain=.example.com', colour_mode::get_cookie_attributes());
     }
 
     /**
@@ -194,7 +238,11 @@ final class colour_mode_test extends \advanced_testcase {
         $output = $PAGE->get_renderer('core');
 
         $this->setUser($this->getDataGenerator()->create_user());
-        $this->assertStringContainsString('colourmode-menu', colour_mode::render_menu($output));
+        $menu = colour_mode::render_menu($output);
+        $this->assertStringContainsString('colourmode-menu', $menu);
+        // The browser writes the cookie, so the attributes to write it with have to reach it.
+        $this->assertStringContainsString('data-cookieattributes="', $menu);
+        $this->assertStringContainsString('SameSite=Lax', $menu);
 
         $this->setGuestUser();
         $this->assertSame('', colour_mode::render_menu($output));
@@ -208,7 +256,7 @@ final class colour_mode_test extends \advanced_testcase {
     }
 
     /**
-     * The head script tells the browser to remember a chosen mode, and to restore it where the server cannot read one.
+     * The head script resolves "auto", which is the only part of the mode the server cannot work out for itself.
      */
     public function test_head_script(): void {
         global $PAGE;
@@ -216,21 +264,15 @@ final class colour_mode_test extends \advanced_testcase {
         $PAGE->set_url('/');
         $PAGE->force_theme('boost');
 
-        // Nobody logged in: the server cannot know the mode, so the browser restores its own copy.
-        $this->setUser(null);
+        $this->setUser($this->getDataGenerator()->create_user());
         $hook = new \core\hook\output\before_standard_head_html_generation($PAGE->get_renderer('core'));
         hook_listener::before_standard_head_html_generation_listener($hook);
-        $this->assertStringContainsString('"restore":true', $hook->get_output());
-        $this->assertStringContainsString('"remember":false', $hook->get_output());
-
-        // A user who has chosen a mode: the server rendered their choice, so the browser records it for later.
-        $user = $this->getDataGenerator()->create_user();
-        $this->setUser($user);
-        set_user_preference(colour_mode::PREFERENCE, colour_mode::DARK, $user);
-        $hook = new \core\hook\output\before_standard_head_html_generation($PAGE->get_renderer('core'));
-        hook_listener::before_standard_head_html_generation_listener($hook);
-        $this->assertStringContainsString('"remember":true', $hook->get_output());
-        $this->assertStringContainsString('"restore":false', $hook->get_output());
+        $output = $hook->get_output();
+        $this->assertStringContainsString('prefers-color-scheme: dark', $output);
+        $this->assertStringContainsString('"auto":"' . colour_mode::AUTO . '"', $output);
+        // The mode is carried by a cookie the server reads, so the script has nothing to store or to restore.
+        $this->assertStringNotContainsString('localStorage', $output);
+        $this->assertStringNotContainsString('document.cookie', $output);
 
         // Turned off for the site: no script at all.
         set_config('enablecolourmodes', 0, 'theme_boost');
