@@ -97,6 +97,10 @@
     --mds-bg-interactive-primary-default-light: #{shade-color($primary, 75%)};
     --mds-bg-interactive-danger-default-light: #{shade-color($danger, 75%)};
 
+    // The --mds-bg-feedback-*-default and --mds-bg-interactive-* fills are left alone on purpose. They are the
+    // saturated brand colours, carrying inverse text which is chosen against the fill rather than against the page,
+    // so they read the same in both modes and tinting them would only weaken them.
+
     // The tints declared in variables.scss and core.scss. The pale light mode versions only work behind dark text,
     // and the text on them comes from the body, so they are shaded rather than tinted here.
     @each $name, $color in ("success": $success, "info": $info, "warning": $warning, "danger": $danger) {
