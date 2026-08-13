@@ -39938,6 +39938,10 @@ body {
   margin: 0;
   background-color: #f4f4f4;
 }
+[data-bs-theme=dark] .content-item-container.unread {
+  background-color: var(--bs-tertiary-bg);
+}
+
 .content-item-container.unread:hover {
   color: #fff;
   background-color: #0f6cbf;
