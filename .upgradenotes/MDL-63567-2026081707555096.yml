@@ -1,0 +1,13 @@
+issueNumber: MDL-63567
+notes:
+  core:
+    - message: >-
+        Help buttons are no longer matched by the `icon` Behat named selector,
+        because the icon no longer carries a `title` attribute, nor by the
+        `button` selector, because a help button is named after the thing it
+        offers help for and would otherwise answer to that thing's name. A new
+        `help_icon` named selector locates them by their accessible name, for
+        example `I click on "Help with Choose licence" "help_icon"`. Behat tests
+        that locate a help button with the `icon` or `button` selector must use
+        the `help_icon` selector instead.
+      type: changed

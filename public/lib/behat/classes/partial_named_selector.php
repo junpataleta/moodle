@@ -110,6 +110,7 @@ class behat_partial_named_selector extends \Behat\Mink\Selector\PartialNamedSele
         'group_message_list_area' => 'group_message_list_area',
         'group_message_message_content' => 'group_message_message_content',
         'heading' => 'heading',
+        'help_icon' => 'help_icon',
         'icon_container' => 'icon_container',
         'icon' => 'icon',
         'link' => 'link',
@@ -239,6 +240,9 @@ XPATH
     , 'heading' => <<<XPATH
         .//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6][contains(normalize-space(.), %locator%)]
 XPATH
+    , 'help_icon' => <<<XPATH
+.//*[contains(concat(' ', normalize-space(@class), ' '), ' help-icon ')][contains(normalize-space(@aria-label), %locator%)]
+XPATH
     , 'icon_container' => <<<XPATH
         .//span[contains(@data-region, concat(%locator%,'-icon-container'))]
 XPATH
@@ -357,7 +361,9 @@ XPATH
     protected static $customreplacements = [
         '%buttonMatch%' => [
             'upstream' => '%idOrNameMatch% or %valueMatch% or %titleMatch%',
-            'aria' => '%ariaLabelMatch%',
+            // A help button is named after the thing it offers help for, so matching it here would
+            // make it answer to that thing's name. Use the help_icon selector to find one instead.
+            'aria' => "(%ariaLabelMatch% and not(contains(concat(' ', normalize-space(@class), ' '), ' help-icon ')))",
         ],
         '%ariaLabelMatch%' => [
             'moodle' => 'contains(./@aria-label, %locator%)',
