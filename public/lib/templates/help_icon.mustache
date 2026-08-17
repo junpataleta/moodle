@@ -3,9 +3,14 @@
 
     Help icon.
 
+    The alt context value names the button, and should say what the help is for, as
+    help_icon::export_for_template() does. Callers that build the context by hand and omit it
+    fall back to a generic name.
+
     Example context (json):
     {
         "title": "Help with something",
+        "alt": "Help with something",
         "url": "http://example.org/help",
         "linktext": "",
         "icon":{
@@ -21,6 +26,7 @@
     data-bs-container="body" data-bs-toggle="popover"
     data-bs-custom-class="help-popover"
     data-bs-placement="{{#ltr}}right{{/ltr}}{{^ltr}}left{{/ltr}}" data-bs-content="{{text}} {{completedoclink}}"
-    data-bs-html="true" tabindex="0" aria-label="{{#str}} help {{/str}}">
-  {{#pix}}help, core, {{{alt}}}{{/pix}}
+    data-bs-html="true" tabindex="0"
+    aria-label="{{#alt}}{{.}}{{/alt}}{{^alt}}{{#str}} help, core {{/str}}{{/alt}}">
+  {{#pix}} help, core {{/pix}}
 </a>

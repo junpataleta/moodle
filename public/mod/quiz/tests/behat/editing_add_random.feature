@@ -199,7 +199,7 @@ Feature: Adding random questions to a quiz based on category and tags
     When I open the "last" add to quiz menu
     And I follow "a random question"
     And I follow "New category"
-    And "Help with Parent category" "icon" should exist in the "Random question using a new category" "fieldset"
+    And "Help with Parent category" "help_icon" should exist in the "Random question using a new category" "fieldset"
     And I set the following fields to these values:
       | Name            | New Random category |
       | Parent category | Questions Category 1 |
