@@ -28,7 +28,7 @@ import {getFilePicker} from 'editor_tiny/options';
 import {ImageInsert} from './imageinsert';
 import {ImageDetails} from './imagedetails';
 import {prefetchStrings} from 'core/prefetch';
-import {getString} from 'core/str';
+import {getString, getStrings} from 'core/str';
 import {
     body,
     footer,
@@ -156,8 +156,24 @@ export default class MediaImage {
         image.addEventListener('load', async() => {
             const currentImageData = await this.getCurrentImageData();
             let templateContext = await this.getTemplateContext(currentImageData);
-            templateContext.sizecustomhelpicon = {text: await getString('sizecustom_help', 'tiny_media')};
-            templateContext.alttexthelpicon = {text: await getString('alttext_help', 'tiny_media')};
+            // Name each help button after the field it offers help for, rather than leaving the
+            // template to fall back to a generic name shared by every help button on the page.
+            const [sizecustomlabel, presentationlabel] = await getStrings([
+                {key: 'imagesize', component: 'tiny_media'},
+                {key: 'presentation', component: 'tiny_media'},
+            ]);
+            const [sizecustomname, alttextname] = await getStrings([
+                {key: 'helpprefix2', component: 'core', param: sizecustomlabel},
+                {key: 'helpprefix2', component: 'core', param: presentationlabel},
+            ]);
+            templateContext.sizecustomhelpicon = {
+                text: await getString('sizecustom_help', 'tiny_media'),
+                alt: sizecustomname,
+            };
+            templateContext.alttexthelpicon = {
+                text: await getString('alttext_help', 'tiny_media'),
+                alt: alttextname,
+            };
             templateContext.bodyTemplate = Selectors.IMAGE.template.body.insertImageDetailsBody;
             templateContext.footerTemplate = Selectors.IMAGE.template.footer.insertImageDetailsFooter;
             templateContext.selector = Selectors.IMAGE.type;
