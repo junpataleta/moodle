@@ -79,11 +79,21 @@ export class ImageInsert {
             'addfilesdrop',
             'sizecustom_help',
             'alttext_help',
+            'imagesize',
+            'presentation',
         ];
         const langStringvalues = await getStrings([...langStringKeys].map((key) => ({key, component})));
 
         // Convert array to object.
         this.langStrings = Object.fromEntries(langStringKeys.map((key, index) => [key, langStringvalues[index]]));
+
+        // Name each help button after the field it offers help for, rather than leaving the
+        // template to fall back to a generic name shared by every help button on the page.
+        const [sizecustomname, alttextname] = await getStrings([
+            {key: 'helpprefix2', component: 'core', param: this.langStrings.imagesize},
+            {key: 'helpprefix2', component: 'core', param: this.langStrings.presentation},
+        ]);
+        this.helpIconNames = {sizecustom: sizecustomname, alttext: alttextname};
         this.currentModal.setTitle(this.langStrings.insertimage);
         if (this.canShowDropZone) {
             const dropZoneEle = document.querySelector(Selectors.IMAGE.elements.dropzoneContainer);
@@ -148,8 +158,14 @@ export class ImageInsert {
 
         image.addEventListener('load', () => {
             let templateContext = {};
-            templateContext.sizecustomhelpicon = {text: this.langStrings.sizecustom_help};
-            templateContext.alttexthelpicon = {text: this.langStrings.alttext_help};
+            templateContext.sizecustomhelpicon = {
+                text: this.langStrings.sizecustom_help,
+                alt: this.helpIconNames.sizecustom,
+            };
+            templateContext.alttexthelpicon = {
+                text: this.langStrings.alttext_help,
+                alt: this.helpIconNames.alttext,
+            };
             templateContext.bodyTemplate = Selectors.IMAGE.template.body.insertImageDetailsBody;
             templateContext.footerTemplate = Selectors.IMAGE.template.footer.insertImageDetailsFooter;
             templateContext.selector = Selectors.IMAGE.type;
