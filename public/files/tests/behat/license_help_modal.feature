@@ -15,7 +15,7 @@ Feature: View licence links
     And I follow "Manage private files..."
     And I follow "Add..."
     And I follow "Upload a file"
-    And I click on "Help with Choose licence" "icon" in the "File picker" "dialogue"
+    And I click on "Help with Choose licence" "help_icon" in the "File picker" "dialogue"
     Then I should see "Follow these links for further information on the available licence options:"
 
   @javascript @_file_upload
@@ -26,7 +26,7 @@ Feature: View licence links
     And I press "Save changes"
     And I follow "Manage private files..."
     And I click on "empty.txt" "link" in the "Manage private files" "dialogue"
-    And I click on "Help with Choose licence" "icon"
+    And I click on "Help with Choose licence" "help_icon"
     Then I should see "Follow these links for further information on the available licence options:"
 
   @javascript @_file_upload
@@ -39,7 +39,7 @@ Feature: View licence links
     And I follow "Add..."
     And I click on "Recent files" "link" in the "File picker" "dialogue"
     And I click on "empty.txt" "link" in the "File picker" "dialogue"
-    And I click on "Help with Choose licence" "icon" in the ".fp-setlicense" "css_element"
+    And I click on "Help with Choose licence" "help_icon" in the ".fp-setlicense" "css_element"
     Then I should see "Follow these links for further information on the available licence options:"
 
   @javascript @_file_upload
@@ -52,5 +52,5 @@ Feature: View licence links
     And I follow "Add..."
     And I click on "Private files" "link" in the "File picker" "dialogue"
     And I click on "empty.txt" "link" in the "File picker" "dialogue"
-    And I click on "Help with Choose licence" "icon" in the ".fp-setlicense" "css_element"
+    And I click on "Help with Choose licence" "help_icon" in the ".fp-setlicense" "css_element"
     Then I should see "Follow these links for further information on the available licence options:"
