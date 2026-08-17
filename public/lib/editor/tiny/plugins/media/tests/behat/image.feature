@@ -51,7 +51,7 @@ Feature: Use the TinyMCE editor to upload an image
     # Note: This needs to be replaced with a label.
     And ".tiny_image_preview" "css_element" should be visible
 
-  @_file_upload
+  @_file_upload @accessibility
   Scenario: Resizing the image uses the original and custom sizes and the keep proportion checkbox
     Given I log in as "admin"
     When I open my profile in edit mode
@@ -59,6 +59,10 @@ Feature: Use the TinyMCE editor to upload an image
     And I click on "Browse repositories" "button" in the "Insert image" "dialogue"
     And I upload "lib/editor/tiny/tests/behat/fixtures/moodle-logo.png" to the file picker for TinyMCE
     And I click on "Decorative image" "checkbox"
+    # The decorative image help button is shown as soon as the details are.
+    And "Help with Decorative image" "help_icon" in the "Image details" "dialogue" should be visible
+    # The image size help button only appears once a custom size is being set.
+    And "Help with Image size" "help_icon" in the "Image details" "dialogue" should not be visible
     And I click on "Save" "button" in the "Image details" "dialogue"
     And I select the "img" element in position "0" of the "Description" TinyMCE editor
     And I click on the "Image" button for the "Description" TinyMCE editor
@@ -66,6 +70,8 @@ Feature: Use the TinyMCE editor to upload an image
     Then I should not see "Width" in the "Image details" "dialogue"
     And I should not see "Height" in the "Image details" "dialogue"
     And I click on "Custom" "button" in the "Image details" "dialogue"
+    And "Help with Image size" "help_icon" in the "Image details" "dialogue" should be visible
+    And the "Image details" "dialogue" should meet accessibility standards
     And I set the field "Width" to "102"
     And I click on "Save" "button" in the "Image details" "dialogue"
     And I select the "img" element in position "0" of the "Description" TinyMCE editor
