@@ -61,6 +61,88 @@ final class registration_test extends \advanced_testcase {
     }
 
     /**
+     * A component can add its own data to the site registration payload via a hook, without core
+     * knowing anything about that component. Verified with a fixture listener, standing in for a
+     * real component, rather than a real one, so that this test does not depend on any specific
+     * component's fields.
+     *
+     * @covers \core\hook\hub\site_registration_data
+     */
+    public function test_get_site_info_dispatches_hook(): void {
+        $this->resetAfterTest();
+        require_once(__DIR__ . '/../fixtures/hub/site_registration_callbacks.php');
+
+        \core\di::set(
+            \core\hook\manager::class,
+            \core\hook\manager::phpunit_get_instance([
+                'test_plugin1' => __DIR__ . '/../fixtures/hub/site_registration_hooks.php',
+            ]),
+        );
+
+        $siteinfo = registration::get_site_info();
+        $this->assertEquals('fixturevalue', $siteinfo['fixturefield']);
+    }
+
+    /**
+     * A component can describe, in its own words, the data it added via the hook above.
+     *
+     * @covers \core\hook\hub\site_registration_summary
+     */
+    public function test_get_stats_summary_dispatches_hook(): void {
+        $this->resetAfterTest();
+        require_once(__DIR__ . '/../fixtures/hub/site_registration_callbacks.php');
+
+        \core\di::set(
+            \core\hook\manager::class,
+            \core\hook\manager::phpunit_get_instance([
+                'test_plugin1' => __DIR__ . '/../fixtures/hub/site_registration_hooks.php',
+            ]),
+        );
+
+        $siteinfo = registration::get_site_info();
+        $summary = registration::get_stats_summary($siteinfo);
+        $this->assertStringContainsString('Fixture summary', $summary);
+    }
+
+    /**
+     * A component can flag its own fields as needing reconfirmation from a given core version,
+     * and that flows into both the confirmation check and the watermark registration::
+     * save_site_info() stores once the admin confirms.
+     *
+     * @covers \core\hook\hub\site_registration_new_fields
+     */
+    public function test_get_new_registration_fields_dispatches_hook(): void {
+        global $DB;
+        $this->resetAfterTest();
+        require_once(__DIR__ . '/../fixtures/hub/site_registration_callbacks.php');
+
+        \core\di::set(
+            \core\hook\manager::class,
+            \core\hook\manager::phpunit_get_instance([
+                'test_plugin1' => __DIR__ . '/../fixtures/hub/site_registration_hooks.php',
+            ]),
+        );
+
+        $DB->insert_record('registration_hubs', (object) [
+            'huburl' => HUB_MOODLEORGHUBURL,
+            'confirmed' => 1,
+            'name' => 'test',
+            'secret' => 'secret',
+            'privacy' => registration::HUB_SITENOTPUBLISHED,
+            'timemodified' => time(),
+            'token' => 'tok',
+        ]);
+        set_config('site_regupdateversion', 1, 'hub');
+
+        $this->assertContains('fixturefield', registration::get_new_registration_fields());
+
+        $formdata = (object) array_fill_keys(registration::FORM_FIELDS, null);
+        registration::save_site_info($formdata);
+        $this->assertNotContains('fixturefield', registration::get_new_registration_fields());
+        $this->assertEquals(2099010100, get_config('hub', 'site_regupdateversion'));
+    }
+
+    /**
      * Test getting the plugin usage data.
      */
     public function test_get_plugin_usage(): void {
