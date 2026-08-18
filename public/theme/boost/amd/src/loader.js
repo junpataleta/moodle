@@ -178,6 +178,11 @@ const enablePopovers = () => {
         if (!popoverTrigger) {
             return;
         }
+        if (popoverTrigger.classList.contains('help-icon') && popoverTrigger !== document.activeElement) {
+            // Safari and Firefox on macOS do not focus a <button> when it is clicked, and both the
+            // Escape key and focusout handling above rely on the trigger holding focus.
+            popoverTrigger.focus();
+        }
         const popover = Bootstrap.Popover.getOrCreateInstance(popoverTrigger);
         if (!popover._isShown()) {
             popover.show();
@@ -213,7 +218,7 @@ const enablePopovers = () => {
             // The trigger's aria-describedby points at the tip above. Per the accessible name/
             // description computation, a referenced element's own aria-label takes precedence
             // over its content, so pointing aria-describedby at the tip itself (which now has an
-            // aria-label) would make the description collapse to "Help" instead of the actual
+            // aria-label) would make the description collapse to that label instead of the actual
             // help text. Point it at the content element instead, which has no aria-label of
             // its own.
             const content = tip.querySelector('.popover-body');
