@@ -74,7 +74,7 @@ const showModal = async(e) => {
         modal.getTitlePromise().then((title) => {
             title.append(' ' + document.getElementById(SELECTORS.regradeAttemptsButtonId).dataset.helpIcon);
             // The next line is necessary to get a nice layout of the help icon.
-            title[0].querySelector('a').classList.add('align-baseline');
+            title[0].querySelector('.help-icon')?.classList.add('align-baseline');
             return title[0];
         }).catch(Notification.exception);
     } catch (ex) {
