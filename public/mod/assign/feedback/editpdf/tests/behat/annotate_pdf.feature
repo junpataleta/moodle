@@ -47,7 +47,7 @@ Feature: In an assignment, teacher can annotate PDF files during grading
     And I am on the "Test assignment name" Activity page logged in as student1
     And I follow "View annotated PDF..."
     Then I should see "Page 1 of 1"
-    And I click on ".closebutton" "css_element"
+    And I click on "Close" "button"
     And I press "Edit submission"
     And I upload "mod/assign/feedback/editpdf/tests/fixtures/submission.pdf" file to "File submissions" filemanager
     And I press "Save changes"
@@ -67,7 +67,7 @@ Feature: In an assignment, teacher can annotate PDF files during grading
     And I follow "View annotated PDF..."
     Then I should see "Page 1 of 3"
 
-  @javascript
+  @javascript @accessibility
   Scenario: Submit a PDF file as a student and annotate the PDF as a teacher
     Given ghostscript is installed
     And the following "courses" exist:
@@ -113,11 +113,18 @@ Feature: In an assignment, teacher can annotate PDF files during grading
     And I go to "Submitted for grading" "Test assignment name" activity advanced grading page
     And I change window size to "medium"
     Then I should see "Page 1 of 3"
+    # Assert on the toolbar before anything in it is clicked, so the resting colours are what
+    # gets measured rather than the hover and selected states left behind by a click.
+    And the "div.pageheader" "css_element" should meet accessibility standards
     And I click on ".navigate-next-button" "css_element"
     And I should see "Page 2 of 3"
     And I click on ".stampbutton" "css_element"
     And I click on ".linebutton" "css_element"
     And I click on ".commentcolourbutton" "css_element"
+    And I wait until ".assignfeedback_editpdf_dropdown" "css_element" exists
+    # The click that opened this dropdown left the pointer on the toolbar button outside it,
+    # so the dropdown itself is measured at rest.
+    And the ".assignfeedback_editpdf_dropdown" "css_element" should meet accessibility standards
     And I click on "//img[@alt=\"Blue\"]/parent::button" "xpath_element"
     And I wait until the page is ready
     And I press "Save changes"
