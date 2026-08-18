@@ -247,6 +247,25 @@ class colour_mode {
     }
 
     /**
+     * Whether the site's configured theme, rather than whichever theme is rendering the current page, is Boost or
+     * inherits from it.
+     *
+     * Used where there is no page to check against, such as the site registration hooks, which build the payload
+     * sent to Moodle.org and can run from cron or the CLI as well as from an admin page.
+     *
+     * @return bool
+     */
+    public static function is_site_theme_boost(): bool {
+        $themename = get_config('core', 'theme') ?: 'boost';
+        if ($themename === 'boost') {
+            return true;
+        }
+
+        $theme = \theme_config::load($themename);
+        return in_array('boost', $theme->parents, true);
+    }
+
+    /**
      * Render the navbar menu for switching between the colour modes.
      *
      * Nothing is rendered when colour modes are not turned on for the site, or for people who cannot store a user

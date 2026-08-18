@@ -37,4 +37,16 @@ $callbacks = [
         'hook' => \core\hook\output\before_standard_head_html_generation::class,
         'callback' => [\theme_boost\hook_listener::class, 'before_standard_head_html_generation_listener'],
     ],
+    [
+        'hook' => \core\hook\hub\site_registration_data::class,
+        'callback' => [\theme_boost\hook_listener::class, 'site_registration_data_listener'],
+    ],
+    [
+        'hook' => \core\hook\hub\site_registration_summary::class,
+        'callback' => [\theme_boost\hook_listener::class, 'site_registration_summary_listener'],
+    ],
+    [
+        'hook' => \core\hook\hub\site_registration_new_fields::class,
+        'callback' => [\theme_boost\hook_listener::class, 'site_registration_new_fields_listener'],
+    ],
 ];

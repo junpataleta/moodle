@@ -16,6 +16,9 @@
 
 namespace theme_boost;
 
+use core\hook\hub\site_registration_data;
+use core\hook\hub\site_registration_new_fields;
+use core\hook\hub\site_registration_summary;
 use core\hook\output\before_html_attributes;
 use core\hook\output\before_requirejs_config;
 use core\hook\output\before_standard_head_html_generation;
@@ -29,6 +32,22 @@ use core\output\html_writer;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hook_listener {
+    /**
+     * The site registration fields added by site_registration_data_listener(), keyed by the core version they
+     * were added in. Mirrors registration::CONFIRM_NEW_FIELDS, but for this plugin's own fields; declared to core
+     * via site_registration_new_fields_listener() so that admins are asked to reconfirm sending them.
+     */
+    private const REGISTRATION_FIELDS_ADDED = [
+        // Colour mode usage added in Moodle 5.3.
+        2026081800 => [
+            'colourmodesenabled',
+            'colourmodedefault',
+            'colourmodeuserslight',
+            'colourmodeusersdark',
+            'colourmodeusersauto',
+        ],
+    ];
+
     /**
      * Add imports for Bootstrap JS to the RequireJS map.
      *
@@ -144,5 +163,107 @@ class hook_listener {
             EOF;
 
         $hook->add_html(html_writer::script($js));
+    }
+
+    /**
+     * Add theme_boost colour mode data to the site registration payload.
+     *
+     * Skipped when the site's theme isn't Boost or a Boost-derived theme: the setting can still be
+     * changed from Boost's own settings page even then, but it has no effect on anything the site
+     * actually renders, so reporting it would be noise.
+     *
+     * @param site_registration_data $hook The hook object.
+     */
+    public static function site_registration_data_listener(site_registration_data $hook): void {
+        global $DB;
+
+        if (!colour_mode::is_site_theme_boost()) {
+            return;
+        }
+
+        $modeconfig = get_config('theme_boost', 'enablecolourmodes');
+        $hook->add_site_info('colourmodesenabled', (int) $modeconfig);
+
+        $defaultmode = get_config('theme_boost', 'defaultcolourmode');
+        if (!colour_mode::is_valid_mode($defaultmode)) {
+            $defaultmode = colour_mode::AUTO;
+        }
+        $hook->add_site_info('colourmodedefault', $defaultmode);
+
+        foreach (colour_mode::get_modes() as $mode) {
+            $hook->add_site_info('colourmodeusers' . $mode, 0);
+        }
+
+        $recordset = $DB->get_recordset_sql(
+            'SELECT value,
+                    COUNT(*) AS count
+               FROM {user_preferences}
+              WHERE name = :name
+              GROUP BY value',
+            ['name' => colour_mode::PREFERENCE],
+        );
+
+        foreach ($recordset as $preference) {
+            if (!colour_mode::is_valid_mode($preference->value)) {
+                continue;
+            }
+            $hook->add_site_info('colourmodeusers' . $preference->value, (int) $preference->count);
+        }
+        $recordset->close();
+    }
+
+    /**
+     * Describe, in theme_boost's own words, the colour mode data it added to the registration payload.
+     *
+     * @param site_registration_summary $hook The hook object.
+     */
+    public static function site_registration_summary_listener(site_registration_summary $hook): void {
+        $siteinfo = $hook->get_site_info();
+
+        if (!array_key_exists('colourmodesenabled', $siteinfo)) {
+            // This site's registration payload was not built with our site_registration_data listener attached.
+            return;
+        }
+
+        $hook->add_summary(
+            'colourmodesenabled',
+            get_string('colourmodesenabled', 'theme_boost', (int) $siteinfo['colourmodesenabled']),
+        );
+
+        $defaultmode = $siteinfo['colourmodedefault'];
+        if (!colour_mode::is_valid_mode($defaultmode)) {
+            $defaultmode = colour_mode::AUTO;
+        }
+        $hook->add_summary(
+            'colourmodedefault',
+            get_string('colourmodedefault', 'theme_boost', get_string('colourmode:' . $defaultmode, 'theme_boost')),
+        );
+
+        foreach (colour_mode::get_modes() as $mode) {
+            $hook->add_summary(
+                'colourmodeusers' . $mode,
+                get_string('colourmodeusers' . $mode, 'theme_boost', (int) ($siteinfo['colourmodeusers' . $mode] ?? 0)),
+            );
+        }
+    }
+
+    /**
+     * Declare which of the fields added by site_registration_data_listener() are new, so admins who already
+     * confirmed a previous registration are asked to reconfirm before it is next sent.
+     *
+     * Skipped on the same condition as site_registration_data_listener(), so a site never gets asked to
+     * reconfirm sending fields it doesn't actually send. If the site's theme later changes to Boost or a
+     * Boost-derived theme, this starts declaring them and the admin is asked to reconfirm at that point.
+     *
+     * @param site_registration_new_fields $hook The hook object.
+     */
+    public static function site_registration_new_fields_listener(site_registration_new_fields $hook): void {
+        if (!colour_mode::is_site_theme_boost()) {
+            return;
+        }
+
+        foreach (self::REGISTRATION_FIELDS_ADDED as $version => $fields) {
+            $hook->add_fields($version, $fields);
+        }
     }
 }

@@ -325,4 +325,90 @@ final class colour_mode_test extends \advanced_testcase {
 
         $this->assertSame([], $hook->get_attributes());
     }
+
+    /**
+     * The listener adds colour mode usage to the site registration payload.
+     */
+    public function test_site_registration_data_listener(): void {
+        global $DB;
+
+        set_config('defaultcolourmode', colour_mode::DARK, 'theme_boost');
+
+        $lightuser = $this->getDataGenerator()->create_user();
+        $darkuser = $this->getDataGenerator()->create_user();
+        $darkuser2 = $this->getDataGenerator()->create_user();
+        set_user_preference(colour_mode::PREFERENCE, colour_mode::LIGHT, $lightuser);
+        set_user_preference(colour_mode::PREFERENCE, colour_mode::DARK, $darkuser);
+        set_user_preference(colour_mode::PREFERENCE, colour_mode::DARK, $darkuser2);
+
+        $hook = new \core\hook\hub\site_registration_data([]);
+        hook_listener::site_registration_data_listener($hook);
+        $siteinfo = $hook->get_site_info();
+
+        $this->assertEquals(1, $siteinfo['colourmodesenabled']);
+        $this->assertEquals(colour_mode::DARK, $siteinfo['colourmodedefault']);
+        $this->assertEquals(1, $siteinfo['colourmodeuserslight']);
+        $this->assertEquals(2, $siteinfo['colourmodeusersdark']);
+        $this->assertEquals(0, $siteinfo['colourmodeusersauto']);
+
+        // An invalid stored default falls back to auto, rather than leaking the invalid value.
+        set_config('defaultcolourmode', 'chartreuse', 'theme_boost');
+        $hook = new \core\hook\hub\site_registration_data([]);
+        hook_listener::site_registration_data_listener($hook);
+        $this->assertEquals(colour_mode::AUTO, $hook->get_site_info()['colourmodedefault']);
+    }
+
+    /**
+     * The listener describes the colour mode data in its own strings.
+     */
+    public function test_site_registration_summary_listener(): void {
+        $siteinfo = [
+            'colourmodesenabled' => 1,
+            'colourmodedefault' => colour_mode::DARK,
+            'colourmodeuserslight' => 2,
+            'colourmodeusersdark' => 3,
+            'colourmodeusersauto' => 0,
+        ];
+
+        $hook = new \core\hook\hub\site_registration_summary($siteinfo);
+        hook_listener::site_registration_summary_listener($hook);
+        $summaries = $hook->get_summaries();
+
+        $this->assertEquals(get_string('colourmodesenabled', 'theme_boost', 1), $summaries['colourmodesenabled']);
+        $this->assertEquals(
+            get_string('colourmodedefault', 'theme_boost', get_string('colourmode:dark', 'theme_boost')),
+            $summaries['colourmodedefault'],
+        );
+        $this->assertEquals(get_string('colourmodeuserslight', 'theme_boost', 2), $summaries['colourmodeuserslight']);
+        $this->assertEquals(get_string('colourmodeusersdark', 'theme_boost', 3), $summaries['colourmodeusersdark']);
+        $this->assertEquals(get_string('colourmodeusersauto', 'theme_boost', 0), $summaries['colourmodeusersauto']);
+    }
+
+    /**
+     * Nothing is added when the payload was never populated by site_registration_data_listener().
+     */
+    public function test_site_registration_summary_listener_without_data(): void {
+        $hook = new \core\hook\hub\site_registration_summary([]);
+        hook_listener::site_registration_summary_listener($hook);
+
+        $this->assertSame([], $hook->get_summaries());
+    }
+
+    /**
+     * The listener declares its own fields as new, at the version it added them in.
+     */
+    public function test_site_registration_new_fields_listener(): void {
+        $hook = new \core\hook\hub\site_registration_new_fields();
+        hook_listener::site_registration_new_fields_listener($hook);
+
+        $this->assertEquals([
+            2026081800 => [
+                'colourmodesenabled',
+                'colourmodedefault',
+                'colourmodeuserslight',
+                'colourmodeusersdark',
+                'colourmodeusersauto',
+            ],
+        ], $hook->get_fields());
+    }
 }
