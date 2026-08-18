@@ -182,8 +182,8 @@
     resize: both;
 }
 
-.path-mod-assign td.submissioneditable {
-    color: red;
+.path-mod-assign .submissioneditable {
+    color: var(--danger);
 }
 
 .path-mod-assign .expandsummaryicon {
