@@ -54,6 +54,9 @@ class registration {
      * registration is manually confirmed, the scheduled task updating registration will continue to run but will
      * omit these fields from the payload, sending only the previously confirmed field set.
      * Keys of this array are not important as long as they increment, use current date to avoid confusions.
+     * This is for fields core itself adds to the payload. A component adding fields via the site_registration_data
+     * hook declares them via the site_registration_new_fields hook instead, keyed by its own versions, which are
+     * compared against a watermark kept for that component alone.
      */
     const CONFIRM_NEW_FIELDS = [
         2017092200 => [
@@ -93,6 +96,9 @@ class registration {
 
     /** @var stdClass cached site registration information */
     protected static $registration = null;
+
+    /** @var array<string, array<int, string[]>>|null Cached result of get_new_field_versions(). */
+    protected static ?array $newfieldversions = null;
 
     /**
      * Get site registration
@@ -262,6 +268,11 @@ class registration {
 
         // IMPORTANT: any new fields in siteinfo have to be added to the constant CONFIRM_NEW_FIELDS.
 
+        // Let components add their own data, once every core field is set so that none of them can be replaced.
+        $siteinfohook = new \core\hook\hub\site_registration_data($siteinfo);
+        \core\di::get(\core\hook\manager::class)->dispatch($siteinfohook);
+        $siteinfo = $siteinfohook->get_site_info();
+
         if ($excludefields) {
             $siteinfo = array_diff_key($siteinfo, array_flip($excludefields));
         }
@@ -328,6 +339,11 @@ class registration {
             'defaulthomepage' => get_string('defaulthomepage', 'hub', self::get_defaulthomepage_name($siteinfo['defaulthomepage'])),
         ];
 
+        // Allow components to describe, in their own words, the data they added to the payload.
+        $summaryhook = new \core\hook\hub\site_registration_summary($siteinfo);
+        \core\di::get(\core\hook\manager::class)->dispatch($summaryhook);
+        $senddata += $summaryhook->get_summaries();
+
         foreach ($senddata as $key => $str) {
             $class = in_array($key, $fieldsneedconfirm) ? ' needsconfirmation mark' : '';
             $summary .= html_writer::tag('li', $str, ['class' => 'site' . $key . $class]);
@@ -347,7 +363,19 @@ class registration {
         }
         // Even if the connection with the sites directory fails, admin has manually submitted the form which means they don't need
         // to be redirected to the site registration page any more.
-        set_config('site_regupdateversion', max(array_keys(self::CONFIRM_NEW_FIELDS)), 'hub');
+        self::confirm_new_fields();
+    }
+
+    /**
+     * Record that the admin has confirmed sending every field currently in the registration payload.
+     *
+     * Moves core's watermark, and that of each component declaring fields via the site_registration_new_fields
+     * hook, up to the latest version declared, so {@see self::get_new_registration_fields()} returns nothing.
+     */
+    public static function confirm_new_fields(): void {
+        foreach (self::get_new_field_versions() as $component => $versions) {
+            set_config(self::get_regupdateversion_name($component), max(array_keys($versions)), 'hub');
+        }
     }
 
     /**
@@ -732,10 +760,12 @@ class registration {
             return $fieldsneedconfirm;
         }
 
-        $lastupdated = (int)get_config('hub', 'site_regupdateversion');
-        foreach (self::CONFIRM_NEW_FIELDS as $version => $fields) {
-            if ($version > $lastupdated) {
-                $fieldsneedconfirm = array_merge($fieldsneedconfirm, $fields);
+        foreach (self::get_new_field_versions() as $component => $versions) {
+            $lastupdated = (int)get_config('hub', self::get_regupdateversion_name($component));
+            foreach ($versions as $version => $fields) {
+                if ($version > $lastupdated) {
+                    $fieldsneedconfirm = array_merge($fieldsneedconfirm, $fields);
+                }
             }
         }
         return $fieldsneedconfirm;
@@ -895,6 +925,34 @@ class registration {
             $message->contexturlname    = get_string('registerwithmoodleorgupdate', 'core_hub');
             message_send($message);
         }
+    }
+
+    /**
+     * The fields ever added to the site registration payload, keyed by component, then by version.
+     *
+     * Core's own fields come from CONFIRM_NEW_FIELDS, under 'core'. Other components declare theirs through
+     * the site_registration_new_fields hook. Cached for the request, as it is checked on every page that
+     * calls registration_reminder(); reset_caches() clears it.
+     *
+     * @return array<string, array<int, string[]>>
+     */
+    protected static function get_new_field_versions(): array {
+        if (self::$newfieldversions === null) {
+            $hook = new \core\hook\hub\site_registration_new_fields();
+            \core\di::get(\core\hook\manager::class)->dispatch($hook);
+            self::$newfieldversions = ['core' => self::CONFIRM_NEW_FIELDS] + $hook->get_fields();
+        }
+        return self::$newfieldversions;
+    }
+
+    /**
+     * The name of the hub config setting holding the last version of a component's fields the admin confirmed.
+     *
+     * @param string $component 'core', or the component that declared the fields
+     * @return string
+     */
+    protected static function get_regupdateversion_name(string $component): string {
+        return $component === 'core' ? 'site_regupdateversion' : 'site_regupdateversion_' . $component;
     }
 
     /**
@@ -1232,6 +1290,7 @@ class registration {
      */
     public static function reset_caches(): void {
         self::$registration = null;
+        self::$newfieldversions = null;
         \cache::make('core', 'hub_filepoolusage')->purge();
     }
 

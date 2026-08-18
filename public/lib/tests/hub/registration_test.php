@@ -17,6 +17,7 @@
 namespace core\hub;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Class containing unit tests for the site registration class.
@@ -26,6 +27,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 #[CoversClass(registration::class)]
+#[CoversClass(\core\hook\hub\site_registration_data::class)]
+#[CoversClass(\core\hook\hub\site_registration_new_fields::class)]
+#[CoversClass(\core\hook\hub\site_registration_summary::class)]
 final class registration_test extends \advanced_testcase {
     /**
      * Clear the static registration cache so each test sees the current database state.
@@ -73,6 +77,129 @@ final class registration_test extends \advanced_testcase {
         $this->assertEquals('manual', $siteinfo['primaryauthtype']);
         $this->assertEquals(1, $siteinfo['coursesnodates']);
         $this->assertGreaterThan(0, $siteinfo['diskusage']);
+    }
+
+    /**
+     * A component can add its own data to the site registration payload via a hook, without core
+     * knowing anything about that component. Verified with a fixture listener, standing in for a
+     * real component, rather than a real one, so that this test does not depend on any specific
+     * component's fields.
+     */
+    public function test_get_site_info_dispatches_hook(): void {
+        $this->resetAfterTest();
+        require_once(__DIR__ . '/../fixtures/hub/site_registration_callbacks.php');
+
+        \core\di::set(
+            \core\hook\manager::class,
+            \core\hook\manager::phpunit_get_instance([
+                'test_plugin1' => __DIR__ . '/../fixtures/hub/site_registration_hooks.php',
+            ]),
+        );
+
+        $siteinfo = registration::get_site_info();
+        $this->assertEquals('fixturevalue', $siteinfo['fixturefield']);
+    }
+
+    /**
+     * A component can describe, in its own words, the data it added via the hook above.
+     */
+    public function test_get_stats_summary_dispatches_hook(): void {
+        $this->resetAfterTest();
+        require_once(__DIR__ . '/../fixtures/hub/site_registration_callbacks.php');
+
+        \core\di::set(
+            \core\hook\manager::class,
+            \core\hook\manager::phpunit_get_instance([
+                'test_plugin1' => __DIR__ . '/../fixtures/hub/site_registration_hooks.php',
+            ]),
+        );
+
+        $siteinfo = registration::get_site_info();
+        $summary = registration::get_stats_summary($siteinfo);
+        $this->assertStringContainsString('Fixture summary', $summary);
+    }
+
+    /**
+     * A component can flag its own fields as needing reconfirmation from a given version of its
+     * own, and that flows into both the confirmation check and the watermark registration::
+     * save_site_info() stores for that component once the admin confirms. Core's watermark is
+     * kept apart, so a component's version numbers cannot move it.
+     */
+    public function test_get_new_registration_fields_dispatches_hook(): void {
+        global $DB;
+        $this->resetAfterTest();
+        require_once(__DIR__ . '/../fixtures/hub/site_registration_callbacks.php');
+
+        \core\di::set(
+            \core\hook\manager::class,
+            \core\hook\manager::phpunit_get_instance([
+                'test_plugin1' => __DIR__ . '/../fixtures/hub/site_registration_hooks.php',
+            ]),
+        );
+
+        $DB->insert_record('registration_hubs', (object) [
+            'huburl' => HUB_MOODLEORGHUBURL,
+            'confirmed' => 1,
+            'name' => 'test',
+            'secret' => 'secret',
+            'privacy' => registration::HUB_SITENOTPUBLISHED,
+            'timemodified' => time(),
+            'token' => 'tok',
+        ]);
+        set_config('site_regupdateversion', 1, 'hub');
+
+        $this->assertContains('fixturefield', registration::get_new_registration_fields());
+
+        $formdata = (object) array_fill_keys(registration::FORM_FIELDS, null);
+        registration::save_site_info($formdata);
+        $this->assertNotContains('fixturefield', registration::get_new_registration_fields());
+        $this->assertEquals(2099010100, get_config('hub', 'site_regupdateversion_test_plugin1'));
+        $this->assertEquals(
+            max(array_keys(registration::CONFIRM_NEW_FIELDS)),
+            get_config('hub', 'site_regupdateversion'),
+        );
+    }
+
+    /**
+     * A component cannot replace a field already in the payload, whether core's or another component's.
+     */
+    public function test_site_registration_data_does_not_replace_fields(): void {
+        $hook = new \core\hook\hub\site_registration_data(['url' => 'https://example.com']);
+
+        $hook->add_site_info('url', 'https://example.org');
+        $this->assertDebuggingCalled();
+        $this->assertEquals('https://example.com', $hook->get_site_info()['url']);
+
+        $hook->add_site_info('newfield', 1);
+        $hook->add_site_info('newfield', 2);
+        $this->assertDebuggingCalled();
+        $this->assertEquals(1, $hook->get_site_info()['newfield']);
+    }
+
+    /**
+     * Components must name themselves when declaring new fields, and cannot declare them as core.
+     *
+     * @param string $component
+     */
+    #[DataProvider('site_registration_new_fields_invalid_component_provider')]
+    public function test_site_registration_new_fields_invalid_component(string $component): void {
+        $hook = new \core\hook\hub\site_registration_new_fields();
+
+        $this->expectException(\coding_exception::class);
+        $hook->add_fields($component, 2026111700, ['somefield']);
+    }
+
+    /**
+     * Data provider for test_site_registration_new_fields_invalid_component().
+     *
+     * @return array
+     */
+    public static function site_registration_new_fields_invalid_component_provider(): array {
+        return [
+            'core' => ['core'],
+            'empty' => [''],
+            'not a component name' => ['Theme Boost!'],
+        ];
     }
 
     /**
@@ -417,7 +544,7 @@ final class registration_test extends \advanced_testcase {
     public function test_get_reporting_paused_reason_reporting_normally(): void {
         $this->resetAfterTest();
         $this->register_site();
-        set_config('site_regupdateversion', max(array_keys(registration::CONFIRM_NEW_FIELDS)), 'hub');
+        registration::confirm_new_fields();
 
         $this->assertSame('', registration::get_reporting_paused_reason());
     }
@@ -439,7 +566,7 @@ final class registration_test extends \advanced_testcase {
     public function test_get_reporting_paused_reason_task_disabled(): void {
         $this->resetAfterTest();
         $this->register_site();
-        set_config('site_regupdateversion', max(array_keys(registration::CONFIRM_NEW_FIELDS)), 'hub');
+        registration::confirm_new_fields();
 
         $task = \core\task\manager::get_scheduled_task(\core\task\registration_cron_task::class);
         $task->set_disabled(true);
@@ -486,7 +613,7 @@ final class registration_test extends \advanced_testcase {
         $this->assertCount(1, $sink->get_messages());
 
         // Once reporting resumes, the flag is cleared and a fresh pause notifies again.
-        set_config('site_regupdateversion', max(array_keys(registration::CONFIRM_NEW_FIELDS)), 'hub');
+        registration::confirm_new_fields();
         registration::check_reporting_paused_notification();
         $this->assertCount(1, $sink->get_messages());
 
@@ -508,7 +635,7 @@ final class registration_test extends \advanced_testcase {
         $sink = $this->redirectMessages();
 
         $this->register_site();
-        set_config('site_regupdateversion', max(array_keys(registration::CONFIRM_NEW_FIELDS)), 'hub');
+        registration::confirm_new_fields();
 
         $task = \core\task\manager::get_scheduled_task(\core\task\registration_cron_task::class);
         $task->set_disabled(true);
@@ -589,7 +716,7 @@ final class registration_test extends \advanced_testcase {
     public function test_get_registration_page_notification_task_disabled(): void {
         $this->resetAfterTest();
         $this->register_site();
-        set_config('site_regupdateversion', max(array_keys(registration::CONFIRM_NEW_FIELDS)), 'hub');
+        registration::confirm_new_fields();
 
         $task = \core\task\manager::get_scheduled_task(\core\task\registration_cron_task::class);
         $task->set_disabled(true);
@@ -608,7 +735,7 @@ final class registration_test extends \advanced_testcase {
     public function test_get_registration_page_notification_reporting_normally(): void {
         $this->resetAfterTest();
         $this->register_site();
-        set_config('site_regupdateversion', max(array_keys(registration::CONFIRM_NEW_FIELDS)), 'hub');
+        registration::confirm_new_fields();
 
         $notification = registration::get_registration_page_notification(true, false);
         $this->assertSame(\core\output\notification::NOTIFY_INFO, $notification['type']);

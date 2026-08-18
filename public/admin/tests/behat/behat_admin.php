@@ -152,7 +152,7 @@ class behat_admin extends behat_base {
             'secret' => 'behatsecret',
             'timemodified' => time(),
         ]);
-        set_config('site_regupdateversion', max(array_keys(\core\hub\registration::CONFIRM_NEW_FIELDS)), 'hub');
+        \core\hub\registration::confirm_new_fields();
     }
 
     /**

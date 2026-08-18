@@ -74,7 +74,7 @@ final class renderer_test extends \advanced_testcase {
             'secret' => 'secret123',
             'timemodified' => time(),
         ]);
-        set_config('site_regupdateversion', max(array_keys(\core\hub\registration::CONFIRM_NEW_FIELDS)), 'hub');
+        \core\hub\registration::confirm_new_fields();
     }
 
     /**

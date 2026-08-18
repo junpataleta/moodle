@@ -1,0 +1,27 @@
+issueNumber: MDL-89364
+notes:
+  core:
+    - message: >-
+        Components can now contribute their own data to the site registration
+        payload sent to the Moodle sites directory, via three new hooks in
+        `\core\hook\hub`:
+
+        * `site_registration_data`, dispatched from
+        `\core\hub\registration::get_site_info()`, to add values to the
+        payload. Fields already in the payload cannot be replaced.
+
+        * `site_registration_summary`, dispatched from
+        `\core\hub\registration::get_stats_summary()`, to describe those values
+        on the admin confirmation screen.
+
+        * `site_registration_new_fields`, dispatched when
+        `\core\hub\registration` works out which fields the admin still has to
+        confirm, to declare a component's fields by the component version that
+        added them. Each component's confirmed version is tracked separately
+        from core's.
+      type: improved
+    - message: >-
+        `\core\hub\registration::confirm_new_fields()` has been added, to
+        record that every field currently in the site registration payload,
+        core's and other components', has been confirmed by the admin.
+      type: improved
