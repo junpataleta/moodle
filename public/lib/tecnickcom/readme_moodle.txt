@@ -122,3 +122,25 @@ the tagged document. Check that the accented text renders, that the logo is
 embedded, and that the structure tree is present. The unit tests cover the
 tagging and the coexistence with TCPDF's font path, and component_test
 validates the thirdpartylibs.xml and namespace changes from step 3.
+
+\core\pdf\document also overrides the library's protected
+setPageStructParents(), to work around an upstream bug that gives the pages of
+a document longer than about ten pages two conflicting structure tree keys.
+Check whether the new version fixes it, and drop the override if it does.
+document_test checks the result either way.
+
+It also wraps addHTMLCell() and getHTMLCell() to parse HTML under the C
+character type locale. The HTML parser collapses white space with regular
+expressions that lack the u modifier, and under some locales, notably on macOS
+and possibly Windows, \s then matches byte 0xA0, which ends characters such as
+"à". The cell is then no longer valid UTF-8 and is silently discarded. Check
+whether the new version adds the u modifier to those expressions, and drop the
+wrapper if it does. document_test has a test for it, which only runs where the
+system has a locale that triggers the bug.
+
+Finally, it overrides forbidsUnmappedGlyphs(). The library suspends tagging to
+repeat a table's header row on a new page, and while it is suspended it draws
+characters the font has no glyph for as .notdef, which PDF/UA forbids. Check
+whether the new version keeps leaving those characters out while tagging is
+suspended, and drop the override if it does. document_test checks the result
+either way.
