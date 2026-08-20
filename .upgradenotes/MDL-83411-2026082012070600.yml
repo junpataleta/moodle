@@ -1,0 +1,17 @@
+issueNumber: MDL-83411
+notes:
+  core:
+    - message: >-
+        The tc-lib-pdf library has been added, and is now the preferred library
+        for generating PDF documents. The new `\core\pdf\document` class wraps
+        it with the Moodle defaults for language, metadata, fonts and local file
+        access, and emits tagged PDF/UA output by default so that generated
+        documents are accessible to assistive technology.
+      type: added
+    - message: >-
+        The `\pdf` class in `lib/pdflib.php`, which wraps TCPDF, is now
+        discouraged for new code because TCPDF cannot produce tagged output. It
+        is unchanged and continues to be supported, so existing code and plugins
+        that extend it keep working. Whether TCPDF is eventually removed is
+        being tracked separately.
+      type: changed
