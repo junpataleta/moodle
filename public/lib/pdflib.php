@@ -20,6 +20,11 @@
  *
  * We currently use the TCPDF library by Nicola Asuni.
  *
+ * NOTE: TCPDF cannot produce tagged PDF documents, so the files it generates are not accessible
+ * to assistive technology. New code should use {@see \core\pdf\document} instead, which wraps
+ * tc-lib-pdf and emits tagged PDF/UA output by default. This file is retained for backwards
+ * compatibility, and for mod_assign's PDF annotation feature, which depends on FPDI.
+ *
  * The default location for fonts that are included with TCPDF is
  * lib/tcpdf/fonts/. If PDF_CUSTOM_FONT_PATH exists, this directory
  * will be used instead of lib/tcpdf/fonts/, the default location is
@@ -128,8 +133,14 @@ define('K_PATH_MAIN', $CFG->dirroot.'/lib/tcpdf/');
 /** URL path to tcpdf installation folder */
 define('K_PATH_URL', $CFG->wwwroot . '/lib/tcpdf/');
 
-/** cache directory for temporary files (full path) */
-define('K_PATH_CACHE', $CFG->cachedir . '/tcpdf/');
+// Cache directory for temporary files (full path).
+//
+// Guarded because tc-lib-pdf, the library that supersedes TCPDF, reads and defines this same
+// constant (see lib/tecnickcom/tc-lib-file/src/Cache.php). Whichever of the two libraries is
+// loaded first in a request wins, so both must agree on the value and neither may redefine it.
+if (!defined('K_PATH_CACHE')) {
+    define('K_PATH_CACHE', $CFG->cachedir . '/tcpdf/');
+}
 
 /** images directory */
 define('K_PATH_IMAGES', $CFG->dirroot . '/');
