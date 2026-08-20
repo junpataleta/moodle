@@ -199,6 +199,174 @@
     <repository>https://github.com/simplepie/simplepie</repository>
   </library>
   <library>
+    <location>tecnickcom/tc-lib-barcode</location>
+    <name>tc-lib-barcode</name>
+    <description>Barcode generator supporting 1D and 2D barcode formats</description>
+    <version>2.13.3</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-barcode</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-color</location>
+    <name>tc-lib-color</name>
+    <description>Colour model definitions and conversions</description>
+    <version>2.13.4</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-color</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-file</location>
+    <name>tc-lib-file</name>
+    <description>File and byte-stream utilities</description>
+    <version>3.7.4</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-file</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-pdf</location>
+    <name>tc-lib-pdf</name>
+    <description>Class to generate PDF files, including tagged PDF/UA and PDF/A output</description>
+    <version>8.69.0</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-pdf</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-pdf-encrypt</location>
+    <name>tc-lib-pdf-encrypt</name>
+    <description>PDF encryption support</description>
+    <version>2.9.4</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-pdf-encrypt</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-pdf-filter</location>
+    <name>tc-lib-pdf-filter</name>
+    <description>PDF stream filters and decoders</description>
+    <version>2.10.4</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-pdf-filter</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-pdf-font</location>
+    <name>tc-lib-pdf-font</name>
+    <description>PDF font loading, subsetting and embedding</description>
+    <version>4.0.1</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-pdf-font</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-pdf-graph</location>
+    <name>tc-lib-pdf-graph</name>
+    <description>PDF vector graphics primitives</description>
+    <version>2.15.3</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-pdf-graph</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-pdf-image</location>
+    <name>tc-lib-pdf-image</name>
+    <description>PDF raster image handling</description>
+    <version>3.12.3</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-pdf-image</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-pdf-page</location>
+    <name>tc-lib-pdf-page</name>
+    <description>PDF page formats, regions and layout</description>
+    <version>4.14.3</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-pdf-page</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-pdf-parser</location>
+    <name>tc-lib-pdf-parser</name>
+    <description>PDF document parser</description>
+    <version>3.14.3</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-pdf-parser</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-pdf-sign</location>
+    <name>tc-lib-pdf-sign</name>
+    <description>PDF digital signature support</description>
+    <version>1.1.4</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-pdf-sign</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-unicode</location>
+    <name>tc-lib-unicode</name>
+    <description>Unicode and bidirectional text processing</description>
+    <version>3.0.3</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-unicode</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>tecnickcom/tc-lib-unicode-data</location>
+    <name>tc-lib-unicode-data</name>
+    <description>Unicode character data tables</description>
+    <version>3.0.3</version>
+    <license>LGPL</license>
+    <licenseversion>3.0-or-later</licenseversion>
+    <repository>https://github.com/tecnickcom/tc-lib-unicode-data</repository>
+    <copyrights>
+      <copyright>Nicola Asuni</copyright>
+    </copyrights>
+  </library>
+  <library>
     <location>tcpdf</location>
     <name>TCPDF</name>
     <description>Class to generate PDF files</description>
