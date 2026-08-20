@@ -23,6 +23,7 @@
  */
 
 $string['dataformat'] = 'Portable Document Format (.pdf)';
+$string['exporttoolarge'] = 'This export is too large to be generated as a PDF. Download it in another format, or filter the data to export less of it.';
 $string['privacy:metadata'] = 'The PDF data format plugin does not store any personal data.';
 $string['shortname'] = 'PDF';
 
