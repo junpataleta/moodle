@@ -113,3 +113,10 @@ the tagged document. Check that the accented text renders, that the logo is
 embedded, and that the structure tree is present. The unit tests cover the
 tagging and the coexistence with TCPDF's font path, and component_test
 validates the thirdpartylibs.xml and namespace changes from step 3.
+
+\core\pdf\document also overrides the library's protected
+setPageStructParents(), to work around an upstream bug that gives the pages of
+a document longer than about ten pages two conflicting structure tree keys,
+reported as https://github.com/tecnickcom/tc-lib-pdf/issues/333. Check whether
+the new version fixes it, and drop the override if it does. document_test
+checks the result either way.
