@@ -29,46 +29,78 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * pdf data format writer
  *
+ * The exported table is built up as HTML and handed to the PDF library, which takes care of
+ * pagination and of repeating the header row on each page, and in return gives us a properly tagged
+ * table, so that the exported document can be navigated by a screen reader.
+ *
+ * Rows are rendered a batch at a time rather than all at once, because parsing the HTML costs more
+ * memory than the finished pages do. A large export is therefore a run of tables, one per batch,
+ * each with its own header row.
+ *
  * @package    dataformat_pdf
  * @copyright  2019 Shamim Rezaie <shamim@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class writer extends \core\dataformat\base {
 
+    /** @var float Page margin, in millimetres. */
+    protected const MARGIN = 10;
+
+    /** @var int Number of buffered cells at which the rows so far are rendered. */
+    protected const BATCH_CELLS = 4000;
+
+    /**
+     * @var float Share of the memory limit an export may use before it is stopped.
+     *
+     * Assembling the finished file was measured to need a further 60% or so of what the document
+     * already holds, so the rest of the limit is kept back for that.
+     */
+    protected const MEMORY_SHARE = 0.55;
+
     public $mimetype = "application/pdf";
 
     public $extension = ".pdf";
 
     /**
-     * @var \pdf The pdf object that is used to generate the pdf file.
+     * @var \core\pdf\document The pdf object that is used to generate the pdf file.
      */
     protected $pdf;
 
     /**
-     * @var float Each column's width in the current sheet.
-     */
-    protected $colwidth;
-
-    /**
      * @var string[] Title of columns in the current sheet.
      */
-    protected $columns;
+    protected $columns = [];
+
+    /**
+     * @var string[] Rows of the current sheet, as HTML, awaiting output.
+     */
+    protected $rows = [];
+
+    /**
+     * @var int Number of cells in the rows awaiting output.
+     */
+    protected $bufferedcells = 0;
+
+    /**
+     * @var float|null Where the next batch starts on the current page, or null for the top margin.
+     */
+    protected $nexty = null;
+
+    /**
+     * @var bool Whether any part of the current sheet has been rendered yet.
+     */
+    protected $sheetstarted = false;
 
     /**
      * writer constructor.
      */
     public function __construct() {
-        global $CFG;
-        require_once($CFG->libdir . '/pdflib.php');
-
-        $this->pdf = new \pdf();
-        $this->pdf->setPrintHeader(false);
-        $this->pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-
-        // Set background color for headings.
-        $this->pdf->SetFillColor(238, 238, 238);
+        $this->pdf = new \core\pdf\document();
     }
 
+    /**
+     * The document is not sent until it is complete, so there are no headers to send up front
+     */
     public function send_http_headers() {
     }
 
@@ -79,18 +111,44 @@ class writer extends \core\dataformat\base {
         $this->start_output();
     }
 
+    /**
+     * Begin the document, and add the first page
+     */
     public function start_output() {
-        $this->pdf->AddPage('L');
+        global $SITE;
+
+        // The structure tree that makes the output accessible is substantial, and the library keeps the
+        // whole document in memory until it is output. An eight column export measured about 30KB per
+        // row, against about 6KB for the untagged output this replaced. Moodle only requires a 96MB
+        // limit, so ask for the larger allocation that other bulk operations use.
+        raise_memory_limit(MEMORY_EXTRA);
+
+        // A tagged document has to declare a title. The file name is the best one we have, and the site
+        // name stands in for it when the caller did not set one.
+        $title = (string) $this->filename;
+        if ($title === '') {
+            $title = format_string($SITE->fullname, true, [
+                'context' => \core\context\system::instance(),
+                'escape' => false,
+            ]);
+        }
+        $this->pdf->setTitle($title);
+
+        // Note addPage() rather than page->add(): the former also tells the graphics layer the page
+        // dimensions, without which cell borders and background fills are not drawn.
+        $this->pdf->addPage(['format' => 'A4', 'orientation' => 'L']);
     }
 
+    /**
+     * Begin a sheet, recording its column headings
+     *
+     * @param array $columns
+     */
     public function start_sheet($columns) {
-        $margins = $this->pdf->getMargins();
-        $pagewidth = $this->pdf->getPageWidth() - $margins['left'] - $margins['right'];
-
-        $this->colwidth = $pagewidth / count($columns);
         $this->columns = $columns;
-
-        $this->print_heading($this->pdf);
+        $this->rows = [];
+        $this->bufferedcells = 0;
+        $this->sheetstarted = false;
     }
 
     /**
@@ -103,11 +161,8 @@ class writer extends \core\dataformat\base {
     }
 
     /**
-     * When exporting images, we need to return their Base64 encoded content. Otherwise TCPDF will create a HTTP
-     * request for them, which will lead to the login page (i.e. not the image it expects) and throw an exception
-     *
-     * Note: ideally we would copy the file to a temp location and return it's path, but a bug in TCPDF currently
-     * prevents that
+     * When exporting images, we need to return their Base64 encoded content as a data URI. Otherwise the PDF library
+     * would create a HTTP request for them, which will lead to the login page (i.e. not the image it expects)
      *
      * @param \stored_file $file
      * @return string|null
@@ -115,8 +170,20 @@ class writer extends \core\dataformat\base {
     protected function export_html_image_source(\stored_file $file): ?string {
         // Set upper dimensions for embedded images.
         $resizedimage = $file->resize_image(400, 300);
+        if ($resizedimage === false) {
+            // The file could not be read as an image. Leave the original source alone.
+            return null;
+        }
 
-        return '@' . base64_encode($resizedimage);
+        // The resize emits either PNG or JPEG depending on what the server supports, and does not report
+        // which, so the type has to be read back out of the returned data.
+        $imageinfo = @getimagesizefromstring($resizedimage);
+        $mimetype = $imageinfo['mime'] ?? $file->get_mimetype();
+        if (empty($mimetype)) {
+            return null;
+        }
+
+        return 'data:' . $mimetype . ';base64,' . base64_encode($resizedimage);
     }
 
     /**
@@ -126,54 +193,121 @@ class writer extends \core\dataformat\base {
      * @param int $rownum
      */
     public function write_record($record, $rownum) {
-        $rowheight = 0;
-
-        $record = $this->format_record($record);
-        foreach ($record as $cell) {
-            // We need to calculate the row height (accounting for any content). Unfortunately TCPDF doesn't provide an easy
-            // method to do that, so we create a second PDF inside a transaction, add cell content and use the largest cell by
-            // height. Solution similar to that at https://stackoverflow.com/a/1943096.
-            $pdf2 = clone $this->pdf;
-            $pdf2->startTransaction();
-            $numpages = $pdf2->getNumPages();
-            $pdf2->AddPage('L');
-            $this->print_heading($pdf2);
-            $pdf2->writeHTMLCell($this->colwidth, 0, '', '', $cell, 1, 1, false, true, 'L');
-            $pagesadded = $pdf2->getNumPages() - $numpages;
-            $margins = $pdf2->getMargins();
-            $pageheight = $pdf2->getPageHeight() - $margins['top'] - $margins['bottom'];
-            $cellheight = ($pagesadded - 1) * $pageheight + $pdf2->getY() - $margins['top'] - $this->get_heading_height();
-            $rowheight = max($rowheight, $cellheight);
-            $pdf2->rollbackTransaction();
+        $cells = '';
+        foreach ($this->format_record($record) as $cell) {
+            // Cell content is already formatted, and may legitimately contain HTML.
+            $cells .= \html_writer::tag('td', (string) $cell);
+            $this->bufferedcells++;
         }
 
-        $margins = $this->pdf->getMargins();
-        if ($this->pdf->getNumPages() > 1 &&
-                ($this->pdf->GetY() + $rowheight + $margins['bottom'] > $this->pdf->getPageHeight())) {
-            $this->pdf->AddPage('L');
-            $this->print_heading($this->pdf);
-        }
+        $this->rows[] = \html_writer::tag('tr', $cells);
 
-        // Get the last key for this record.
-        end($record);
-        $lastkey = key($record);
-
-        // Reset the record pointer.
-        reset($record);
-
-        // Loop through each element.
-        foreach ($record as $key => $cell) {
-            // Determine whether we're at the last element of the record.
-            $nextposition = ($lastkey === $key) ? 1 : 0;
-            // Write the element.
-            $this->pdf->writeHTMLCell($this->colwidth, $rowheight, '', '', $cell, 1, $nextposition, false, true, 'L');
+        if ($this->bufferedcells >= static::BATCH_CELLS) {
+            $this->render_buffered_rows();
         }
     }
 
+    /**
+     * Render whatever is left of the sheet
+     *
+     * @param array $columns
+     */
+    public function close_sheet($columns) {
+        // A sheet with headings and no rows is still output, as a table with only its header row.
+        if ($this->rows || ($this->columns && !$this->sheetstarted)) {
+            $this->render_buffered_rows();
+        }
+
+        $this->columns = [];
+        $this->rows = [];
+        $this->bufferedcells = 0;
+    }
+
+    /**
+     * Render the buffered rows as a table, directly below anything already rendered
+     *
+     * @throws \core\exception\moodle_exception When the export has grown too large to finish.
+     */
+    protected function render_buffered_rows(): void {
+        $region = $this->pdf->page->getRegion();
+        $this->pdf->addHTMLCell(
+            html: $this->get_sheet_html(),
+            posx: self::MARGIN,
+            posy: $this->nexty ?? self::MARGIN,
+            width: $region['RW'] - (self::MARGIN * 2),
+            height: 0,
+        );
+
+        $this->nexty = $this->pdf->getLastHTMLCellEnd()['y'];
+        $this->sheetstarted = true;
+        $this->rows = [];
+        $this->bufferedcells = 0;
+
+        // The document only ever grows, and nothing is sent until it is complete. Stopping here with a
+        // message the user can act on is better than running out of memory part way through, which
+        // would leave them with a blank page.
+        $limit = $this->get_memory_limit();
+        if ($limit > 0 && memory_get_usage() > $limit * static::MEMORY_SHARE) {
+            throw new \core\exception\moodle_exception('exporttoolarge', 'dataformat_pdf');
+        }
+    }
+
+    /**
+     * The memory available to this request, in bytes
+     *
+     * @return int Zero or less when there is no limit.
+     */
+    protected function get_memory_limit(): int {
+        $limit = ini_get('memory_limit');
+        if ($limit === false || $limit === '' || (int) $limit < 0) {
+            return 0;
+        }
+
+        return get_real_size($limit);
+    }
+
+    /**
+     * Build the HTML table for the current sheet
+     *
+     * @return string
+     */
+    protected function get_sheet_html(): string {
+        // The appearance is defined once in a style block rather than inline on every cell, which keeps the
+        // generated markup small when an export runs to thousands of rows.
+        $css = '
+            table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+            th, td { border: 1px solid #000000; padding: 3px; vertical-align: top; }
+            th { background-color: #eeeeee; font-weight: bold; text-align: center; }
+        ';
+
+        // Equal column widths, matching how the table was laid out before.
+        $colwidth = count($this->columns) ? round(100 / count($this->columns), 4) : 100;
+
+        $headings = '';
+        foreach ($this->columns as $column) {
+            $headings .= \html_writer::tag('th', s((string) $column), [
+                'scope' => 'col',
+                'style' => "width: {$colwidth}%;",
+            ]);
+        }
+
+        // The header row goes inside a thead so that the library repeats it on each new page.
+        $table = \html_writer::tag('thead', \html_writer::tag('tr', $headings));
+        $table .= \html_writer::tag('tbody', implode('', $this->rows));
+
+        return \html_writer::tag('style', $css) . \html_writer::tag('table', $table);
+    }
+
+    /**
+     * Send the generated document to the browser as a download
+     */
     public function close_output() {
+        global $CFG;
+        require_once($CFG->libdir . '/filelib.php');
+
         $filename = $this->filename . $this->get_extension();
 
-        $this->pdf->Output($filename, 'D');
+        send_file($this->pdf->getOutPDFString(), $filename, 0, 0, true, true, $this->mimetype, true);
     }
 
     /**
@@ -182,42 +316,6 @@ class writer extends \core\dataformat\base {
      * @return bool
      */
     public function close_output_to_file(): bool {
-        $this->pdf->Output($this->filepath, 'F');
-
-        return true;
-    }
-
-    /**
-     * Prints the heading row for a given PDF.
-     *
-     * @param \pdf $pdf A pdf to print headings in
-     */
-    private function print_heading(\pdf $pdf) {
-        $fontfamily = $pdf->getFontFamily();
-        $fontstyle = $pdf->getFontStyle();
-        $pdf->SetFont($fontfamily, 'B');
-
-        $total = count($this->columns);
-        $counter = 1;
-        foreach ($this->columns as $columns) {
-            $nextposition = ($counter == $total) ? 1 : 0;
-            $pdf->Multicell($this->colwidth, $this->get_heading_height(), $columns, 1, 'C', true, $nextposition);
-            $counter++;
-        }
-
-        $pdf->SetFont($fontfamily, $fontstyle);
-    }
-
-    /**
-     * Returns the heading height.
-     *
-     * @return int
-     */
-    private function get_heading_height() {
-        $height = 0;
-        foreach ($this->columns as $columns) {
-            $height = max($height, $this->pdf->getStringHeight($this->colwidth, $columns, false, true, '', 1));
-        }
-        return $height;
+        return file_put_contents($this->filepath, $this->pdf->getOutPDFString()) !== false;
     }
 }
