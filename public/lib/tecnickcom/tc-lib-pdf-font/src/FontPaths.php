@@ -91,6 +91,27 @@ class FontPaths
         return $resolved;
     }
 
+    // MOODLE PATCH: K_PATH_ADDITIONAL_FONTS is a second font directory, so that a site can add fonts
+    // outside both this package and K_PATH_FONTS, which belongs to TCPDF in Moodle. It is searched
+    // through Load::findFontDirectories() rather than naming the file explicitly, which keeps the
+    // style fallback there that synthesises bold and italic from a base family.
+    // See lib/tecnickcom/readme_moodle.txt.
+
+    /**
+     * Returns the additional font directory set by K_PATH_ADDITIONAL_FONTS, if any.
+     *
+     * @return string Directory path, or an empty string when it is not set.
+     */
+    public static function getAdditionalPath(): string
+    {
+        if (!\defined('K_PATH_ADDITIONAL_FONTS')) {
+            return '';
+        }
+
+        return \rtrim((string) \constant('K_PATH_ADDITIONAL_FONTS'), '/\\');
+    }
+    // END MOODLE PATCH.
+
     /**
      * Returns the full path of a font file, or an empty string when it is not found.
      *
@@ -243,6 +264,11 @@ class FontPaths
         if (\defined('K_PATH_FONTS')) {
             $roots[] = (string) \constant('K_PATH_FONTS');
         }
+
+        // MOODLE PATCH: trust K_PATH_ADDITIONAL_FONTS too, so that fonts a site added outside this
+        // package can be read. See lib/tecnickcom/readme_moodle.txt.
+        $roots[] = self::getAdditionalPath();
+        // END MOODLE PATCH.
 
         $allowed = [];
         foreach ($roots as $root) {
