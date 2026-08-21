@@ -208,6 +208,8 @@ php admin/cli/purge_caches.php
 vendor/bin/phpunit public/lib/tests/pdf/document_test.php
 vendor/bin/phpunit public/dataformat/pdf/tests/writer_test.php
 vendor/bin/phpunit public/lib/tests/component_test.php
+vendor/bin/phpunit public/admin/tests/command/pdf_font_convert_test.php
+vendor/bin/phpunit public/admin/tests/command/pdf_font_list_test.php
 ```
 
 Then, as an admin, visit lib/tests/other/pdfdocumenttestpage.php and generate
