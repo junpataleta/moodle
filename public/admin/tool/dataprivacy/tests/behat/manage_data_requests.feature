@@ -157,5 +157,5 @@ Feature: Manage data requests
     And I navigate to "Users > Privacy and policies > Data requests" in site administration
     And I open the action menu in "John Doe" "table_row"
     And I choose "View the request" in the open action menu
-    Then "h3.h4" "css_element" should exist in the "General enquiry" "dialogue"
+    Then "h3" "css_element" should exist in the "General enquiry" "dialogue"
     And the "General enquiry" "dialogue" should meet accessibility standards with "best-practice" extra tests

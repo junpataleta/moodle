@@ -190,5 +190,5 @@ Feature: I can grade a students interaction across a forum
     And I press "Close grader"
     When I am on the "Test Forum 1" "forum activity" page logged in as "student1"
     And I press "View grades"
-    Then "h3.description.h5" "css_element" should exist in the "Test Forum 1" "dialogue"
+    Then "h3.description" "css_element" should exist in the "Test Forum 1" "dialogue"
     And the "Test Forum 1" "dialogue" should meet accessibility standards with "best-practice" extra tests

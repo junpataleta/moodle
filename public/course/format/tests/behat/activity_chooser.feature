@@ -64,8 +64,9 @@ Feature: Display and choose from the available activities in course
   @accessibility
   Scenario: The activity chooser dialogue has a valid heading structure
     Given I open the activity chooser
-    # The title is a semantic h2, held at its original size by the "h5" class.
-    Then "h2.modal-title.h5" "css_element" should exist in the "Add an activity or resource" "dialogue"
+    # The title is a semantic h2. Its font size is set by a utility class, which is left out of
+    # the selector here so that the assertion does not depend on presentation.
+    Then "h2.modal-title" "css_element" should exist in the "Add an activity or resource" "dialogue"
     And the "Add an activity or resource" "dialogue" should meet accessibility standards with "best-practice" extra tests
     # The summary screen renders the activity name, then the headings which come from the
     # module's "modulename_help" language string.
