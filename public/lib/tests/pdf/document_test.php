@@ -528,6 +528,81 @@ final class document_test extends \advanced_testcase {
     }
 
     /**
+     * A font left in the TCPDF format is reported, so that the admin notifications page can tell an
+     * administrator their exports are no longer using it.
+     */
+    public function test_get_unconverted_fonts(): void {
+        global $CFG;
+        $this->resetAfterTest();
+
+        $dir = document::get_site_font_directory();
+        check_dir_exists($dir);
+        $created = [];
+
+        try {
+            // A TCPDF font definition with no converted counterpart.
+            $created[] = "{$dir}/mdl83411legacy.php";
+            file_put_contents(end($created), "<?php\n\$type='TrueTypeUnicode';\n\$name='Legacy';\n");
+
+            // The documented way of preparing a TCPDF font is to call addTTFfont() from a script, and
+            // that script is often left here. It must not be counted as a font.
+            $created[] = "{$dir}/mdl83411script.php";
+            file_put_contents(end($created), "<?php\nTCPDF_FONTS::addTTFfont('/tmp/x.ttf');\n");
+
+            // TCPDF's copy of a font that this library bundles too. A site that moved its font
+            // directory has to keep these in it, and they need no conversion.
+            // Such a site may be the one running this test, so leave a real copy alone.
+            if (!file_exists("{$dir}/helvetica.php")) {
+                $created[] = "{$dir}/helvetica.php";
+                file_put_contents(end($created), "<?php\n\$type='core';\n\$name='Helvetica';\n");
+            }
+
+            $unconverted = document::get_unconverted_fonts();
+            $this->assertContains('mdl83411legacy', $unconverted);
+            $this->assertNotContains('helvetica', $unconverted);
+            $this->assertNotContains('mdl83411script', $unconverted);
+
+            // Once converted, it drops out of the list.
+            $created[] = "{$dir}/mdl83411legacy.json";
+            copy(
+                $CFG->libdir . '/tecnickcom/tc-lib-pdf-font/fonts/freefont/freesans.json',
+                end($created),
+            );
+            $this->assertNotContains('mdl83411legacy', document::get_unconverted_fonts());
+        } finally {
+            foreach ($created as $file) {
+                @unlink($file);
+            }
+        }
+    }
+
+    /**
+     * A configured font that cannot be found is reported for the notifications page, but only when it
+     * actually makes generated PDFs fall back to the default font.
+     */
+    public function test_get_unavailable_configured_fonts(): void {
+        global $CFG;
+        $this->resetAfterTest();
+
+        unset($CFG->pdfexportfont);
+        $this->assertSame([], document::get_unavailable_configured_fonts());
+
+        $CFG->pdfexportfont = 'freesans';
+        $this->assertSame([], document::get_unavailable_configured_fonts());
+
+        $CFG->pdfexportfont = 'no_such_font';
+        $this->assertSame(['no_such_font'], document::get_unavailable_configured_fonts());
+
+        // A list is also the menu of fonts offered for PDF annotation in each course, so one missing
+        // entry is not a fallback while another is available.
+        $CFG->pdfexportfont = ['no_such_font' => 'Missing', 'freesans' => 'FreeSans'];
+        $this->assertSame([], document::get_unavailable_configured_fonts());
+
+        $CFG->pdfexportfont = ['nope_one' => 'One', 'nope_two' => 'Two'];
+        $this->assertSame(['nope_one', 'nope_two'], document::get_unavailable_configured_fonts());
+    }
+
+    /**
      * The shared K_PATH_CACHE constant must resolve inside moodledata rather than the system
      * temporary directory, whichever of the two libraries defined it.
      */

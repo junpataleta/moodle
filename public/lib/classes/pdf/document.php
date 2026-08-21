@@ -341,9 +341,9 @@ class document extends Tcpdf {
                 // that fonts converted for TCPDF are not usable here: they have to be converted again with
                 // the admin:pdf-font:convert command.
                 //
-                // Each fallback is recorded in the server log, whatever the debugging level. It goes to the log
-                // rather than the page: it usually happens while a file is being sent, and anything printed
-                // would end up inside the file.
+                // Administrators are warned on the notifications page, and each fallback is also recorded in the
+                // server log, whatever the debugging level. It goes to the log rather than the page: it usually
+                // happens while a file is being sent, and anything printed would end up inside the file.
                 // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
                 error_log(
                     'None of the configured PDF export fonts were found (' . implode(', ', $configured) .
@@ -479,6 +479,72 @@ class document extends Tcpdf {
         ksort($families);
 
         return $families;
+    }
+
+    /**
+     * Font families the site added for TCPDF that this library cannot read.
+     *
+     * The two formats share the .z and .ctg.z files and differ only in the metrics file, so a family
+     * with a .php but no .json is one TCPDF can use and this library cannot. Such a font has to be
+     * converted again with the admin:pdf-font:convert command before it can be used here.
+     *
+     * @return string[] Font family names, sorted.
+     */
+    public static function get_unconverted_fonts(): array {
+        $dir = self::get_site_font_directory();
+        if (!is_dir($dir)) {
+            return [];
+        }
+
+        // A font this library can already find is usable whatever is in the site directory. That covers
+        // a converted font, and also the fonts both libraries bundle: a site that moved its font
+        // directory has to keep TCPDF's own copies of those in it.
+        $available = self::get_available_fonts();
+
+        $families = [];
+        foreach (glob($dir . '/*.php') ?: [] as $file) {
+            $family = basename($file, '.php');
+            if (isset($available[$family])) {
+                continue;
+            }
+            // Not every .php file here is a font. The documented way of preparing one for TCPDF is to
+            // call addTTFfont() from a script, and that script is often left in the font directory, so
+            // require the file to actually declare a font type before counting it.
+            $head = file_get_contents($file, false, null, 0, 2048);
+            if ($head === false || preg_match('/^\$type\s*=/m', $head) !== 1) {
+                continue;
+            }
+            $families[] = $family;
+        }
+        sort($families);
+
+        return $families;
+    }
+
+    /**
+     * The fonts a site configured for generated PDFs, when none of them can be found.
+     *
+     * Generated PDFs then fall back to the default font. Only the case where nothing configured is
+     * available counts: a list in $CFG->pdfexportfont is also the menu of fonts offered for PDF
+     * annotation in each course, so one missing entry does not by itself affect PDFs generated here.
+     *
+     * @return string[] The configured font families, or an empty array when one of them is available or
+     *      none is configured.
+     */
+    public static function get_unavailable_configured_fonts(): array {
+        global $CFG;
+
+        $configured = self::get_configured_fonts(
+            $CFG->pdfexportfont ?? null,
+            defined('PDF_DEFAULT_FONT') ? (string) constant('PDF_DEFAULT_FONT') : null,
+        );
+        foreach ($configured as $family) {
+            if (self::font_exists($family)) {
+                return [];
+            }
+        }
+
+        return $configured;
     }
 
     /**
