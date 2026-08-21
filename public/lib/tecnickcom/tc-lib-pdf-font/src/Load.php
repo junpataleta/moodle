@@ -412,7 +412,8 @@ abstract class Load
     {
         $dirs = [];
         // K_PATH_FONTS first, so its fonts take precedence over the package fonts
-        foreach ([FontPaths::getConfigPath(), ...FontPaths::getPackagePaths()] as $root) {
+        // MOODLE PATCH: K_PATH_ADDITIONAL_FONTS is searched too. See lib/tecnickcom/readme_moodle.txt.
+        foreach ([FontPaths::getConfigPath(), FontPaths::getAdditionalPath(), ...FontPaths::getPackagePaths()] as $root) {
             if ($root === '') {
                 continue;
             }
