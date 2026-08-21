@@ -172,7 +172,8 @@ final class document_test extends \advanced_testcase {
     }
 
     /**
-     * An unavailable configured font must not break PDF generation.
+     * An unavailable configured font must not break PDF generation, but must say so rather than
+     * quietly rendering in a font that may not cover the script the site configured it for.
      */
     public function test_unavailable_configured_export_font_falls_back(): void {
         global $CFG;
@@ -182,6 +183,60 @@ final class document_test extends \advanced_testcase {
         $pdf = $this->generate();
 
         $this->assertStringContainsString('FreeSerif', $pdf);
+        $this->assertDebuggingCalled(
+            'None of the configured PDF export fonts were found (no_such_font), so ' .
+            "'freeserif' is being used instead. Fonts have to be converted for this library.",
+        );
+    }
+
+    /**
+     * A list of fonts is an order of preference, the first available one winning, which is how the
+     * setting behaved when the TCPDF wrapper read it.
+     */
+    public function test_configured_export_font_list_prefers_the_first_available(): void {
+        global $CFG;
+        $this->resetAfterTest();
+
+        $CFG->pdfexportfont = ['no_such_font', 'freesans', 'freemono'];
+        $pdf = $this->generate();
+
+        $this->assertStringContainsString('FreeSans', $pdf);
+        $this->assertStringNotContainsString('FreeMono', $pdf);
+    }
+
+    /**
+     * A list naming nothing available falls back, and says so once for the whole list.
+     */
+    public function test_configured_export_font_list_all_missing(): void {
+        global $CFG;
+        $this->resetAfterTest();
+
+        $CFG->pdfexportfont = ['nope_one', 'nope_two'];
+        $pdf = $this->generate();
+
+        $this->assertStringContainsString('FreeSerif', $pdf);
+        $this->assertDebuggingCalled(
+            'None of the configured PDF export fonts were found (nope_one, nope_two), so ' .
+            "'freeserif' is being used instead. Fonts have to be converted for this library.",
+        );
+    }
+
+    /**
+     * A font added at the documented location has to be found, including when the site has moved that
+     * location with PDF_CUSTOM_FONT_PATH.
+     */
+    public function test_site_font_directory_is_searched(): void {
+        global $CFG;
+        $this->resetAfterTest();
+
+        $expected = defined('PDF_CUSTOM_FONT_PATH')
+            ? rtrim(constant('PDF_CUSTOM_FONT_PATH'), '/\\')
+            : $CFG->dataroot . '/fonts';
+
+        // Only present in the search list once the directory exists.
+        check_dir_exists($expected);
+
+        $this->assertContains($expected, document::get_font_directories());
     }
 
     /**
@@ -199,6 +254,54 @@ final class document_test extends \advanced_testcase {
 
         $this->assertStringContainsString('/FontFile2', $pdf);
         $this->assertStringContainsString('/StructTreeRoot', $pdf);
+    }
+
+    /**
+     * A font the site added has to be usable, including its bold and italic styles when the site
+     * converted only one face. Sites rely on this for scripts the bundled families do not cover.
+     */
+    public function test_site_added_font_is_usable(): void {
+        global $CFG;
+        $this->resetAfterTest();
+
+        $fontdir = document::get_site_font_directory();
+        check_dir_exists($fontdir);
+
+        // Convert a font the way an administrator would with admin/cli/convert_pdf_font.php, rather
+        // than copying a bundled one under a new name: a definition file names its own companion
+        // files, so a renamed copy still points at the original and is not a faithful stand-in. Only
+        // the regular face is produced, as converting a single .ttf gives.
+        //
+        // Note this writes into the real site font directory rather than the test dataroot, because
+        // PDF_CUSTOM_FONT_PATH is a constant and may point outside it, so the files are removed again
+        // whatever the outcome and any left by an earlier run are cleared first.
+        $family = 'mdl83411testfont';
+        $source = "{$fontdir}/{$family}.ttf";
+        $artefacts = ["{$fontdir}/{$family}.json", "{$fontdir}/{$family}.z", "{$fontdir}/{$family}.ctg.z"];
+        foreach ($artefacts as $stale) {
+            @unlink($stale);
+        }
+        copy($CFG->libdir . '/default.ttf', $source);
+
+        try {
+            new \Com\Tecnick\Pdf\Font\Import(file: $source, output_path: $fontdir);
+
+            $this->assertTrue(document::font_exists($family));
+            $this->assertArrayHasKey($family, document::get_available_fonts());
+
+            $CFG->pdfexportfont = $family;
+            // Bold and italic exercise the style fallback, which needs the directory search rather
+            // than a directly named definition file.
+            $pdf = $this->generate(html: '<p>Regular</p><p><b>Bold</b></p><p><i>Italic</i></p>');
+
+            $this->assertStringContainsString('/FontFile2', $pdf);
+            $this->assertStringNotContainsString('FreeSerif', $pdf);
+        } finally {
+            @unlink($source);
+            foreach ($artefacts as $artefact) {
+                @unlink($artefact);
+            }
+        }
     }
 
     /**

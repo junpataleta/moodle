@@ -15,3 +15,14 @@ notes:
         that extend it keep working. Whether TCPDF is eventually removed is
         being tracked separately.
       type: changed
+    - message: >-
+        Sites that added their own fonts for PDF export must convert them again.
+        The new library cannot read fonts prepared for TCPDF, so a report
+        exported as PDF will silently fall back to the default font, which for a
+        script the default does not cover means missing text. Convert each font
+        again from its original .ttf or .otf with
+        `php admin/cli/convert_pdf_font.php --font=/path/to/font.ttf`. The files
+        already in place are still used by PDF annotation and by Brickfield, so
+        leave them where they are. See
+        https://docs.moodle.org/en/Add_fonts_for_embedding
+      type: changed
