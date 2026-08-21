@@ -87,6 +87,7 @@ class document extends Tcpdf {
         bool $compress = true,
     ) {
         self::setup_cache_path();
+        self::setup_font_path();
 
         parent::__construct(
             unit: $unit,
@@ -116,6 +117,21 @@ class document extends Tcpdf {
         if (!defined('K_PATH_CACHE')) {
             define('K_PATH_CACHE', $CFG->cachedir . '/tcpdf/');
         }
+    }
+
+    /**
+     * Tell the library where the site keeps the fonts it added itself.
+     *
+     * The library would otherwise only look inside its own package and in K_PATH_FONTS, and the
+     * latter belongs to TCPDF and points at fonts in a format this library cannot read. The
+     * constant is read by a small Moodle patch to the library: see lib/tecnickcom/readme_moodle.txt.
+     */
+    protected static function setup_font_path(): void {
+        if (defined('K_PATH_ADDITIONAL_FONTS')) {
+            return;
+        }
+
+        define('K_PATH_ADDITIONAL_FONTS', self::get_site_font_directory());
     }
 
     /**
@@ -185,9 +201,9 @@ class document extends Tcpdf {
     /**
      * Select the default font family for this document.
      *
-     * Uses $CFG->pdfexportfont when it names a font that is actually available, so that sites which
-     * have configured a font for PDF export - typically to cover a script the default font does not
-     * include - keep that choice.
+     * Uses the font the site has configured, when it is actually available, so that a site which
+     * chose one to cover a script the default font does not include keeps that choice. See
+     * {@see self::get_configured_fonts()} for where the choice is read from.
      *
      * @param string|null $family Font family to use, or null to resolve it from configuration.
      * @param float $size Font size in points.
@@ -197,16 +213,87 @@ class document extends Tcpdf {
 
         if ($family === null) {
             $family = self::DEFAULT_FONT;
-            if (!empty($CFG->pdfexportfont)) {
-                // The setting may hold either a single font name or an array of them.
-                $configured = is_array($CFG->pdfexportfont) ? reset($CFG->pdfexportfont) : $CFG->pdfexportfont;
-                if (is_string($configured) && $configured !== '' && self::font_exists($configured)) {
-                    $family = strtolower($configured);
+
+            $configured = self::get_configured_fonts(
+                $CFG->pdfexportfont ?? null,
+                defined('PDF_DEFAULT_FONT') ? (string) constant('PDF_DEFAULT_FONT') : null,
+            );
+
+            $found = null;
+            foreach ($configured as $candidate) {
+                if (self::font_exists($candidate)) {
+                    $found = $candidate;
+                    break;
                 }
+            }
+
+            if ($found !== null) {
+                $family = $found;
+            } else if ($configured !== []) {
+                // Falling back silently would render the document in a font that may not cover the script
+                // the site configured this for, and missing glyphs are easy to miss in a large export. Note
+                // that fonts converted for TCPDF are not usable here: they have to be converted again with
+                // the admin:pdf-font:convert command.
+                //
+                // Each fallback is recorded in the server log, whatever the debugging level. It goes to the log
+                // rather than the page: it usually happens while a file is being sent, and anything printed
+                // would end up inside the file.
+                // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
+                error_log(
+                    'None of the configured PDF export fonts were found (' . implode(', ', $configured) .
+                    "), so '{$family}' is being used instead. Fonts have to be converted for this library.",
+                );
             }
         }
 
         $this->font->insert($this->pon, $family, '', $size);
+    }
+
+    /**
+     * The font families a site has configured for generated PDFs, in order of preference.
+     *
+     * There are two places, both older than this class:
+     *
+     * - The PDF_DEFAULT_FONT constant, which is what PDFs generated with TCPDF use unless told
+     *   otherwise. Report exports were among them, so it comes first to keep their font the same.
+     *   Its stock value is left out, since that only says the site made no choice.
+     * - $CFG->pdfexportfont, either one font name or a list. The documented list is keyed by font
+     *   name with a display name as the value, and a plain list of names is accepted too.
+     *
+     * @param mixed $exportfont The value of $CFG->pdfexportfont.
+     * @param string|null $defaultfont The value of PDF_DEFAULT_FONT, or null when it is not defined.
+     * @return string[] Lower case font family names, without duplicates.
+     */
+    public static function get_configured_fonts(mixed $exportfont, ?string $defaultfont): array {
+        $families = [];
+
+        if ($defaultfont !== null && strtolower($defaultfont) !== self::DEFAULT_FONT) {
+            $families[] = $defaultfont;
+        }
+
+        foreach (is_array($exportfont) ? $exportfont : [$exportfont] as $key => $value) {
+            $families[] = is_string($key) ? $key : (string) $value;
+        }
+
+        return array_values(array_unique(array_filter(array_map('strtolower', array_map('trim', $families)))));
+    }
+
+    /**
+     * The definition file for a font family, or null when the site has no such font.
+     *
+     * @param string $family Font family name, for example 'freesans'.
+     * @return string|null
+     */
+    public static function find_font_file(string $family): ?string {
+        $family = strtolower($family);
+        foreach (self::get_font_directories() as $dir) {
+            $file = $dir . '/' . $family . '.json';
+            if (file_exists($file)) {
+                return $file;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -216,13 +303,7 @@ class document extends Tcpdf {
      * @return bool
      */
     public static function font_exists(string $family): bool {
-        $family = strtolower($family);
-        foreach (self::get_font_directories() as $dir) {
-            if (file_exists($dir . '/' . $family . '.json')) {
-                return true;
-            }
-        }
-        return false;
+        return self::find_font_file($family) !== null;
     }
 
     /**
@@ -244,8 +325,8 @@ class document extends Tcpdf {
             $dirs[] = $bundled . '/' . $family;
         }
 
-        // Sites may add further families, for example the large CJK sets that Moodle does not bundle.
-        $sitefonts = $CFG->dataroot . '/fonts';
+        // Sites may add further families, for example a script the bundled families do not cover.
+        $sitefonts = self::get_site_font_directory();
         if (is_dir($sitefonts)) {
             $dirs[] = $sitefonts;
             $subdirs = glob($sitefonts . '/*', GLOB_ONLYDIR);
@@ -255,6 +336,43 @@ class document extends Tcpdf {
         }
 
         return array_values(array_unique($dirs));
+    }
+
+    /**
+     * The directory a site adds its own converted fonts to.
+     *
+     * This is the location documented at https://docs.moodle.org/en/Add_fonts_for_embedding.
+     * PDF_CUSTOM_FONT_PATH is honoured so that a site which moved it keeps working, but note that the
+     * fonts themselves have to be converted for this library: the TCPDF format is not readable here.
+     * See the admin:pdf-font:convert command.
+     *
+     * @return string
+     */
+    public static function get_site_font_directory(): string {
+        global $CFG;
+
+        $dir = defined('PDF_CUSTOM_FONT_PATH') ? (string) constant('PDF_CUSTOM_FONT_PATH') : $CFG->dataroot . '/fonts';
+
+        return rtrim($dir, '/\\');
+    }
+
+    /**
+     * Every font family available to this site, bundled or added locally.
+     *
+     * @return array<string, string> Font family name, mapped to the directory it was found in.
+     */
+    public static function get_available_fonts(): array {
+        $families = [];
+        foreach (self::get_font_directories() as $dir) {
+            foreach (glob($dir . '/*.json') ?: [] as $file) {
+                $family = basename($file, '.json');
+                // The first directory to provide a family wins, matching the library's own search order.
+                $families[$family] ??= $dir;
+            }
+        }
+        ksort($families);
+
+        return $families;
     }
 
     /**
