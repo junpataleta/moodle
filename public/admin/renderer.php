@@ -337,6 +337,7 @@ class core_admin_renderer extends plugin_renderer_base {
      * @param bool $invalidforgottenpasswordurl Whether the forgotten password URL does not link to a valid URL.
      * @param bool $croninfrequent If true, warn that cron hasn't run in the past few minutes
      * @param string $xmlrpcwarning XML-RPC deprecation warning message.
+     * @param string[] $unconvertedpdffonts Font families the site added that PDF generation can no longer read.
      *
      * @return string HTML to output.
      */
@@ -359,7 +360,8 @@ class core_admin_renderer extends plugin_renderer_base {
         $overridetossl = false,
         $invalidforgottenpasswordurl = false,
         $croninfrequent = false,
-        $xmlrpcwarning = ''
+        $xmlrpcwarning = '',
+        array $unconvertedpdffonts = []
     ) {
 
         global $CFG;
@@ -396,6 +398,7 @@ class core_admin_renderer extends plugin_renderer_base {
         $add($this->mobile_configuration_warning($mobileconfigured), 'warning');
         $add($this->forgotten_password_url_warning($invalidforgottenpasswordurl), 'danger');
         $add($this->mnet_deprecation_warning($xmlrpcwarning), 'warning');
+        $add($this->unconverted_pdf_fonts_warning($unconvertedpdffonts), 'warning');
         $add($this->moodlenet_removal_warning(), 'warning');
 
         // Group and order by severity (danger/critical first, then warning, then notice), preserving the
@@ -2620,6 +2623,29 @@ class core_admin_renderer extends plugin_renderer_base {
         }
 
         return $output;
+    }
+
+    /**
+     * Render a warning about fonts the site added that PDF generation can no longer read.
+     *
+     * A font prepared for TCPDF cannot be read by the tc-lib-pdf library, which is now the preferred library for generating PDFs.
+     * Such fonts have to be converted again from the original .ttf or .otf font file using the
+     * admin/cli/convert_pdf_font.php script.
+     *
+     * @param string[] $fonts Font families found in the old format only.
+     * @return string HTML to output.
+     */
+    protected function unconverted_pdf_fonts_warning(array $fonts): string {
+        if (!$fonts) {
+            return '';
+        }
+
+        return $this->warning_with_label(
+            get_string('unconvertedpdffonts', 'core_admin')
+            . \html_writer::alist(array_map('s', $fonts))
+            . \html_writer::tag('p', get_string('unconvertedpdffontsfix', 'core_admin'), ['class' => 'mb-0']),
+            get_string('notificationlabelwarning', 'admin')
+        );
     }
 
     /**
