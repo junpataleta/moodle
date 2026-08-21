@@ -416,6 +416,22 @@ abstract class Load
             }
         }
 
+        // MOODLE PATCH: also search K_PATH_ADDITIONAL_FONTS, so that a site can add fonts outside
+        // both this package and K_PATH_FONTS, which belongs to TCPDF. Searching here rather than
+        // naming the file explicitly keeps the style fallback below, which synthesises bold and
+        // italic from a base family. See lib/tecnickcom/readme_moodle.txt.
+        if (\defined('K_PATH_ADDITIONAL_FONTS')) {
+            $extrafonts = (string) \constant('K_PATH_ADDITIONAL_FONTS');
+            if ($extrafonts !== '') {
+                $dirs[] = $extrafonts;
+                $glb = \glob($extrafonts . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
+                if ($glb !== false) {
+                    $dirs = [...$dirs, ...$glb];
+                }
+            }
+        }
+        // END MOODLE PATCH.
+
         $parent_font_dir = $dir->findParentDir('fonts', __DIR__);
         if ($parent_font_dir !== '' && $parent_font_dir !== '/') {
             $dirs[] = $parent_font_dir;
