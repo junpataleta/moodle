@@ -282,6 +282,7 @@
     <copyrights>
       <copyright>Nicola Asuni</copyright>
     </copyrights>
+    <customised/>
   </library>
   <library>
     <location>tecnickcom/tc-lib-pdf-graph</location>

@@ -147,6 +147,13 @@ class FontPaths
             $roots[] = (string) \constant('K_PATH_FONTS');
         }
 
+        // MOODLE PATCH: trust K_PATH_ADDITIONAL_FONTS too, so that fonts a site added outside this
+        // package can be read. See lib/tecnickcom/readme_moodle.txt.
+        if (\defined('K_PATH_ADDITIONAL_FONTS')) {
+            $roots[] = (string) \constant('K_PATH_ADDITIONAL_FONTS');
+        }
+        // END MOODLE PATCH.
+
         $allowed = [];
         foreach ($roots as $root) {
             $normalized = \rtrim($root, '/\\');
