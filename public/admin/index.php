@@ -994,6 +994,10 @@ admin_externalpage_setup('adminnotifications');
 
 $output = $PAGE->get_renderer('core', 'admin');
 
+// A font the site added for TCPDF cannot be read by the library that generates PDFs now, and there
+// is otherwise nothing to tell an administrator that their exports are no longer using it.
+$unconvertedpdffonts = \core\pdf\document::get_unconverted_fonts();
+
 echo $output->admin_notifications_page(
     $maturity,
     $insecuredataroot,
@@ -1016,5 +1020,6 @@ echo $output->admin_notifications_page(
     $showcampaigncontent,
     $showfeedbackencouragement,
     $servicesandsupportcontent,
-    $xmlrpcwarning
+    $xmlrpcwarning,
+    $unconvertedpdffonts
 );

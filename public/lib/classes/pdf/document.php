@@ -298,6 +298,41 @@ class document extends Tcpdf {
     }
 
     /**
+     * Font families the site added for TCPDF that this library cannot read.
+     *
+     * The two formats share the .z and .ctg.z files and differ only in the metrics file, so a family
+     * with a .php but no .json is one TCPDF can use and this library cannot. Such a font has to be
+     * converted again with admin/cli/convert_pdf_font.php before it can be used here.
+     *
+     * @return string[] Font family names, sorted.
+     */
+    public static function get_unconverted_fonts(): array {
+        $dir = self::get_site_font_directory();
+        if (!is_dir($dir)) {
+            return [];
+        }
+
+        $families = [];
+        foreach (glob($dir . '/*.php') ?: [] as $file) {
+            $family = basename($file, '.php');
+            if (file_exists($dir . '/' . $family . '.json')) {
+                continue;
+            }
+            // Not every .php file here is a font. The documented way of preparing one for TCPDF is to
+            // call addTTFfont() from a script, and that script is often left in the font directory, so
+            // require the file to actually declare a font type before counting it.
+            $head = file_get_contents($file, false, null, 0, 2048);
+            if ($head === false || preg_match('/^\$type\s*=/m', $head) !== 1) {
+                continue;
+            }
+            $families[] = $family;
+        }
+        sort($families);
+
+        return $families;
+    }
+
+    /**
      * Local filesystem paths the library is allowed to read images and fonts from.
      *
      * tc-lib-pdf refuses local reads outside an explicit allowlist, so anything Moodle may legitimately

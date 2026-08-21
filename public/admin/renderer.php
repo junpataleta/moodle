@@ -304,7 +304,8 @@ class core_admin_renderer extends plugin_renderer_base {
         $showcampaigncontent = false,
         bool $showfeedbackencouragement = false,
         bool $showservicesandsupport = false,
-        $xmlrpcwarning = ''
+        $xmlrpcwarning = '',
+        array $unconvertedpdffonts = []
     ) {
 
         global $CFG;
@@ -330,6 +331,7 @@ class core_admin_renderer extends plugin_renderer_base {
         $output .= $this->mobile_configuration_warning($mobileconfigured);
         $output .= $this->forgotten_password_url_warning($invalidforgottenpasswordurl);
         $output .= $this->mnet_deprecation_warning($xmlrpcwarning);
+        $output .= $this->unconverted_pdf_fonts_warning($unconvertedpdffonts);
         $output .= $this->moodlenet_removal_warning();
         $output .= $this->marketplace_integration_notice();
         $output .= $this->userfeedback_encouragement($showfeedbackencouragement);
@@ -2349,6 +2351,28 @@ class core_admin_renderer extends plugin_renderer_base {
         }
 
         return $output;
+    }
+
+    /**
+     * Render a warning about fonts the site added that PDF generation can no longer read.
+     *
+     * A font prepared for TCPDF cannot be read by the tc-lib-pdf library, which is now the preferred library for generating PDFs.
+     * Such fonts have to be converted again from the original .ttf or .otf font file using the
+     * admin/cli/convert_pdf_font.php script.
+     *
+     * @param string[] $fonts Font families found in the old format only.
+     * @return string HTML to output.
+     */
+    protected function unconverted_pdf_fonts_warning(array $fonts): string {
+        if (!$fonts) {
+            return '';
+        }
+
+        return $this->warning(
+            \html_writer::tag('p', get_string('unconvertedpdffonts', 'core_admin'))
+            . \html_writer::alist(array_map('s', $fonts))
+            . \html_writer::tag('p', get_string('unconvertedpdffontsfix', 'core_admin'))
+        );
     }
 
     /**
