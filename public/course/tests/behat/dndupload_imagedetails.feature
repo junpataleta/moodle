@@ -28,7 +28,7 @@ Feature: Provide image details when dropping an image onto a course page
     And I click on "Upload" "button" in the "Add an activity or resource" "dialogue"
     And I click on "Save" "button" in the "Image details" "dialogue"
     Then I should see "An image must have a description, unless it is marked as decorative only."
-    And "//textarea[@id='dndupload_imagealt' and @aria-invalid='true']" "xpath_element" should exist
+    And "//textarea[@data-region='alt' and @aria-invalid='true']" "xpath_element" should exist
 
   @javascript
   Scenario: A decorative image can be saved without alternative text and is not wrapped in a link

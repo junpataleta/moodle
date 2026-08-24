@@ -37,7 +37,7 @@ class dndupload_ajax_processor {
     /** @var int Returned when no error has occurred */
     public const ERROR_OK = 0;
 
-    /** @var int Maximum length of image alternative text, matching the client-side image-details modal limit */
+    /** @var int Maximum length of image alternative text, matching the core/imagedetails/modal limit */
     public const IMAGE_ALT_MAXLENGTH = 750;
 
     /** @var object The course that we are uploading to */
@@ -161,7 +161,7 @@ class dndupload_ajax_processor {
 
         // A non-decorative image must have alternative text; a decorative one is exposed with an empty alt.
         if (!$presentation && trim($alt) === '') {
-            throw new moodle_exception('dndimagealtrequired', 'core_course');
+            throw new moodle_exception('imagealtrequired');
         }
 
         $imagedetails['presentation'] = $presentation;

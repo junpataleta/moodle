@@ -38,7 +38,7 @@ import {getFirst} from 'core/normalise';
 import {prefetchStrings} from 'core/prefetch';
 import {getString, getStrings} from 'core/str';
 import {getCourseEditor} from 'core_courseformat/courseeditor';
-import {getImageDetails} from 'core_course/dndupload_imagedetails';
+import {getImageDetails} from 'core/imagedetails/modal';
 import {processMonitor} from 'core/process_monitor';
 import {debounce} from 'core/utils';
 
