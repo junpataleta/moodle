@@ -7,6 +7,9 @@
     "provide": {
         "moodle/lms": "5.3"
     },
+    "replace": {
+        "tecnickcom/tc-lib-pdf-font": "4.0.1"
+    },
     "require-dev": {
         "filp/whoops": "^2.15",
         "moodle/moodle-testing": "^1.0"
@@ -92,7 +95,20 @@
         "redeyeventures/geopattern": "1.1.2",
         "phpxmlrpc/phpxmlrpc": "4.11.1",
         "ralouphie/getallheaders": "3.0.3",
-        "league/oauth2-server": "^9.4"
+        "league/oauth2-server": "^9.4",
+        "tecnickcom/tc-lib-barcode": "2.13.3",
+        "tecnickcom/tc-lib-color": "2.13.4",
+        "tecnickcom/tc-lib-file": "3.7.4",
+        "tecnickcom/tc-lib-pdf": "8.69.0",
+        "tecnickcom/tc-lib-pdf-encrypt": "2.9.4",
+        "tecnickcom/tc-lib-pdf-filter": "2.10.4",
+        "tecnickcom/tc-lib-pdf-graph": "2.15.3",
+        "tecnickcom/tc-lib-pdf-image": "3.12.3",
+        "tecnickcom/tc-lib-pdf-page": "4.14.3",
+        "tecnickcom/tc-lib-pdf-parser": "3.14.3",
+        "tecnickcom/tc-lib-pdf-sign": "1.1.4",
+        "tecnickcom/tc-lib-unicode": "3.0.3",
+        "tecnickcom/tc-lib-unicode-data": "3.0.3"
     },
     "suggest": {
         "ext-mysqli": "Needed when Moodle uses MySQL or MariaDB database.",

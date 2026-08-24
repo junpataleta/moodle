@@ -163,11 +163,46 @@ does that work knows the patch can go with it.
 
 Drop the patch sooner if upstream gains a configurable font search path.
 
-4) Update public/lib/thirdpartylibs.xml with the new version numbers, and the
-   PSR-4 namespace list in public/lib/classes/component.php if the set of
-   packages has changed. Note that the Com\Tecnick\Unicode\Data namespace is
-   split across two upstream packages, so it is registered with the multiple
-   path form.
+4) Update the root composer.json, minding the one exception.
+
+Bundled libraries are declared in the root composer.json, pinned to the version imported, so that
+composer audit can report advisories against them. Thirteen of these fourteen packages are declared
+that way.
+
+tc-lib-pdf-font is different, because it carries the patch from step 3. Composer's generated
+autoloader registers itself with prepend set, see vendor/composer/autoload_real.php, so it is
+consulted before Moodle's own classloader: on any installation where composer install has been run,
+a declared package resolves to the pristine copy in vendor/ rather than the one in public/lib. For a
+patched package that silently undoes the patch, and site fonts would then work on a plain install and
+fail on a composer managed one. So it is listed under "replace" instead, which tells composer that
+Moodle provides it and stops it being installed at all, including as a dependency of tc-lib-pdf.
+
+  "replace": {
+      "tecnickcom/tc-lib-pdf-font": "4.0.1"
+  },
+
+'''If the patch ever moves to a different package, move the "replace" entry with it.''' Nothing
+enforces this, and getting it wrong quietly reinstates the shadowing. Equally, if tc-lib-pdf-font
+stops being customised, move it back into "require" and drop the <customised/> flag.
+
+Note that none of this removes the need for the copies under public/lib. Moodle has to run from a
+plain download or git checkout, where vendor/ does not exist, so public/lib holds the copy that
+actually ships and vendor/ is only a convenience for composer managed installs.
+
+After editing composer.json, regenerate the lock for just these packages, so nothing else moves:
+
+```
+composer update --no-install tecnickcom/tc-lib-barcode tecnickcom/tc-lib-color \
+    tecnickcom/tc-lib-file tecnickcom/tc-lib-pdf tecnickcom/tc-lib-pdf-encrypt \
+    tecnickcom/tc-lib-pdf-filter tecnickcom/tc-lib-pdf-graph tecnickcom/tc-lib-pdf-image \
+    tecnickcom/tc-lib-pdf-page tecnickcom/tc-lib-pdf-parser tecnickcom/tc-lib-pdf-sign \
+    tecnickcom/tc-lib-unicode tecnickcom/tc-lib-unicode-data
+```
+
+Then update public/lib/thirdpartylibs.xml with the new version numbers, and the PSR-4 namespace list
+in public/lib/classes/component.php if the set of packages has changed. Note that the
+Com\Tecnick\Unicode\Data namespace is split across two upstream packages, so it is registered with
+the multiple path form.
 
 5) Verify the result.
 
