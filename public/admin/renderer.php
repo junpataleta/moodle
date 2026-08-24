@@ -275,9 +275,6 @@ class core_admin_renderer extends plugin_renderer_base {
      * @param bool $overridetossl Whether or not ssl is being forced.
      * @param bool $invalidforgottenpasswordurl Whether the forgotten password URL does not link to a valid URL.
      * @param bool $croninfrequent If true, warn that cron hasn't run in the past few minutes
-     * @param bool $showcampaigncontent Whether the campaign content should be visible or not.
-     * @param bool $showfeedbackencouragement Whether the feedback encouragement content should be displayed or not.
-     * @param bool $showservicesandsupport Whether the services and support content should be displayed or not.
      * @param string $xmlrpcwarning XML-RPC deprecation warning message.
      *
      * @return string HTML to output.
@@ -301,40 +298,61 @@ class core_admin_renderer extends plugin_renderer_base {
         $overridetossl = false,
         $invalidforgottenpasswordurl = false,
         $croninfrequent = false,
-        $showcampaigncontent = false,
-        bool $showfeedbackencouragement = false,
-        bool $showservicesandsupport = false,
         $xmlrpcwarning = ''
     ) {
 
         global $CFG;
         $output = '';
 
+        $notifications = [];
+
+        $add = function (string $html, string $severity) use (&$notifications) {
+            if ($html !== '') {
+                $notifications[] = ['html' => $html, 'severity' => $severity];
+            }
+        };
+
+        $add($this->maturity_info($maturity), $maturity == MATURITY_ALPHA ? 'danger' : 'warning');
+        if (empty($CFG->disableupdatenotifications)) {
+            $add($this->available_updates($availableupdates, $availableupdatesfetch), 'notice');
+        }
+        $add(
+            $this->insecure_dataroot_warning($insecuredataroot),
+            $insecuredataroot == INSECURE_DATAROOT_ERROR ? 'danger' : 'warning'
+        );
+        $add($this->development_libs_directories_warning($devlibdir), 'danger');
+        $add($this->themedesignermode_warning($themedesignermode), 'warning');
+        $add($this->display_errors_warning($errorsdisplayed), 'warning');
+        $add($this->buggy_iconv_warning($buggyiconvnomb), 'warning');
+        $add($this->cron_overdue_warning($cronoverdue), 'warning');
+        $add($this->cron_infrequent_warning($croninfrequent), 'warning');
+        $add($this->db_problems($dbproblems), 'warning');
+        $add($this->maintenance_mode_warning($maintenancemode), 'warning');
+        $add($this->overridetossl_warning($overridetossl), 'warning');
+        $add($this->cache_warnings($cachewarnings), 'warning');
+        $add($this->events_handlers($eventshandlers), 'warning');
+        $add($this->registration_warning($registered), $this->registration_warning_severity($registered));
+        $add($this->mobile_configuration_warning($mobileconfigured), 'warning');
+        $add($this->forgotten_password_url_warning($invalidforgottenpasswordurl), 'danger');
+        $add($this->mnet_deprecation_warning($xmlrpcwarning), 'warning');
+        $add($this->moodlenet_removal_warning(), 'warning');
+
+        // Group and order by severity (danger/critical first, then warning, then notice), preserving the
+        // original relative order of notifications within each severity group.
+        $severityorder = ['danger' => 0, 'warning' => 1, 'notice' => 2];
+        usort($notifications, fn($a, $b) => $severityorder[$a['severity']] <=> $severityorder[$b['severity']]);
+
+        $counts = ['danger' => 0, 'warning' => 0, 'notice' => 0];
+        foreach ($notifications as $notification) {
+            $counts[$notification['severity']]++;
+        }
+
         $output .= $this->header();
-        $output .= $this->output->heading(get_string('notifications', 'admin'));
-        $output .= $this->maturity_info($maturity);
-        $output .= empty($CFG->disableupdatenotifications) ? $this->available_updates($availableupdates, $availableupdatesfetch) : '';
-        $output .= $this->insecure_dataroot_warning($insecuredataroot);
-        $output .= $this->development_libs_directories_warning($devlibdir);
-        $output .= $this->themedesignermode_warning($themedesignermode);
-        $output .= $this->display_errors_warning($errorsdisplayed);
-        $output .= $this->buggy_iconv_warning($buggyiconvnomb);
-        $output .= $this->cron_overdue_warning($cronoverdue);
-        $output .= $this->cron_infrequent_warning($croninfrequent);
-        $output .= $this->db_problems($dbproblems);
-        $output .= $this->maintenance_mode_warning($maintenancemode);
-        $output .= $this->overridetossl_warning($overridetossl);
-        $output .= $this->cache_warnings($cachewarnings);
-        $output .= $this->events_handlers($eventshandlers);
-        $output .= $this->registration_warning($registered);
-        $output .= $this->mobile_configuration_warning($mobileconfigured);
-        $output .= $this->forgotten_password_url_warning($invalidforgottenpasswordurl);
-        $output .= $this->mnet_deprecation_warning($xmlrpcwarning);
-        $output .= $this->moodlenet_removal_warning();
-        $output .= $this->marketplace_integration_notice();
-        $output .= $this->userfeedback_encouragement($showfeedbackencouragement);
-        $output .= $this->services_and_support_content($showservicesandsupport);
-        $output .= $this->campaign_content($showcampaigncontent);
+        $output .= $this->notifications_heading($counts);
+        foreach ($notifications as $notification) {
+            $output .= $notification['html'];
+        }
+        $output .= $this->notification_ctas();
 
         //////////////////////////////////////////////////////////////////////////////////////////////////
         ////  IT IS ILLEGAL AND A VIOLATION OF THE GPL TO HIDE, REMOVE OR MODIFY THIS COPYRIGHT NOTICE ///
@@ -344,6 +362,64 @@ class core_admin_renderer extends plugin_renderer_base {
         $output .= $this->footer();
 
         return $output;
+    }
+
+    /**
+     * Render the notifications page heading, including the severity count summary line.
+     *
+     * @param array $counts Notification counts keyed by 'danger', 'warning' and 'notice'.
+     * @return string HTML to output.
+     */
+    protected function notifications_heading(array $counts): string {
+        $summaryparts = [];
+
+        if ($counts['danger'] > 0) {
+            $summaryparts[] = get_string('notificationsummarycritical', 'admin', $counts['danger']);
+        }
+        if ($counts['warning'] > 0) {
+            $summaryparts[] = $counts['warning'] == 1
+                ? get_string('notificationsummarywarning', 'admin', $counts['warning'])
+                : get_string('notificationsummarywarningplural', 'admin', $counts['warning']);
+        }
+        if ($counts['notice'] > 0) {
+            $summaryparts[] = $counts['notice'] == 1
+                ? get_string('notificationsummarynotice', 'admin', $counts['notice'])
+                : get_string('notificationsummarynoticeplural', 'admin', $counts['notice']);
+        }
+
+        $heading = get_string('notifications', 'admin');
+        if (!empty($summaryparts)) {
+            $heading .= html_writer::tag(
+                'span',
+                implode(get_string('notificationsummaryseparator', 'admin'), $summaryparts),
+                ['class' => 'notification-summary text-muted fs-6 fw-normal ms-3']
+            );
+        }
+
+        return $this->output->heading($heading);
+    }
+
+    /**
+     * Determine the severity group for the "site not registered" warning.
+     *
+     * @param bool $registered true if the site is registered on Moodle.org
+     * @return string 'danger' or 'notice'
+     */
+    protected function registration_warning_severity($registered): string {
+        if (!$registered && site_is_public() && has_capability('moodle/site:config', context_system::instance())) {
+            return 'danger';
+        }
+        return 'notice';
+    }
+
+    /**
+     * Render the "From Moodle" CTA cards shown at the bottom of the notifications page.
+     *
+     * @return string HTML to output.
+     */
+    protected function notification_ctas(): string {
+        $ctas = new \core_admin\output\notification_ctas();
+        return $this->render_from_template('core_admin/notification_ctas', $ctas->export_for_template($this));
     }
 
     /**
@@ -532,9 +608,20 @@ class core_admin_renderer extends plugin_renderer_base {
      * Output a warning message, of the type that appears on the admin notifications page.
      * @param string $message the message to display.
      * @param string $type type class
+     * @param string|null $label optional bold category label prefix, for example "Security" or "Warning".
      * @return string HTML to output.
      */
-    protected function warning($message, $type = 'warning') {
+    protected function warning($message, $type = 'warning', $label = null) {
+        if ($label !== null) {
+            $labelclass = 'notification-label-warning';
+            if (strpos($type, 'danger') !== false) {
+                $labelclass = 'notification-label-danger';
+            } else if (strpos($type, 'info') !== false) {
+                $labelclass = 'notification-label-notice';
+            }
+            $message = html_writer::tag('strong', $label, ['class' => $labelclass])
+                . get_string('notificationsummaryseparator', 'admin') . $message;
+        }
         return $this->box($message, 'generalbox alert alert-' . $type);
     }
 
@@ -547,10 +634,18 @@ class core_admin_renderer extends plugin_renderer_base {
         global $CFG;
 
         if ($insecuredataroot == INSECURE_DATAROOT_WARNING) {
-            return $this->warning(get_string('datarootsecuritywarning', 'admin', $CFG->dataroot));
+            return $this->warning(
+                get_string('datarootsecuritywarning', 'admin', $CFG->dataroot),
+                'warning',
+                get_string('notificationlabelwarning', 'admin')
+            );
 
         } else if ($insecuredataroot == INSECURE_DATAROOT_ERROR) {
-            return $this->warning(get_string('datarootsecurityerror', 'admin', $CFG->dataroot), 'danger');
+            return $this->warning(
+                get_string('datarootsecurityerror', 'admin', $CFG->dataroot),
+                'danger',
+                get_string('notificationlabelsecurity', 'admin')
+            );
 
         } else {
             return '';
@@ -568,7 +663,7 @@ class core_admin_renderer extends plugin_renderer_base {
         if ($devlibdir) {
             $moreinfo = new moodle_url('/report/security/index.php');
             $warning = get_string('devlibdirpresent', 'core_admin', ['moreinfourl' => $moreinfo->out()]);
-            return $this->warning($warning, 'danger');
+            return $this->warning($warning, 'danger', get_string('notificationlabelsecurity', 'admin'));
 
         } else {
             return '';
@@ -585,7 +680,11 @@ class core_admin_renderer extends plugin_renderer_base {
             return '';
         }
 
-        return $this->warning(get_string('displayerrorswarning', 'admin'));
+        return $this->warning(
+            get_string('displayerrorswarning', 'admin'),
+            'warning',
+            get_string('notificationlabelwarning', 'admin')
+        );
     }
 
     /**
@@ -598,7 +697,11 @@ class core_admin_renderer extends plugin_renderer_base {
             return '';
         }
 
-        return $this->warning(get_string('themedesignermodewarning', 'admin'));
+        return $this->warning(
+            get_string('themedesignermodewarning', 'admin'),
+            'warning',
+            get_string('notificationlabelwarning', 'admin')
+        );
     }
 
     /**
@@ -611,7 +714,11 @@ class core_admin_renderer extends plugin_renderer_base {
             return '';
         }
 
-        return $this->warning(get_string('warningiconvbuggy', 'admin'));
+        return $this->warning(
+            get_string('warningiconvbuggy', 'admin'),
+            'warning',
+            get_string('notificationlabelwarning', 'admin')
+        );
     }
 
     /**
@@ -627,7 +734,11 @@ class core_admin_renderer extends plugin_renderer_base {
 
         $check = new \tool_task\check\cronrunning();
         $result = $check->get_result();
-        return $this->warning($result->get_summary() . '&nbsp;' . $this->help_icon('cron', 'admin'));
+        return $this->warning(
+            $result->get_summary() . '&nbsp;' . $this->help_icon('cron', 'admin'),
+            'warning',
+            get_string('notificationlabelwarning', 'admin')
+        );
     }
 
     /**
@@ -645,7 +756,11 @@ class core_admin_renderer extends plugin_renderer_base {
 
         $check = new \tool_task\check\cronrunning();
         $result = $check->get_result();
-        return $this->warning($result->get_summary() . '&nbsp;' . $this->help_icon('cron', 'admin'));
+        return $this->warning(
+            $result->get_summary() . '&nbsp;' . $this->help_icon('cron', 'admin'),
+            'warning',
+            get_string('notificationlabelwarning', 'admin')
+        );
     }
 
     /**
@@ -658,7 +773,7 @@ class core_admin_renderer extends plugin_renderer_base {
             return '';
         }
 
-        return $this->warning($dbproblems);
+        return $this->warning($dbproblems, 'warning', get_string('notificationlabelwarning', 'admin'));
     }
 
     /**
@@ -671,7 +786,8 @@ class core_admin_renderer extends plugin_renderer_base {
         if (!count($cachewarnings)) {
             return '';
         }
-        return join("\n", array_map(array($this, 'warning'), $cachewarnings));
+        $label = get_string('notificationlabelwarning', 'admin');
+        return join("\n", array_map(fn($cachewarning) => $this->warning($cachewarning, 'warning', $label), $cachewarnings));
     }
 
     /**
@@ -687,8 +803,14 @@ class core_admin_renderer extends plugin_renderer_base {
                 $components .= $eventhandler->component . ', ';
             }
             $components = rtrim($components, ', ');
-            return $this->warning(get_string('eventshandlersinuse', 'admin', $components));
+            return $this->warning(
+                get_string('eventshandlersinuse', 'admin', $components),
+                'warning',
+                get_string('notificationlabelwarning', 'admin')
+            );
         }
+
+        return '';
     }
 
     /**
@@ -704,7 +826,11 @@ class core_admin_renderer extends plugin_renderer_base {
         $url = new moodle_url('/admin/settings.php', array('section' => 'maintenancemode'));
         $url = $url->out(); // get_string() does not support objects in params
 
-        return $this->warning(get_string('sitemaintenancewarning2', 'admin', $url));
+        return $this->warning(
+            get_string('sitemaintenancewarning2', 'admin', $url),
+            'warning',
+            get_string('notificationlabelwarning', 'admin')
+        );
     }
 
     /**
@@ -718,7 +844,7 @@ class core_admin_renderer extends plugin_renderer_base {
             return '';
         }
         $warning = get_string('overridetossl', 'core_admin');
-        return $this->warning($warning, 'warning');
+        return $this->warning($warning, 'warning', get_string('notificationlabelwarning', 'admin'));
     }
 
     /**
@@ -784,15 +910,17 @@ class core_admin_renderer extends plugin_renderer_base {
         }
 
         $level = 'warning';
+        $label = get_string('notificationlabelwarning', 'admin');
 
         if ($maturity == MATURITY_ALPHA) {
             $level = 'danger';
+            $label = get_string('notificationlabelcritical', 'admin');
         }
 
         $maturitylevel = get_string('maturity' . $maturity, 'admin');
         $warningtext = get_string('maturitycoreinfo', 'admin', $maturitylevel);
         $warningtext .= ' ' . $this->doc_link('admin/versions', get_string('morehelp'));
-        return $this->warning($warningtext, $level);
+        return $this->warning($warningtext, $level, $label);
     }
 
     /**
@@ -830,23 +958,28 @@ class core_admin_renderer extends plugin_renderer_base {
             }
         }
 
+        $fetchurl = new moodle_url('/admin/index.php', ['fetchupdates' => 1, 'sesskey' => sesskey(), 'cache' => 0]);
+        $checkbutton = $this->single_button($fetchurl, get_string('checkforupdates', 'core_plugin'));
+
         if (!$someupdateavailable) {
             $now = time();
             if ($fetch and ($fetch <= $now) and ($now - $fetch < HOURSECS)) {
-                $updateinfo .= $this->heading(get_string('updateavailablenot', 'core_admin'), 3);
+                $checktext = get_string('updateavailablenot', 'core_admin');
+            } else if ($fetch) {
+                $checktext = get_string('notificationctaupdateschecked', 'admin', format_time($now - $fetch));
+            } else {
+                $checktext = get_string('notificationctaupdatesnotchecked', 'admin');
             }
+
+            // Keep the explanatory text and the button on a single line, like the other notifications.
+            $updateinfo .= $checktext . '&nbsp;' . $checkbutton;
+        } else {
+            $updateinfo .= $this->container_start('checkforupdates mt-1');
+            $updateinfo .= $checkbutton;
+            $updateinfo .= $this->container_end();
         }
 
-        $updateinfo .= $this->container_start('checkforupdates mt-1');
-        $fetchurl = new moodle_url('/admin/index.php', array('fetchupdates' => 1, 'sesskey' => sesskey(), 'cache' => 0));
-        $updateinfo .= $this->single_button($fetchurl, get_string('checkforupdates', 'core_plugin'));
-        if ($fetch) {
-            $updateinfo .= $this->container(get_string('checkforupdateslast', 'core_plugin',
-                userdate($fetch, get_string('strftimedatetime', 'core_langconfig'))));
-        }
-        $updateinfo .= $this->container_end();
-
-        return $this->warning($updateinfo);
+        return $this->warning($updateinfo, 'info', get_string('notificationlabelnotice', 'admin'));
     }
 
     /**
@@ -858,7 +991,7 @@ class core_admin_renderer extends plugin_renderer_base {
     protected function registration_warning($registered) {
 
         if (!$registered && site_is_public()) {
-            if (has_capability('moodle/site:config', context_system::instance())) {
+            if ($this->registration_warning_severity($registered) === 'danger') {
                 $registerbutton = $this->single_button(new moodle_url('/admin/registration/index.php'),
                     get_string('register', 'admin'));
                 $str = 'registrationwarning';
@@ -869,7 +1002,11 @@ class core_admin_renderer extends plugin_renderer_base {
                 $type = 'info';
             }
 
-            return $this->warning( get_string($str, 'admin') . '&nbsp;' . $registerbutton , $type);
+            return $this->warning(
+                get_string($str, 'admin') . '&nbsp;' . $registerbutton,
+                $type,
+                get_string('notificationlabelsecurity', 'admin')
+            );
         }
 
         return '';
@@ -895,54 +1032,14 @@ class core_admin_renderer extends plugin_renderer_base {
         if (!$mobileconfigured) {
             $settingslink = new moodle_url('/admin/search.php', ['query' => 'enablemobilewebservice']);
             $configurebutton = $this->single_button($settingslink, get_string('enablemobilewebservice', 'admin'), 'get');
-            $output .= $this->warning(get_string('mobilenotconfiguredwarning', 'admin') . '&nbsp;' . $configurebutton);
+            $output .= $this->warning(
+                get_string('mobilenotconfiguredwarning', 'admin') . '&nbsp;' . $configurebutton,
+                'warning',
+                get_string('notificationlabelwarning', 'admin')
+            );
         }
 
         return $output;
-    }
-
-    /**
-     * Display campaign content.
-     *
-     * @param bool $showcampaigncontent Whether the campaign content should be visible or not.
-     * @return string the campaign content raw html.
-     */
-    protected function campaign_content(bool $showcampaigncontent): string {
-        if (!$showcampaigncontent) {
-            return '';
-        }
-
-        $lang = current_language();
-        $url = "https://campaign.moodle.org/current/lms/{$lang}/install/";
-        $params = [
-            'url' => $url,
-            'iframeid' => 'campaign-content',
-            'title' => get_string('campaign', 'admin'),
-        ];
-
-        return $this->render_from_template('core/external_content_banner', $params);
-    }
-
-    /**
-     * Display services and support content.
-     *
-     * @param bool $showservicesandsupport Whether the services and support content should be visible or not.
-     * @return string the campaign content raw html.
-     */
-    protected function services_and_support_content(bool $showservicesandsupport): string {
-        if (!$showservicesandsupport) {
-            return '';
-        }
-
-        $lang = current_language();
-        $url = "https://campaign.moodle.org/current/lms/{$lang}/servicesandsupport/";
-        $params = [
-            'url' => $url,
-            'iframeid' => 'services-support-content',
-            'title' => get_string('supportandservices', 'admin'),
-        ];
-
-        return $this->render_from_template('core/external_content_banner', $params);
     }
 
     /**
@@ -956,8 +1053,11 @@ class core_admin_renderer extends plugin_renderer_base {
         if ($invalidforgottenpasswordurl) {
             $settingslink = new moodle_url('/admin/settings.php', ['section' => 'manageauths']);
             $configurebutton = $this->single_button($settingslink, get_string('check', 'moodle'));
-            $output .= $this->warning(get_string('invalidforgottenpasswordurl', 'admin') . '&nbsp;' . $configurebutton,
-                'error alert alert-danger');
+            $output .= $this->warning(
+                get_string('invalidforgottenpasswordurl', 'admin') . '&nbsp;' . $configurebutton,
+                'error alert alert-danger',
+                get_string('notificationlabelsecurity', 'admin')
+            );
         }
 
         return $output;
@@ -2342,23 +2442,6 @@ class core_admin_renderer extends plugin_renderer_base {
     }
 
     /**
-     * Display message about benefits of enabling the user feedback feature.
-     *
-     * @param bool $showfeedbackencouragement Whether the encouragement content should be displayed or not
-     * @return string
-     */
-    protected function userfeedback_encouragement(bool $showfeedbackencouragement): string {
-        $output = '';
-
-        if ($showfeedbackencouragement) {
-            $settingslink = new moodle_url('/admin/settings.php', ['section' => 'userfeedback']);
-            $output .= $this->warning(get_string('userfeedbackencouragement', 'admin', $settingslink->out()), 'info');
-        }
-
-        return $output;
-    }
-
-    /**
      * Display a warning about the deprecation of Mnet.
      *
      * @param string $xmlrpcwarning The warning message
@@ -2369,7 +2452,7 @@ class core_admin_renderer extends plugin_renderer_base {
             return '';
         }
 
-        return $this->warning($xmlrpcwarning);
+        return $this->warning($xmlrpcwarning, 'warning', get_string('notificationlabelwarning', 'admin'));
     }
 
     /**
@@ -2381,22 +2464,10 @@ class core_admin_renderer extends plugin_renderer_base {
         $moodlenetenabled = get_config('tool_moodlenet', 'enablemoodlenet');
         if (!empty($moodlenetenabled)) {
             $moodlenetwarning = get_string('moodlenetremovalwarning', 'admin');
-            return $this->warning($moodlenetwarning);
+            return $this->warning($moodlenetwarning, 'warning', get_string('notificationlabelwarning', 'admin'));
         }
 
         return '';
-    }
-
-    /**
-     * Display a notice about Moodle Marketplace integration.
-     *
-     * @return string HTML to output.
-     */
-    protected function marketplace_integration_notice(): string {
-        $installer = tool_installaddon_installer::instance();
-        $url = $installer->get_marketplace_url();
-        $notice = get_string('marketplaceavailablenotice', 'admin', $url->out());
-        return $this->warning($notice, 'info');
     }
 
     /**

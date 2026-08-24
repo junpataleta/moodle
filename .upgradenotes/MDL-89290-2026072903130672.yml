@@ -1,0 +1,12 @@
+issueNumber: MDL-89290
+notes:
+  core_admin:
+    - message: >-
+        core_admin_renderer::admin_notifications_page() no longer accepts the
+        $showcampaigncontent, $showfeedbackencouragement or
+        $showservicesandsupport parameters, and notifications are now grouped
+        and ordered by severity (danger, then warning, then notice) with a
+        summary count line. The legacy campaign banner, services-and-support
+        banner, Marketplace one-line notice and feedback-encouragement notice
+        have been replaced by a single "From Moodle" CTA card grid.
+      type: changed

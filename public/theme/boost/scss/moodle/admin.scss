@@ -700,3 +700,118 @@
         }
     }
 }
+
+/* "From Moodle" CTA card grid on the admin notifications page (MDL-89290). */
+.admin-notification-ctas {
+    margin-top: var(--mds-spacing-xl, 2rem);
+    padding: var(--mds-spacing-xl, 2rem) 0;
+    background-color: var(--mds-bg-surface-subtle, #{$gray-100});
+    border-top: 1px solid var(--mds-border-subtle, #{$gray-200});
+
+    .admin-notification-ctas-heading {
+        margin-bottom: var(--mds-spacing-lg, 1.25rem);
+
+        h3 {
+            margin-bottom: var(--mds-spacing-xxs, .25rem);
+        }
+    }
+
+    .admin-notification-ctas-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--mds-spacing-xl, 2rem);
+
+        @include media-breakpoint-down(sm) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .admin-notification-cta {
+        display: flex;
+        flex-direction: column;
+        background-color: var(--mds-bg-surface-default, #{$white});
+        border: 1px solid var(--mds-border-subtle, #{$gray-200});
+        border-radius: var(--mds-border-radius-lg, .75rem);
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
+
+        .admin-notification-cta-band {
+            display: flex;
+            align-items: center;
+            height: 6rem;
+            padding: 0 var(--mds-spacing-lg, 1.25rem);
+        }
+
+        .admin-notification-cta-logo {
+            width: auto;
+            max-height: 100%;
+        }
+
+        .admin-notification-cta-logo-pill {
+            display: inline-flex;
+            padding: var(--mds-spacing-xs, .5rem) var(--mds-spacing-sm, .75rem);
+            background-color: var(--mds-bg-surface-default, #{$white});
+            border-radius: var(--mds-border-radius-sm, .375rem);
+        }
+
+        .admin-notification-cta-body {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: var(--mds-spacing-sm, .5rem);
+            padding: var(--mds-spacing-lg, 1.25rem);
+        }
+
+        .admin-notification-cta-ticks {
+            display: flex;
+            flex-direction: column;
+            gap: var(--mds-spacing-xxs, .25rem);
+            margin: 0;
+
+            li {
+                display: flex;
+                align-items: flex-start;
+                gap: var(--mds-spacing-xxs, .25rem);
+            }
+        }
+
+        .admin-notification-cta-action {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--mds-spacing-xs, .5rem);
+            margin-top: auto;
+            padding-top: var(--mds-spacing-xxs, .25rem);
+
+            .btn {
+                color: var(--mds-text-inverse, $white);
+                background-color: var(--cta-btn);
+                border-color: var(--cta-btn);
+
+                &:hover,
+                &:focus {
+                    color: var(--mds-text-inverse, $white);
+                    background-color: var(--cta-btn-hover);
+                    border-color: var(--cta-btn-hover);
+                }
+            }
+        }
+
+        .admin-notification-cta-caption {
+            font-size: var(--mds-font-size-paragraph-small, .875rem);
+        }
+    }
+}
+
+/* Bold category label prefix on admin notification items (MDL-89290). */
+.notification-label-danger {
+    color: var(--mds-text-feedback-danger, #791d13);
+}
+
+.notification-label-warning {
+    color: var(--mds-text-feedback-warning, #60451f);
+}
+
+.notification-label-notice {
+    color: var(--mds-text-feedback-info, #00475a);
+}
