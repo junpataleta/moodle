@@ -94,6 +94,16 @@ const enablePopovers = () => {
     // aria-describedby attribute isn't reliable since that attribute is repointed to the tip's
     // content element (see the 'inserted.bs.popover' listener below).
     const helpPopoverTriggers = new WeakMap();
+    // Resolves an event target to the popover trigger it belongs to, either because the target is
+    // (inside) the trigger itself, or because it is inside the tip of an open help popover.
+    const getPopoverTriggers = target => {
+        const helpPopover = target.closest('.help-popover');
+        return {
+            popoverTrigger: target.closest('[data-bs-toggle="popover"]'),
+            helpPopover,
+            helpPopoverTrigger: helpPopover ? helpPopoverTriggers.get(helpPopover) : null,
+        };
+    };
     const initialisePopover = popoverTriggerEl => {
         const isHelpPopover = popoverTriggerEl.classList.contains('help-icon');
         const config = isHelpPopover
@@ -118,20 +128,37 @@ const enablePopovers = () => {
         [...popoverTriggerList].map(initialisePopover);
     });
 
+    // Escape is handled in the capture phase so that it reaches the popover before any ancestor
+    // of the trigger. core/modal binds its own Escape handling to the modal root, which is an
+    // ancestor of a help icon rendered inside a modal, so a bubbling listener here would only
+    // run after the modal had already hidden or destroyed itself. Propagation is stopped only
+    // when a popover is genuinely open, so Escape still closes the modal when a trigger merely
+    // has focus.
     document.addEventListener('keydown', e => {
-        const popoverTrigger = e.target.closest('[data-bs-toggle="popover"]');
-        const helpPopover = e.target.closest('.help-popover');
-        const helpPopoverTrigger = helpPopover ? helpPopoverTriggers.get(helpPopover) : null;
-        if (e.key === 'Escape' && popoverTrigger) {
-            Bootstrap.Popover.getOrCreateInstance(popoverTrigger).hide();
+        if (e.key !== 'Escape') {
+            return;
         }
-        if (e.key === 'Escape' && helpPopoverTrigger) {
+        const {popoverTrigger, helpPopoverTrigger} = getPopoverTriggers(e.target);
+        if (popoverTrigger) {
+            const popover = Bootstrap.Popover.getOrCreateInstance(popoverTrigger);
+            if (popover._isShown()) {
+                e.stopPropagation();
+                popover.hide();
+            }
+        }
+        if (helpPopoverTrigger) {
+            // Focus being inside the tip is proof enough that the popover is open.
+            e.stopPropagation();
             // Focus the trigger before hiding so the focusin handler's "already shown" guard
             // is still true, otherwise it re-shows a new tip that the pending hide() then
             // destroys once its (animated, therefore deferred) cleanup callback runs.
             helpPopoverTrigger.focus();
             Bootstrap.Popover.getOrCreateInstance(helpPopoverTrigger).hide();
         }
+    }, true);
+
+    document.addEventListener('keydown', e => {
+        const {popoverTrigger, helpPopover, helpPopoverTrigger} = getPopoverTriggers(e.target);
         if (e.key === 'Enter' && popoverTrigger) {
             const popover = Bootstrap.Popover.getOrCreateInstance(popoverTrigger);
             if (!popover._isShown()) {
