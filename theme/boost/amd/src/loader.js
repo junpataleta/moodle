@@ -69,10 +69,34 @@ const enablePopovers = () => {
         }),
     });
 
+    // Bootstrap points a shown trigger's aria-describedby at its tip, and removes the tip's 'show'
+    // class as soon as it starts hiding, so the two together tell us whether a popover is really
+    // open right now. The attribute alone is not enough, since it is only removed once the
+    // (animated, therefore deferred) hide has completed.
+    const isPopoverShown = popoverTrigger => {
+        const tipId = popoverTrigger.getAttribute('aria-describedby');
+        const tip = tipId ? document.getElementById(tipId) : null;
+        return !!tip && tip.classList.contains('show');
+    };
+
+    // Escape is handled in the capture phase so that it reaches the popover before any ancestor
+    // of the trigger. core/modal binds its own Escape handling to the modal root, which is an
+    // ancestor of a help icon rendered inside a modal, so a bubbling listener here would only
+    // run after the modal had already hidden or destroyed itself. Propagation is stopped only
+    // when a popover is genuinely open, so Escape still closes the modal when a trigger merely
+    // has focus.
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && e.target.closest('[data-toggle="popover"]')) {
-            $(e.target).popover('hide');
+        if (e.key !== 'Escape') {
+            return;
         }
+        const popoverTrigger = e.target.closest('[data-toggle="popover"]');
+        if (popoverTrigger && isPopoverShown(popoverTrigger)) {
+            e.stopPropagation();
+            $(popoverTrigger).popover('hide');
+        }
+    }, true);
+
+    document.addEventListener('keydown', e => {
         if (e.key === 'Enter' && e.target.closest('[data-toggle="popover"]')) {
             $(e.target).popover('show');
         }
