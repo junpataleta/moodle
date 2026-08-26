@@ -36,11 +36,9 @@ import {
     showElements,
     isPercentageValue,
 } from '../helpers';
-import {MAX_LENGTH_ALT} from './imagehelpers';
 
 prefetchStrings('tiny_media', [
     'imageurlrequired',
-    'sizecustom_help',
 ]);
 
 export default class MediaImage {
@@ -156,12 +154,9 @@ export default class MediaImage {
         image.addEventListener('load', async() => {
             const currentImageData = await this.getCurrentImageData();
             let templateContext = await this.getTemplateContext(currentImageData);
-            templateContext.sizecustomhelpicon = {text: await getString('sizecustom_help', 'tiny_media')};
-            templateContext.alttexthelpicon = {text: await getString('alttext_help', 'tiny_media')};
             templateContext.bodyTemplate = Selectors.IMAGE.template.body.insertImageDetailsBody;
             templateContext.footerTemplate = Selectors.IMAGE.template.footer.insertImageDetailsFooter;
             templateContext.selector = Selectors.IMAGE.type;
-            templateContext.maxlengthalt = MAX_LENGTH_ALT;
 
             Promise.all([body(templateContext, this.root), footer(templateContext, this.root)])
                 .then(() => {
@@ -177,9 +172,10 @@ export default class MediaImage {
                         this.canShowDropZone,
                         url,
                         image,
+                        currentImageData,
                     );
-                    imagedetails.init();
-                    return;
+                    // Chained so that a failure reaches the catch below rather than going unhandled.
+                    return imagedetails.init();
                 })
                 .catch(error => {
                     window.console.log(error);

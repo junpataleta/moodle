@@ -99,9 +99,9 @@ Feature: Use the TinyMCE editor to upload an image
     And I click on "Browse repositories" "button" in the "Insert image" "dialogue"
     And I upload "/lib/editor/tiny/tests/behat/fixtures/tinyscreenshot.png" to the file picker for TinyMCE
     When I set the field "How would you describe this image to someone who cannot see it?" to "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet."
-    Then I should see "750" in the "#currentcount" "css_element"
+    Then I should see "750" in the "[data-region='altcount']" "css_element"
     And I set the field "How would you describe this image to someone who cannot see it?" to "Lorem ipsum dolor sit amet."
-    And I should see "27" in the "#currentcount" "css_element"
+    And I should see "27" in the "[data-region='altcount']" "css_element"
 
   @javascript
   Scenario: Permissions can be configured to control access to media

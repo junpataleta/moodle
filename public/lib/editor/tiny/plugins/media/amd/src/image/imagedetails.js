@@ -16,6 +16,11 @@
 /**
  * Tiny media plugin image details class for Moodle.
  *
+ * The alternative text, decorative flag and display size controls come from core/imagedetails/form,
+ * which this class renders into the details step of the image modal. What stays here is the part
+ * specific to the editor: resolving the image URL, previewing it, deleting it, and writing the
+ * resulting img tag into the editor.
+ *
  * @module      tiny_media/image/imagedetails
  * @copyright   2024 Meirza <meirza.arson@moodle.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,27 +32,32 @@ import Notification from 'core/notification';
 import Pending from 'core/pending';
 import Selectors from '../selectors';
 import Templates from 'core/templates';
+import {ImageDetailsForm} from 'core/imagedetails/form';
 import {getString} from 'core/str';
 import {ImageInsert} from './imageinsert';
-import {MediaBase} from '../mediabase';
 import {
     body,
     footer,
     hideElements,
     showElements,
-    isPercentageValue,
 } from '../helpers';
 
-export class ImageDetails extends MediaBase {
+export class ImageDetails {
     DEFAULTS = {
         WIDTH: 160,
         HEIGHT: 160,
     };
 
-    selectorType = Selectors.IMAGE.type;
-
-    mediaDimensions = null;
-
+    /**
+     * @param {HTMLElement} root The modal root element.
+     * @param {object} editor The TinyMCE editor instance.
+     * @param {object} currentModal The modal the details step is shown in.
+     * @param {boolean} canShowFilePicker
+     * @param {boolean} canShowDropZone
+     * @param {string} currentUrl The URL of the image being described.
+     * @param {HTMLImageElement} image The loaded image, for its natural dimensions.
+     * @param {object} [imageData={}] Details of the image already in the editor, when one is selected.
+     */
     constructor(
         root,
         editor,
@@ -56,8 +66,8 @@ export class ImageDetails extends MediaBase {
         canShowDropZone,
         currentUrl,
         image,
+        imageData = {},
     ) {
-        super();
         this.root = root;
         this.editor = editor;
         this.currentModal = currentModal;
@@ -65,15 +75,36 @@ export class ImageDetails extends MediaBase {
         this.canShowDropZone = canShowDropZone;
         this.currentUrl = currentUrl;
         this.image = image;
-        this.toggleMaxlengthFeedbackSuffix = false;
+        this.imageData = imageData;
+        this.form = null;
     }
 
-    init = function() {
+    init = async function() {
         this.currentModal.setTitle(getString('imagedetails', 'tiny_media'));
         this.imageTypeChecked();
-        this.presentationChanged();
-        this.storeImageDimensions(this.image);
-        this.setImageDimensions();
+
+        // Fall back to defaults for images without dimensions, for example an SVG without them.
+        const naturalWidth = this.image.width || this.DEFAULTS.WIDTH;
+        const naturalHeight = this.image.height || this.DEFAULTS.HEIGHT;
+
+        this.form = new ImageDetailsForm(this.root.querySelector(Selectors.IMAGE.elements.detailsForm), {
+            naturalWidth,
+            naturalHeight,
+            alt: this.imageData.alt ?? '',
+            presentation: !!this.imageData.presentation,
+            width: this.imageData.width ?? naturalWidth,
+            height: this.imageData.height ?? naturalHeight,
+        });
+        await this.form.render();
+
+        const preview = this.root.querySelector(Selectors.IMAGE.elements.preview);
+        preview.setAttribute('src', this.image.src);
+        preview.style.display = '';
+
+        // Keep the preview in step with the size the user picks.
+        this.form.onSizeChange((size) => this.setPreviewDimensions(size));
+        this.setPreviewDimensions(this.form.getDisplaySize());
+
         this.registerEventListeners();
     };
 
@@ -107,99 +138,35 @@ export class ImageDetails extends MediaBase {
             });
     };
 
-    storeImageDimensions(image) {
-        // Store dimensions of the raw image, falling back to defaults for images without dimensions (e.g. SVG).
-        this.mediaDimensions = {
-            width: image.width || this.DEFAULTS.WIDTH,
-            height: image.height || this.DEFAULTS.HEIGHT,
-        };
-
-        const getCurrentWidth = (element) => {
-            if (element.value === '') {
-                element.value = this.mediaDimensions.width;
-            }
-            return element.value;
-        };
-
-        const getCurrentHeight = (element) => {
-            if (element.value === '') {
-                element.value = this.mediaDimensions.height;
-            }
-            return element.value;
-        };
-
-        const widthInput = this.root.querySelector(Selectors.IMAGE.elements.width);
-        const currentWidth = getCurrentWidth(widthInput);
-
-        const heightInput = this.root.querySelector(Selectors.IMAGE.elements.height);
-        const currentHeight = getCurrentHeight(heightInput);
-
-        const preview = this.root.querySelector(Selectors.IMAGE.elements.preview);
-        preview.setAttribute('src', image.src);
-        preview.style.display = '';
-
-        /**
-         * Sets the selected size option based on current width and height values.
-         *
-         * @param {number} currentWidth - The current width value.
-         * @param {number} currentHeight - The current height value.
-         */
-        const setSelectedSize = (currentWidth, currentHeight) => {
-            if (this.mediaDimensions.width === currentWidth &&
-                this.mediaDimensions.height === currentHeight
-            ) {
-                this.currentWidth = this.mediaDimensions.width;
-                this.currentHeight = this.mediaDimensions.height;
-                this.sizeChecked('original');
-            } else {
-                this.currentWidth = currentWidth;
-                this.currentHeight = currentHeight;
-                this.sizeChecked('custom');
-            }
-        };
-
-        setSelectedSize(Number(currentWidth), Number(currentHeight));
-    }
-
     /**
-     * Sets the dimensions of the image preview element based on user input and constraints.
+     * Scale the preview so that the chosen size fits inside the preview box.
+     *
+     * @param {{width: number, height: number}} size The size the image is to be shown at.
      */
-    setImageDimensions = () => {
+    setPreviewDimensions(size) {
         const imagePreviewBox = this.root.querySelector(Selectors.IMAGE.elements.previewBox);
         const image = this.root.querySelector(Selectors.IMAGE.elements.preview);
-        const widthField = this.root.querySelector(Selectors.IMAGE.elements.width);
-        const heightField = this.root.querySelector(Selectors.IMAGE.elements.height);
 
         const updateImageDimensions = () => {
             // Get the latest dimensions of the preview box for responsiveness.
-            const boxWidth = imagePreviewBox.clientWidth;
-            const boxHeight = imagePreviewBox.clientHeight;
-            // Get the new width and height for the image.
-            const dimensions = this.fitSquareIntoBox(widthField.value, heightField.value, boxWidth, boxHeight);
+            const dimensions = this.fitSquareIntoBox(
+                size.width,
+                size.height,
+                imagePreviewBox.clientWidth,
+                imagePreviewBox.clientHeight,
+            );
             image.style.width = `${dimensions.width}px`;
             image.style.height = `${dimensions.height}px`;
         };
+
         // If the client size is zero, then get the new dimensions once the modal is shown.
         if (imagePreviewBox.clientWidth === 0) {
-            // Call the shown event.
             this.currentModal.getRoot().on(ModalEvents.shown, () => {
                 updateImageDimensions();
             });
         } else {
             updateImageDimensions();
         }
-    };
-
-    /**
-     * Handles changes in the image presentation checkbox and enables/disables the image alt text input accordingly.
-     */
-    async presentationChanged() {
-        const presentation = this.root.querySelector(Selectors.IMAGE.elements.presentation);
-        const alt = this.root.querySelector(Selectors.IMAGE.elements.alt);
-        alt.disabled = presentation.checked;
-
-        // Counting the image description characters.
-        await this.handleKeyupCharacterCount();
     }
 
     /**
@@ -243,13 +210,6 @@ export class ImageDetails extends MediaBase {
         }
     }
 
-    toggleAriaInvalid(selectors, predicate) {
-        selectors.forEach((selector) => {
-            const elements = this.root.querySelectorAll(selector);
-            elements.forEach((element) => element.setAttribute('aria-invalid', predicate));
-        });
-    }
-
     hasErrorUrlField() {
         const urlError = this.currentUrl === '';
         if (urlError) {
@@ -257,23 +217,10 @@ export class ImageDetails extends MediaBase {
         } else {
             hideElements(Selectors.IMAGE.elements.urlWarning, this.root);
         }
-        this.toggleAriaInvalid([Selectors.IMAGE.elements.url], urlError);
+        this.root.querySelectorAll(Selectors.IMAGE.elements.url)
+            .forEach((element) => element.setAttribute('aria-invalid', urlError));
 
         return urlError;
-    }
-
-    hasErrorAltField() {
-        const alt = this.root.querySelector(Selectors.IMAGE.elements.alt).value;
-        const presentation = this.root.querySelector(Selectors.IMAGE.elements.presentation).checked;
-        const imageAltError = alt === '' && !presentation;
-        if (imageAltError) {
-            showElements(Selectors.IMAGE.elements.altWarning, this.root);
-        } else {
-            hideElements(Selectors.IMAGE.elements.altWarning, this.root);
-        }
-        this.toggleAriaInvalid([Selectors.IMAGE.elements.alt, Selectors.IMAGE.elements.presentation], imageAltError);
-
-        return imageAltError;
     }
 
     setImage() {
@@ -283,33 +230,23 @@ export class ImageDetails extends MediaBase {
             return;
         }
 
-        // Check if there are any accessibility issues.
-        if (this.hasErrorUrlField() || this.hasErrorAltField()) {
+        // Check if there are any accessibility issues. The form reports the alternative text ones itself.
+        if (this.hasErrorUrlField() || !this.form.validate()) {
             pendingPromise.resolve();
             return;
         }
 
-        // Check for invalid width or height.
-        const width = this.root.querySelector(Selectors.IMAGE.elements.width).value;
-        if (!isPercentageValue(width) && isNaN(parseInt(width, 10))) {
-            this.root.querySelector(Selectors.IMAGE.elements.width).focus();
-            pendingPromise.resolve();
-            return;
-        }
-
-        const height = this.root.querySelector(Selectors.IMAGE.elements.height).value;
-        if (!isPercentageValue(height) && isNaN(parseInt(height, 10))) {
-            this.root.querySelector(Selectors.IMAGE.elements.height).focus();
-            pendingPromise.resolve();
-            return;
-        }
+        const details = this.form.getDetails();
+        // The editor always writes an explicit size, so use the displayed one rather than the
+        // form's "original means no size" reporting.
+        const size = this.form.getDisplaySize();
 
         const imageContext = {
             url: this.currentUrl,
-            alt: this.root.querySelector(Selectors.IMAGE.elements.alt).value,
-            width: this.root.querySelector(Selectors.IMAGE.elements.width).value,
-            height: this.root.querySelector(Selectors.IMAGE.elements.height).value,
-            presentation: this.root.querySelector(Selectors.IMAGE.elements.presentation).checked,
+            alt: details.alt,
+            width: size.width,
+            height: size.height,
+            presentation: details.presentation,
             customStyle: this.root.querySelector(Selectors.IMAGE.elements.customStyle).value,
         };
 
@@ -334,7 +271,6 @@ export class ImageDetails extends MediaBase {
             getString('deleteimage', 'tiny_media'),
             getString('deleteimagewarning', 'tiny_media'),
         ).then(() => {
-            hideElements(Selectors.IMAGE.elements.altWarning, this.root);
             // Removing the image in the preview will bring the user to the insert page.
             this.loadInsertImage();
             return;
@@ -355,87 +291,6 @@ export class ImageDetails extends MediaBase {
         deleteImageEle.addEventListener('click', () => {
             this.deleteImage();
         });
-
-        this.root.addEventListener('change', async(e) => {
-            const presentationEle = e.target.closest(Selectors.IMAGE.elements.presentation);
-            if (presentationEle) {
-                await this.presentationChanged();
-            }
-        });
-
-        const customSize = this.root.querySelector(Selectors.IMAGE.elements.customSizeToggle);
-        if (customSize) {
-            customSize.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.sizeChecked('custom');
-            });
-        }
-
-        const originalSize = this.root.querySelector(Selectors.IMAGE.elements.originalSizeToggle);
-        if (originalSize) {
-            originalSize.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.sizeChecked('original');
-            });
-        }
-
-        this.root.addEventListener('blur', async(e) => {
-            if (e.target.nodeType === Node.ELEMENT_NODE) {
-
-                const presentationEle = e.target.closest(Selectors.IMAGE.elements.presentation);
-                if (presentationEle) {
-                    await this.presentationChanged();
-                }
-            }
-        }, true);
-
-        // Character count.
-        this.root.addEventListener('keyup', async(e) => {
-            const altEle = e.target.closest(Selectors.IMAGE.elements.alt);
-            if (altEle) {
-                await this.handleKeyupCharacterCount();
-            }
-        });
-
-        this.root.addEventListener('input', (e) => {
-            const widthEle = e.target.closest(Selectors.IMAGE.elements.width);
-            if (widthEle) {
-                // Avoid empty value.
-                widthEle.value = widthEle.value === "" ? 0 : Number(widthEle.value);
-                this.autoAdjustSize();
-            }
-
-            const heightEle = e.target.closest(Selectors.IMAGE.elements.height);
-            if (heightEle) {
-                // Avoid empty value.
-                heightEle.value = heightEle.value === "" ? 0 : Number(heightEle.value);
-                this.autoAdjustSize(true);
-            }
-        });
-    }
-
-    async handleKeyupCharacterCount() {
-        const altField = this.root.querySelector(Selectors.IMAGE.elements.alt);
-        const alt = altField.value;
-        const current = this.root.querySelector('#currentcount');
-        current.innerHTML = alt.length;
-        const maxLength = altField.getAttribute('maxlength');
-        const maxLengthFeedback = document.getElementById('maxlength_feedback');
-        if (alt.length >= maxLength) {
-            maxLengthFeedback.textContent = await getString('maxlengthreached', 'core', maxLength);
-
-            // Clever (or hacky?;p) way to ensure that the feedback message is announced to screen readers.
-            const suffix = this.toggleMaxlengthFeedbackSuffix ? '' : '.';
-            maxLengthFeedback.textContent += suffix;
-            this.toggleMaxlengthFeedbackSuffix = !this.toggleMaxlengthFeedbackSuffix;
-
-            // Clear the feedback message after 4 seconds. This is similar to the default timeout of toast messages
-            // before disappearing from view. It is important to clear the message to prevent screen reader users from navigating
-            // into this region and avoiding confusion.
-            setTimeout(() => {
-                maxLengthFeedback.textContent = '';
-            }, 4000);
-        }
     }
 
     /**

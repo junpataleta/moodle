@@ -19,83 +19,22 @@
 
     Insert image details body template.
 
+    The alternative text, decorative flag and display size controls come from core/imagedetails/form,
+    rendered into tiny_image_details_form by the tiny_media/image/imagedetails module. This template
+    supplies the surrounding layout and the preview, which carries the plugin's own delete action.
+
     Example context (json):
     {
-        "elementid": "exampleId",
-        "alt": "Image description",
-        "presentation": true,
-        "width": 600,
-        "height": 400,
-        "customStyle": "",
-        "sizecustomhelpicon": {
-            "text": "Help text"
-        },
-        "maxlengthalt": 750
+        "customStyle": ""
     }
 
 }}
 <div class="tiny_image_image_details">
     <div class="container">
         <div class="row">
-            {{! Checkbox and radio buttons }}
+            {{! Alternative text, decorative flag and display size, rendered by core/imagedetails/form. }}
             <div class="tiny_image_properties_col col-lg-5">
-                {{! Image description }}
-                <div class="mb-2">
-                    <h3 class="h6 fw-bold">{{#str}} imagealternativetext, tiny_media {{/str}}</h3>
-                    <label for="{{elementid}}_tiny_image_altentry">{{#str}} enteralt, tiny_media {{/str}}</label>
-                    <textarea class="tiny_image_altentry form-control fullwidth" rows="5" id="{{elementid}}_tiny_image_altentry" name="altentry" maxlength="{{maxlengthalt}}">{{alt}}</textarea>
-                    {{! Character counter }}
-                    <div id="the-count" class="d-flex justify-content-end small">
-                        <span id="currentcount">0</span>
-                        <span class="mx-1">/</span>
-                        <span id="maximumcount">{{maxlengthalt}}</span>
-                        <span id="maxlength_feedback" class="visually-hidden" role="status"></span>
-                    </div>
-                </div>
-                {{! Image presentation checkbox }}
-                <div class="form-check mb-2">
-                    <input type="checkbox" class="tiny_image_presentation form-check-input" id="{{elementid}}_tiny_image_presentation" {{# presentation }}checked{{/ presentation }}>
-                    <label class="form-check-label" for="{{elementid}}_tiny_image_presentation">{{#str}} presentation, tiny_media {{/str}}</label>
-                    <span>{{#alttexthelpicon}}{{> core/help_icon }}{{/alttexthelpicon}}</span>
-                </div>
-                <hr>
-                <h3 class="h6 fw-bold">{{#str}} imagesize, tiny_media {{/str}}</h3>
-                {{! Original size radio button }}
-                <div class="mt-1 mb-1">
-                    <div class="btn-group" role="group" aria-label="{{#str}} imagesize, tiny_media{{/str}}">
-                        <button class="btn btn-outline-primary image-original-size-toggle">{{#str}} sizeoriginal, tiny_media {{/str}}</button>
-                        <button class="btn btn-outline-primary image-custom-size-toggle">{{#str}} sizecustom, tiny_media {{/str}}</button>
-                    </div>
-                </div>
-                {{! Image size }}
-                <div class="tiny_image_properties mb-2">
-                    {{! Image width and height }}
-                    <div id="{{elementid}}_tiny_image_size" class="tiny_image_size">
-                        <div class="d-flex justify-content-start">
-                            {{! Width input }}
-                            <div class="flex-item me-2 col-5">
-                                <div>
-                                    <label for="{{elementid}}_tiny_image_widthentry">{{#str}} width, tiny_media {{/str}}</label>
-                                    <div class="d-flex align-items-start">
-                                        <input type="number" min="0" class="tiny_image_widthentry form-control input-mini me-1 w-100" id="{{elementid}}_tiny_image_widthentry" value="{{width}}">
-                                        <span class="mt-1">px</span>
-                                    </div>
-                                </div>
-                            </div>
-                            {{! Height input }}
-                            <div class="flex-item me-1 col-5">
-                                <div>
-                                    <label for="{{elementid}}_tiny_image_heightentry">{{#str}} height, tiny_media {{/str}}</label>
-                                    <div class="d-flex align-items-start">
-                                        <input type="number" min="0" class="tiny_image_heightentry form-control input-mini me-1 w-100" id="{{elementid}}_tiny_image_heightentry" value="{{height}}">
-                                        <span class="mt-1">px</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="tiny_image_customhelpicon flex-item ms-1">{{#sizecustomhelpicon}}{{> core/help_icon }}{{/sizecustomhelpicon}}</div>
-                        </div>
-                    </div>
-                </div>
+                <div class="tiny_image_details_form"></div>
             </div>
             {{! Image preview and description }}
             <div class="tiny_image_preview_col col-lg-7 p-0">

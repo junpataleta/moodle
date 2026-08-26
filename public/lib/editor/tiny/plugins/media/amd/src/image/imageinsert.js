@@ -37,7 +37,6 @@ import {
     showElements,
     isValidUrl,
 } from '../helpers';
-import {MAX_LENGTH_ALT} from './imagehelpers';
 
 prefetchStrings('tiny_media', [
     'insertimage',
@@ -47,8 +46,6 @@ prefetchStrings('tiny_media', [
     'uploading',
     'loading',
     'addfilesdrop',
-    'sizecustom_help',
-    'alttext_help',
 ]);
 
 export class ImageInsert {
@@ -77,8 +74,6 @@ export class ImageInsert {
             'uploading',
             'loading',
             'addfilesdrop',
-            'sizecustom_help',
-            'alttext_help',
         ];
         const langStringvalues = await getStrings([...langStringKeys].map((key) => ({key, component})));
 
@@ -147,13 +142,13 @@ export class ImageInsert {
         });
 
         image.addEventListener('load', () => {
-            let templateContext = {};
-            templateContext.sizecustomhelpicon = {text: this.langStrings.sizecustom_help};
-            templateContext.alttexthelpicon = {text: this.langStrings.alttext_help};
-            templateContext.bodyTemplate = Selectors.IMAGE.template.body.insertImageDetailsBody;
-            templateContext.footerTemplate = Selectors.IMAGE.template.footer.insertImageDetailsFooter;
-            templateContext.selector = Selectors.IMAGE.type;
-            templateContext.maxlengthalt = MAX_LENGTH_ALT;
+            // The details controls are rendered by core/imagedetails/form, so the template only needs
+            // the layout around them.
+            const templateContext = {
+                bodyTemplate: Selectors.IMAGE.template.body.insertImageDetailsBody,
+                footerTemplate: Selectors.IMAGE.template.footer.insertImageDetailsFooter,
+                selector: Selectors.IMAGE.type,
+            };
 
             Promise.all([body(templateContext, this.root), footer(templateContext, this.root)])
                 .then(() => {
@@ -166,8 +161,8 @@ export class ImageInsert {
                         this.currentUrl,
                         image,
                     );
-                    imagedetails.init();
-                    return;
+                    // Chained so that a failure reaches the catch below rather than going unhandled.
+                    return imagedetails.init();
                 }).then(() => {
                     this.stopImageLoading();
                     return;

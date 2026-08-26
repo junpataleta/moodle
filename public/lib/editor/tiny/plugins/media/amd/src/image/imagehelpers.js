@@ -23,11 +23,15 @@
 
 import * as Helpers from '../helpers';
 import {Selectors} from '../selectors';
+import {MAX_ALT_LENGTH} from 'core/imagedetails/form';
 
 /**
  * Maximum length allowed for the alt attribute.
+ *
+ * Re-exported from core/imagedetails/form, which owns the limit now that the image details controls
+ * come from there. Prefer importing it from core directly.
  */
-export const MAX_LENGTH_ALT = 750;
+export const MAX_LENGTH_ALT = MAX_ALT_LENGTH;
 
 /**
  * Renders and inserts the body template for inserting an image into the modal.
