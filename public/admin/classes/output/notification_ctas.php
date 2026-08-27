@@ -63,10 +63,6 @@ class notification_ctas implements renderable, templatable {
 
             $cta = new stdClass();
             $cta->key = $key;
-            $cta->band = $definition['band'];
-            $cta->btn = $definition['btn'];
-            $cta->btnhover = $definition['btnhover'];
-            $cta->tick = $definition['tick'];
             $cta->logourl = $output->image_url($definition['logo'], 'core')->out(false);
             $cta->logoheight = $definition['logoheight'];
             $cta->logopill = $definition['logopill'];
@@ -96,15 +92,15 @@ class notification_ctas implements renderable, templatable {
      *
      * Card copy is final content agreed in MDL-89290 and must not be treated as placeholder text.
      *
+     * Each card's brand colours are not here: they are keyed off the card's 'data-cta-key' attribute in
+     * theme/boost/scss/moodle/admin.scss. Colours emitted from here would land in a style attribute, which
+     * no stylesheet rule can override, so the dark colour mode could not correct them.
+     *
      * @return array Card definitions keyed by CTA key.
      */
     protected function get_cta_definitions(): array {
         return [
             'marketplace' => [
-                'band' => '#570d82',
-                'btn' => '#570d82',
-                'btnhover' => '#32064c',
-                'tick' => '#570d82',
                 'logo' => 'notification_cta_marketplace',
                 'logoheight' => 26,
                 'logopill' => false,
@@ -121,10 +117,6 @@ class notification_ctas implements renderable, templatable {
                 'internal' => false,
             ],
             'moodlecloud' => [
-                'band' => '#194866',
-                'btn' => '#194866',
-                'btnhover' => '#102f42',
-                'tick' => '#194866',
                 'logo' => 'notification_cta_moodlecloud',
                 'logoheight' => 30,
                 'logopill' => false,
@@ -141,10 +133,6 @@ class notification_ctas implements renderable, templatable {
                 'internal' => false,
             ],
             'partners' => [
-                'band' => '#fedfc1',
-                'btn' => '#282828',
-                'btnhover' => '#545454',
-                'tick' => '#194866',
                 'logo' => 'notification_cta_partners',
                 'logoheight' => 46,
                 'logopill' => false,
@@ -161,10 +149,6 @@ class notification_ctas implements renderable, templatable {
                 'internal' => false,
             ],
             'feedback' => [
-                'band' => '#f98012',
-                'btn' => '#282828',
-                'btnhover' => '#545454',
-                'tick' => '#f98012',
                 'logo' => 'moodlelogo',
                 'logoheight' => 28,
                 'logopill' => true,

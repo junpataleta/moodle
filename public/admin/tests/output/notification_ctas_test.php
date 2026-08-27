@@ -50,10 +50,6 @@ final class notification_ctas_test extends \advanced_testcase {
             $this->assertCount(3, $cta->ticks);
             $this->assertNotEmpty($cta->cta);
             $this->assertNotEmpty($cta->caption);
-            $this->assertMatchesRegularExpression('/^#[0-9a-f]{6}$/i', $cta->band);
-            $this->assertMatchesRegularExpression('/^#[0-9a-f]{6}$/i', $cta->btn);
-            $this->assertMatchesRegularExpression('/^#[0-9a-f]{6}$/i', $cta->btnhover);
-            $this->assertMatchesRegularExpression('/^#[0-9a-f]{6}$/i', $cta->tick);
             $this->assertIsInt($cta->logoheight);
             $this->assertGreaterThan(0, $cta->logoheight);
             $this->assertIsBool($cta->logopill);
@@ -143,30 +139,31 @@ final class notification_ctas_test extends \advanced_testcase {
     }
 
     /**
-     * Each card's button color matches the reference design, not just the band color.
+     * No colour reaches the template.
      *
-     * Partners and Feedback use a dark button against a light/bright band, so the button
-     * color must not simply be reused from the band color.
+     * The card colours are keyed off data-cta-key in theme/boost/scss/moodle/admin.scss instead. A colour
+     * exported from here would end up in a style attribute, which no stylesheet rule can override, so the
+     * dark colour mode would have no way to correct it.
      */
-    public function test_button_colors_match_reference_design(): void {
+    public function test_export_for_template_carries_no_colours(): void {
         global $PAGE;
         $this->resetAfterTest();
 
         $ctas = new notification_ctas();
         $data = $ctas->export_for_template($PAGE->get_renderer('core'));
-        $bykey = [];
+
         foreach ($data->ctas as $cta) {
-            $bykey[$cta->key] = $cta;
+            $values = get_object_vars($cta);
+            $values['ticks'] = implode(' ', array_map(fn($tick) => $tick->text, $cta->ticks));
+
+            foreach ($values as $name => $value) {
+                $this->assertDoesNotMatchRegularExpression(
+                    '/#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i',
+                    (string) $value,
+                    "The '{$name}' value of the '{$cta->key}' CTA looks like a colour."
+                );
+            }
         }
-
-        $this->assertSame('#570d82', $bykey['marketplace']->btn);
-        $this->assertSame('#194866', $bykey['moodlecloud']->btn);
-        $this->assertSame('#282828', $bykey['partners']->btn);
-        $this->assertSame('#282828', $bykey['feedback']->btn);
-
-        // Partners and Feedback bands are light/bright, so their button color must differ from the band.
-        $this->assertNotSame($bykey['partners']->band, $bykey['partners']->btn);
-        $this->assertNotSame($bykey['feedback']->band, $bykey['feedback']->btn);
     }
 
     /**
