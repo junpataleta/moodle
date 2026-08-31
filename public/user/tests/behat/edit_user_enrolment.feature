@@ -176,7 +176,7 @@ Feature: Edit user enrolment
     And I press the tab key
     And I press the tab key
     And I press the tab key
-    Then the focused element is "Date picker" "button" in the "#fitem_id_timeend" "css_element"
+    Then the focused element is "Date picker" "button" in the "Enrolment ends" "fieldset"
     And I press the enter key
     And I press the tab key
     And the focused element is "Go to previous month" "button"
@@ -196,10 +196,10 @@ Feature: Edit user enrolment
     And I press the tab key
     And I press the tab key
     And I press the tab key
-    And the focused element is "Date picker" "button" in the "#fitem_id_timeend" "css_element"
+    And the focused element is "Date picker" "button" in the "Enrolment ends" "fieldset"
     And I press the enter key
     And I press the tab key
-    Then the focused element is "Go to previous month" "button"
+    And the focused element is "Go to previous month" "button"
 
   # Without JS, the user should be redirected to the original edit enrolment form.
   Scenario: Edit a user's enrolment without JavaScript
