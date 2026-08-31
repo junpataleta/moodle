@@ -95,6 +95,17 @@ M.form.dateselector = {
         Y.one('#dateselector-calendar-panel').on('click', function(e) {
             e.halt();
         });
+
+        // When the panel is shown inside a modal dialogue it becomes a descendant of the modal, so
+        // an Escape keypress in the open calendar would otherwise bubble up to the modal's own
+        // Escape handler and close the whole modal. Stop the Escape keydown here so that it only
+        // closes the calendar (handled on keyup); do not interfere with any other keys.
+        Y.one('#dateselector-calendar-panel').on('keydown', function(e) {
+            if (this.currentowner && e.keyCode === 27) {
+                e.stopPropagation();
+            }
+        }, this);
+
         Y.one(document.body).on('click', this.document_click, this);
 
         this.calendar = new MOODLECALENDAR({
