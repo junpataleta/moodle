@@ -98,6 +98,9 @@ final class more_menu_test extends advanced_testcase {
         // The haschildren=true path does not export a nodearray (that's only for haschildren=false).
         $this->assertArrayNotHasKey('nodearray', $data);
 
+        // This content has no headertitle, so no accessible name is exported for the landmark.
+        $this->assertArrayNotHasKey('navlabel', $data);
+
         // The legacy nodecollection structure must be present: it's rendered as the static
         // server-side fallback inside the React mount point (see secondarymoremenu.mustache),
         // so the menu still works for NonJS Behat and no-JS browsers.
@@ -115,6 +118,29 @@ final class more_menu_test extends advanced_testcase {
         $this->assertTrue($reactprops['items'][0]['active']);
         $this->assertSame('beta', $reactprops['items'][1]['key']);
         $this->assertFalse($reactprops['items'][1]['active']);
+    }
+
+    /**
+     * Checks that export_for_template() exports the content's headertitle as 'navlabel', which
+     * secondarymoremenu.mustache uses to name the navigation landmark around the menu. Without a
+     * name the secondary navigation cannot be told apart from the navbar's own "Site navigation"
+     * landmark when navigating by landmark.
+     *
+     * @return void
+     */
+    public function test_export_for_template_exports_headertitle_as_navlabel(): void {
+        $root = $this->create_node('Root');
+        $root->add_node($this->create_node('Alpha', new url('/alpha.php'), 'alpha'));
+
+        $content = new stdClass();
+        $content->children = $root->children;
+        $content->headertitle = 'Course menu';
+
+        $moremenu = new more_menu($content, 'nav-tabs', true, true);
+        $data = $moremenu->export_for_template($this->createStub(renderer_base::class));
+
+        $this->assertArrayHasKey('navlabel', $data);
+        $this->assertSame('Course menu', $data['navlabel']);
     }
 
     /**

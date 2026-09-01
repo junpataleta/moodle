@@ -93,6 +93,16 @@ class more_menu implements renderable, templatable {
         }
         $data['moremenuid'] = uniqid();
 
+        // The secondary navigation view sets a context-aware menu title (Course menu, Activity
+        // menu, Category menu, ...). Expose it so the navigation landmark around this menu can be
+        // named. The page already exposes a "Site navigation" landmark for the navbar, and two
+        // navigation landmarks cannot be told apart when navigating by landmark unless each is
+        // named. Menus built from a plain object (the primary navigation) have no title and are
+        // already inside the navbar's landmark, so they are left unnamed here.
+        if (!empty($this->content->headertitle)) {
+            $data['navlabel'] = $this->content->headertitle;
+        }
+
         return $data;
     }
 
