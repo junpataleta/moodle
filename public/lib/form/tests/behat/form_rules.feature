@@ -18,18 +18,18 @@ Feature: Test the form rules
 
     Examples:
       | checkbox            | ckbprevis | label                     | ckbresultvis | ckbresultstat | type        | id                   |
-      | Checked hide        | see       | Checked hidden            | not see      | disabled      | button      | Checked hidden       |
-      | Checked hide        | see       | Label test                | not see      | disabled      | field        | Label test           |
+      | Checked hide        | see       | Checked hidden            | not see      | enabled       | button      | Checked hidden       |
+      | Checked hide        | see       | Label test                | not see      | enabled       | field        | Label test           |
       | Checked disable     | see       | Checked disabled          | see          | disabled      | button      | Checked disabled     |
       | Not checked hide    | not see   | Not checked hidden        | see          | enabled       | button      | Not checked hidden   |
       | Not checked disable | see       | Not checked disabled      | see          | enabled       | button      | Not checked disabled |
       | EQ Checked          | see       | EQ ckb 1 disabled         | see          | disabled      | button      | EQ ckb 1 disabled    |
       | NEQ Checked         | not see   | NEQ ckb 0 hidden          | see          | enabled       | button      | NEQ ckb 0 hidden     |
       | ds_enb              | see       | Date selector for testing | see          | disabled      | css_element | #id_ds_day           |
-      | ds_dis              | see       | Date selector for testing | not see      | disabled      | css_element | #id_ds_day           |
+      | ds_dis              | see       | Date selector for testing | not see      | enabled       | css_element | #id_ds_day           |
       | edt_enb             | see       | Editor for testing        | see          | disabled      | css_element | #id_edt              |
-      | edt_dis             | see       | Editor for testing        | not see      | disabled      | css_element | #id_edt              |
-      | fp_dis              | see       | Filepicker for testing    | not see      | disabled      | css_element | #id_fp               |
+      | edt_dis             | see       | Editor for testing        | not see      | enabled       | css_element | #id_edt              |
+      | fp_dis              | see       | Filepicker for testing    | not see      | enabled       | css_element | #id_fp               |
 
   @javascript
   Scenario Outline: Radio rules
@@ -47,7 +47,7 @@ Feature: Test the form rules
       | radio   | label     | previs  | prestat  | postvis | poststat | opplabel  | oppprevis | oppprestat | opppostvis | opppoststat |
       | Enable  | Radio EQ  | see     | enabled  | see     | enabled  | Radio NEQ | not see   | disabled   | not see    | disabled    |
       | Disable | Radio EQ  | see     | enabled  | see     | disabled | Radio NEQ | not see   | disabled   | not see    | disabled    |
-      | Hide    | Radio NEQ | not see | disabled | see     | disabled | Radio EQ  | see       | enabled    | not see    | disabled    |
+      | Hide    | Radio NEQ | not see | disabled | see     | disabled | Radio EQ  | see       | enabled    | not see    | enabled     |
 
   @javascript
   Scenario Outline: Text input rules
@@ -66,11 +66,11 @@ Feature: Test the form rules
     Examples:
       | textinp                   | alphalabel  | intlabel  | intinp | previs  | postvis | prestat  | poststat |
       | Disable eq                | Alpha EQ    | Int EQ    | 1      | see     | see     | enabled  | disabled |
-      | Hidden eq                 | Alpha EQ    | Int EQ    | 2      | see     | not see | enabled  | disabled |
+      | Hidden eq                 | Alpha EQ    | Int EQ    | 2      | see     | not see | enabled  | enabled  |
       | Disable neq               | Alpha NEQ   | Int NEQ   | 3      | not see | not see | disabled | disabled |
       | Hidden neq                | Alpha NEQ   | Int NEQ   | 4      | not see | see     | disabled | disabled |
       | Tool                      | Alpha IN    | Int IN    | 9      | see     | see     | enabled  | disabled |
-      | USAO / Camellia / No Mana | Alpha IN    | Int IN    | 12     | see     | not see | enabled  | disabled |
+      | USAO / Camellia / No Mana | Alpha IN    | Int IN    | 12     | see     | not see | enabled  | enabled  |
 
   @javascript
   Scenario Outline: Select rule test
@@ -85,5 +85,5 @@ Feature: Test the form rules
       | Enable  | see       | Select NEQ | see          | disabled      |
       | Disable | see       | Select EQ  | see          | disabled      |
       | Disable | see       | Select NEQ | not see      | disabled      |
-      | Hide    | see       | Select EQ  | not see      | disabled      |
+      | Hide    | see       | Select EQ  | not see      | enabled       |
       | Hide    | see       | Select NEQ | not see      | disabled      |

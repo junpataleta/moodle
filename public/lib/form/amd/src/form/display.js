@@ -147,7 +147,6 @@ export const unlock = (element) => {
  * @param {HTMLElement} element The element to be hidden.
  */
 export const hide = (element) => {
-    element.setAttribute('disabled', 'disabled');
     const parent = element.closest('.fitem');
     if (parent) {
         parent.setAttribute('hidden', 'hidden');
@@ -167,7 +166,6 @@ export const hide = (element) => {
  * @param {HTMLElement} element The elements to be shown.
  */
 export const show = (element) => {
-    element.removeAttribute('disabled');
     const parent = element.closest('.fitem');
     if (parent) {
         parent.removeAttribute('hidden');

@@ -114,7 +114,7 @@ Feature: Using the activity grade form element
     And I am on the "Test forum name" "forum activity editing" page
     When I expand all fieldsets
     Then I should see "You cannot change the type, as grades already exist for this item."
-    And the "Maximum grade" "field" should be disabled
+    And the "Ratings > Maximum grade" "field" should be disabled
 
   @javascript
   Scenario: Attempting to change the maximum grade when no rescaling option has been chosen

@@ -37,4 +37,4 @@ Feature: Using the forum activities which support point scale
     And I set the field "rating" to "30"
     When I am on the "Test forum name" "forum activity editing" page
     And I expand all fieldsets
-    Then the "Maximum grade" "field" should be disabled
+    Then the "Ratings > Maximum grade" "field" should be disabled
