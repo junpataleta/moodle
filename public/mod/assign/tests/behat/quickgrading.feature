@@ -137,3 +137,49 @@ Feature: In an assignment, teachers grade multiple students on one page
     And I follow "Grades" in the user menu
     And I click on "Course 1" "link" in the "region-main" "region"
     And I should not see "1337"
+
+  @accessibility
+  Scenario: The grading table meets accessibility standards with quick grading on
+    Given the following "courses" exist:
+      | fullname | shortname | category |
+      | Course 1 | C1        | 0        |
+    And the following "users" exist:
+      | username | firstname | lastname | email                |
+      | teacher1 | Teacher   | 1        | teacher1@example.com |
+      | student1 | Student   | 1        | student1@example.com |
+      | student2 | Student   | 2        | student2@example.com |
+      | student3 | Student   | 3        | student3@example.com |
+    And the following "course enrolments" exist:
+      | user     | course | role           |
+      | teacher1 | C1     | editingteacher |
+      | student1 | C1     | student        |
+      | student2 | C1     | student        |
+      | student3 | C1     | student        |
+    # The due date is in the past and the three students are in different states, so that the table shows the
+    # submitted, draft and no submission statuses, and the late and overdue text, all at once.
+    And the following "activity" exists:
+      | activity                            | assign                  |
+      | course                              | C1                      |
+      | name                                | Test assignment         |
+      | intro                               | Submit your online text |
+      | duedate                             | ##yesterday##           |
+      | submissiondrafts                    | 1                       |
+      | assignsubmission_onlinetext_enabled | 1                       |
+    And the following "mod_assign > submissions" exist:
+      | assign          | user     | onlinetext            |
+      | Test assignment | student1 | The first submission  |
+      | Test assignment | student2 | The second submission |
+    And I am on the "Test assignment" Activity page logged in as student1
+    And I press "Submit assignment"
+    And I press "Continue"
+    And I log out
+    And I am on the "Test assignment" "assign activity" page logged in as teacher1
+    And I navigate to "Submissions" in current page administration
+    And I click on "Quick grading" "checkbox"
+    # Selecting a row and editing its grade puts both quick grading highlights on the page at once.
+    And I click on "Select Student 1" "checkbox"
+    When I set the field "User grade" in the "Student 2" "table_row" to "50"
+    Then I should see "Submitted for grading" in the "Student 1" "table_row"
+    # Without the best practice tests: the submissions page fails the landmark-unique rule, because the primary
+    # navigation more menu has no accessible name of its own. That is a pre-existing problem with the page.
+    And the page should meet accessibility standards

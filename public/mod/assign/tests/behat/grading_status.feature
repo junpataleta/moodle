@@ -103,7 +103,7 @@ Feature: View the grading status of an assignment
     And I set the field "Workflow filter" to "In review"
     And I should see "0 of 0"
 
-  @javascript
+  @javascript @accessibility
   Scenario: View the grading status for an assignment with marking workflow disabled
     Given the following "activity" exists:
       | activity                            | assign                  |
@@ -135,11 +135,15 @@ Feature: View the grading status of an assignment
     And I am on the "Test assignment name" "assign activity" page
     And I navigate to "Submissions" in current page administration
     And I should see "Graded" in the "Student 1" "table_row"
+    # The grading table only shows the graded status once a grade exists, so the check belongs here rather
+    # than in a scenario of its own.
+    And the page should meet accessibility standards
     And I log out
     # View the grading status as a student.
     And I am on the "Test assignment name" "assign activity" page logged in as student1
     And I should see "Graded" in the "Grading status" "table_row"
     And I should see "Great job! Lol, not really."
+    And the page should meet accessibility standards
     And I log out
     # Student makes a subsequent submission.
     And I am on the "Test assignment name" "assign activity" page logged in as student1
@@ -152,6 +156,7 @@ Feature: View the grading status of an assignment
     And I am on the "Test assignment name" "assign activity" page logged in as teacher1
     And I navigate to "Submissions" in current page administration
     And I should see "Graded - resubmitted" in the "Student 1" "table_row"
+    And the page should meet accessibility standards
     And I wait "10" seconds
     And I change window size to "large"
     And I click on "Grade actions" "actionmenu" in the "Student 1" "table_row"
