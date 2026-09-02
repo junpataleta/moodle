@@ -93,7 +93,8 @@ export default class Rules {
                 // This is the hidden input that is part of an advcheckbox.
                 lock = target.checked === Boolean(key);
             } else if (target.type === 'checkbox' && !target.checked) {
-                lock = target.checked === Boolean(key);
+                // An unchecked checkbox has no submitted value, so treat it as if its value were 0.
+                lock = Number(key) === 0;
             } else if (target.classList.contains('filepickerhidden')) {
                 lock = !M.form_filepicker?.instances[target.id]?.fileadded;
             } else {
@@ -126,7 +127,8 @@ export default class Rules {
                 // This is the hidden input that is part of an advcheckbox.
                 lock = target.checked !== Boolean(key);
             } else if (target.type === 'checkbox' && !target.checked) {
-                lock = target.checked === Boolean(key);
+                // An unchecked checkbox has no submitted value, so treat it as if its value were 0.
+                lock = Number(key) !== 0;
             } else if (target.classList.contains('filepickerhidden')) {
                 lock = !!M.form_filepicker?.instances[target.id]?.fileadded;
             } else {

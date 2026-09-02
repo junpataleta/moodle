@@ -40,6 +40,28 @@ Feature: disabledIf functionality in forms
     When I upload "lib/ddl/tests/fixtures/xmldb_table.xml" file to "File picker" filemanager
     Then the "inputtext1" "field" should be disabled
 
+  Scenario: A disabledIf element is not re-enabled by a cascading hideIf update from another controller
+    Given I am on the "cascading_hideif_disabledif_form" "core_form > Fixture" page logged in as "admin"
+    And the "#id_dependant" "css_element" should be enabled
+    When I set the field "Lock switch" to "Locked"
+    Then the "#id_controllercheckbox" "css_element" should be disabled
+    And the "#id_dependant" "css_element" should be disabled
+    And I set the field "Lock switch" to "Unlocked"
+    And the "#id_controllercheckbox" "css_element" should be enabled
+    And the "#id_dependant" "css_element" should be enabled
+
+  Scenario: Elements are correctly disabled when disabledIf compares a checkbox to numeric 0 or 1
+    Given I am on the "checkbox_eq_disabledif_form" "core_form > Fixture" page logged in as "admin"
+    And the "#id_disabledwheneq0" "css_element" should be disabled
+    And the "#id_disabledwheneq1" "css_element" should be enabled
+    And the "#id_disabledwhenneq0" "css_element" should be enabled
+    And the "#id_disabledwhenneq1" "css_element" should be disabled
+    When I click on "Toggle checkbox" "checkbox"
+    Then the "#id_disabledwheneq0" "css_element" should be enabled
+    And the "#id_disabledwheneq1" "css_element" should be disabled
+    And the "#id_disabledwhenneq0" "css_element" should be disabled
+    And the "#id_disabledwhenneq1" "css_element" should be enabled
+
   Scenario Outline: Inputs are disabled when disabledIf conditions dependent on a multi-select element are met
     Given I am on the "multiselect_hideif_disabledif_form" "core_form > Fixture" page logged in as "admin"
     When I set the field "multiselect1" to "<selection>"
