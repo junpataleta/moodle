@@ -19,7 +19,7 @@ Feature: Prevent or allow assignment submission changes
       | student1 | C1 | student |
       | student2 | C1 | student |
 
-  @javascript
+  @javascript @accessibility
   Scenario: Preventing changes and allowing them again
     Given the following "activity" exists:
       | activity                                      | assign                  |
@@ -50,6 +50,8 @@ Feature: Prevent or allow assignment submission changes
     And I am on the "Test assignment name" Activity page logged in as student1
     And "Edit submission" "button" should not exist
     And I should see "This assignment is not accepting submissions"
+    # A locked submission is the only state which renders this notice, so the check belongs here.
+    And the page should meet accessibility standards
     And I log out
 
     And I am on the "Test assignment name" Activity page logged in as teacher1
