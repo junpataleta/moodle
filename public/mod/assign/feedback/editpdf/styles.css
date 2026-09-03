@@ -17,6 +17,10 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 20px rgba(0, 0, 0, .2);
 }
 
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .drawingcanvas {
+    background-color: var(--bs-secondary-bg);
+}
+
 .assignfeedback_editpdf_widget .moodle-dialogue-bd .drawingregion {
     position: inherit;
 }
@@ -49,6 +53,11 @@
     touch-action: none;
 }
 
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .drawingregion {
+    border-color: var(--bs-border-color);
+    background-color: var(--bs-secondary-bg);
+}
+
 .assignfeedback_editpdf_widget {
     user-select: none;
     -moz-user-select: none;
@@ -56,7 +65,7 @@
 }
 
 .assignfeedback_editpdf_widget .pageheader {
-    background-color: #ebebeb;
+    background-color: var(--bs-secondary-bg);
     border-bottom: 1px solid #ccc;
     padding: 0;
     padding-left: 20px;
@@ -64,6 +73,10 @@
     min-height: 50px;
     height: 52px;
     overflow: auto;
+}
+
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader {
+    border-bottom-color: var(--bs-border-color);
 }
 
 .moodle-dialogue-base .moodle-dialogue.assignfeedback_editpdf_widget .moodle-dialogue-bd {
@@ -85,6 +98,10 @@
     background-color: #ccc;
 }
 
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader button:active {
+    background-color: var(--bs-border-color);
+}
+
 .assignfeedback_editpdf_widget .pageheader select,
 .assignfeedback_editpdf_widget .pageheader button {
     background: none;
@@ -102,7 +119,8 @@
     vertical-align: top;
     -webkit-appearance: none;
     -moz-appearance: menulist-text;
-    background-color: #fff;
+    background-color: var(--bs-white);
+    color: var(--bs-body-color);
     padding: 0 10px;
 }
 
@@ -118,8 +136,19 @@
     border-right: 0;
 }
 
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .navigation button + button,
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .toolbar button + button,
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .navigation select + button,
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .toolbar select + button {
+    border-left-color: var(--bs-border-color);
+}
+
 .assignfeedback_editpdf_widget .pageheader .navigation button {
     border-right: 1px solid #ccc;
+}
+
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .navigation button {
+    border-right-color: var(--bs-border-color);
 }
 
 .assignfeedback_editpdf_widget .pageheader .toolbar,
@@ -130,26 +159,36 @@
     border-bottom-color: #b3b3b3;
     border-radius: 4px;
     margin: 10px 4px;
-    background-color: white;
+    background-color: var(--bs-white);
     height: 30px;
     line-height: 30px;
     padding: 0;
+}
+
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .toolbar,
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .navigation-search,
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .navigation-expcol,
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .navigation {
+    border-color: var(--bs-border-color);
 }
 
 .assignfeedback_editpdf_commentsearch ul {
     max-height: 400px;
     overflow-y: auto;
     padding: 1em;
+    background-color: var(--bs-white);
+    color: var(--bs-body-color);
 }
 
 .assignfeedback_editpdf_commentsearch ul li pre {
-    background-color: #efefef;
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
     white-space: pre-wrap;
     word-break: break-word;
 }
 
 .assignfeedback_editpdf_commentsearch ul li pre:hover {
-    background-color: #ddd;
+    background-color: var(--bs-tertiary-bg);
 }
 
 .assignfeedback_editpdf_commentsearch ul li {
@@ -232,6 +271,10 @@
     border-top: 1px solid #ccc;
 }
 
+[data-bs-theme="dark"] .assignfeedback_editpdf_dropdown button {
+    border-top-color: var(--bs-border-color);
+}
+
 .assignfeedback_editpdf_dropdown li:first-child button {
     border-top: 0;
 }
@@ -244,10 +287,14 @@
     margin-right: 0;
     margin-top: 0;
     border-radius: 4px;
+    background-color: var(--bs-white);
+    color: var(--bs-body-color);
 }
 
 .moodle-dialogue-base .moodle-dialogue.assignfeedback_editpdf_dropdown .moodle-dialogue-bd {
     padding: 0;
+    background-color: var(--bs-white);
+    color: var(--bs-body-color);
 }
 
 .moodle-dialogue-base .assignfeedback_editpdf_dropdown .moodle-dialogue-wrap .moodle-dialogue-hd,
@@ -261,7 +308,7 @@
 
 .assignfeedback_editpdf_menu li a {
     text-decoration: none;
-    color: #555;
+    color: var(--bs-secondary-color);
     margin-left: 10px;
     margin-right: 10px;
     margin-top: 4px;
@@ -278,11 +325,11 @@ ul.assignfeedback_editpdf_search {
 
 .assignfeedback_editpdf_search li a {
     text-decoration: none;
-    color: #555;
+    color: var(--bs-secondary-color);
 }
 
 .assignfeedback_editpdf_menu li:hover {
-    background-color: #ebebeb;
+    background-color: var(--bs-secondary-bg);
 }
 
 ul.assignfeedback_editpdf_menu {
@@ -290,6 +337,8 @@ ul.assignfeedback_editpdf_menu {
     max-height: 40vh;
     overflow-y: auto;
     overflow-x: hidden;
+    background-color: var(--bs-white);
+    color: var(--bs-body-color);
 }
 
 .assignfeedback_editpdf_menu li {
@@ -304,7 +353,7 @@ ul.assignfeedback_editpdf_menu {
 }
 
 .assignfeedback_editpdf_widget .pageheader button:hover {
-    background-color: #ebebeb;
+    background-color: var(--bs-secondary-bg);
     background-image: radial-gradient(ellipse at center, #fff 60%, #dfdfdf 100%);
 }
 
@@ -312,6 +361,16 @@ ul.assignfeedback_editpdf_menu {
 .assignfeedback_editpdf_widget .pageheader button.assignfeedback_editpdf_selectedbutton {
     background-color: #dfdfdf;
     background-image: radial-gradient(ellipse at center, #fff 40%, #dfdfdf 100%);
+}
+
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader button:hover {
+    background-image: radial-gradient(ellipse at center, var(--bs-white) 60%, var(--bs-border-color) 100%);
+}
+
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader button.assignfeedback_editpdf_selectedbutton:hover,
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader button.assignfeedback_editpdf_selectedbutton {
+    background-color: var(--bs-border-color);
+    background-image: radial-gradient(ellipse at center, var(--bs-white) 40%, var(--bs-border-color) 100%);
 }
 
 .assignfeedback_editpdf_widget .commentdrawable img {
@@ -327,11 +386,16 @@ ul.assignfeedback_editpdf_menu {
     width: 16px;
 }
 
+/* The comment box is drawn directly on the rendered PDF page, which stays white in every
+   colour mode, so its background and text are pinned light rather than following the mode.
+   color-scheme keeps the browser-drawn parts (caret, scrollbars, autofill) light to match. */
 .assignfeedback_editpdf_widget .commentdrawable textarea {
     padding: 4px;
     padding-right: 20px;
     resize: none;
     overflow: hidden;
+    color-scheme: light;
+    background-color: white;
     color: black;
     border: 2px solid #ccc;
     border-radius: 4px;
