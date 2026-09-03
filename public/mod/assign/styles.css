@@ -42,11 +42,6 @@
     width: 30%;
 }
 
-.path-mod-assign .submittedlate {
-    color: red;
-    font-weight: 900;
-}
-
 .path-mod-assign.jsenabled .gradingtable .c1 select {
     display: none;
 }
@@ -85,12 +80,6 @@
 .path-mod-assign div.submissionlocked {
     color: black;
     background-color: #efefcf;
-}
-
-.path-mod-assign td.submissionreopened,
-.path-mod-assign div.submissionreopened {
-    color: black;
-    background-color: #efefef;
 }
 
 .path-mod-assign td.submissiongraded,
@@ -186,10 +175,6 @@
     resize: both;
 }
 
-.path-mod-assign td.submissioneditable {
-    color: red;
-}
-
 .path-mod-assign .expandsummaryicon {
     display: none;
 }
@@ -210,25 +195,6 @@
 .path-mod-assign.jsenabled .quickgradingform form .commentscontainer input,
 .path-mod-assign.jsenabled .quickgradingform form .commentscontainer textarea {
     display: inline;
-}
-
-.path-mod-assign .previousfeedbackwarning {
-    font-size: 140%;
-    font-weight: bold;
-    text-align: center;
-    color: #500;
-}
-
-.path-mod-assign .submissionhistory {
-    background-color: #b0b0b0;
-}
-
-.path-mod-assign .submissionhistory .cell.historytitle {
-    background-color: #808080;
-}
-
-.path-mod-assign .submissionhistory .cell {
-    background-color: #d0d0d0;
 }
 
 .path-mod-assign.jsenabled .mod-assign-history-link {
