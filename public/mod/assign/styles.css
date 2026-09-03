@@ -112,6 +112,53 @@
     background-color: #efcfcf;
 }
 
+/*
+ * The status tints above are literals because no custom property matches them in light mode: the nearest are the
+ * state properties, and swapping to those would shift the pale yellows towards peach. The dark counterparts are
+ * scoped instead, so that light mode is untouched and the badges stop being light patches on a dark page. The
+ * selectors mirror the light ones exactly because a:link out-specifies a shorter dark rule.
+ */
+[data-bs-theme="dark"] .path-mod-assign td.submissionstatus,
+[data-bs-theme="dark"] .path-mod-assign div.submissionstatus,
+[data-bs-theme="dark"] .path-mod-assign a:link.submissionstatus {
+    color: var(--bs-body-color);
+    background-color: var(--bs-secondary-bg);
+}
+
+[data-bs-theme="dark"] .path-mod-assign td.submissionstatusdraft,
+[data-bs-theme="dark"] .path-mod-assign div.submissionstatusdraft,
+[data-bs-theme="dark"] .path-mod-assign a:link.submissionstatusdraft,
+[data-bs-theme="dark"] .path-mod-assign td.submissionlocked,
+[data-bs-theme="dark"] .path-mod-assign div.submissionlocked {
+    color: var(--bs-warning-text-emphasis);
+    background-color: var(--bs-state-warning-bg);
+}
+
+[data-bs-theme="dark"] .path-mod-assign td.submissionstatussubmitted,
+[data-bs-theme="dark"] .path-mod-assign div.submissionstatussubmitted,
+[data-bs-theme="dark"] .path-mod-assign a:link.submissionstatussubmitted,
+[data-bs-theme="dark"] .path-mod-assign td.submissiongraded,
+[data-bs-theme="dark"] .path-mod-assign div.submissiongraded,
+[data-bs-theme="dark"] .path-mod-assign td.earlysubmission,
+[data-bs-theme="dark"] .path-mod-assign div.earlysubmission {
+    color: var(--bs-success-text-emphasis);
+    background-color: var(--bs-state-success-bg);
+}
+
+[data-bs-theme="dark"] .path-mod-assign td.latesubmission,
+[data-bs-theme="dark"] .path-mod-assign a:link.latesubmission,
+[data-bs-theme="dark"] .path-mod-assign div.latesubmission,
+[data-bs-theme="dark"] .path-mod-assign td.gradingreminder,
+[data-bs-theme="dark"] .path-mod-assign div.gradingreminder {
+    color: var(--bs-danger-text-emphasis);
+    background-color: var(--bs-state-danger-bg);
+}
+
+[data-bs-theme="dark"] .path-mod-assign td.submissionnotgraded,
+[data-bs-theme="dark"] .path-mod-assign div.submissionnotgraded {
+    color: var(--bs-body-color);
+}
+
 .path-mod-assign div.dropdown.extrafilters .dropdown-menu {
     width: 300px;
 }
@@ -130,15 +177,24 @@
 }
 
 .path-mod-assign .gradingtable thead th {
-    background-color: white;
+    background-color: var(--bs-white);
 }
 
+/*
+ * The two quick grading highlights, here and on .quickgrademodified below, keep their literal tints, which have no
+ * matching custom property in light mode, and take their dark counterparts from the warning properties. The
+ * modified cell stays the stronger of the two in both modes.
+ */
 .path-mod-assign .gradingtable tr.selectedrow td {
     background-color: #fec;
 }
 
+[data-bs-theme="dark"] .path-mod-assign .gradingtable tr.selectedrow td {
+    background-color: var(--bs-warning-bg-subtle);
+}
+
 .path-mod-assign .gradingtable tr.unselectedrow td {
-    background-color: white;
+    background-color: var(--bs-white);
 }
 
 .path-mod-assign .gradingtable .yui3-menu ul {
@@ -169,6 +225,10 @@
 
 .path-mod-assign div.gradingtable tr .quickgrademodified {
     background-color: #fc9;
+}
+
+[data-bs-theme="dark"] .path-mod-assign div.gradingtable tr .quickgrademodified {
+    background-color: var(--bs-state-warning-bg);
 }
 
 .path-mod-assign .gradingtable .commentscontainer .comment-ctrl .comment-area textarea {
@@ -353,7 +413,7 @@
     display: none;
     text-align: left;
     width: 480px;
-    background-color: #fff;
+    background-color: var(--bs-white);
     background-clip: padding-box;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     border-radius: 6px;
@@ -476,9 +536,9 @@
     left: auto;
     box-sizing: border-box;
     border-radius: 0 0 0 4px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--bs-border-color);
     border-top: none;
-    background-color: #fff;
+    background-color: var(--bs-white);
 }
 
 .path-mod-assign [data-region="review-panel"] [data-region="review-panel-toggle"] .expand-icon,
@@ -611,7 +671,7 @@
     width: calc(100% - var(--mod-assign-panel-split));
     overflow: auto;
     box-sizing: border-box;
-    background-color: #f5f5f5;
+    background-color: var(--bs-tertiary-bg);
     padding: 15px;
     padding-top: 0;
     -webkit-transition: width 0.5s, right 0.5s, left 0.5s;
@@ -666,14 +726,14 @@
 
 .path-mod-assign [data-region="grade-panel"] div.submissionsummarytable table tbody tr.lastrow td.c0,
 .path-mod-assign [data-region="grade-panel"] div.submissionsummarytable table tbody tr.lastrow td.c1 {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--bs-border-color);
 }
 
 .path-mod-assign .overdue,
 .path-mod-assign .overduesubmission,
 .path-mod-assign [data-region="grade-panel"] td.submissionnotgraded,
 .path-mod-assign [data-region="grade-panel"] div.submissionnotgraded {
-    color: #ca3120;
+    color: var(--bs-danger-text-emphasis);
     background-color: transparent;
 }
 
@@ -709,8 +769,8 @@
 .path-mod-assign [data-region="grade-panel"] .mform .fitem.fitem_feditor,
 .path-mod-assign [data-region="grade-panel"] .mform .fitem.fitem_fgrading,
 .path-mod-assign [data-region="grade-panel"] .mform .fitem.fitem_ffilemanager {
-    background-color: #fff;
-    border: 1px solid #ddd;
+    background-color: var(--bs-white);
+    border: 1px solid var(--bs-border-color);
     margin-bottom: 20px;
 }
 
@@ -801,7 +861,7 @@
 }
 
 .path-mod-assign [data-region="grade-panel"] .gradingform_rubric .criterion .levels {
-    background-color: #fff;
+    background-color: var(--bs-white);
 }
 
 .path-mod-assign [data-region="grade-panel"] .gradingform_rubric .criterion,
@@ -869,7 +929,7 @@
 
 .path-mod-assign [data-region="grade-panel"] .showmarkerdesc,
 .path-mod-assign [data-region="grade-panel"] .showstudentdesc {
-    background-color: #f5f5f5;
+    background-color: var(--bs-tertiary-bg);
     padding: 10px;
 }
 
@@ -888,7 +948,7 @@
     top: 20%;
     bottom: 20%;
     z-index: 1000;
-    border: 1px solid rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--bs-border-color-translucent);
     border-radius: 6px;
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
 }
@@ -1002,7 +1062,7 @@
     width: 100%;
     overflow: auto;
     bottom: 0;
-    background-color: #ddd;
+    background-color: var(--bs-secondary-bg);
     opacity: 0.4;
     padding-top: 4em;
     text-align: center;
@@ -1014,7 +1074,7 @@
     }
 
     .path-mod-assign [data-region="assignment-info"] {
-        border-bottom: 1px solid #ddd;
+        border-bottom: 1px solid var(--bs-border-color);
         padding-bottom: 5px;
     }
 
@@ -1081,9 +1141,9 @@
         left: 0;
         right: auto;
         box-sizing: border-box;
-        border: 1px solid #ccc;
+        border: 1px solid var(--bs-border-color);
         border-radius: 0 0 4px 0;
-        background-color: #fff;
+        background-color: var(--bs-white);
     }
 
     .path-mod-assign [data-region="review-panel"] [data-region="review-panel-toggle"] .expand-icon,
