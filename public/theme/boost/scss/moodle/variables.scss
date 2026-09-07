@@ -124,16 +124,16 @@ $userenrolment-link-hover-border-color: #666 !default;
 $corelightbox-bg: #ccc !default;
 
 $dialogue-base-bg:              var(--#{$prefix}white) !default;
-$dialogue-base-border-color:    #ccc !default;
-$dialogue-base-hd-border-color: #dee2e6 !default;
+$dialogue-base-border-color:    var(--#{$prefix}border-color) !default;
+$dialogue-base-hd-border-color: var(--#{$prefix}border-color) !default;
 
-$dialogue-exception-label-bg:           #eee !default;
-$dialogue-exception-label-border-color: #ccc !default;
+$dialogue-exception-label-bg:           var(--#{$prefix}secondary-bg) !default;
+$dialogue-exception-label-border-color: var(--#{$prefix}border-color) !default;
 $dialogue-exception-pre-bg:             var(--#{$prefix}white) !default;
-$dialogue-exception-pre-border-color:   #ccc !default;
-$dialogue-exception-file-color:         navy !default;
-$dialogue-exception-call-color:         #333 !default;
-$dialogue-exception-call-border-color:  #eee !default;
+$dialogue-exception-pre-border-color:   var(--#{$prefix}border-color) !default;
+$dialogue-exception-file-color:         var(--#{$prefix}primary-text-emphasis) !default;
+$dialogue-exception-call-color:         var(--#{$prefix}body-color) !default;
+$dialogue-exception-call-border-color:  var(--#{$prefix}border-color) !default;
 
 $dialogue-lightbox-bg: var(--#{$prefix}white) !default;
 
