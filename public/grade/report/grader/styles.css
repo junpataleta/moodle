@@ -9,7 +9,7 @@
  * The table.
  */
 .path-grade-report-grader .gradeparent table {
-    border: 1px solid #ccc;
+    border: 1px solid var(--mds-border-default);
     border-collapse: separate;
     border-spacing: 0;
     border-bottom-width: 0;
@@ -22,20 +22,12 @@
  * All the cells.
  */
 .path-grade-report-grader .gradeparent .cell {
-    border: 1px solid #ccc;
+    border: 1px solid var(--mds-border-default);
     border-top-width: 0;
     border-left-width: 0;
     padding: 0.5rem 1rem;
     vertical-align: top;
     height: 100%;
-}
-
-.path-grade-report-grader .gradepass {
-    color: #357a32;
-}
-
-.path-grade-report-grader .gradefail {
-    color: #ca3120;
 }
 
 .path-grade-report-grader .grade_icons,
@@ -187,7 +179,7 @@
 }
 
 .path-grade-report-grader .gradeparent .text {
-    border: 1px solid #666;
+    border: 1px solid var(--mds-text-muted);
     width: auto;
     margin: 0;
     padding: 0;
