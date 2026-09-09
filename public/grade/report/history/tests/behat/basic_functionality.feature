@@ -4,7 +4,7 @@ Feature: A teacher checks the grade history report in a course
   As a teacher
   I need to check that the history report is correctly displaying changes
 
-  @javascript
+  @javascript @accessibility
   Scenario: Check the history report displays results correctly
     Given the following "courses" exist:
       | fullname | shortname | category | groupmode |
@@ -62,6 +62,12 @@ Feature: A teacher checks the grade history report in a course
       | Student 2          | student2@example.com | orange         | Rewarding assignment         | 60.00          | 80.00         | Teacher 2 |
     # Test filtering by student - display of several users.
     And I press "Select users"
+    # The rows of this dialogue are the only surfaces the report's own stylesheet colours, so they have to be
+    # on screen before this runs. The colour mode is left to the run, so one scenario covers light and dark.
+    # Narrowed to the contrast rules: this dialogue is a legacy YUI widget whose listbox markup has ARIA
+    # problems of its own, which are pre-existing and not what these colours are about.
+    And I should see "Student 1" in the "Select users" "dialogue"
+    And the "Select users" "dialogue" should meet "wcag143" accessibility standards
     And I click on "Student 1" "checkbox"
     And I click on "Student 2" "checkbox"
     And I press "Finish selecting users"
