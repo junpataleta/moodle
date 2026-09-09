@@ -24,13 +24,13 @@
     vertical-align: bottom;
     border: none;
     text-align: left;
-    background-color: #f8f9fa;
+    background-color: var(--mds-bg-surface-subtle);
 }
 
 .path-grade-report-user .user-grade td,
 .grade-report-user .user-grade td {
     min-width: 4.5em;
-    background-color: #f8f9fa;
+    background-color: var(--mds-bg-surface-subtle);
     border: none;
     vertical-align: middle;
 }
@@ -60,7 +60,7 @@
 .grade-report-user .user-grade .baggt,
 .grade-report-user .user-grade .baggb {
     font-weight: bold;
-    background-color: #f8f9fa;
+    background-color: var(--mds-bg-surface-subtle);
     border: none;
 }
 
@@ -68,18 +68,18 @@
 .grade-report-user .user-report-container {
     margin: 20px 0 30px 0;
     padding: 10px 10px;
-    background-color: #f8f9fa;
+    background-color: var(--mds-bg-surface-subtle);
 }
 
 .path-grade-report-user .user-grade tbody tr,
 .grade-report-user .user-grade tbody tr {
-    background-color: #f8f9fa;
+    background-color: var(--mds-bg-surface-subtle);
 }
 
 .path-grade-report-user .user-grade tbody tr:hover,
 .grade-report-user .user-grade tbody tr:hover {
     color: inherit;
-    background-color: #f8f9fa;
+    background-color: var(--mds-bg-surface-subtle);
 }
 
 .path-grade-report-user .user-grade tbody tr.spacer,
@@ -89,22 +89,22 @@
 
 .path-grade-report-user .user-grade td.item,
 .grade-report-user .user-grade td.item {
-    background-color: white;
-    border-top: 1px solid #dee2e6;
-    border-bottom: 1px solid #dee2e6;
+    background-color: var(--mds-bg-surface-default);
+    border-top: 1px solid var(--mds-border-default);
+    border-bottom: 1px solid var(--mds-border-default);
 }
 
 .path-grade-report-user .user-grade th.column-itemname:not(.header,.category,.baggt,.baggb),
 .grade-report-user .user-grade th.column-itemname:not(.header,.category,.baggt,.baggb) {
-    background-color: white;
+    background-color: var(--mds-bg-surface-default);
     font-weight: normal;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--mds-border-default);
 }
 
 .path-grade-report-user .user-grade th.category,
 .grade-report-user .user-grade th.category {
-    background-color: white;
-    border: 1px solid #dee2e6;
+    background-color: var(--mds-bg-surface-default);
+    border: 1px solid var(--mds-border-default);
     padding-left: 10px;
     font-weight: bold;
 }
@@ -130,7 +130,7 @@
     font-size: 12px;
     width: 12px;
     height: 12px;
-    color: #1d2125;
+    color: var(--mds-text-default);
     margin: 0;
 }
 
