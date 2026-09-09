@@ -146,10 +146,17 @@ Feature: We can use Single view
     # Numerical scale, cast to int, showing as float with custom decsep.
     And the field "Grade for Test grade item" matches value "1#00"
 
+  @accessibility
   Scenario: Navigation works in the Single view.
     Given I click on user menu "Grainne Beauchamp"
     And I choose "Single view for this user" in the open action menu
     Then I should see "Gronya,Beecham"
+    # The report container and the table rows are coloured by the report's own stylesheet. The colour mode is
+    # left to the run, so one scenario covers light and dark.
+    # The "best-practice" form cannot be used here: the course index drawer fails landmark-unique and region
+    # on every course page, which has nothing to do with this report.
+    And I should see "Test assignment one" in the "singleview-grades" "table"
+    And the page should meet accessibility standards
     And I click on "Nee,Chumlee" "link" in the ".stickyfooter" "css_element"
     Then I should see "Nee,Chumlee"
     And I click on "Gronya,Beecham" "link" in the ".stickyfooter" "css_element"

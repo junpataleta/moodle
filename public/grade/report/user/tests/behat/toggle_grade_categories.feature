@@ -20,12 +20,17 @@ Feature: User can toggle the visibility of the grade categories within the user 
       | fullname | course |
       | Category 1 | C1 |
     And the following "activities" exist:
-      | activity | course | idnumber | name                | intro             | grade |
-      | assign   | C1     | a1       | Test assignment one | Submit something! | 300   |
+      | activity | course | idnumber | name                | intro             | grade | gradepass |
+      | assign   | C1     | a1       | Test assignment one | Submit something! | 300   | 150       |
     And the following "activities" exist:
       | activity | course | idnumber | name                | gradecategory | grade | gradepass |
       | assign   | C1     | a2       | Test assignment two | Category 1    | 100   | 50        |
+    And the following "grade grades" exist:
+      | gradeitem           | user     | grade |
+      | Test assignment one | student1 | 250   |
+      | Test assignment two | student1 | 20    |
 
+  @accessibility
   Scenario: A teacher can search for and find a user to view
     Given I am on the "Course" "grades > User report > View" page logged in as "teacher1"
     And I click on "Student 1" in the "Search users" search combo box
@@ -33,6 +38,14 @@ Feature: User can toggle the visibility of the grade categories within the user 
     And I should see "Test assignment two" in the "user-grade" "table"
     And I should see "Category 1 total" in the "user-grade" "table"
     And I should see "Course total" in the "user-grade" "table"
+    # Every surface of this table is coloured by the report's own stylesheet, and the passing and failing
+    # grades are coloured by the theme, so all of them have to be on screen before this runs. The colour mode
+    # is left to the run, so one scenario covers light and dark.
+    # The "best-practice" form cannot be used here: the course index drawer fails landmark-unique and region
+    # on every course page, which has nothing to do with this report.
+    And "Pass" "icon" should exist in the "Test assignment one" "table_row"
+    And "Fail" "icon" should exist in the "Test assignment two" "table_row"
+    And the page should meet accessibility standards
     # Hide the grade category 'Category 1'.
     When I click on ".toggle-category" "css_element" in the "Category 1" "table_row"
     Then I should not see "Test assignment two" in the "user-grade" "table"
