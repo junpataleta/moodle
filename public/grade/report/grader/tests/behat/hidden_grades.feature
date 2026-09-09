@@ -19,10 +19,10 @@ Feature: We don't show hidden grades for users without the 'moodle/grade:viewhid
       | student1 | C1     | student        |
       | student2 | C1     | student        |
     And the following "activities" exist:
-      | activity | course | section | name                   | intro                   | assignsubmission_onlinetext_enabled | submissiondrafts |
-      | assign   | C1     | 1       | Test assignment name 1 | Submit your online text | 1                                   | 0                |
-      | assign   | C1     | 1       | Test assignment name 2 | submit your online text | 1                                   | 0                |
-      | assign   | C1     | 1       | Test assignment name 3 | submit your online text | 1                                   | 0                |
+      | activity | course | section | name                   | intro                   | assignsubmission_onlinetext_enabled | submissiondrafts | gradepass |
+      | assign   | C1     | 1       | Test assignment name 1 | Submit your online text | 1                                   | 0                | 75        |
+      | assign   | C1     | 1       | Test assignment name 2 | submit your online text | 1                                   | 0                | 75        |
+      | assign   | C1     | 1       | Test assignment name 3 | submit your online text | 1                                   | 0                | 75        |
     # Hidden manual grade item.
     And the following "grade items" exist:
       | itemname     | grademin | grademax | course | hidden |
@@ -50,7 +50,7 @@ Feature: We don't show hidden grades for users without the 'moodle/grade:viewhid
     And I set the following settings for grade item "Test assignment name 3" of type "gradeitem" on "grader" page:
       | Hidden          | 1 |
 
-  @javascript
+  @javascript @accessibility
   Scenario: View grader report containing hidden activities or grade items or grades
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
@@ -59,6 +59,13 @@ Feature: We don't show hidden grades for users without the 'moodle/grade:viewhid
       | -1-                | -2-                  | -3-       | -4-       | -5-       | -6-       | -7-       |
       | Student 1          | student1@example.com | 80        | 90        | 10        | 30        | 210       |
       | Student 2          | student2@example.com | 70        | 60        | 50        | 40        | 220       |
+    # A passing and a failing grade are both coloured by the report's own stylesheet, so both have to be on
+    # screen before this runs. The colour mode is left to the run, so one scenario covers light and dark.
+    # Scoped to the table because this scenario hides activities, and the dimmed links the course index drawer
+    # then shows are a pre-existing contrast failure of their own.
+    And "Pass" "icon" should exist in the "Student 1" "table_row"
+    And "Fail" "icon" should exist in the "Student 2" "table_row"
+    And the "user-grades" "table" should meet accessibility standards with "best-practice" extra tests
     And I turn editing mode on
 
     And the field "Student 1 Test assignment name 1 grade" matches value "80"
