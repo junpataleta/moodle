@@ -30,13 +30,6 @@
     height: 100%;
 }
 
-.path-grade-report-grader .overriddengrade {
-    color: #495057;
-    border: none;
-    -moz-appearance: none;
-    -webkit-appearance: none;
-}
-
 .path-grade-report-grader .gradepass {
     color: #357a32;
 }
@@ -180,18 +173,6 @@
     padding-top: 6px;
 }
 
-.path-grade-report-grader .gradeparent tr:nth-child(n) td.ajaxoverridden:nth-child(n) {
-    /* Made very specific to override the default stripped style of the table. */
-    background-color: #ffe3a0;
-}
-
-.path-grade-report-grader .gradeparent .excludedfloater {
-    font-weight: bold;
-    color: red;
-    font-size: 9px;
-    float: left;
-}
-
 .path-grade-report-grader .gradeparent .category {
     text-align: left;
 }
@@ -203,14 +184,6 @@
 .path-grade-report-grader .gradeparent select {
     text-overflow: ellipsis;
     min-width: 8rem;
-}
-
-.path-grade-report-grader .gradeparent .text {
-    border: 1px solid #666;
-    width: auto;
-    margin: 0;
-    padding: 0;
-    text-align: center;
 }
 
 .path-grade-report-grader .gradeparent table .action-menu {
@@ -256,15 +229,6 @@
     width: 300px;
     pointer-events: all;
     padding: 0;
-}
-.path-grade-report-grader .usersearchdropdown .unsearchablecontentcontainer {
-    position: sticky;
-    bottom: 0;
-    background-color: white;
-}
-.path-grade-report-grader .usersearchdropdown .footer {
-    border-top: 1px solid #dee2e6;
-    font-size: 90%;
 }
 
 .collapsecolumndropdown.show {
