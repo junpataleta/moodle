@@ -1,7 +1,7 @@
 .path-grade-report-singleview div.reporttable {
     margin: 20px 0 30px 0;
     padding: 10px 10px;
-    background-color: #f8f9fa;
+    background-color: var(--mds-bg-surface-subtle);
     text-align: center;
 }
 
@@ -33,10 +33,21 @@
     text-align: left;
 }
 
+/**
+ * The tick shown for a checked override or exclude in the read-only report.
+ *
+ * The design system has no foreground token holding this green: --mds-text-feedback-success is the much darker
+ * #153114, which would change light mode visibly, so the light value stays on --bs-success. The dark mode does
+ * take --mds-text-feedback-success, whose dark value is derived for the dark surfaces.
+ */
 .path-grade-report-singleview .overrideexcludecheck {
     width: 14.75px;
     height: 12px;
-    color: #2ca14f;
+    color: var(--bs-success);
+}
+
+[data-bs-theme="dark"] .path-grade-report-singleview .overrideexcludecheck {
+    color: var(--mds-text-feedback-success);
 }
 
 .path-grade-report-singleview .report-navigation .container {
@@ -58,9 +69,9 @@
 .path-grade-report-singleview .reporttable tbody tr:nth-of-type(odd),
 .path-grade-report-singleview .reporttable tbody tr:hover {
     color: inherit;
-    background-color: white;
+    background-color: var(--mds-bg-surface-default);
     border-top: none;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--mds-border-default);
 }
 
 .path-grade-report-singleview .reporttable tbody th,
