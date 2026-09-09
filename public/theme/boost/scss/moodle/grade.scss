@@ -55,11 +55,21 @@
 
 .path-grade-report-grader,
 .path-grade-report-user {
+    // $success and $danger are chosen for a white page, and both fall to around 2.2:1 once the grade cells are
+    // dark. The design system's feedback text tokens are the equivalents derived for the dark surfaces.
     .gradepass {
         color: $success;
+
+        @include dark-mode {
+            color: var(--mds-text-feedback-success);
+        }
     }
     .gradefail {
         color: $danger;
+
+        @include dark-mode {
+            color: var(--mds-text-feedback-danger);
+        }
     }
 }
 
