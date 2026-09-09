@@ -43603,9 +43603,16 @@ p.arrow_button {
 .path-grade-report-user .gradepass {
   color: #357a32;
 }
+[data-bs-theme=dark] .path-grade-report-grader .gradepass, [data-bs-theme=dark] .path-grade-report-user .gradepass {
+  color: var(--mds-text-feedback-success);
+}
+
 .path-grade-report-grader .gradefail,
 .path-grade-report-user .gradefail {
   color: #ca3120;
+}
+[data-bs-theme=dark] .path-grade-report-grader .gradefail, [data-bs-theme=dark] .path-grade-report-user .gradefail {
+  color: var(--mds-text-feedback-danger);
 }
 
 .path-grade #region-main {
