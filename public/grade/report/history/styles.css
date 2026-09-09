@@ -20,8 +20,8 @@
 
 .gradereport_history_usp .usp-ajax-content {
     overflow: auto;
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
+    border-top: 1px solid var(--mds-border-default);
+    border-bottom: 1px solid var(--mds-border-default);
 }
 
 .gradereport_history_usp .usp-ajax-content,
@@ -30,7 +30,7 @@
 }
 
 .gradereport_history_usp .usp-loading-lightbox {
-    background-color: #fff;
+    background-color: var(--mds-bg-surface-default);
     opacity: .5;
     position: absolute;
     text-align: center;
@@ -51,15 +51,15 @@
 .gradereport_history_usp .usp-user {
     width: 100%;
     text-align: left;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--mds-border-default);
 }
 
 .gradereport_history_usp .usp-user:nth-child(odd) {
-    background-color: #f9f9f9;
+    background-color: var(--mds-bg-surface-subtle);
 }
 
 .gradereport_history_usp .usp-first-added {
-    border-top: 1px solid #bbb;
+    border-top: 1px solid var(--mds-border-interactive-secondary-default);
 }
 
 .gradereport_history_usp .usp-checkbox {
@@ -93,7 +93,7 @@
 
 .gradereport_history_usp .usp-more-results {
     padding: 5px;
-    border-top: 1px solid #bbb;
+    border-top: 1px solid var(--mds-border-interactive-secondary-default);
 }
 
 .gradereport_history_usp .usp-finish {
