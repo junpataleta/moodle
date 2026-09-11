@@ -136,6 +136,7 @@ final class theme_config_test extends advanced_testcase {
 
         $this->assertTrue(file_exists($editorscss));
         $compiler = new core_scss();
+        $compiler->prepend_raw_scss($theme->get_pre_scss_code());
         $compiler->set_file($editorscss);
         $cssexpected = $compiler->to_css();
         $cssactual = $theme->editor_scss_to_css();
@@ -156,6 +157,7 @@ final class theme_config_test extends advanced_testcase {
 
         $this->assertTrue(file_exists($editorscss));
         $compiler = new core_scss();
+        $compiler->prepend_raw_scss($theme->get_pre_scss_code());
         $compiler->set_file($editorscss);
         $cssexpected = $compiler->to_css();
         $cssactual = $theme->editor_scss_to_css();
