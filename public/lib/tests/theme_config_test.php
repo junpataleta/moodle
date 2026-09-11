@@ -168,6 +168,7 @@ final class theme_config_test extends advanced_testcase {
 
         $this->assertTrue(file_exists($editorscss));
         $compiler = new core_scss();
+        $compiler->prepend_raw_scss($theme->get_pre_scss_code());
         $compiler->set_file($editorscss);
         $cssexpected = $compiler->to_css();
         $cssactual = $theme->editor_scss_to_css();
@@ -187,11 +188,26 @@ final class theme_config_test extends advanced_testcase {
 
         $this->assertTrue(file_exists($editorscss));
         $compiler = new core_scss();
+        $compiler->prepend_raw_scss($theme->get_pre_scss_code());
         $compiler->set_file($editorscss);
         $cssexpected = $compiler->to_css();
         $cssactual = $theme->editor_scss_to_css();
 
         $this->assertEquals($cssexpected, $cssactual);
+    }
+
+    /**
+     * Confirm that a child theme's pre-SCSS can import its own files when the parent's editor SCSS is compiled.
+     */
+    public function test_editor_scss_to_css_child_theme_pre_scss_import(): void {
+        $this->resetAfterTest();
+        // This file only exists in theme_classic, so the import fails unless Classic's own folder is searched.
+        set_config('scsspre', '@import "classic/pre";', 'theme_classic');
+
+        $css = theme_config::load('classic')->editor_scss_to_css();
+
+        $this->assertDebuggingNotCalled();
+        $this->assertStringContainsString('--bs-link-color:', $css);
     }
 
     /**
