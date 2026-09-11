@@ -1,0 +1,13 @@
+issueNumber: MDL-89378
+notes:
+  core:
+    - message: >-
+        A theme's editor stylesheet is now compiled with the same pre-SCSS as
+        its main stylesheet, so the variables a theme sets in its
+        `prescsscallback` reach the editor content as well as the page, and the
+        editor follows a site's brand colour. The pre-SCSS is taken whole rather
+        than filtered for variable assignments, so a `prescsscallback` which
+        emits rules, including the Raw initial SCSS that Boost appends to its
+        own, will now style the editor content document too. The extra SCSS is
+        still left out, since it holds only rules and they describe the page.
+      type: changed
