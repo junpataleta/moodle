@@ -43683,9 +43683,13 @@ p.arrow_button {
 .gradingform_rubric.evaluate .criterion .levels .level:hover, .gradingform_rubric.evaluate .criterion .levels .level.checked {
   background: #dff0d8;
 }
+[data-bs-theme=dark] .gradingform_rubric.evaluate .criterion .levels .level:hover, [data-bs-theme=dark] .gradingform_rubric.evaluate .criterion .levels .level.checked {
+  background: var(--mds-bg-feedback-success-subtle);
+}
+
 .gradingform_rubric.evaluate .criterion .levels .level.checked {
   border: none;
-  border-left: 1px solid #dee2e6;
+  border-left: 1px solid var(--mds-border-default);
 }
 .gradingform_rubric .criterion .description {
   vertical-align: top;
@@ -43704,7 +43708,7 @@ p.arrow_button {
   margin-right: 28px;
   font-style: italic;
   font-weight: bold;
-  color: #2a6228;
+  color: var(--mds-text-feedback-success);
 }
 .gradingform_rubric .criterion .score input {
   margin-bottom: 0;
@@ -43716,10 +43720,19 @@ p.arrow_button {
 .gradingform_rubric .criterion .level.currentchecked {
   background: #fff0f0;
 }
+[data-bs-theme=dark] .gradingform_rubric .criterion .level.currentchecked {
+  background: var(--mds-bg-feedback-danger-subtle);
+}
+
 .gradingform_rubric .criterion .level.checked {
   background: #d0ffd0;
   border: 1px solid #555;
 }
+[data-bs-theme=dark] .gradingform_rubric .criterion .level.checked {
+  background: var(--mds-bg-feedback-success-subtle);
+  border-color: var(--mds-border-interactive-secondary-active);
+}
+
 .gradingform_rubric .criterion .level .delete {
   position: relative;
   width: 32px;
@@ -43740,6 +43753,10 @@ p.arrow_button {
 .gradingform_rubric .criterion .level .delete input:hover {
   background-color: #ddd;
 }
+[data-bs-theme=dark] .gradingform_rubric .criterion .level .delete input:hover {
+  background-color: var(--mds-bg-feedback-secondary-default);
+}
+
 .gradingform_rubric .criterion .scorevalue input {
   float: none;
   width: 2em;
