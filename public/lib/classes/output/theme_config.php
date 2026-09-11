@@ -791,6 +791,11 @@ class theme_config {
         if (!empty($filenames)) {
             $compiler = new core_scss();
 
+            // The same pre-SCSS the theme's own stylesheet is built with, so that the editor content follows the
+            // site's brand colour and any other variable a theme sets there. The extra SCSS is deliberately left
+            // out: it holds rules rather than variables, and they describe the page, not the editor content.
+            $compiler->prepend_raw_scss($this->get_pre_scss_code());
+
             foreach ($filenames as $filename) {
                 $compiler->set_file("{$dir}/scss/{$filename}.scss");
 
