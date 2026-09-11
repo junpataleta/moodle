@@ -10,8 +10,17 @@
 /* Override the code-color to increase the contrast. */
 $code-color: #db1a74 !default;
 
+/* The same Bootstrap variable overrides the page is built from, so that the two documents agree on the palette.
+   Without these the editor content would be drawn with Bootstrap's stock colours, and a link in it would be
+   Bootstrap blue rather than Moodle blue. */
+@import "bootstrap-variables";
+
+/* The editor content is an editing surface drawn on top of the form it belongs to, not the page behind it, so it
+   keeps the body background Bootstrap gives an input rather than the page background the preset sets. */
+$body-bg: $white;
+
 /* Give editor access to all of bootstrap. */
-@import "../../../../lib/bundles/bootstrap/scss/bootstrap.scss";
+@import "bootstrap";
 
 /* Import language-specific font stacks. Must be imported after Bootstrap. */
 @import "moodle/font-stack-lang";
@@ -42,6 +51,15 @@ code[data-mce-selected="inline-boundary"]:not(pre code) {
     border: thin solid var(--#{$prefix}gray-500);
     border-radius: 0.25rem;
     padding: 0.125rem;
+}
+
+/* WCAG 1.4.1: the palette above drops the underline from links, matching the page. On a dark page no colour can be
+   told apart from the body text and still be readable on the surface behind it, so the underline comes back, the
+   same way it does for page content in scss/moodle/dark.scss. */
+a:not(.btn):not(.nav-link):not(.dropdown-item):not(.list-group-item):not(.page-link) {
+    @include dark-mode {
+        text-decoration: underline;
+    }
 }
 
 /* The dark palette. Must stay last so that it can re-point everything above it. */
