@@ -791,8 +791,25 @@ class theme_config {
         if (!empty($filenames)) {
             $compiler = new core_scss();
 
+            // The same pre-SCSS the theme's own stylesheet is built with, so that the editor content follows the
+            // site's brand colour and any other variable a theme sets there. The extra SCSS is deliberately left
+            // out: it holds rules rather than variables, and they describe the page, not the editor content.
+            $compiler->prepend_raw_scss($this->get_pre_scss_code());
+
+            // The pre-SCSS may import files from this theme or its parents, as it can when the page is built, but
+            // set_file() limits imports to the editor file's folder. Keep that folder first, so the editor file's
+            // own imports resolve as before, then add the others.
+            $importpaths = [];
+            foreach ([$this] + $this->parent_configs as $config) {
+                if (is_dir("{$config->dir}/scss")) {
+                    $importpaths[] = "{$config->dir}/scss";
+                }
+            }
+
             foreach ($filenames as $filename) {
-                $compiler->set_file("{$dir}/scss/{$filename}.scss");
+                $filepath = "{$dir}/scss/{$filename}.scss";
+                $compiler->set_file($filepath);
+                $compiler->setImportPaths(array_values(array_unique(array_merge([dirname($filepath)], $importpaths))));
 
                 try {
                     $css .= $compiler->to_css();
