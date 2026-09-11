@@ -7,16 +7,19 @@ body.mce-content-body {
 body.mce-content-body a[data-mce-selected="inline-boundary"] {
     background-color: unset;
 }
+
+/* These take the theme's own palette, so that the editor content follows the site's brand colour. The fallbacks are
+   Moodle's values, for a theme whose editor stylesheet does not declare the custom properties. */
 body.mce-content-body a {
-    color: #0f6cbf;
+    color: var(--bs-link-color, #0f6cbf);
 }
 
 /** blockquote */
 .mce-content-body blockquote {
     margin: 0 0.5rem 1rem;
     padding-left: 1rem;
-    color: #495057;
-    border-left: 5px solid #8f959e;
+    color: var(--bs-gray-700, #495057);
+    border-left: 5px solid var(--bs-gray-500, #8f959e);
 }
 
 .mce-content-body svg[contentEditable=false] {
