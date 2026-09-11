@@ -60,11 +60,18 @@ Feature: Marking guides can be created and edited
     And I should see "Comment 3"
     And I should see "Comment \"4\""
 
-  @javascript
+  @javascript @accessibility
   Scenario: Deleting criterion and comment
     # Deleting criterion
     When I am on "Course 1" course homepage
     And I go to "Test assignment 1 name" advanced grading definition page
+    # The marking guide editor draws the criterion rows and the frequently used comments, which
+    # take their colours from the colour mode. Scoped to the editor because the whole page cannot
+    # be checked: axe never returns a result once the description editor is in the tree.
+    And I should see "Guide criterion A"
+    And the ".gradingform_guide" "css_element" should meet accessibility standards with "best-practice" extra tests
+    # The status badge is a frozen form element outside the editor, so it needs its own assertion.
+    And the "Current marking guide status" "form_row" should meet accessibility standards with "best-practice" extra tests
     And I click on "Delete criterion" "button" in the "Guide criterion B" "table_row"
     And I press "Yes"
     And I press "Save"
