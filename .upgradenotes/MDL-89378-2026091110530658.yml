@@ -1,0 +1,16 @@
+issueNumber: MDL-89378
+notes:
+  theme_boost:
+    - message: >-
+        Boost's Bootstrap variable overrides have moved out of
+        `scss/preset/default.scss` into `scss/bootstrap-variables.scss`, and
+        `scss/editor.scss` now imports them as well, so the editor content is
+        drawn with Moodle's palette rather than Bootstrap's stock colours. A
+        preset which copied the variable block out of default.scss keeps working
+        unchanged; one which wants to follow Boost's values can `@import
+        "bootstrap-variables"` instead of restating them. Two consequences
+        inside the editor: the body keeps a white background rather than taking
+        the page background the preset sets, and links follow
+        `$link-decoration`, so they lose their underline in light mode and
+        take one in dark mode the same way page content does.
+      type: changed
