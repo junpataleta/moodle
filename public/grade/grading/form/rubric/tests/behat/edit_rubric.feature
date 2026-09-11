@@ -4,7 +4,7 @@ Feature: Rubrics can be created and edited
   As a teacher
   I need to edit previously used rubrics
 
-  @javascript
+  @javascript @accessibility
   Scenario: I can use rubrics to grade and edit them later updating students grades
     Given the following "users" exist:
       | username | firstname | lastname | email |
@@ -45,6 +45,12 @@ Feature: Rubrics can be created and edited
       | Criterion 3 | Level 31 | 5  | Level 32 | 20 |          |    |           |     |
     And I press "Save as draft"
     And I go to "Test assignment 1 name" advanced grading definition page
+    # The rubric editor draws the criterion rows and the level cells, which take their colours
+    # from the colour mode. Only the editor takes the best-practice rules: the page fails the landmark
+    # rule on the course index and the activity header, which this form does not own.
+    And I should see "Criterion 1"
+    And the ".gradingform_rubric" "css_element" should meet accessibility standards with "best-practice" extra tests
+    And the page should meet accessibility standards
     And I click on "Move down" "button" in the "Criterion 1" "table_row"
     And I press "Save rubric and make it ready"
     Then I should see "Ready for use"
