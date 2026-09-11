@@ -127,10 +127,16 @@
         &:hover,
         &.checked {
             background: $grade-criterion-level-hover-bg;
+
+            // The light tint is chosen for a white page and leaves the body text at 1.09:1 once the page is
+            // dark, so the dark mode takes the shaded success surface instead.
+            @include dark-mode {
+                background: var(--mds-bg-feedback-success-subtle);
+            }
         }
         &.checked {
             border: none;
-            border-left: 1px solid $border-color;
+            border-left: 1px solid var(--mds-border-default);
         }
     }
 
@@ -157,7 +163,8 @@
             margin-right: 28px;
             font-style: italic;
             font-weight: bold;
-            color: #{shift-color($success, 20%)};
+            // Compiled once, so a literal here would keep a dark green on the dark surface at 1.57:1.
+            color: var(--mds-text-feedback-success);
 
             input {
                 margin-bottom: 0;
@@ -168,13 +175,25 @@
             vertical-align: top;
             padding: $rubricPadding;
 
+            // The level state tints are all chosen for a white page, and leave the body text between 1.04:1
+            // and 1.18:1 once the page is dark. .checked and .currentchecked are persistent states rather
+            // than hover artifacts, so a graded rubric is unreadable every time it is opened.
             &.currentchecked {
                 background: $grade-criterion-level-currentchecked-bg;
+
+                @include dark-mode {
+                    background: var(--mds-bg-feedback-danger-subtle);
+                }
             }
 
             &.checked {
                 background: $grade-criterion-level-checked-bg;
                 border: 1px solid $grade-criterion-level-checked-border-color;
+
+                @include dark-mode {
+                    background: var(--mds-bg-feedback-success-subtle);
+                    border-color: var(--mds-border-interactive-secondary-active);
+                }
             }
 
             .delete {
@@ -196,6 +215,10 @@
 
                     &:hover {
                         background-color: $grade-criterion-level-delete-bg;
+
+                        @include dark-mode {
+                            background-color: var(--mds-bg-feedback-secondary-default);
+                        }
                     }
                 }
             }
