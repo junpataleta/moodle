@@ -1,19 +1,19 @@
 .gradingform_guide-regrade {
     padding: 10px;
-    background: #fdd;
-    border: 1px solid #f00;
+    background: var(--mds-bg-feedback-danger-subtle);
+    border: 1px solid var(--mds-bg-feedback-danger-default);
     margin-bottom: 10px;
 }
 
 .gradingform_guide-restored {
     padding: 10px;
-    background: #ffd;
-    border: 1px solid #ff0;
+    background: var(--mds-bg-feedback-warning-subtle);
+    border: 1px solid var(--mds-bg-feedback-warning-default);
     margin-bottom: 10px;
 }
 
 .gradingform_guide-error {
-    color: red;
+    color: var(--mds-text-danger);
     font-weight: bold;
 }
 
@@ -22,17 +22,17 @@
     text-transform: uppercase;
     font-size: 60%;
     padding: 0.25em;
-    border: 1px solid #eee;
+    border: 1px solid var(--mds-border-subtle);
 }
 
 .gradingform_guide_editform .status.ready {
-    background-color: #e7f1c3;
-    border-color: #aea;
+    background-color: var(--mds-bg-feedback-success-subtle);
+    border-color: var(--mds-border-feedback-success);
 }
 
 .gradingform_guide_editform .status.draft {
-    background-color: #f3f2aa;
-    border-color: #ee2;
+    background-color: var(--mds-bg-feedback-warning-subtle);
+    border-color: var(--mds-border-feedback-warning);
 }
 
 .gradingform_guide.editor .criterion .controls,
@@ -52,12 +52,12 @@
 }
 
 .gradingform_guide .criterion {
-    border: 1px solid #ddd;
+    border: 1px solid var(--mds-border-default);
     overflow: hidden;
 }
 
 .gradingform_guide .criterion.even {
-    background: var(--bs-secondary-bg);
+    background: var(--mds-bg-surface-strong);
 }
 
 .gradingform_guide .criterion .description {
@@ -79,7 +79,7 @@
 
 .gradingform_guide .plainvalue.empty {
     font-style: italic;
-    color: #555;
+    color: var(--mds-text-subtle);
 }
 
 .gradingform_guide .plainvalue.editname {
@@ -124,19 +124,46 @@
     margin-top: 4px;
 }
 
-.gradingform_guide.editor .addcriterion input,
-.gradingform_guide.editor .addcomment input {
-    background: transparent url([[pix:t/add]]) no-repeat;
-    background-size: 0.75rem;
-    display: block;
-    color: #555;
-    font-weight: bold;
-    text-decoration: none;
+/* These buttons are an image and nothing else, and the pix files bake a black fill in which the
+   stylesheet cannot reach. They are monochrome, so inverting them is the only way to light them for a
+   dark surface. Safe here because the button has no background and its label is indented off screen.
+   Not a mask: a mask clips the element's whole rendering, which takes the focus ring with it. The
+   filter leaves the ring visible, at the inverse of the focus colour. */
+[data-bs-theme="dark"] .gradingform_guide.editor .delete input,
+[data-bs-theme="dark"] .gradingform_guide.editor .moveup input,
+[data-bs-theme="dark"] .gradingform_guide.editor .movedown input {
+    filter: invert(1);
+}
+
+/* The plus is drawn on the wrapper rather than as a background image on the input. The pix file bakes
+   a black fill in, which neither currentColor nor this stylesheet can reach, so a background image
+   would stay black on the dark surface. A mask paints the shape in a colour we control instead, and
+   it goes on the wrapper because a mask on the input itself would clip away the input's focus ring. */
+.gradingform_guide.editor .addcriterion,
+.gradingform_guide.editor .addcomment {
+    position: relative;
+}
+
+.gradingform_guide.editor .addcriterion::before,
+.gradingform_guide.editor .addcomment::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 5px;
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: var(--mds-text-subtle);
+    mask: url([[pix:t/add]]) 0 0 / 0.75rem 0.75rem no-repeat;
+    pointer-events: none;
 }
 
 .gradingform_guide.editor .addcriterion input,
 .gradingform_guide.editor .addcomment input {
-    background-position: left 5px top 8px;
+    background: transparent;
+    display: block;
+    color: var(--mds-text-subtle);
+    font-weight: bold;
+    text-decoration: none;
     height: 30px;
     line-height: 29px;
     margin-bottom: 14px;
@@ -164,7 +191,7 @@
 }
 
 .gradingform_guide .criterion .description.error {
-    background: #fdd;
+    background: var(--mds-bg-feedback-danger-subtle);
 }
 
 /* special classes for elements created by guideeditor.js */
@@ -188,9 +215,15 @@
     cursor: pointer;
 }
 
-.jsenabled .gradingform_guide .markingguidecomment:before {
-    content: url([[pix:t/add]]);
-    padding-right: 2px;
+.jsenabled .gradingform_guide .markingguidecomment::before {
+    content: "";
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-right: 2px;
+    vertical-align: -1px;
+    background-color: currentColor;
+    mask: url([[pix:t/add]]) 0 0 / 0.75rem 0.75rem no-repeat;
 }
 
 .gradingform_guide .commentheader {
