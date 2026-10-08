@@ -42,7 +42,7 @@ Feature: Feedback with no calendar capabilites
     And I log out
     When I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Test feedback name"
+    And I am on the "Test feedback name" "feedback activity" page
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | id_timeopen_year | 2018 |

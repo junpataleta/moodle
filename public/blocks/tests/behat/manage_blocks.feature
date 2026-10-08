@@ -33,7 +33,7 @@ Feature: Block appearances
     And I press "Save changes"
 
   Scenario: Block settings can be modified so that a block apprears on any page
-    When I click on "Test assign name" "link" in the "region-main" "region"
+    When I am on the "Test assign name" "assign activity" page
     Then I should see "Comments" in the "Comments" "block"
     And I am on "Course 1" course homepage
     And I configure the "Comments" block
@@ -45,7 +45,7 @@ Feature: Block appearances
     And I should not see "Comments"
 
   Scenario: Block settings can be modified so that a block can be hidden
-    When I click on "Test book name" "link" in the "region-main" "region"
+    When I am on the "Test book name" "book activity" page
     And I configure the "Comments" block
     And I set the following fields to these values:
       | Visible | No |

@@ -44,7 +44,7 @@ Feature: edit_availability
       | name        | Page1                       |
       | intro       | pageintro                   |
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Page1"
+    And I am on the "Page1" "page activity" page
     And I navigate to "Settings" in current page administration
     Then "Restrict access" "fieldset" should not exist
 

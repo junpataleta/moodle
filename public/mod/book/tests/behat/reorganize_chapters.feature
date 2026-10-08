@@ -26,7 +26,7 @@ Feature: In a book, chapters and subchapters can be rearranged
       | Test book | There aren't 2 without 3     | #3 subchapter content  | 5       | 0         |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Test book"
+    And I am on the "Test book" "book activity" page
 
   Scenario: Moving chapters down rearranges them properly
     Given I click on "Move chapter down \"1. Originally first chapter\"" "link"

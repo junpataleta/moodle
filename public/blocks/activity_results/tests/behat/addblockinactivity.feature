@@ -59,22 +59,22 @@ Feature: The activity results block displays student scores
 
   @javascript @addablocklink
   Scenario: Block should select current activity by default
-    Given I click on "Test assignment 1" "link" in the "region-main" "region"
+    Given I am on the "Test assignment 1" "assign activity" page
     When I add the "Activity results..." block
     Then the field "config_activitygradeitemid" in the "Add Activity results block" "dialogue" matches value "Test assignment 1"
     And I click on "Save changes" "button" in the "Add Activity results block" "dialogue"
     And I am on "Course 1" course homepage
-    And I click on "Test assignment 2" "link" in the "region-main" "region"
+    And I am on the "Test assignment 2" "assign activity" page
     And I add the "Activity results..." block
     And the field "config_activitygradeitemid" in the "Add Activity results block" "dialogue" matches value "Test assignment 2"
     And I click on "Save changes" "button" in the "Add Activity results block" "dialogue"
     And I am on "Course 1" course homepage
-    And I click on "Test assignment 3" "link" in the "region-main" "region"
+    And I am on the "Test assignment 3" "assign activity" page
     And I add the "Activity results..." block
     And the field "config_activitygradeitemid" in the "Add Activity results block" "dialogue" matches value "Test assignment 3"
     And I click on "Save changes" "button" in the "Add Activity results block" "dialogue"
     And I am on "Course 1" course homepage
-    And I click on "Test page name" "link" in the "region-main" "region"
+    And I am on the "Test page name" "page activity" page
     And I add the "Activity results..." block
     And the field "config_activitygradeitemid" in the "Add Activity results block" "dialogue" does not match value "Test page name"
     And I click on "Save changes" "button" in the "Add Activity results block" "dialogue"

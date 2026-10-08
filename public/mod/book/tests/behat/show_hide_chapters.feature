@@ -44,7 +44,7 @@ Feature: Book activity chapter visibility management
     Then the "class" attribute of "x. Second chapter" "link" should contain "dimmed_text"
     And the "class" attribute of "x. Third chapter" "link" should contain "dimmed_text"
     And I am on "Course 1" course homepage with editing mode on
-    And I click on "Test book" "link" in the "region-main" "region"
+    And I am on the "Test book" "book activity" page
     And I follow "Next: Second chapter"
     And I should see "Second chapter" in the ".book_content" "css_element"
     And I follow "Next: Sub chapter"

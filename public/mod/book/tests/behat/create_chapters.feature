@@ -55,7 +55,7 @@ Feature: In a book, create chapters and sub chapters
     And "Next:" "link" should not exist
     And I am on "Course 1" course homepage
     And I should see "Test book" in the "New section" "section"
-    And I click on "Test book" "link" in the "New section" "section"
+    And I am on the "Test book" "book activity" page
     And "Previous:" "link" should not exist
     And I should see "1. Dummy first chapter" in the "strong" "css_element"
     When I follow "Next: Dummy first subchapter"

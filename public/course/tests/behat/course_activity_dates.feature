@@ -25,7 +25,7 @@ Feature: Allow teachers to edit the visibility of activity dates in a course
     When I set the following fields to these values:
       | Show activity dates | Yes |
     And I click on "Save and display" "button"
-    And I follow "Test choice"
+    And I am on the "Test choice" "choice activity" page
     Then the activity date information in "Test choice" should exist
     And the activity date in "Test choice" should contain "Opened:"
     And the activity date in "Test choice" should contain "Closes:"
@@ -42,7 +42,7 @@ Feature: Allow teachers to edit the visibility of activity dates in a course
     When I set the following fields to these values:
       | Show activity dates | No |
     And I click on "Save and display" "button"
-    And I follow "Test choice"
+    And I am on the "Test choice" "choice activity" page
     # Activity dates are always shown in the module's view page.
     Then the activity date information in "Test choice" should exist
     And the activity date in "Test choice" should contain "Opened:"

@@ -44,7 +44,7 @@ Feature: Multiple option choice response
       | choice   | Choice name | Choice description | C1     | choice1  | Option 1, Option 2, Option 3 | 1             | 1             | 1            |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Choice name"
+    And I am on the "Choice name" "choice activity" page
     And I follow "Settings"
     And I set the following fields to these values:
       | Limit 1 | 1 |
@@ -75,13 +75,13 @@ Feature: Multiple option choice response
     Then I should see "Option 1 (Full)"
     And I should see "Limit: 1"
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Choice name"
+    And I am on the "Choice name" "choice activity" page
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | Limit the number of responses allowed | No |
     And I press "Save and return to course"
     And I am on "Course 1" course homepage
-    And I follow "Choice name"
+    And I am on the "Choice name" "choice activity" page
     And I navigate to "Responses" in current page administration
     Then I should not see "Limit: 1"
     And I log out

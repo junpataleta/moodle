@@ -56,7 +56,7 @@ Feature: Add URL to Additional activities block
     And I set the following fields to these values:
       | id_display | Embed |
     And I press "Save and return to course"
-    Then I click on "reference link" "link" in the "Additional activities" "block"
+    Then I am on the "reference link" "url activity" page
     And "reference link" "link" should exist in the "Additional activities" "block"
     And I am on the "C1" "Course" page
     And "reference link" "link" should not exist in the "Additional activities" "block"
@@ -84,7 +84,7 @@ Feature: Add URL to Additional activities block
     And I set the following fields to these values:
       | id_display | Embed |
     And I press "Save and return to course"
-    Then I click on "reference link" "link" in the "Additional activities" "block"
+    Then I am on the "reference link" "url activity" page
     And "reference link" "link" should exist in the "Additional activities" "block"
     And I am on the "C1" "Course" page
     And "Additional activities" "block" should not exist

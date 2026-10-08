@@ -53,7 +53,7 @@ Feature: Activity navigation
     And I am on "Course 1" course homepage
     And I hide section "5"
     # Set up book.
-    And I follow "Book 1"
+    And I am on the "Book 1" "book activity" page
     And I should see "Add new chapter"
     And I set the following fields to these values:
       | Chapter title | Chapter 1                             |

@@ -39,7 +39,7 @@ Feature: Enable Block Completion in a course
       | page     | C1     | page1    | Test page name | Test page description |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Test page name"
+    And I am on the "Test page name" "page activity" page
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | Add requirements         | 1                  |

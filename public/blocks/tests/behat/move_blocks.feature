@@ -33,7 +33,7 @@ Feature: Block region moving
     And I press "Save changes"
 
   Scenario: Block settings can be modified so that a block can be moved
-    When I follow "Test book name"
+    When I am on the "Test book name" "book activity" page
     And I configure the "Comments" block
     And I set the following fields to these values:
       | Region  | Right |

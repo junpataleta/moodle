@@ -19,7 +19,7 @@ Feature: In a report, admin can filter log data by action
     And I log in as "admin"
     And I am on "Course 1" course homepage with editing mode on
     # View Action.
-    And I follow "Test assignment 1"
+    And I am on the "Test assignment 1" "assign activity" page
     # Update Action.
     And I navigate to "Settings" in current page administration
     And I press "Save and return to course"
