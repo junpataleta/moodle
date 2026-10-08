@@ -28,7 +28,7 @@ Feature: Rubrics can have levels with negative scores
       | assign     | Test assignment 1 | Test  | C1     | assign1     | 100     | rubric                            |
     And I change window size to "large"
     When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
+    And I am on "Course 1" course homepage
     And I go to "Test assignment 1" advanced grading definition page
     And I set the following fields to these values:
       | Name | Assignment 1 rubric |

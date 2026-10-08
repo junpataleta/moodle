@@ -24,19 +24,25 @@
         "url": "#",
         "instancename": "Activity name",
         "uservisible": true,
+        "editable": false,
         "onclick": "alert('ok')",
         "altname": "PDF file",
         "linkclasses": "",
         "modname": "resource"
     }
 }}
-{{#uservisible}}
-    <a href="{{url}}" class="{{linkclasses}} aalink stretched-link" onclick="{{{onclick}}}">
-        <span class="instancename">{{{instancename}}} {{{altname}}}</span>
-    </a>
-{{/uservisible}}
-{{^uservisible}}
-    <span class="instancename">
-        {{{instancename}}} {{{altname}}}
-    </span>
-{{/uservisible}}
+{{#editable}}
+    <span class="instancename">{{{instancename}}} {{{altname}}}</span>
+{{/editable}}
+{{^editable}}
+    {{#uservisible}}
+        <a href="{{url}}" class="{{linkclasses}} aalink stretched-link" onclick="{{{onclick}}}">
+            <span class="instancename">{{{instancename}}} {{{altname}}}</span>
+        </a>
+    {{/uservisible}}
+    {{^uservisible}}
+        <span class="instancename">
+            {{{instancename}}} {{{altname}}}
+        </span>
+    {{/uservisible}}
+{{/editable}}

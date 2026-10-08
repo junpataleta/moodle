@@ -50,3 +50,34 @@ Feature: Edit activity name in-place
     And I set the field "Edit title" in the "Test forum name" "activity" to "Good & bad news"
     Then I should not see "Test forum name" in the ".course-content" "css_element"
     And I should see "Good & bad news" in the ".course-content" "css_element"
+
+  @javascript
+  Scenario: Clicking the activity title in edit mode renames the activity
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage with editing mode on
+    When I click on "Test forum name" "link" in the "Test forum name" "activity"
+    Then the field "New name for activity Test forum name" matches value "Test forum name"
+    And I set the field "New name for activity Test forum name" to "Renamed from title"
+    And I press the enter key
+    And I should see "Renamed from title" in the ".course-content" "css_element"
+    And the focused element is "[data-itemtype='activityname'] [data-inplaceeditablelink]" "css_element"
+
+  @javascript
+  Scenario: Open the activity title editor with the Space key
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage with editing mode on
+    When I set the focus on the "[data-itemtype='activityname'] [data-inplaceeditablelink]" "css_element"
+    And I press the space key
+    Then the field "New name for activity Test forum name" matches value "Test forum name"
+
+  @javascript
+  Scenario: The activity title links to the activity when it cannot be renamed
+    Given the following "permission overrides" exist:
+      | capability                       | permission | role           | contextlevel    | reference |
+      | moodle/course:manageactivities   | Prohibit   | editingteacher | Activity module | forum1    |
+    And I log in as "teacher1"
+    And I am on "Course 1" course homepage with editing mode on
+    And "Edit title" "link" should not exist in the "Test forum name" "activity"
+    When I click on "Test forum name" "link" in the "Test forum name" "activity"
+    Then I should see "Test forum name" in the "page-header" "region"
+    And "New name for activity Test forum name" "field" should not exist

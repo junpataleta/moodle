@@ -35582,7 +35582,7 @@ button.section-collapsemenu:hover .collapsemenu-text {
 .activity-item:hover:not(:has(.delegated-section)) {
   background-color: var(--mds-bg-surface-default);
 }
-.activity-item:focus-within:not(:has(.delegated-section)) {
+.activity-item:focus-within:not(:has(.delegated-section)):not(:has(.quickeditlink:focus-visible, .inplaceeditingon)) {
   outline: 0.125rem solid var(--mds-border-interactive-primary-default);
 }
 .activity-item.hiddenactivity .activityiconcontainer {
@@ -35693,7 +35693,6 @@ button.section-collapsemenu:hover .collapsemenu-text {
 .activity-item .activity-name-area .activityname .inplaceeditable .quickeditlink {
   position: relative;
   z-index: 2;
-  margin-left: 0.5rem;
 }
 .activity-item .activity-name-area .activitybadge.badge-none {
   font-weight: normal;
@@ -35908,7 +35907,92 @@ button.section-collapsemenu:hover .collapsemenu-text {
   box-shadow: none;
 }
 
+/* Activity and section title rename trigger */
+.activity-item .activity-name-area .inplaceeditable .quickeditlink,
+.course-section-header [data-for=section_title] .inplaceeditable .quickeditlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  vertical-align: middle;
+  border-radius: 0.25rem;
+}
+.activity-item .activity-name-area .inplaceeditable .quickeditlink:hover:not(:has(.quickediticon:hover)),
+.course-section-header [data-for=section_title] .inplaceeditable .quickeditlink:hover:not(:has(.quickediticon:hover)) {
+  color: var(--mds-text-link-primary-hover);
+}
+.activity-item .activity-name-area .inplaceeditable .quickeditlink:focus, .activity-item .activity-name-area .inplaceeditable .quickeditlink:focus-visible,
+.course-section-header [data-for=section_title] .inplaceeditable .quickeditlink:focus,
+.course-section-header [data-for=section_title] .inplaceeditable .quickeditlink:focus-visible {
+  background-color: transparent;
+  box-shadow: none;
+}
+.activity-item .activity-name-area .inplaceeditable .quickeditlink:focus-visible,
+.course-section-header [data-for=section_title] .inplaceeditable .quickeditlink:focus-visible {
+  outline: 0.125rem solid var(--mds-border-interactive-primary-default);
+  outline-offset: 0.25rem;
+}
+.activity-item .activity-name-area .inplaceeditable .quickediticon,
+.course-section-header [data-for=section_title] .inplaceeditable .quickediticon {
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0rem;
+  gap: 0rem;
+  justify-content: center;
+  align-items: center;
+  vertical-align: middle;
+  border-radius: 0.5rem;
+  color: var(--mds-text-subtle);
+  visibility: hidden;
+}
+.activity-item .activity-name-area .inplaceeditable .quickediticon .icon,
+.course-section-header [data-for=section_title] .inplaceeditable .quickediticon .icon {
+  width: 0.75rem !important; /* stylelint-disable-line declaration-no-important */
+  height: 0.75rem !important; /* stylelint-disable-line declaration-no-important */
+  max-width: 0.75rem !important; /* stylelint-disable-line declaration-no-important */
+  max-height: 0.75rem !important; /* stylelint-disable-line declaration-no-important */
+  margin: 0;
+  font-size: 0.75rem !important; /* stylelint-disable-line declaration-no-important */
+}
+.activity-item .activity-name-area .inplaceeditable .quickediticon .icon::before,
+.course-section-header [data-for=section_title] .inplaceeditable .quickediticon .icon::before {
+  display: inline-block;
+}
+.activity-item .activity-name-area .inplaceeditable .quickediticon:hover,
+.course-section-header [data-for=section_title] .inplaceeditable .quickediticon:hover {
+  background-color: var(--mds-bg-interactive-secondary-hover);
+}
+@media (hover: none) {
+  .activity-item .activity-name-area .inplaceeditable .quickediticon,
+  .course-section-header [data-for=section_title] .inplaceeditable .quickediticon {
+    visibility: visible;
+  }
+}
+body:not(.jsenabled) .activity-item .activity-name-area .inplaceeditable .quickediticon,
+body:not(.jsenabled) .course-section-header [data-for=section_title] .inplaceeditable .quickediticon {
+  display: none;
+}
+
+.activity-item.hiddenactivity .activity-name-area .inplaceeditable .quickediticon {
+  color: var(--mds-text-muted);
+}
+
+.course-section-header .btn-icon.icons-collapse-expand:hover {
+  border: 0.0625rem solid var(--mds-border-default);
+  border-radius: 0.5rem;
+  background-color: var(--mds-bg-interactive-secondary-hover);
+  outline: 0;
+}
+
+.activity-item:not(:has(.activity-item)):is(:hover, :focus-within) .activity-name-area .inplaceeditable .quickediticon,
+.course-section-header:is(:hover, :focus-within) [data-for=section_title] .inplaceeditable .quickediticon {
+  visibility: visible;
+}
+
 /* Bulk editing */
+.bulkenabled .activity-name-area .inplaceeditable .quickediticon {
+  display: none;
+}
 .bulkenabled .bulk-hidden {
   display: none !important;
 }
@@ -35930,6 +36014,9 @@ button.section-collapsemenu:hover .collapsemenu-text {
 .bulkenabled .activity:first-child {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
+}
+.bulkenabled .activity-item:focus-within:not(:has(.delegated-section)):not(:has(.inplaceeditingon)) {
+  outline: 0.125rem solid var(--mds-border-interactive-primary-default);
 }
 .bulkenabled .activity-item .bulkselect {
   float: left;
