@@ -1,8 +1,8 @@
 @core @core_courseformat @javascript
-Feature: Activity type tooltip.
+Feature: Activity type label.
   In order to see the activity type
   As a Teacher
-  I need to be able to see a tooltip with the plugin name in editing mode.
+  I need to be able to see a label with the plugin name in editing mode.
 
   Background:
     Given the following "course" exists:
@@ -23,17 +23,19 @@ Feature: Activity type tooltip.
       | teacher1 | C1     | editingteacher |
       | student1 | C1     | student        |
 
-  Scenario: Teacher can see the activity type tooltip only while editing.
+  Scenario: Teacher can see the activity type label only while editing.
     Given I am on the "C1" "Course" page logged in as "teacher1"
-    And the "title" attribute of "Activity sample 1" "core_courseformat > Activity icon" should not be set
-    And the "title" attribute of "Activity sample 2" "core_courseformat > Activity icon" should not be set
-    And I turn editing mode on
-    Then the "title" attribute of "Activity sample 1" "core_courseformat > Activity icon" should contain "Assignment"
-    And the "title" attribute of "Activity sample 2" "core_courseformat > Activity icon" should contain "Page"
+    And ".activity-type-label" "css_element" should not exist in the "Activity sample 1" "activity"
+    And ".activity-type-label" "css_element" should not exist in the "Activity sample 2" "activity"
+    When I turn editing mode on
+    Then I should see "Assignment" in the "Activity sample 1" "core_courseformat > Activity type label"
+    And I should see "Page" in the "Activity sample 2" "core_courseformat > Activity type label"
+    And I turn editing mode off
+    And ".activity-type-label" "css_element" should not exist in the "Activity sample 1" "activity"
 
-  Scenario: Student cannot see the activity type tooltip.
+  Scenario: Student cannot see the activity type label.
     Given I am on the "C1" "Course" page logged in as "student1"
-    Then the "title" attribute of "Activity sample 1" "core_courseformat > Activity icon" should not be set
+    Then ".activity-type-label" "css_element" should not exist in the "Activity sample 1" "activity"
 
   Scenario: Student cannot see the activity icon link if does not have access.
     Given I am on the "Activity sample 2" "page activity editing" page logged in as "admin"

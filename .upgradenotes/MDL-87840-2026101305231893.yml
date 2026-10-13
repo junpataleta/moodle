@@ -1,0 +1,26 @@
+issueNumber: MDL-87840
+notes:
+  core_courseformat:
+    - message: >-
+        The `core_courseformat/local/content/cm/cmicon` template now mounts the
+        `core_course/ActivityIcon` React component, using the design
+        system ActivityIcon, for activities that have an icon in the design
+        system. The previous markup moved to the new
+        `core_courseformat/local/content/cm/cmiconfallback` template, which is
+        rendered inside the mount point until the component loads and on its own
+        for the other activities. Theme overrides of `cmicon` keep the previous
+        icon unless they render the mount point. The `cmicon` context now provides `reactprops`, and
+        `showtooltip` was replaced by `showlabel`, which displays the activity
+        type label to teachers while editing. The icon no longer has an `alt` or
+        `title`, as the activity type is announced by the activity link.
+      type: changed
+    - message: >-
+        The icons of the activities that have an icon in the design system are
+        now rendered by the design system. Themes that customise activity icons
+        by replacing `pix_plugins/mod/<modname>/monologo.svg` or
+        `pix_core/f/*.svg` will need to be updated to use their custom icons.
+        Themes can wrap or eject the `core_course/ActivityIcon` component with
+        the `swizzle` command to customise the icons.
+        Activities with an icon of their own, for example a LTI tool, keep their
+        server-rendered icon.
+      type: changed

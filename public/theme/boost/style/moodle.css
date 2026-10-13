@@ -35611,6 +35611,10 @@ button.section-collapsemenu:hover .collapsemenu-text {
 .editing .activity-item {
   cursor: move;
 }
+.editing .activity-item .activity-icon .activityiconcontainer {
+  padding: 0;
+  background-color: transparent;
+}
 .editing .activity-item .a {
   cursor: pointer;
 }
@@ -35632,15 +35636,13 @@ button.section-collapsemenu:hover .collapsemenu-text {
 .activity-item .activity-grid {
   display: grid;
   align-items: center;
-  grid-template-columns: min-content 1fr min-content min-content min-content;
-  grid-template-rows: 1fr repeat(5, min-content);
-  grid-template-areas: "icon   name          groupmode      completion    actions" "icon   altcontent    altcontent     altcontent    altcontent" "icon   afterlink     afterlink      afterlink     afterlink" "visibility   visibility   visibility     visibility    visibility" "dates        dates        dates          dates         dates" "availability availability availability   availability  availability";
+  grid-template-columns: 1fr min-content min-content min-content;
+  grid-template-areas: "icon          groupmode     completion    actions" "name          name          name          name" "altcontent    altcontent    altcontent    altcontent" "afterlink     afterlink     afterlink     afterlink" "visibility    visibility    visibility    visibility" "dates         dates         dates         dates" "availability  availability  availability  availability";
 }
 @media (max-width: 575.98px) {
   .activity-item .activity-grid {
-    grid-template-columns: min-content 1fr min-content min-content min-content;
-    grid-template-rows: 1fr repeat(4, min-content);
-    grid-template-areas: "icon          name          actions" "altcontent    altcontent    altcontent" "afterlink     afterlink     afterlink" "visibility    visibility    visibility" "dates         dates         dates" "groupmode     groupmode     groupmode" "completion    completion    completion" "availability  availability  availability";
+    grid-template-columns: 1fr min-content;
+    grid-template-areas: "icon          actions" "name          name" "altcontent    altcontent" "afterlink     afterlink" "visibility    visibility" "dates         dates" "groupmode     groupmode" "completion    completion" "availability  availability";
   }
 }
 .activity-item .activity-grid.noname-grid {
@@ -35659,8 +35661,37 @@ button.section-collapsemenu:hover .collapsemenu-text {
 .activity-item .activity-actions .actions {
   position: relative;
 }
+.activity-item .activity-actions .btn-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+}
 .activity-item .activity-icon {
   grid-area: icon;
+  gap: 0.25rem;
+}
+.activity-item .activity-icon [data-react-component] {
+  display: flex;
+}
+.activity-item .activity-icon .activityiconcontainer {
+  box-sizing: content-box;
+  padding: var(--mds-spacing-xs);
+  width: var(--mds-icons-lg);
+  height: var(--mds-icons-lg);
+  max-width: var(--mds-icons-lg);
+  max-height: var(--mds-icons-lg);
+}
+@media (max-width: 575.98px) {
+  body:not(.editing) .activity-item .activity-icon .activityiconcontainer {
+    width: var(--mds-icons-sm);
+    height: var(--mds-icons-sm);
+    max-width: var(--mds-icons-sm);
+    max-height: var(--mds-icons-sm);
+  }
+}
+.activity-item .activity-type-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--mds-text-muted);
 }
 .activity-item .activity-dates {
   grid-area: dates;
@@ -35681,6 +35712,7 @@ button.section-collapsemenu:hover .collapsemenu-text {
 }
 .activity-item .activity-name-area {
   grid-area: name;
+  margin-top: 0.5rem;
 }
 .activity-item .activity-name-area .activityname {
   color: var(--bs-gray-700);
@@ -35712,7 +35744,9 @@ button.section-collapsemenu:hover .collapsemenu-text {
 }
 .activity-item .activity-completion button,
 .activity-item .activity-completion a[role=button] {
-  min-height: 32px;
+  height: 1.75rem;
+  min-height: 0;
+  padding-block: 0;
 }
 @media (max-width: 575.98px) {
   .activity-item .activity-completion {
@@ -35748,8 +35782,8 @@ button.section-collapsemenu:hover .collapsemenu-text {
   justify-self: end;
 }
 .activity-item .activity-groupmode-info .groupmode-information {
-  height: 32px;
-  width: 32px;
+  height: 1.75rem;
+  width: 1.75rem;
   border-radius: 0.5rem;
 }
 .activity-item .activity-groupmode-info .groupmode-information .icon {
