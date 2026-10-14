@@ -57,11 +57,12 @@ $dark-min-contrast: 4.6 !default;
  * @return {Color}
  */
 @function dark-readable($color, $background: $dark-surface-raised, $min: $dark-min-contrast) {
+    // Stop as soon as the colour is readable: contrast-ratio() is slow to compile, so each extra call is costly.
     $readable: $color;
-    @for $step from 1 through 20 {
-        @if contrast-ratio($background, $readable) < $min {
-            $readable: tint-color($color, percentage($step * 0.05));
-        }
+    $step: 0;
+    @while $step < 20 and contrast-ratio($background, $readable) < $min {
+        $step: $step + 1;
+        $readable: tint-color($color, percentage($step * 0.05));
     }
     @return $readable;
 }
