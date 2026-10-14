@@ -11,6 +11,22 @@
  */
 
 @include color-mode(dark) {
+    // The readable theme colours are each used several times below. dark-readable() is slow to compile, so work each
+    // one out once.
+    $primary-readable: dark-readable($primary);
+    $primary-readable-3: dark-readable($primary, $min: 3);
+    $primary-readable-7: dark-readable($primary, $min: 7);
+    $danger-readable: dark-readable($danger);
+    $info-readable: dark-readable($info);
+    $success-readable: dark-readable($success);
+    $warning-readable: dark-readable($warning);
+    // The same again for the theme colours map, which a theme can override separately from the variables above.
+    $hued-theme-colors: ("primary", "success", "info", "warning", "danger");
+    $theme-colors-readable: ();
+    @each $name in $hued-theme-colors {
+        $theme-colors-readable: map-merge($theme-colors-readable, ($name: dark-readable(map-get($theme-colors, $name))));
+    }
+
     // Surfaces.
     --#{$prefix}white: #{$dark-surface-raised};
     --#{$prefix}gray-100: #{$dark-surface-page};
@@ -62,12 +78,12 @@
     // behind it, and these draw the focus outline and the dragging border of an activity card. Moodle blue only
     // manages 2.56:1 on a card and 2.15:1 on a hovered one, short of the 3:1 WCAG 2.2 asks of a non-text element
     // (1.4.11) and of a focus indicator (2.4.11), so they are lifted the same way the focus ring above is.
-    --mds-border-interactive-primary-default: #{dark-readable($primary, $min: 3)};
-    --mds-border-interactive-primary-hover: #{dark-readable($primary, $min: 3)};
+    --mds-border-interactive-primary-default: #{$primary-readable-3};
+    --mds-border-interactive-primary-hover: #{$primary-readable-3};
     --mds-border-interactive-primary-active: #{dark-readable($primary, $min: 4.5)};
     // A disabled control is exempt from 1.4.11, and the light value is a tint of the brand towards the page behind
     // it, so the dark one is the same idea in the other direction: faded into the surface, but still visible.
-    --mds-border-interactive-primary-disabled: #{mix(dark-readable($primary, $min: 3), $dark-surface-raised, 55%)};
+    --mds-border-interactive-primary-disabled: #{mix($primary-readable-3, $dark-surface-raised, 55%)};
     --mds-text-default: #{$gray-300};
     --mds-text-emphasis: #{$gray-100};
     --mds-text-subtle: #{$gray-400};
@@ -78,31 +94,31 @@
 
     // Links and coloured text. Bootstrap's dark defaults tint the theme colours by 40%, which lands just under
     // WCAG AA against a raised surface, so derive them instead.
-    --#{$prefix}link-color: #{dark-readable($primary)};
-    --#{$prefix}link-color-rgb: #{to-rgb(dark-readable($primary))};
-    --#{$prefix}link-hover-color: #{dark-readable($primary, $min: 7)};
-    --#{$prefix}link-hover-color-rgb: #{to-rgb(dark-readable($primary, $min: 7))};
+    --#{$prefix}link-color: #{$primary-readable};
+    --#{$prefix}link-color-rgb: #{to-rgb($primary-readable)};
+    --#{$prefix}link-hover-color: #{$primary-readable-7};
+    --#{$prefix}link-hover-color-rgb: #{to-rgb($primary-readable-7)};
     // Only the hued theme colours: Bootstrap's light, dark and secondary emphasis colours are already greys chosen
     // for a dark background, and tinting them would make them worse.
-    @each $name in ("primary", "success", "info", "warning", "danger") {
-        --#{$prefix}#{$name}-text-emphasis: #{dark-readable(map-get($theme-colors, $name))};
+    @each $name in $hued-theme-colors {
+        --#{$prefix}#{$name}-text-emphasis: #{map-get($theme-colors-readable, $name)};
     }
 
     // The focus ring has to be visible against the dark surfaces it is drawn on (WCAG 2.2 focus appearance). Focus
     // indicators are non-text, so the 3:1 threshold applies.
-    --#{$prefix}focus-ring-color: #{rgba(dark-readable($primary, $min: 3), $focus-ring-opacity)};
+    --#{$prefix}focus-ring-color: #{rgba($primary-readable-3, $focus-ring-opacity)};
 
-    --mds-text-link-primary-default: #{dark-readable($primary)};
-    --mds-text-link-primary-hover: #{dark-readable($primary, $min: 7)};
+    --mds-text-link-primary-default: #{$primary-readable};
+    --mds-text-link-primary-hover: #{$primary-readable-7};
     --mds-text-link-primary-disabled: #{$gray-500};
-    --mds-text-feedback-primary: #{dark-readable($primary)};
+    --mds-text-feedback-primary: #{$primary-readable};
     // The danger text tokens drive the invalid state of the design system form controls and the required marker.
-    --mds-text-danger: #{dark-readable($danger)};
+    --mds-text-danger: #{$danger-readable};
     --mds-text-danger-disabled: #{dark-readable($danger, $min: 3)};
-    --mds-text-feedback-danger: #{dark-readable($danger)};
-    --mds-text-feedback-info: #{dark-readable($info)};
-    --mds-text-feedback-success: #{dark-readable($success)};
-    --mds-text-feedback-warning: #{dark-readable($warning)};
+    --mds-text-feedback-danger: #{$danger-readable};
+    --mds-text-feedback-info: #{$info-readable};
+    --mds-text-feedback-success: #{$success-readable};
+    --mds-text-feedback-warning: #{$warning-readable};
 
     // Feedback surfaces. The "light" and "subtle" tints are far too bright to sit behind dark mode text.
     @each $name, $color in ("primary": $primary, "danger": $danger, "info": $info, "success": $success, "warning": $warning) {
@@ -134,9 +150,9 @@
 
     // The .text-* utilities take the raw theme colour, which is chosen for a white page. Re-pointing the colour
     // inside the utility itself leaves .bg-* and the other consumers of the same variable alone.
-    @each $name in ("primary", "success", "info", "warning", "danger") {
+    @each $name in $hued-theme-colors {
         .text-#{$name} {
-            --#{$prefix}#{$name}-rgb: #{to-rgb(dark-readable(map-get($theme-colors, $name)))};
+            --#{$prefix}#{$name}-rgb: #{to-rgb(map-get($theme-colors-readable, $name))};
         }
     }
 
