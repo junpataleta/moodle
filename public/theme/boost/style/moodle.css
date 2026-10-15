@@ -45189,6 +45189,9 @@ body.tox-fullscreen .tox.tox-tinymce-aux {
     padding-left: 0;
     padding-right: 0;
   }
+  body:not(.pagelayout-standard):not(.limitedwidth) .main-inner > .header-maxwidth {
+    max-width: none;
+  }
 }
 .drawer-toggles .drawer-toggler {
   position: fixed;
