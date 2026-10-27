@@ -21,7 +21,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/dragdrop', 'qtype_ddmarker/shapes'], function($, dragDrop, Shapes) {
+define(['jquery', 'core/dragdrop', 'qtype_ddmarker/shapes', 'core/str', 'core/log'],
+        function($, dragDrop, Shapes, Str, Log) {
 
     "use strict";
 
@@ -392,6 +393,15 @@ define(['jquery', 'core/dragdrop', 'qtype_ddmarker/shapes'], function($, dragDro
                 '       </div>' +
                 '   </div>' +
                 '</div>');
+            M.util.js_pending('qtype_ddmarker/form:setupPreviewArea');
+            Str.getString('dropbackground', 'qtype_ddmarker').then(function(alt) {
+                $('#ddm-droparea .dropbackground').attr('alt', alt);
+                M.util.js_complete('qtype_ddmarker/form:setupPreviewArea');
+                return alt;
+            }).catch(function(error) {
+                Log.error(error);
+                M.util.js_complete('qtype_ddmarker/form:setupPreviewArea');
+            });
         },
 
         /**
