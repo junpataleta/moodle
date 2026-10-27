@@ -72,8 +72,12 @@ class qtype_ddmarker_edit_form extends qtype_ddtoimage_edit_form_base {
         $draggableimageitem = array();
 
         $grouparray = array();
-        $grouparray[] = $mform->createElement('text', 'label', '',
-                array('size' => 30, 'class' => 'tweakcss'));
+        $grouparray[] = $mform->createElement(
+            'text',
+            'label',
+            get_string('label', 'qtype_ddmarker'),
+            ['size' => 30, 'class' => 'tweakcss'],
+        );
         $mform->setType('text', PARAM_RAW_TRIMMED);
 
         $noofdragoptions = array(0 => get_string('infinite', 'qtype_ddmarker'));

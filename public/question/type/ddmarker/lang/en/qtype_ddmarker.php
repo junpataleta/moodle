@@ -67,6 +67,7 @@ $string['formerror_toomanysemicolons'] = 'There are too many semicolon-separated
 $string['formerror_unrecognisedwidthheightpart'] = 'The width and height that you have specified are unrecognisable. Your coordinates for a {$a->shape} should be expressed as - {$a->coordsstring}.';
 $string['formerror_unrecognisedxypart'] = 'The x,y coordinates that you have specified are unrecognisable. Your coordinates for a {$a->shape} should be expressed as - {$a->coordsstring}.';
 $string['infinite'] = 'Infinite';
+$string['label'] = 'Text';
 $string['marker'] = 'Marker';
 $string['marker_n'] = 'Marker {no}';
 $string['markers'] = 'Markers';
