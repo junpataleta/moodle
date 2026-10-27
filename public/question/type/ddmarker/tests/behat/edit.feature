@@ -21,10 +21,13 @@ Feature: Test editing a drag and drop markers questions
       | questioncategory | qtype    | name         | template |
       | Test questions   | ddmarker | Drag markers | mkmap    |
 
-  @javascript
+  @javascript @accessibility
   Scenario: Edit a drag and drop markers question
-    When I am on the "Drag markers" "core_question > edit" page logged in as teacher
-    And I set the following fields to these values:
+    Given I am on the "Drag markers" "core_question > edit" page logged in as teacher
+    And I follow "Markers"
+    And the page should meet accessibility standards
+    And the "region-main" "region" should meet accessibility standards with "best-practice" extra tests
+    When I set the following fields to these values:
       | Question name | Edited question name |
     And I press "id_submitbutton"
     Then I should see "Edited question name"
