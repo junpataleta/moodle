@@ -20,7 +20,7 @@
  * @copyright  2018 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/dragdrop'], function($, dragDrop) {
+define(['jquery', 'core/dragdrop', 'core/str', 'core/notification'], function($, dragDrop, Str, Notification) {
 
     "use strict";
 
@@ -73,6 +73,12 @@ define(['jquery', 'core/dragdrop'], function($, dragDrop) {
                 '  </div>' +
                 '  <div class="dragitems"></div>' +
                 '</div>');
+            M.util.js_pending('qtype_ddimageortext/form:setupPreviewArea');
+            Str.getString('dropbackground', 'qtype_ddimageortext').then(function(alt) {
+                $('#id_droparea .dropbackground').attr('alt', alt);
+                M.util.js_complete('qtype_ddimageortext/form:setupPreviewArea');
+                return alt;
+            }).catch(Notification.exception);
         },
 
         /**
