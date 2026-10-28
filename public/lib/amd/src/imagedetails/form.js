@@ -102,6 +102,9 @@ export class ImageDetailsForm {
      * @returns {Promise<void>}
      */
     async render() {
+        // Name the help button after the field it offers help for. The template would otherwise
+        // take the image's alt below as the button's name.
+        const decorativehelpname = await getString('helpprefix2', 'core', await getString('imagedecorative'));
         // The renderer supplies uniqid itself, which the template uses to keep its ids unique.
         const {html, js} = await Templates.renderForPromise('core/imagedetails/form', {
             alt: this.initialAlt,
@@ -111,7 +114,10 @@ export class ImageDetailsForm {
             hasdimensions: this.hasDimensions,
             custom: this.customActive,
             maxlengthalt: MAX_ALT_LENGTH,
-            decorativehelpicon: {text: await getString('imagedecorative_help')},
+            decorativehelpicon: {
+                text: await getString('imagedecorative_help'),
+                alt: decorativehelpname,
+            },
             showpreview: this.showPreview,
             previewurl: this.previewUrl,
             filename: this.filename,

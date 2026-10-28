@@ -35,6 +35,7 @@ Feature: Provide image details when dropping an image onto a course page
     When I drop the image "decorative.png" sized "800"x"600" onto course section "1"
     And I click on "Add media to course page" "radio"
     And I click on "Upload" "button" in the "Add an activity or resource" "dialogue"
+    And "Help with Decorative image" "help_icon" should exist in the "Image details" "dialogue"
     And I click on "Decorative image" "checkbox" in the "Image details" "dialogue"
     And I click on "Save" "button" in the "Image details" "dialogue"
     Then "[data-for='section'][data-number='1'] img" "css_element" should exist
