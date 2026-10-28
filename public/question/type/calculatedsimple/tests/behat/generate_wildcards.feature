@@ -31,6 +31,8 @@ Feature: Test creating sets of wildcard values
     And I should see "There must be at least one wild card"
     And I press "id_analyzequestion"
     And I should see "You must add at least one set of wild card(s) values before you can save this question."
+    And the field "Sets to generate" matches value "1"
+    And the field "Sets to display" matches value "1"
     # Creating one set of wild card values by default.
     And I press "id_addbutton"
     And I should see "Wild card(s) values"
@@ -50,3 +52,16 @@ Feature: Test creating sets of wildcard values
     # Make sure the old values are no longer stored.
     Then I should not see "3.5 + 5.3 = 8.80"
     And I should not see "Correct answer : 8.80 inside limits of true value"
+
+  @javascript @accessibility
+  Scenario: The wild card set menus meet accessibility standards
+    Given I am on the "Course 1" "core_question > course question bank" page logged in as teacher
+    And I add a "Calculated simple" question filling the form with:
+      | Question name         | calculatedsimple-002                |
+      | Question text         | {x1} + {x2}                         |
+      | Answer 1 formula =    | {x1} + {x2}                         |
+      | Grade                 | 100%                                |
+    When I press "id_analyzequestion"
+    Then I should see "You must add at least one set of wild card(s) values before you can save this question."
+    And the "#fgroup_id_addgrp" "css_element" should meet accessibility standards with "best-practice" extra tests
+    And the "#fgroup_id_addgrp1" "css_element" should meet accessibility standards with "best-practice" extra tests
