@@ -57,3 +57,8 @@ body#page-question-type-numerical div[id^=fitem_id_][id*=feedback_] {
     border: 1px solid #bbb;
     border-top: 0;
 }
+
+/* Keep the unit penalty field labels apart. The group is shared by the calculated question types. */
+body.path-question-type #fgroup_id_penaltygrp .felement .d-flex {
+    column-gap: 0.75rem;
+}
