@@ -269,7 +269,12 @@ class question_dataset_dependent_items_form extends question_wizard_form {
         $addgrp1 = array();
         $addgrp1[] = $mform->createElement('submit', 'showbutton',
                 get_string('showitems', 'qtype_calculated'));
-        $addgrp1[] = $mform->createElement('select', "selectshow", '' , $showoptions);
+        $addgrp1[] = $mform->createElement(
+            'select',
+            "selectshow",
+            get_string('setstodisplay', 'qtype_calculated'),
+            $showoptions,
+        );
         $addgrp1[] = $mform->createElement('static', "stat", '',
                 get_string('setwildcardvalues', 'qtype_calculated'));
         $mform->addGroup($addgrp1, 'addgrp1', '', '   ', false);

@@ -122,6 +122,7 @@ $string['questiondatasets_help'] = 'Question datasets of wild cards that will be
 $string['questionstoredname'] = 'Question stored name';
 $string['replacewithrandom'] = 'Replace with a random value';
 $string['reuseifpossible'] = 'Reuse previous value if available';
+$string['setstodisplay'] = 'Sets to display';
 $string['sharedwildcard'] = 'Shared wild card {<strong>{$a}</strong>}';
 $string['sharedwildcardname'] = 'Shared wild card ';
 $string['sharedwildcards'] = 'Shared wild cards';
