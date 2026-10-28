@@ -109,6 +109,7 @@ $string['unitpenalty_help'] = 'The penalty is applied if
 
 * the wrong unit name is entered into the unit input, or
 * a unit is entered into the value input box';
+$string['unitpenaltyappliesto'] = 'Applies to';
 $string['unitposition'] = 'Units go';
 $string['units'] = 'Units';
 $string['unitselect'] = 'a drop-down menu';
