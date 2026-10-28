@@ -36,7 +36,7 @@ Feature: Test creating a Numerical question
       | id_fraction_2                      | 100%                                   |
     Then I should see "Numerical-001"
 
-  @javascript
+  @javascript @accessibility
   Scenario: Create a Numerical question with required units
     When I am on the "Course 1" "core_question > course question bank" page logged in as teacher
     And I add a "Numerical" question filling the form with:
@@ -67,9 +67,11 @@ Feature: Test creating a Numerical question
     And the following fields match these values:
       | id_unitrole                        | The unit must be given, and will be graded. |
       | id_unitpenalty                     | 0#15                                        |
-      | id_unitgradingtypes                | as a fraction (0-1) of the question grade   |
+      | Applies to                         | as a fraction (0-1) of the question grade   |
       | id_multichoicedisplay              | a drop-down menu                            |
       | id_unitsleft                       | on the right, for example 1.00cm or 1.00km  |
+    And I expand all fieldsets
+    And the "Unit handling" "fieldset" should meet accessibility standards with "best-practice" extra tests
 
   Scenario: Create a Numerical question with optional units
     Given I am on the "Course 1" "core_question > course question bank" page logged in as teacher

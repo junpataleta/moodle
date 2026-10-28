@@ -101,7 +101,12 @@ class qtype_numerical_edit_form extends question_edit_form {
             qtype_numerical::UNITGRADEDOUTOFMAX =>
                     get_string('decfractionofquestiongrade', 'qtype_numerical'),
         );
-        $penaltygrp[] = $mform->createElement('select', 'unitgradingtypes', '', $unitgradingtypes);
+        $penaltygrp[] = $mform->createElement(
+            'select',
+            'unitgradingtypes',
+            get_string('unitpenaltyappliesto', 'qtype_numerical'),
+            $unitgradingtypes,
+        );
         $mform->setDefault('unitgradingtypes',
                 $this->get_default_value('unitgradingtypes', qtype_numerical::UNITGRADEDOUTOFMARK));
 
