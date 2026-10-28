@@ -34,6 +34,7 @@ Feature: Test creating a Calculated question
     And I should see "Choose wildcards dataset properties"
     And I press "id_submitbutton"
     And I should see "Edit the wildcards datasets"
+    And the field "Sets to display" matches value "1"
     And I press "id_addbutton"
     And I set the following fields to these values:
       | id_number_2       | 3.0 |
@@ -45,3 +46,16 @@ Feature: Test creating a Calculated question
     And I should see "Choose wildcards dataset properties"
     And I press "id_submitbutton"
     And I should see "3+4"
+
+  @javascript @accessibility
+  Scenario: The wildcards datasets page meets accessibility standards
+    Given I am on the "Course 1" "core_question > course question bank" page logged in as teacher
+    And I add a "Calculated" question filling the form with:
+      | Question name    | calculated-002                                    |
+      | Question text    | What is the sum of those two numbers: {a} and {b} |
+      | Answer 1 formula | {a}+{b}                                           |
+      | Grade            | 100%                                              |
+    And I should see "Choose wildcards dataset properties"
+    When I press "Next page"
+    Then I should see "Edit the wildcards datasets"
+    And the page should meet accessibility standards

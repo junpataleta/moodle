@@ -452,7 +452,12 @@ class qtype_calculatedsimple_edit_form extends qtype_calculated_edit_form {
             $addgrp = array();
             $addgrp[] = $mform->createElement('submit', 'addbutton',
                     get_string('generatenewitemsset', 'qtype_calculatedsimple'));
-            $addgrp[] = $mform->createElement('select', "selectadd", '', $addoptions);
+            $addgrp[] = $mform->createElement(
+                'select',
+                "selectadd",
+                get_string('setstogenerate', 'qtype_calculatedsimple'),
+                $addoptions,
+            );
             $addgrp[] = $mform->createElement('static', "stat", '',
                     get_string('newsetwildcardvalues', 'qtype_calculatedsimple'));
             $mform->addGroup($addgrp, 'addgrp', '', '   ', false);
@@ -461,7 +466,12 @@ class qtype_calculatedsimple_edit_form extends qtype_calculated_edit_form {
             $addgrp1 = array();
             $addgrp1[] = $mform->createElement('submit', 'showbutton',
                     get_string('showitems', 'qtype_calculatedsimple'));
-            $addgrp1[] = $mform->createElement('select', "selectshow", '', $showoptions);
+            $addgrp1[] = $mform->createElement(
+                'select',
+                "selectshow",
+                get_string('setstodisplay', 'qtype_calculatedsimple'),
+                $showoptions,
+            );
             $addgrp1[] = $mform->createElement('static', "stat", '',
                     get_string('setwildcardvalues', 'qtype_calculatedsimple'));
             $mform->addGroup($addgrp1, 'addgrp1', '', '   ', false);
