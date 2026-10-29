@@ -48,9 +48,9 @@ Feature: Collapsible form sections
     Given I log in as "admin"
     When I navigate to "Users > Accounts > Add a new user" in site administration
     And I press "General"
-    And I wait until "//fieldset[.//h3[normalize-space()='General']]//div[contains(concat(' ', @class, ' '), ' fcontainer ')][not(contains(concat(' ', @class, ' '), ' show '))]" "xpath_element" exists
+    And I wait until "//*[@id='id_moodlecontainer'][not(contains(concat(' ', @class, ' '), ' show '))]" "xpath_element" exists
     And I press "Create user"
-    And I wait until "//fieldset[.//h3[normalize-space()='General']]//div[contains(concat(' ', @class, ' '), ' fcontainer ')][contains(concat(' ', @class, ' '), ' show ')]" "xpath_element" exists
+    And I wait until "//*[@id='id_moodlecontainer'][contains(concat(' ', @class, ' '), ' show ')]" "xpath_element" exists
     Then the "aria-expanded" attribute of "General" "button" should contain "true"
 
   @javascript
@@ -58,9 +58,9 @@ Feature: Collapsible form sections
     Given I log in as "admin"
     When I navigate to "Users > Accounts > Add a new user" in site administration
     And I press "Expand all"
-    And I wait until "//fieldset[.//h3[normalize-space()='General']]//div[contains(concat(' ', @class, ' '), ' fcontainer ')][contains(concat(' ', @class, ' '), ' show ')]" "xpath_element" exists
+    And I wait until "//*[@id='id_moodlecontainer'][contains(concat(' ', @class, ' '), ' show ')]" "xpath_element" exists
     And I press "Collapse all"
-    And I wait until "//fieldset[.//h3[normalize-space()='General']]//div[contains(concat(' ', @class, ' '), ' fcontainer ')][not(contains(concat(' ', @class, ' '), ' show '))]" "xpath_element" exists
+    And I wait until "//*[@id='id_moodlecontainer'][not(contains(concat(' ', @class, ' '), ' show '))]" "xpath_element" exists
     And I press "Create user"
-    And I wait until "//fieldset[.//h3[normalize-space()='General']]//div[contains(concat(' ', @class, ' '), ' fcontainer ')][contains(concat(' ', @class, ' '), ' show ')]" "xpath_element" exists
+    And I wait until "//*[@id='id_moodlecontainer'][contains(concat(' ', @class, ' '), ' show ')]" "xpath_element" exists
     Then the "aria-expanded" attribute of "General" "button" should contain "true"
