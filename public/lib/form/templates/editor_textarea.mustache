@@ -30,7 +30,7 @@
     }
 }}
 <div>
-<textarea id="{{id}}" name="{{name}}[text]" class="form-control" rows="{{rows}}" cols="{{cols}}" spellcheck="true" {{#changelistener}} onblur="{{onblur}}"
+<textarea id="{{id}}" name="{{name}}[text]" class="form-control" rows="{{rows}}" cols="{{cols}}" spellcheck="true" {{#required}}aria-required="true"{{/required}} {{#changelistener}} onblur="{{onblur}}"
     onchange="{{onchange}}" {{/changelistener}}>{{value}}</textarea>
 </div>
 <div>

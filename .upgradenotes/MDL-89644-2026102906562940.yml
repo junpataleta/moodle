@@ -1,0 +1,11 @@
+issueNumber: MDL-89644
+notes:
+  core_form:
+    - message: >-
+        The new `MoodleQuickForm_editor::set_required()` method marks an editor
+        as required, so its textarea gets `aria-required`. The form renderer
+        calls it for editors with a required rule. The required marker in
+        `core_form/element-template` now has the id `{element id}_required` and
+        a "Required" text alternative, which TinyMCE uses to name a required
+        editor. Themes that override this template should keep both.
+      type: improved

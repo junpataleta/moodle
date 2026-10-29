@@ -265,6 +265,15 @@ class MoodleQuickForm_editor extends HTML_QuickForm_element implements templatab
     }
 
     /**
+     * Marks the editor as a required field, so that it can be identified to assistive technology.
+     *
+     * @param bool $required true if the field is required
+     */
+    public function set_required(bool $required): void {
+        $this->_options['required'] = $required;
+    }
+
+    /**
      * Returns html for help button.
      *
      * @return string html for help button
@@ -435,6 +444,7 @@ class MoodleQuickForm_editor extends HTML_QuickForm_element implements templatab
             $context['formats'][] = ['value' => $formatvalue, 'text' => $formattext, 'selected' => ($formatvalue == $format)];
         }
         $context['id'] = $id;
+        $context['required'] = $this->isRequired();
         $context['value'] = $text;
         $context['format'] = $format;
         $context['formatlabel'] = get_string('editorxformat', 'editor', $this->_label);
