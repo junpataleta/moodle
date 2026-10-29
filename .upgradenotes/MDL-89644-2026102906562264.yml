@@ -1,0 +1,13 @@
+issueNumber: MDL-89644
+notes:
+  core_form:
+    - message: >-
+        The `core_form/element-header` template now places the collapse button
+        inside the section `<h3>`, and the heading is no longer hidden from
+        assistive technology. Themes that override this template should follow
+        the same structure. The heading text now also includes the visually
+        hidden section name inside the button, so Behat XPath that matches the
+        full heading text, such as `//h3[normalize-space()='General']`, no
+        longer matches. Locate the section by its container id instead, for
+        example `//*[@id='id_generalcontainer']`.
+      type: changed
