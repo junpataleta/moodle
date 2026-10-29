@@ -225,6 +225,28 @@ export const getHelpStrings = async() => {
 };
 
 /**
+ * Get the help button names, each naming the field the button offers help for.
+ *
+ * @returns {object}
+ */
+export const getHelpIconNames = async() => {
+    // Both custom size help buttons sit under the media size heading.
+    const labelKeys = {
+        subtitles: 'subtitles',
+        captions: 'captions',
+        descriptions: 'descriptions',
+        chapters: 'chapters',
+        metadata: 'metadata',
+        customsize: 'mediasize',
+        linkcustomsize: 'mediasize',
+    };
+    const labels = await getStrings(Object.values(labelKeys).map((key) => ({key, component})));
+    const names = await getStrings(labels.map((label) => ({key: 'helpprefix2', component: 'core', param: label})));
+
+    return Object.fromEntries(Object.keys(labelKeys).map((key, index) => [key, names[index]]));
+};
+
+/**
  * Get current moodle languages.
  *
  * @param {editor} editor
