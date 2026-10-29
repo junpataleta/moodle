@@ -3424,6 +3424,11 @@ class MoodleQuickForm_Renderer extends HTML_QuickForm_Renderer_Tableless{
         $element->_generateId();
         $advanced = isset($this->_advancedElements[$element->getName()]);
 
+        // The editor builds its own markup, so it has to be told the field is required.
+        if ($required && $element instanceof MoodleQuickForm_editor) {
+            $element->set_required(true);
+        }
+
         $html = $OUTPUT->mform_element($element, $required, $advanced, $error, false);
         $fromtemplate = !empty($html);
         if (!$fromtemplate) {
