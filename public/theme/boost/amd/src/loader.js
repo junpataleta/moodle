@@ -284,6 +284,13 @@ const enablePopovers = () => {
             }
         }
     });
+    document.addEventListener('mousedown', e => {
+        // Safari does not focus a <button> when it is pressed, and moves focus away from it instead,
+        // which would close its popover before the click handler below can keep it open.
+        if (e.target.closest('.help-icon[data-bs-toggle="popover"]')) {
+            e.preventDefault();
+        }
+    });
     document.addEventListener('click', e => {
         const popoverTrigger = e.target.closest('[data-bs-toggle="popover"]');
         document.querySelectorAll('.help-icon[aria-describedby]').forEach(trigger => {
