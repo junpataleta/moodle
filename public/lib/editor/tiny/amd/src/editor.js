@@ -431,7 +431,12 @@ const getStandardConfig = async(target, tinyMCE, options, plugins) => {
                     if (!label.id) {
                         label.id = `${editor.iframeElement.id}_label`;
                     }
-                    editor.iframeElement.setAttribute('aria-labelledby', label.id);
+                    // An iframe cannot carry aria-required, so name a required field by its required marker as well.
+                    const requiredMarker = target.getAttribute('aria-required') === 'true'
+                        ? document.getElementById(`${target.id}_required`)
+                        : null;
+                    const labelIds = requiredMarker ? `${label.id} ${requiredMarker.id}` : label.id;
+                    editor.iframeElement.setAttribute('aria-labelledby', labelIds);
                 }
 
                 // The resize handle has a focusable role="separator", for which aria-valuenow
