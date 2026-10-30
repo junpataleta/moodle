@@ -28,7 +28,7 @@ Feature: Allow choice preview
     And I am on "Course 1" course homepage with editing mode on
 
   Scenario: Enable the choice preview option and view the activity as a student before the opening time
-    And I follow "Choice name"
+    And I am on the "Choice name" "choice activity" page
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | timeopen[enabled] | 1 |

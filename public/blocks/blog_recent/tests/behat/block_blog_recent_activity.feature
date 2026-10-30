@@ -104,7 +104,7 @@ Feature: Students can use the recent blog entries block to view recent entries o
     Then I log out
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Test assignment 1"
+    And I am on the "Test assignment 1" "assign activity" page
     And I configure the "Recent blog entries" block
     And I set the following fields to these values:
       | config_numberofrecentblogentries | 2 |

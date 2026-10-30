@@ -40,7 +40,7 @@ export default class extends DndCmItem {
             BULKCHECKBOX: `[data-bulkcheckbox]`,
             CARD: `[data-region='activity-card']`,
             DRAGICON: `.editing_move`,
-            INPLACEEDITABLE: `[data-itemtype="activityname"] > [data-inplaceeditablelink]`,
+            INPLACEEDITABLE: `[data-itemtype="activityname"] > .quickeditlink`,
         };
         // Most classes will be loaded later by DndCmItem.
         this.classes = {
@@ -133,7 +133,9 @@ export default class extends DndCmItem {
      * @param {Boolean} selected if the activity is selected.
      */
     _refreshActivityCard(bulk, selected) {
-        this.getElement(this.selectors.INPLACEEDITABLE)?.classList.toggle(this.classes.HIDE, bulk.enabled);
+        // The activity title is the rename trigger. While bulk editing, detach it from the inplace editable
+        // so clicking the title selects the activity like the rest of the card.
+        this.getElement(this.selectors.INPLACEEDITABLE)?.toggleAttribute('data-inplaceeditablelink', !bulk.enabled);
         this.getElement(this.selectors.CARD)?.classList.toggle(this.classes.SELECTED, selected);
         this.element.classList.toggle(this.classes.SELECTED, selected);
     }

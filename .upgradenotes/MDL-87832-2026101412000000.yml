@@ -1,0 +1,11 @@
+issueNumber: MDL-87832
+notes:
+  core:
+    - message: >-
+        The following core icons are now mapped to `fa-pencil` instead of
+        `fa-pen` in `\core\output\icon_system_fontawesome`: `core:b/document-edit`,
+        `core:b/edit-copy`, `core:i/bulk_edit`, `core:i/edit`, `core:t/edit`,
+        `core:t/editinline`, `core:t/editstring` and `core:t/passwordunmask-edit`.
+        Themes or plugins that override these icons, or that target the
+        `fa-pen` class in their styles or tests, should be updated accordingly.
+      type: changed

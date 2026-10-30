@@ -50,7 +50,7 @@ Feature: Updating a file in the content bank after using in a course
     And I switch to the main frame
     # Check the course page is updated.
     When I am on "Course1" course homepage with editing mode on
-    And I click on "guessFile" "link" in the "page-content" "region"
+    And I am on the "guessFile" "h5pactivity activity" page
     And I wait until "h5p-player" iframe is interactable and switch to it
     And I wait until "h5p-iframe" iframe is interactable and switch to it
     Then I should see "This is a new text"
@@ -92,7 +92,7 @@ Feature: Updating a file in the content bank after using in a course
     And I switch to the main frame
     # Check the course page is not updated.
     When I am on "Course1" course homepage with editing mode on
-    And I click on "guessFile" "link" in the "page-content" "region"
+    And I am on the "guessFile" "h5pactivity activity" page
     And I wait until "h5p-player" iframe is interactable and switch to it
     And I wait until "h5p-iframe" iframe is interactable and switch to it
     Then I should see "Press here to reveal answer"

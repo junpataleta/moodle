@@ -22,7 +22,7 @@ Feature: In a book, change the navigation options
       | activity | name      | course | idnumber | navstyle |
       | book     | Test book | C1     | book1    | 0        |
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Test book"
+    And I am on the "Test book" "book activity" page
     And I should see "Add new chapter"
     And I set the following fields to these values:
       | Chapter title | Test chapter 1 |

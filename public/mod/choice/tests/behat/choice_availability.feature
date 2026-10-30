@@ -24,7 +24,7 @@ Feature: Restrict availability of the choice module to a deadline
       | activity | name        | intro              | course | idnumber | option             | section |
       | choice   | Choice name | Choice Description | C1     | choice1  | Option 1, Option 2 | 1       |
     And I am on "Course 1" course homepage
-    And I follow "Choice name"
+    And I am on the "Choice name" "choice activity" page
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | timeopen[enabled] | 1 |
@@ -45,7 +45,7 @@ Feature: Restrict availability of the choice module to a deadline
       | activity | name        | intro              | course | idnumber | option             | section |
       | choice   | Choice name | Choice Description | C1     | choice1  | Option 1, Option 2 | 1       |
     And I am on "Course 1" course homepage
-    And I follow "Choice name"
+    And I am on the "Choice name" "choice activity" page
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | timeopen[enabled] | 1 |
@@ -66,7 +66,7 @@ Feature: Restrict availability of the choice module to a deadline
       | activity | name        | intro              | course | idnumber | option             | section |
       | choice   | Choice name | Choice Description | C1     | choice1  | Option 1, Option 2 | 1       |
     And I am on "Course 1" course homepage
-    And I follow "Choice name"
+    And I am on the "Choice name" "choice activity" page
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | timeclose[enabled] | 1 |
@@ -87,7 +87,7 @@ Feature: Restrict availability of the choice module to a deadline
       | activity | name        | intro              | course | idnumber | option             | section |
       | choice   | Choice name | Choice Description | C1     | choice1  | Option 1, Option 2 | 1       |
     And I am on "Course 1" course homepage
-    And I follow "Choice name"
+    And I am on the "Choice name" "choice activity" page
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | timeclose[enabled] | 1 |

@@ -90,7 +90,8 @@ class title extends inplace_editable implements named_templatable, renderable {
         $this->displayoptions = $this->load_display_options($displayoptions);
 
         if ($editable === null) {
-            $editable = $format->show_editor();
+            // The rename is checked in the module context, so a module override must also make the title a plain link.
+            $editable = $format->show_editor() && has_capability('moodle/course:manageactivities', $mod->context);
         }
         $this->editable = $editable;
 
@@ -151,6 +152,7 @@ class title extends inplace_editable implements named_templatable, renderable {
             'url' => $mod->url,
             'instancename' => $mod->get_formatted_name(),
             'uservisible' => $mod->uservisible,
+            'editable' => $this->editable,
             'linkclasses' => $this->displayoptions['linkclasses'],
         ];
 

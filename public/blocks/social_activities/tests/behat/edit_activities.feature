@@ -30,7 +30,7 @@ Feature: Edit activities in social activities block
     When I set the field "Edit title" in the "My forum name" "activity" to "New forum name"
     Then I should not see "My forum name"
     And I should see "New forum name"
-    And I follow "New forum name"
+    And I am on the "New forum name" "forum activity" page
     And I should not see "My forum name"
     And I should see "New forum name"
 

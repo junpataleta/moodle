@@ -43,13 +43,13 @@ Feature: Allow teachers to edit the visibility of completion conditions in a cou
     # Automatic completion conditions should not be displayed on the course homepage if show completion conditions is disabled.
     And there should be no completion information shown for "Test choice auto"
     # Completion conditions are always shown in the module's view page.
-    And I follow "Test choice auto"
+    And I am on the "Test choice auto" "choice activity" page
     Then "Test choice auto" should have the "Make a choice" completion condition
     # The manual completion toggle button should not be displayed in the course homepage when completion is disabled.
     And I am on "Course 1" course homepage
     And the manual completion button for "Test choice manual" should not exist
     # The manual completion toggle button should always be displayed in the activity view.
-    And I follow "Test choice manual"
+    And I am on the "Test choice manual" "choice activity" page
     And the manual completion button for "Test choice manual" should be disabled
 
   Scenario Outline: Default showcompletionconditions value in course form on course creation

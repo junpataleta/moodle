@@ -295,7 +295,8 @@ button.section-collapsemenu {
         background-color: var(--mds-bg-surface-default);
     }
 
-    &:focus-within:not(:has(.delegated-section)) {
+    // The title rename trigger draws its own focus ring, so the card is only outlined for its other controls.
+    &:focus-within:not(:has(.delegated-section)):not(:has(.quickeditlink:focus-visible, .inplaceeditingon)) {
         outline: $mds-stroke-weight-md solid var(--mds-border-interactive-primary-default);
     }
 
@@ -453,7 +454,6 @@ button.section-collapsemenu {
             .inplaceeditable .quickeditlink {
                 position: relative;
                 z-index: 2;
-                margin-left: map-get($spacers, 2);
             }
         }
         .activitybadge {
@@ -698,9 +698,104 @@ button.section-collapsemenu {
     }
 }
 
+/* Activity and section title rename trigger */
+.activity-item .activity-name-area,
+.course-section-header [data-for="section_title"] {
+    .inplaceeditable .quickeditlink {
+        // One box around the text and the taller pencil, so the focus ring is a single rectangle.
+        display: inline-flex;
+        align-items: center;
+        gap: $mds-spacing-xxs;
+        vertical-align: middle;
+        border-radius: $mds-border-radius-xs;
+
+        // The pencil is part of the link, so hovering it must not restyle the title text.
+        &:hover:not(:has(.quickediticon:hover)) {
+            color: var(--mds-text-link-primary-hover);
+        }
+
+        &:focus,
+        &:focus-visible {
+            background-color: transparent;
+            box-shadow: none;
+        }
+
+        // The offset stands in for padding, so the ring does not shift the layout when it appears.
+        &:focus-visible {
+            outline: $mds-stroke-weight-md solid var(--mds-border-interactive-primary-default);
+            outline-offset: $mds-spacing-xxs;
+        }
+    }
+
+    .inplaceeditable .quickediticon {
+        display: inline-flex;
+        width: $mds-scale-900;
+        height: $mds-scale-900;
+        padding: $mds-spacing-none;
+        gap: $mds-spacing-none;
+        justify-content: center;
+        align-items: center;
+        vertical-align: middle;
+        border-radius: $mds-border-radius-md;
+        // The pencil sits inside the link, so it needs its own colour to stay unchanged when the title is hovered.
+        color: var(--mds-text-subtle);
+        visibility: hidden;
+
+        .icon {
+            width: $mds-icons-xs !important; /* stylelint-disable-line declaration-no-important */
+            height: $mds-icons-xs !important; /* stylelint-disable-line declaration-no-important */
+            max-width: $mds-icons-xs !important; /* stylelint-disable-line declaration-no-important */
+            max-height: $mds-icons-xs !important; /* stylelint-disable-line declaration-no-important */
+            margin: 0;
+            font-size: $mds-icons-xs !important; /* stylelint-disable-line declaration-no-important */
+
+            // Keep the link underline from extending beneath the pencil glyph.
+            &::before {
+                display: inline-block;
+            }
+        }
+
+        &:hover {
+            background-color: var(--mds-bg-interactive-secondary-hover);
+        }
+
+        // Touch devices cannot hover to reveal the pencil.
+        @media (hover: none) {
+            visibility: visible;
+        }
+
+        // The display above outranks the core .visibleifjs rule, and renaming needs JavaScript.
+        body:not(.jsenabled) & {
+            display: none;
+        }
+    }
+}
+
+.activity-item.hiddenactivity .activity-name-area .inplaceeditable .quickediticon {
+    color: var(--mds-text-muted);
+}
+
+// The section collapse button follows the same hover treatment as the title pencil.
+.course-section-header .btn-icon.icons-collapse-expand:hover {
+    border: $mds-stroke-weight-sm solid var(--mds-border-default);
+    border-radius: $mds-border-radius-md;
+    background-color: var(--mds-bg-interactive-secondary-hover);
+    outline: 0;
+}
+
+// Reveal the pencil from the row that owns the title. Only the innermost activity card counts, so an activity
+// inside a subsection does not reveal the subsection pencil.
+.activity-item:not(:has(.activity-item)):is(:hover, :focus-within) .activity-name-area .inplaceeditable .quickediticon,
+.course-section-header:is(:hover, :focus-within) [data-for="section_title"] .inplaceeditable .quickediticon {
+    visibility: visible;
+}
+
 /* Bulk editing */
 
 .bulkenabled {
+    .activity-name-area .inplaceeditable .quickediticon {
+        display: none;
+    }
     .bulk-hidden {
         display: none !important; // stylelint-disable-line declaration-no-important
     }
@@ -724,6 +819,10 @@ button.section-collapsemenu {
         }
     }
     .activity-item {
+        // Keep the card outline when its title receives focus in bulk mode.
+        &:focus-within:not(:has(.delegated-section)):not(:has(.inplaceeditingon)) {
+            outline: $mds-stroke-weight-md solid var(--mds-border-interactive-primary-default);
+        }
         .bulkselect {
             float: left;
             margin-left: calc(-#{$activity-item-padding} - 1.75rem);

@@ -22,7 +22,7 @@ Feature: Editing choice block
       | blog_menu | Activity module | choice1   | mod-choice-*    | side-pre      |
     And I log in as "admin"
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Choice name 1"
+    And I am on the "Choice name 1" "choice activity" page
     And I should see "View all entries about this Choice"
     When I configure the "Blog menu" block
     And I press "Save changes"
@@ -58,7 +58,7 @@ Feature: Editing choice block
       | blog_menu | Activity module | choice1   | mod-choice-*    | side-pre      |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Choice name 1"
+    And I am on the "Choice name 1" "choice activity" page
     And I should see "View all entries about this Choice"
     When I configure the "Blog menu" block
     And I press "Save changes"
@@ -93,7 +93,7 @@ Feature: Editing choice block
       | blog_menu | Activity module | choice1   | mod-choice-*    | side-pre      |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I follow "Choice name 1"
+    And I am on the "Choice name 1" "choice activity" page
     And I should see "View all entries about this Choice"
     When I configure the "Blog menu" block
     And I press "Save changes"

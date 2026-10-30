@@ -27,7 +27,7 @@ Feature: Rubrics can be created and edited
       | assignfeedback_editpdf_enabled    | 1                           |
       | advancedgradingmethod_submissions | rubric                      |
     And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
+    And I am on "Course 1" course homepage
     When I go to "Test assignment 1 name" advanced grading definition page
     # Defining a rubric.
     And I set the following fields to these values:

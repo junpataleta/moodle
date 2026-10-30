@@ -22,7 +22,7 @@ Feature: The context of a block can always be returned to it's original state.
       | Display on page types | Any page |
     And I press "Save changes"
     And I am on "Course 1" course homepage
-    And I follow "Assignment1"
+    And I am on the "Assignment1" "assign activity" page
     And I configure the "Tags" block
     And I set the following fields to these values:
       | Display on page types | Any assignment module page |
@@ -33,7 +33,7 @@ Feature: The context of a block can always be returned to it's original state.
     And I am on the "Course 1" "enrolled users" page
     And "Tags" "block" should not exist
     And I am on "Course 1" course homepage
-    And I follow "Assignment2"
+    And I am on the "Assignment2" "assign activity" page
     And I should see "Tags" in the "Tags" "block"
     And I configure the "Tags" block
     And I set the following fields to these values:
