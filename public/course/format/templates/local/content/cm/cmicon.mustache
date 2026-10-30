@@ -19,6 +19,13 @@
 
     Displays a course module icon.
 
+    When the design system has an icon for the activity (reactprops), the icon is rendered by the
+    core_course/ActivityIcon React component, which replaces the content of the mount point.
+    Keep the size of the server-rendered fallback, including on small screens, in sync with that component.
+
+    The activity type label is only displayed to teachers while editing. Everyone else gets the type name
+    from the visually hidden text of the activity link (see core_courseformat/local/content/cm/title).
+
     Example context (json):
     {
         "icon": "../../../pix/help.svg",
@@ -27,16 +34,24 @@
         "branded": 0,
         "modname": "resource",
         "pluginname": "File",
-        "showtooltip": 1
+        "showlabel": 1,
+        "reactprops": "{\"icon\":\"quiz\",\"alt\":\"\",\"container\":\"default\",\"size\":\"md\",\"mobileSize\":\"sm\"}"
     }
 }}
-<div class="activity-icon activityiconcontainer smaller {{purpose}} {{#branded}}isbranded{{/branded}} courseicon align-self-start me-2">
-    <img
-        src="{{{icon}}}"
-        class="activityicon {{iconclass}}"
-        data-region="activity-icon"
-        data-id="{{cmid}}"
-        alt="{{#showtooltip}}{{#cleanstr}} activityicon, moodle, {{{pluginname}}} {{/cleanstr}}{{/showtooltip}}"
-        {{#showtooltip}}title="{{{pluginname}}}"{{/showtooltip}}
-    >
+<div class="activity-icon d-flex align-items-center align-self-start">
+    {{#reactprops}}
+        {{#react}}
+        {
+            "component": "@moodle/lms/core_course/ActivityIcon",
+            "props": {{{reactprops}}}
+        }
+        {{> core_courseformat/local/content/cm/cmiconfallback }}
+        {{/react}}
+    {{/reactprops}}
+    {{^reactprops}}
+        {{> core_courseformat/local/content/cm/cmiconfallback }}
+    {{/reactprops}}
+    {{#showlabel}}
+        <span class="activity-type-label" aria-hidden="true">{{{pluginname}}}</span>
+    {{/showlabel}}
 </div>

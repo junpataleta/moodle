@@ -5,6 +5,7 @@
 // Variables.
 $activity-item-padding: 1.25rem !default;
 $activity-border-radius: 1rem !default;
+$activity-controls-height: $mds-scale-900 !default;
 $divider-color: var(--#{$prefix}gray-200) !default;
 $divider-stripe-color: var(--#{$prefix}gray-100) !default;
 $divider-width: 1px !default;
@@ -328,6 +329,11 @@ button.section-collapsemenu {
     // Custom styles for activity cards while editing.
     .editing & {
         cursor: move;
+        // The icon has no container while editing.
+        .activity-icon .activityiconcontainer {
+            padding: 0;
+            background-color: transparent;
+        }
         .a {
             cursor: pointer;
         }
@@ -359,27 +365,27 @@ button.section-collapsemenu {
     .activity-grid {
         display: grid;
         align-items: center;
-        grid-template-columns: min-content 1fr min-content min-content min-content;
-        grid-template-rows: 1fr repeat(5, min-content);
+        grid-template-columns: 1fr min-content min-content min-content;
         grid-template-areas:
-            "icon   name          groupmode      completion    actions"
-            "icon   altcontent    altcontent     altcontent    altcontent"
-            "icon   afterlink     afterlink      afterlink     afterlink"
-            "visibility   visibility   visibility     visibility    visibility"
-            "dates        dates        dates          dates         dates"
-            "availability availability availability   availability  availability";
+            "icon          groupmode     completion    actions"
+            "name          name          name          name"
+            "altcontent    altcontent    altcontent    altcontent"
+            "afterlink     afterlink     afterlink     afterlink"
+            "visibility    visibility    visibility    visibility"
+            "dates         dates         dates         dates"
+            "availability  availability  availability  availability";
         @include media-breakpoint-down(sm) {
-            grid-template-columns: min-content 1fr min-content min-content min-content;
-            grid-template-rows: 1fr repeat(4, min-content);
+            grid-template-columns: 1fr min-content;
             grid-template-areas:
-                "icon          name          actions"
-                "altcontent    altcontent    altcontent"
-                "afterlink     afterlink     afterlink"
-                "visibility    visibility    visibility"
-                "dates         dates         dates"
-                "groupmode     groupmode     groupmode"
-                "completion    completion    completion"
-                "availability  availability  availability";
+                "icon          actions"
+                "name          name"
+                "altcontent    altcontent"
+                "afterlink     afterlink"
+                "visibility    visibility"
+                "dates         dates"
+                "groupmode     groupmode"
+                "completion    completion"
+                "availability  availability";
         }
     }
     // Activity card specific grid layout for activities without name.
@@ -407,10 +413,44 @@ button.section-collapsemenu {
         .actions {
             position: relative;
         }
+        .btn-icon {
+            width: $activity-controls-height;
+            height: $activity-controls-height;
+        }
     }
 
     .activity-icon {
         grid-area: icon;
+        gap: $mds-spacing-xxs;
+
+        // Give the server-rendered fallback the footprint of the ActivityIcon that replaces it, to avoid a layout shift.
+        [data-react-component] {
+            display: flex;
+        }
+        .activityiconcontainer {
+            box-sizing: content-box;
+            padding: var(--mds-spacing-xs);
+            width: var(--mds-icons-lg);
+            height: var(--mds-icons-lg);
+            max-width: var(--mds-icons-lg);
+            max-height: var(--mds-icons-lg);
+        }
+
+        // The icon is smaller on small screens, except while editing (see core_course/ActivityIcon).
+        @include media-breakpoint-down(sm) {
+            body:not(.editing) & .activityiconcontainer {
+                width: var(--mds-icons-sm);
+                height: var(--mds-icons-sm);
+                max-width: var(--mds-icons-sm);
+                max-height: var(--mds-icons-sm);
+            }
+        }
+    }
+
+    .activity-type-label {
+        @include font-size($font-size-sm);
+        font-weight: $font-weight-medium;
+        color: var(--mds-text-muted);
     }
 
     .activity-dates {
@@ -441,6 +481,7 @@ button.section-collapsemenu {
     }
     .activity-name-area {
         grid-area: name;
+        margin-top: $mds-spacing-xs;
         // Prevent bootstrap strech-link from covering the inplace editable button using z-index.
         .activityname {
             color: var(--#{$prefix}gray-700);
@@ -475,7 +516,9 @@ button.section-collapsemenu {
         justify-self: end;
         button,
         a[role="button"] {
-            min-height: map-get($iconsizes, 5);
+            height: $activity-controls-height;
+            min-height: 0;
+            padding-block: 0;
         }
         @include media-breakpoint-down(sm) {
             width: 100%;
@@ -510,8 +553,8 @@ button.section-collapsemenu {
         grid-area: groupmode;
         justify-self: end;
         .groupmode-information {
-            height: map-get($iconsizes, 5);
-            width: map-get($iconsizes, 5);
+            height: $activity-controls-height;
+            width: $activity-controls-height;
             @include border-radius();
             .icon {
                 width: map-get($iconsizes, 3);

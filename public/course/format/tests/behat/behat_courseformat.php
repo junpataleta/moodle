@@ -49,6 +49,9 @@ class behat_courseformat extends behat_base {
             new behat_component_named_selector('Activity icon', [
                 ".//*[@data-activityname=%locator%]//*[@data-region='activity-icon']",
             ]),
+            new behat_component_named_selector('Activity type label', [
+                ".//*[@data-activityname=%locator%]//*[contains(@class, 'activity-type-label')]",
+            ]),
             new behat_component_named_selector('Section visibility', [
                 ".//*[@data-sectionname=%locator%]//*[@data-region='sectionvisibility']",
             ]),

@@ -1,0 +1,9 @@
+issueNumber: MDL-87840
+notes:
+  theme_boost:
+    - message: >-
+        The activity card grid areas were rearranged so the icon, the group
+        mode, the completion and the actions share the first row, and the name
+        moves to its own row. The new `$activity-controls-height` SCSS variable
+        sets the height of those controls to 28px, down from 32px.
+      type: changed

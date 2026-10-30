@@ -6,5 +6,9 @@
   "ActivityDates": {
     "eject": "risky",
     "wrap": "risky"
+  },
+  "ActivityIcon": {
+    "eject": "risky",
+    "wrap": "safe"
   }
 }
