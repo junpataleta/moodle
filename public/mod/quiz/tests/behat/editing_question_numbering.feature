@@ -140,4 +140,4 @@ Feature: Editing question numbering of the existing questions already in a quiz
   @accessibility
   Scenario: Quiz question numbering meets accessibility standards
     When I am on the "Quiz 1" "mod_quiz > Edit" page logged in as "teacher1"
-    Then the page should meet accessibility standards
+    Then the page should meet accessibility standards with "best-practice" extra tests
