@@ -44,6 +44,7 @@ import {displayFilepicker} from 'editor_tiny/utils';
 import {
     insertMediaTemplateContext,
     getHelpStrings,
+    getHelpIconNames,
     prepareMoodleLang,
     getMoodleLangObj,
     hasAudioVideoAttr,
@@ -225,6 +226,19 @@ export class EmbedHandler {
     };
 
     /**
+     * Get the help button names.
+     *
+     * @returns {object}
+     */
+    getHelpIconNames = async() => {
+        if (!this.helpIconNames) {
+            this.helpIconNames = await getHelpIconNames();
+        }
+
+        return this.helpIconNames;
+    };
+
+    /**
      * Set template context for insert media dialogue.
      *
      * @param {object} data Object of media data
@@ -232,8 +246,9 @@ export class EmbedHandler {
      */
     getTemplateContext = async(data) => {
         const languages = prepareMoodleLang(this.editor);
+        const helpIconNames = await this.getHelpIconNames();
         const helpIcons = Array.from(Object.entries(await this.getHelpStrings())).forEach(([key, text]) => {
-            data[`${key.toLowerCase()}helpicon`] = {text};
+            data[`${key.toLowerCase()}helpicon`] = {text, alt: helpIconNames[key]};
         });
 
         return Object.assign({}, {

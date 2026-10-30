@@ -44,6 +44,9 @@ Feature: Use the TinyMCE editor to upload a media file
     And <customsizestep>
     And <customsizeaction>
     And I click on "Subtitles and captions" "link" in the "Media details" "dialogue"
+    # Each track kind has its own help button, named after it.
+    And "Help with Subtitles" "help_icon" in the "Media details" "dialogue" should be visible
+    And "Help with Captions" "help_icon" should exist in the "Media details" "dialogue"
     And I click on "Browse repositories..." "button" in the "Media details" "dialogue"
     And I upload "/lib/editor/tiny/tests/behat/fixtures/<subtitlefile>" to the file picker for TinyMCE
     And I set the field "Language" in the "Media details" "dialogue" to "<subtitlelang>"

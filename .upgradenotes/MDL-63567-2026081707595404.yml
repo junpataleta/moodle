@@ -1,0 +1,16 @@
+issueNumber: MDL-63567
+notes:
+  core:
+    - message: >-
+        The `core/help_icon` template now renders a `<button>` element instead
+        of an `<a role="button">`, and the help button is named by an
+        `aria-label` carrying the specific "Help with <name>" text rather than a
+        generic "Help". Callers that build the template context by hand rather
+        than through `help_icon::export_for_template()` should supply an `alt`
+        value so that the name says what the help is for; those that do not fall
+        back to a generic name. The icon inside it no longer carries `alt` or
+        `title` attributes, so it is not announced separately and no longer
+        shows a hover tooltip. Code that targets the help button as a link, such
+        as `querySelector('a')` over rendered help icon markup, or CSS matching
+        `a.help-icon`, must target the `.help-icon` element itself instead.
+      type: changed

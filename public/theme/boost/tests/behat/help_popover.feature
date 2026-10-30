@@ -38,7 +38,7 @@ Feature: Using the help popover
     And I click on "Timing" "link"
     When I click on "#fitem_id_timelimit .help-icon" "css_element"
     Then ".help-popover a[href*='/mod/quiz/timing'][target='_blank']" "css_element" should be visible
-    And ".help-popover[role='dialog'][aria-label='Help']" "css_element" should be visible
+    And ".help-popover[role='dialog'][aria-label='Help with Time limit']" "css_element" should be visible
     And "#fitem_id_timelimit .help-icon[aria-haspopup='dialog']" "css_element" should be visible
     And I press the tab key
     Then the focused element is "More help" "link"
@@ -63,6 +63,32 @@ Feature: Using the help popover
     And I press the escape key
     Then ".help-popover" "css_element" should not be visible
     And the focused element is "#fitem_id_timelimit .help-icon" "css_element"
+
+  @javascript
+  Scenario: Reopen a form help popover with the space key
+    Given the following "users" exist:
+      | username | firstname | lastname | email                |
+      | teacher1 | Teacher   | 1        | teacher1@example.com |
+    And the following "course" exists:
+      | fullname  | Course 1 |
+      | shortname | C1       |
+      | category  | 0        |
+    And the following "activity" exists:
+      | activity | quiz      |
+      | course   | C1        |
+      | name     | Test quiz |
+    And the following "course enrolments" exist:
+      | user     | course | role           |
+      | teacher1 | C1     | editingteacher |
+    And I am on the "Test quiz" "quiz activity" page logged in as teacher1
+    And I navigate to "Settings" in current page administration
+    And I click on "Timing" "link"
+    And I click on "Help with Time limit" "help_icon"
+    And ".help-popover" "css_element" should be visible
+    And I press the escape key
+    And ".help-popover" "css_element" should not be visible
+    When I press the space key
+    Then ".help-popover" "css_element" should be visible
 
   @javascript
   Scenario: Use a form help popover without a More help link
