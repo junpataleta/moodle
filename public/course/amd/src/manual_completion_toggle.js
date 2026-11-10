@@ -114,9 +114,16 @@ const toggleManualCompletionState = async(toggleButton) => {
         };
         const renderObject = await Templates.renderForPromise('core_course/completion_manual', templateContext);
 
+        // The button's description is a sibling element, so it has to be removed along with the button.
+        const descriptionId = toggleButton.getAttribute('aria-describedby');
+        const oldDescription = descriptionId ? document.getElementById(descriptionId) : null;
+
         // Replace the toggle button with the newly loaded template.
-        const replacedNode = await Templates.replaceNode(toggleButton, renderObject.html, renderObject.js);
-        const newToggleButton = replacedNode.pop();
+        const replacedNodes = await Templates.replaceNode(toggleButton, renderObject.html, renderObject.js);
+        oldDescription?.remove();
+        const newToggleButton = replacedNodes.find(
+            (node) => node.nodeType === Node.ELEMENT_NODE && node.matches(SELECTORS.MANUAL_TOGGLE)
+        );
 
         // Build manualCompletionToggled custom event.
         const withAvailability = toggleButton.getAttribute('data-withavailability');

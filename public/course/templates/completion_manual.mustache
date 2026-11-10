@@ -19,9 +19,15 @@
 
     Template for displaying the manual completion button.
 
+    The visible label always starts the button's accessible name, followed by the activity name in
+    visually hidden text (WCAG 2.2 SC 2.5.3 Label in Name). Any longer explanation, such as who
+    overrode the completion state, is exposed as the button's description instead.
+
     Example context (json):
     {
         "cmid": 0,
+        "activityname": "Quiz 1",
+        "istrackeduser": true,
         "overallcomplete": true,
         "overallincomplete": false,
         "normalbutton": true
@@ -36,18 +42,17 @@
             data-cmid="{{cmid}}"
             data-activityname="{{activityname}}"
             data-completion="manual"
-            data-withavailability="{{withavailability}}" {{!
-            }}{{#accessibledescription}}{{!
-                }}title="{{.}}" {{!
-                }}aria-label="{{.}}" {{!
-            }}{{/accessibledescription}}{{!
-            }}{{^accessibledescription}}{{!
-                }}title="{{#str}}completion_manual:aria:done, course, {{activityname}} {{/str}}" {{!
-                }}aria-label="{{#str}}completion_manual:aria:done, course, {{activityname}} {{/str}}" {{!
-            }}{{/accessibledescription}}
+            data-withavailability="{{withavailability}}"
+            {{#accessibledescription}}title="{{.}}"{{/accessibledescription}}
+            aria-describedby="completion-manual-description-{{cmid}}-{{uniqid}}"
         >
-            <i class="fa fa-check" aria-hidden="true"></i> {{#str}} completion_manual:done, core_course {{/str}}
+            <i class="fa fa-check" aria-hidden="true"></i> {{#str}} completion_manual:done, core_course {{/str}}{{!
+            }}<span class="visually-hidden"> {{activityname}}</span>
         </button>
+        <span hidden id="completion-manual-description-{{cmid}}-{{uniqid}}">{{!
+            }}{{#accessibledescription}}{{.}}{{/accessibledescription}}{{!
+            }}{{^accessibledescription}}{{#str}} completion_manual:aria:done, core_course, {{activityname}} {{/str}}{{/accessibledescription}}{{!
+        }}</span>
     {{/overallcomplete}}
     {{#overallincomplete}}
         <button
@@ -57,18 +62,18 @@
             data-cmid="{{cmid}}"
             data-activityname="{{activityname}}"
             data-completion="manual"
-            data-withavailability="{{withavailability}}" {{!
-            }}{{#accessibledescription}}{{!
-                }}title="{{.}}" {{!
-                }}aria-label="{{.}}" {{!
-            }}{{/accessibledescription}}{{!
-            }}{{^accessibledescription}}{{!
-                }}title="{{#str}}completion_manual:aria:markdone, course, {{activityname}} {{/str}}" {{!
-                }}aria-label="{{#str}}completion_manual:aria:markdone, course, {{activityname}} {{/str}}" {{!
-            }}{{/accessibledescription}}
+            data-withavailability="{{withavailability}}"
+            {{#accessibledescription}}
+                title="{{.}}"
+                aria-describedby="completion-manual-description-{{cmid}}-{{uniqid}}"
+            {{/accessibledescription}}
         >
-            {{#str}} completion_manual:markdone, core_course {{/str}}
+            {{#str}} completion_manual:markdone, core_course {{/str}}{{!
+            }}<span class="visually-hidden"> {{activityname}}</span>
         </button>
+        {{#accessibledescription}}
+            <span hidden id="completion-manual-description-{{cmid}}-{{uniqid}}">{{.}}</span>
+        {{/accessibledescription}}
     {{/overallincomplete}}
 {{/istrackeduser}}
 {{^istrackeduser}}
