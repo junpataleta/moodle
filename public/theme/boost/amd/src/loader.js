@@ -337,6 +337,19 @@ const enablePopovers = () => {
     document.addEventListener('inserted.bs.popover', e => {
         if (e.target.classList.contains('help-icon')) {
             const tip = Bootstrap.Popover.getOrCreateInstance(e.target).tip;
+            // Bootstrap appends the tip to the body, outside any dialogue the trigger is in. Both
+            // core/modal and YUI dialogues lock focus within it, so focus could not move into
+            // the tip. Move it inside the dialogue. This runs before Bootstrap positions the tip,
+            // and the tip is still found through this map and its trigger.
+            // Use the outermost role="dialog", as content can carry its own, e.g. the file
+            // picker's .row layout, whose child rules would restyle the tip.
+            let dialogue = null;
+            for (let el = e.target.closest('[role="dialog"]'); el; el = el.parentElement?.closest('[role="dialog"]')) {
+                dialogue = el;
+            }
+            if (dialogue) {
+                dialogue.append(tip);
+            }
             helpPopoverTriggers.set(tip, e.target);
             tip.setAttribute('aria-label', e.target.getAttribute('aria-label'));
             // The trigger's aria-describedby points at the tip above. Per the accessible name/
