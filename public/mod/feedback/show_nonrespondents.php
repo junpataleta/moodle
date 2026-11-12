@@ -298,6 +298,7 @@ if (empty($students)) {
         echo '<label for="feedback_subject">'.get_string('subject', 'feedback').'&nbsp;</label>';
         echo '<input type="text" id="feedback_subject" size="50" maxlength="255" name="subject" value="'.s($subject).'" />';
         echo '</div>';
+        echo html_writer::tag('label', get_string('message'), ['for' => 'edit-message']);
         echo $OUTPUT->print_textarea('message', 'edit-message', $message, 15, 25);
         print_string('formathtml');
         echo '<input type="hidden" name="format" value="'.FORMAT_HTML.'" />';
