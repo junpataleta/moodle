@@ -42,11 +42,13 @@ Feature: Teacher can allocate submissions randomly or manually
       | Title              | Submitted by s3    |
       | Submission content | Some content by s3 |
 
+  @javascript @accessibility
   Scenario: Teacher can allocate workshop submissions randomly
     Given I am on the "Workshop 1" "workshop activity" page logged in as teacher1
     And I click on "Submissions allocation" "link"
+    And the "Allocation method" "select" should meet accessibility standards
     # Allocate submissions randomly.
-    When I select "Random allocation" from the "jump" singleselect
+    When I select "Random allocation" from the "Allocation method" singleselect
     And I set the following fields to these values:
       | numofreviews | 3 |
     And I press "Save changes"
