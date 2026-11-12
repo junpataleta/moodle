@@ -116,3 +116,22 @@ Feature: Using the help popover
     When I press the tab key
     Then the focused element is not "#fitem_id_graceperiod .help-icon" "css_element"
     And ".help-popover" "css_element" should not be visible
+
+  @javascript
+  Scenario: Navigate to a link in a help popover inside a modal using the keyboard
+    Given the following "courses" exist:
+      | fullname | shortname |
+      | Course 1 | C1        |
+    And I am on the "Course 1" "grades > gradebook setup" page logged in as "admin"
+    And I choose the "Add category" item in the "Add" action menu
+    And I click on "Help with Aggregation" "help_icon" in the "New category" "dialogue"
+    And ".help-popover" "css_element" should be visible
+    When I press the tab key
+    Then the focused element is "More help" "link" in the "New category" "dialogue"
+    And ".help-popover" "css_element" should be visible
+    And I press the shift tab key
+    And the focused element is "Help with Aggregation" "help_icon"
+    And I press the tab key
+    And I press the tab key
+    And the focused element is "Aggregation" "field"
+    And ".help-popover" "css_element" should not be visible
