@@ -34,7 +34,7 @@ Feature: Show users who have not responded to the feedback survey
       | grouping | group  |
       | GXI1     | GI1    |
 
-  @javascript
+  @javascript @accessibility
   Scenario: See users who have not responded
     # Set up a feedback.
     When I log in as "teacher1"
@@ -64,3 +64,5 @@ Feature: Show users who have not responded to the feedback survey
     Then I should see "Student 2"
     And I should not see "Student 1"
     And I should not see "Student 3"
+    And the page should meet accessibility standards
+    And I set the field "Message" to "Please complete the feedback"
