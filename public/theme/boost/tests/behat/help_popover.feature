@@ -124,13 +124,13 @@ Feature: Using the help popover
       | Course 1 | C1        |
     And I am on the "Course 1" "grades > gradebook setup" page logged in as "admin"
     And I choose the "Add category" item in the "Add" action menu
-    And I click on "Help" "button" in the "Aggregation" "form_row"
+    And I click on "Help with Aggregation" "help_icon" in the "New category" "dialogue"
     And ".help-popover" "css_element" should be visible
     # The first escape key press dismisses the popover only, leaving the dialogue open.
     When I press the escape key
     Then "New category" "dialogue" should be visible
     And ".help-popover" "css_element" should not be visible
-    And the focused element is "Help" "button" in the "Aggregation" "form_row"
+    And the focused element is "Help with Aggregation" "help_icon"
     # A second escape key press then closes the dialogue, even though the help icon still
     # has focus, because no popover is open for it to dismiss.
     And I press the escape key
