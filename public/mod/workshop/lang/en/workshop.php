@@ -37,6 +37,7 @@ $string['allocatedetails'] = 'expected: {$a->expected}<br />submitted: {$a->subm
 $string['allocation'] = 'Submission allocation';
 $string['allocationdone'] = 'Allocation done';
 $string['allocationerror'] = 'Allocation error';
+$string['allocationmethod'] = 'Allocation method';
 $string['allocationconfigured'] = 'Allocation configured';
 $string['allowedfiletypesforoverallfeedback'] = 'Feedback attachment allowed file types';
 $string['allowedfiletypesforoverallfeedback_help'] = 'Feedback attachment file types can be restricted by providing a list of allowed file types. If the field is left empty, then all file types are allowed.';
