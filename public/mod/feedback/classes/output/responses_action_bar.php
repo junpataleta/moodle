@@ -62,9 +62,9 @@ class responses_action_bar extends base_action_bar {
 
             // Don't show the dropdown if it's only a single item.
             if (count($options) != 1) {
-                $items['left'][]['urlselect'] = new url_select($options,
-                    $selected->out(false),
-                    null);
+                $urlselect = new url_select($options, $selected->out(false), null);
+                $urlselect->set_label(get_string('responses', 'feedback'), ['class' => 'visually-hidden']);
+                $items['left'][]['urlselect'] = $urlselect;
             }
         }
         return $items;
