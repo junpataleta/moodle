@@ -70,6 +70,7 @@ class actionbar implements renderable, templatable {
         }
 
         $urlselect = new url_select($menu, $this->currenturl->out(false), null, 'allocationsetting');
+        $urlselect->set_label(get_string('allocationmethod', 'workshop'), ['class' => 'visually-hidden']);
 
         return [
             'urlselect' => $urlselect->export_for_template($output),
