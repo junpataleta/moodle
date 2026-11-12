@@ -23,7 +23,7 @@
  */
 
 import Carousel from 'theme_boost/bootstrap/carousel';
-import {space, enter} from 'core/key_codes';
+import {space, enter, arrowLeft, arrowRight} from 'core/key_codes';
 
 /**
  * User menu constants.
@@ -42,6 +42,8 @@ const selectors = {
 const registerEventListeners = () => {
     const userMenu = document.querySelector(selectors.userMenu);
     const userMenuCarousel = document.querySelector(selectors.userMenuCarousel);
+    let lastFocusedSubmenuLink = null;
+    let focusTargetAfterSlide = null;
 
     // Handle the 'shown.bs.dropdown' event (Fired when the dropdown menu is fully displayed).
     userMenu.addEventListener('shown.bs.dropdown', () => {
@@ -63,29 +65,53 @@ const registerEventListeners = () => {
 
     // Handle click events in the user menu.
     userMenu.addEventListener('click', (e) => {
-
         // Handle click event on the carousel navigation (control) links in the user menu.
-        if (e.target.matches(selectors.userMenuCarouselNavigationLink)) {
-            carouselManagement(e);
+        const navigationLink = e.target.closest(selectors.userMenuCarouselNavigationLink);
+        if (navigationLink) {
+            carouselManagement(e, navigationLink);
         }
     });
 
     userMenu.addEventListener('keydown', e => {
+        const navigationLink = e.target.closest(selectors.userMenuCarouselNavigationLink);
+
         // Handle keydown event on the carousel navigation (control) links in the user menu.
         if ((e.keyCode === space ||
             e.keyCode === enter) &&
-            e.target.matches(selectors.userMenuCarouselNavigationLink)) {
+            navigationLink) {
             e.preventDefault();
-            carouselManagement(e);
+            carouselManagement(e, navigationLink);
+            return;
+        }
+
+        const activeCarouselItem = userMenu.querySelector(selectors.userMenuCarouselItemActive);
+        if (!activeCarouselItem?.contains(e.target) || (e.keyCode !== arrowLeft && e.keyCode !== arrowRight)) {
+            return;
+        }
+
+        e.preventDefault();
+        const isRtl = window.right_to_left();
+        const backwardKey = isRtl ? arrowRight : arrowLeft;
+        const forwardKey = isRtl ? arrowLeft : arrowRight;
+        const isSubmenu = activeCarouselItem.classList.contains('submenu');
+
+        if (e.keyCode === forwardKey && !isSubmenu && navigationLink) {
+            carouselManagement(e, navigationLink);
+        } else if (e.keyCode === backwardKey && isSubmenu) {
+            const backLink = activeCarouselItem.querySelector(selectors.userMenuCarouselNavigationLink);
+            if (backLink) {
+                carouselManagement(e, backLink);
+            }
         }
     });
 
     /**
      * We do the same actions here even if the caller was a click or button press.
      *
-     * @param {Event} e The triggering element and key presses etc.
+     * @param {Event} e The triggering event.
+     * @param {HTMLElement} navigationLink The carousel navigation link.
      */
-    const carouselManagement = e => {
+    const carouselManagement = (e, navigationLink) => {
         // By default the user menu dropdown element closes on a click event. This behaviour is not desirable
         // as we need to be able to navigate through the carousel items (submenus of the user menu) within the
         // user menu. Therefore, we need to prevent the propagation of this event and then manually call the
@@ -94,8 +120,16 @@ const registerEventListeners = () => {
         e.preventDefault();
 
         // The id of the targeted carousel item.
-        const targetedCarouselItemId = e.target.dataset.carouselTargetId;
+        const targetedCarouselItemId = navigationLink.dataset.carouselTargetId;
         const targetedCarouselItem = userMenu.querySelector('#' + targetedCarouselItemId);
+        if (targetedCarouselItemId === 'carousel-item-main') {
+            focusTargetAfterSlide = lastFocusedSubmenuLink;
+            lastFocusedSubmenuLink = null;
+        } else {
+            lastFocusedSubmenuLink = navigationLink;
+            focusTargetAfterSlide = null;
+        }
+
         // Get the position (index) of the targeted carousel item within the parent container element.
         const index = Array.from(targetedCarouselItem.parentNode.children).indexOf(targetedCarouselItem);
         // Navigate to the targeted carousel item.
@@ -106,6 +140,8 @@ const registerEventListeners = () => {
     userMenu.addEventListener('hide.bs.dropdown', () => {
         // Reset the state once the user menu dropdown is closed and return back to the first (main) carousel item
         // if necessary.
+        lastFocusedSubmenuLink = null;
+        focusTargetAfterSlide = null;
         Carousel.getOrCreateInstance(userMenuCarousel).to(0);
     });
 
@@ -113,7 +149,8 @@ const registerEventListeners = () => {
     userMenuCarousel?.addEventListener('slid.bs.carousel', () => {
         const activeCarouselItem = userMenu.querySelector(selectors.userMenuCarouselItemActive);
         // Set the focus on the newly activated carousel item.
-        activeCarouselItem.focus();
+        (focusTargetAfterSlide || activeCarouselItem).focus();
+        focusTargetAfterSlide = null;
     });
 };
 
