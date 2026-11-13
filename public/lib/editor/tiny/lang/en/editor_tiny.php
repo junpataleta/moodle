@@ -333,6 +333,7 @@ $string['tiny:remove_link'] = 'Remove link';
 $string['tiny:replace'] = 'Replace';
 $string['tiny:replace_all'] = 'Replace all';
 $string['tiny:replace_with'] = 'Replace with';
+$string['tiny:required_field_label_and_rich_textarea_help'] = '{$a}. Required. Rich text area. Press ALT-F9 for menu. Press ALT-F10 for toolbar. Press ALT-0 for help.';
 $string['tiny:resize'] = 'Resize';
 $string['tiny:restore_last_draft'] = 'Restore last draft';
 $string['tiny:reveal_or_hide_additional_toolbar_items'] = 'Reveal or hide additional toolbar items';

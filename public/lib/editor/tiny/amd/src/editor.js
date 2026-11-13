@@ -237,8 +237,12 @@ const getStandardConfig = async(target, tinyMCE, options, plugins) => {
         label = document.querySelector(`label[for="${CSS.escape(target.id)}"]`);
     }
 
+    // TinyMCE names the editable body from iframe_aria_text, so a required field has to say so here.
+    const labelStringId = target.getAttribute('aria-required') === 'true'
+        ? 'tiny:required_field_label_and_rich_textarea_help'
+        : 'tiny:field_label_and_rich_textarea_help';
     const iframeAriaText = label
-        ? await getString('tiny:field_label_and_rich_textarea_help', 'editor_tiny', label.textContent.trim())
+        ? await getString(labelStringId, 'editor_tiny', label.textContent.trim())
         : await getString(
             'tiny:rich_text_area._press_alt-f9_for_menu._press_alt-f10_for_toolbar._press_alt-0_for_hel',
             'editor_tiny'
@@ -431,7 +435,12 @@ const getStandardConfig = async(target, tinyMCE, options, plugins) => {
                     if (!label.id) {
                         label.id = `${editor.iframeElement.id}_label`;
                     }
-                    editor.iframeElement.setAttribute('aria-labelledby', label.id);
+                    // Firefox does not name the editable body, so also name the iframe by the required marker.
+                    const requiredMarker = target.getAttribute('aria-required') === 'true'
+                        ? document.getElementById(`${target.id}_required`)
+                        : null;
+                    const labelIds = requiredMarker ? `${label.id} ${requiredMarker.id}` : label.id;
+                    editor.iframeElement.setAttribute('aria-labelledby', labelIds);
                 }
 
                 // The resize handle has a focusable role="separator", for which aria-valuenow
