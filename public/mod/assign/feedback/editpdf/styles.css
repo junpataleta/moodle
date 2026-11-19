@@ -373,6 +373,19 @@ ul.assignfeedback_editpdf_menu {
     background-image: radial-gradient(ellipse at center, var(--mds-bg-surface-default) 40%, var(--mds-bg-interactive-secondary-default) 100%);
 }
 
+/* The tool icons are images with a #888 fill baked in, too faint on the dark toolbar.
+   Brighten them to #ccc in dark mode. The colour and stamp buttons show real colours,
+   so they are left alone. */
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader button img {
+    filter: brightness(1.5);
+}
+
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .commentcolourbutton img,
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .annotationcolourbutton img,
+[data-bs-theme="dark"] .assignfeedback_editpdf_widget .pageheader .currentstampbutton img {
+    filter: none;
+}
+
 .assignfeedback_editpdf_widget .commentdrawable img {
     margin: 0 5px;
 }
