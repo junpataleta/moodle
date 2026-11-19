@@ -131,6 +131,8 @@ form.mform fieldset#id_previewareaheader div.markertexts span.markertext {
 }
 
 /* Styles for the preview on the editing form. */
+/* Drawn over the question image, which does not change with the colour mode. */
+/* stylelint-disable color-named, color-no-hex, declaration-property-value-disallowed-list */
 .que.ddmarker .dropzone .shape {
     fill: #fff;
     fill-opacity: 0.5;
@@ -185,6 +187,7 @@ form.mform fieldset#id_previewareaheader div.markertexts span.markertext {
 .que.ddmarker .dropzone.active .handle {
     display: inherit;
 }
+/* stylelint-enable color-named, color-no-hex, declaration-property-value-disallowed-list */
 
 /* Editing form. Style repeated elements*/
 /*Top*/
