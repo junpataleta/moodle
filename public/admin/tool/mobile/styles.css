@@ -56,6 +56,8 @@
 }
 
 /* Branding preview animation. */
+/* Depicts the app on its own surface, so it does not follow the colour mode. */
+/* stylelint-disable color-named, color-no-hex, declaration-property-value-disallowed-list */
 #page-admin-setting-premiumfeatures {
     .tool-mobile-branding-preview {
         background: #ececed;
@@ -436,6 +438,7 @@
         background-color: #c9c9ce;
     }
 }
+/* stylelint-enable color-named, color-no-hex, declaration-property-value-disallowed-list */
 /* END Branding preview animation. */
 
 /* Logo system alert animation. */
@@ -444,6 +447,8 @@
         border-color: #d5d4dc;
     }
 
+    /* Depicts the app on its own surface, so it does not follow the colour mode. */
+    /* stylelint-disable color-named, color-no-hex, declaration-property-value-disallowed-list */
     .tool-mobile-system-alert-animation {
         background: #ececed;
         --tool-mobile-logo-preview-unit: clamp(0.72px, 0.08vw + 0.56px, 1px);
@@ -797,4 +802,5 @@
         transform: scale(0.94);
     }
 }
+/* stylelint-enable color-named, color-no-hex, declaration-property-value-disallowed-list */
 /* END Logo system alert animation. */
