@@ -102,6 +102,27 @@
       "files": ["**/yui/**/*.css"],
       "rules": {
       }
+    },
+    {
+      # Plugin stylesheets should take colours from theme tokens so that they follow the colour mode.
+      # Disable inline for a colour which must stay the same in every mode.
+      "files": ["**/*.css"],
+      "rules": {
+        "color-named": ["never", {
+          "severity": "warning",
+          "message": "Unexpected named colour. Use a colour token instead (color-named)"
+        }],
+        "color-no-hex": [true, {
+          "severity": "warning",
+          "message": "Unexpected hex colour. Use a colour token instead (color-no-hex)"
+        }],
+        "declaration-property-value-disallowed-list": [{
+          "/.*/": ["/\\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch)\\(\\s*[-+.\\d]/"]
+        }, {
+          "severity": "warning",
+          "message": "Unexpected colour function with literal values. Use a colour token instead (declaration-property-value-disallowed-list)"
+        }]
+      }
     }
   ]
 }
