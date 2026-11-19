@@ -4,6 +4,9 @@
  * @author Lea Verou
  */
 
+/* Third-party theme on its own code block background. */
+/* stylelint-disable color-named, color-no-hex, declaration-property-value-disallowed-list */
+
 pre[class*="language-"] {
     color: black;
     background: none;
