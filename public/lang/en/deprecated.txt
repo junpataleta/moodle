@@ -119,3 +119,4 @@ noscales,core_grades
 homeheader,core
 revokedapitoken,core_error
 deletecheckfull,core
+completion_manual:aria:markdone,core_course
