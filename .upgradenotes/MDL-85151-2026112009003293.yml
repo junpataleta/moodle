@@ -1,0 +1,10 @@
+issueNumber: MDL-85151
+notes:
+  core:
+    - message: >-
+        Two new Behat steps simulate fullscreen: `"<element>" "<selector>" is
+        shown in fullscreen` and `I leave fullscreen`. WebDriver cannot request
+        real fullscreen without a user gesture, so these steps make the page
+        report an element as fullscreen, and fire the events the Fullscreen API
+        fires on entry and exit.
+      type: improved
