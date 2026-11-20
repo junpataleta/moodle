@@ -54,7 +54,6 @@ $string['completion_automatic:done'] = 'Done:';
 $string['completion_automatic:failed'] = 'Failed:';
 $string['completion_automatic:todo'] = 'To do:';
 $string['completion_manual:aria:done'] = '{$a} is marked as done. Press to undo.';
-$string['completion_manual:aria:markdone'] = 'Mark {$a} as done';
 $string['completion_manual:done'] = 'Done';
 $string['completion_manual:markdone'] = 'Mark as done';
 $string['completion_setby:auto:done'] = 'Done: {$a->condition} (set by {$a->setby})';
@@ -237,3 +236,6 @@ $string['gotosection'] = 'Go to section {$a}';
 
 // Deprecated since Moodle 4.5.
 $string['daystakingcourse'] = 'Days taking course';
+
+// Deprecated since Moodle 6.0.
+$string['completion_manual:aria:markdone'] = 'Mark {$a} as done';
