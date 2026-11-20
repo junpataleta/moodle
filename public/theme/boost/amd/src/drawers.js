@@ -87,7 +87,8 @@ const getBackdrop = () => {
             if (drawerZindex) {
                 modalBackdrop.setZIndex(getDrawerZIndex() - 1);
             }
-            modalBackdrop.getAttachmentPoint().get(0).addEventListener('click', e => {
+            // Listen on the backdrop itself: the attachment point is the fullscreen element, if any.
+            modalBackdrop.getRoot().get(0).addEventListener('click', e => {
                 e.preventDefault();
                 Drawers.closeAllDrawers();
             });
