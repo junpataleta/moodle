@@ -2895,4 +2895,41 @@ EOF;
         unset_config('behat_frozen_clock');
         \core\di::set(\core\clock::class, new \core\system_clock());
     }
+
+    /**
+     * Make the page report an element as fullscreen, and fire the events the Fullscreen API fires.
+     *
+     * WebDriver cannot request real fullscreen without a user gesture, and headless browsers
+     * resize the page to their own screen size when it does.
+     *
+     * @Given /^"(?P<element_string>(?:[^"]|\\")*)" "(?P<selector_string>[^"]*)" is shown in fullscreen$/
+     * @param string $element Element identifier
+     * @param string $selectortype Element type
+     */
+    #[\core\attribute\example('And ".video-js" "css_element" is shown in fullscreen')]
+    public function element_is_shown_in_fullscreen(string $element, string $selectortype): void {
+        $this->require_javascript();
+        $node = $this->get_selected_node($selectortype, $element);
+        $this->execute_js_on_node($node, <<<'JS'
+            const element = {{ELEMENT}};
+            Object.defineProperty(document, 'fullscreenElement', {configurable: true, get: () => element});
+            document.dispatchEvent(new Event('fullscreenchange'));
+            window.dispatchEvent(new Event('resize'));
+        JS);
+    }
+
+    /**
+     * Undo "is shown in fullscreen", firing the events the Fullscreen API fires on exit.
+     *
+     * @Given /^I leave fullscreen$/
+     */
+    #[\core\attribute\example('And I leave fullscreen')]
+    public function i_leave_fullscreen(): void {
+        $this->require_javascript();
+        $this->execute_script(<<<'JS'
+            delete document.fullscreenElement;
+            document.dispatchEvent(new Event('fullscreenchange'));
+            window.dispatchEvent(new Event('resize'));
+        JS);
+    }
 }
