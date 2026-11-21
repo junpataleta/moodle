@@ -91,12 +91,11 @@
         <div class="d-flex timeline-action-button">
             <h5 class="h6 event-action">
                 <a class="list-group-item-action btn btn-outline-secondary btn-sm text-nowrap"
-                    href="{{action.url}}"
-                    aria-label="{{action.name}}"
-                    title="{{action.name}}">
+                    href="{{action.url}}">
                 {{{action.name}}}
                 {{#action.showitemcount}}
-                <span class="badge bg-secondary text-dark">{{action.itemcount}}</span>
+                <span class="badge bg-secondary text-dark" aria-hidden="true">{{action.itemcount}}</span>
+                <span class="visually-hidden">{{#str}} ariaactionitemcount, block_timeline, {{action.itemcount}} {{/str}}</span>
                 {{/action.showitemcount}}
                 </a>
             </h5>
