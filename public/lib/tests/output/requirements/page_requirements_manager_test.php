@@ -148,4 +148,38 @@ final class page_requirements_manager_test extends \advanced_testcase {
             $page->requires->get_end_code(),
         );
     }
+
+    /**
+     * Embedded pages have nothing before the main content, so they do not get a link to skip to it.
+     *
+     * @param string $pagelayout The page layout.
+     * @param bool $expected Whether the skip link is expected.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('skip_link_to_main_content_provider')]
+    public function test_skip_link_to_main_content(string $pagelayout, bool $expected): void {
+        $this->resetAfterTest();
+
+        $page = new \moodle_page();
+        $page->set_context(\core\context\system::instance());
+        $page->set_pagelayout($pagelayout);
+        $page->set_url('/index.php');
+        $renderer = $page->get_renderer('core');
+        $page->requires->get_head_code($page, $renderer);
+        $output = $page->requires->get_top_of_body_code($renderer);
+
+        $this->assertSame($expected, str_contains($output, 'href="#maincontent"'));
+    }
+
+    /**
+     * Data provider for test_skip_link_to_main_content().
+     *
+     * @return array
+     */
+    public static function skip_link_to_main_content_provider(): array {
+        return [
+            'Embedded' => ['embedded', false],
+            'Standard' => ['standard', true],
+            'Popup' => ['popup', true],
+        ];
+    }
 }
