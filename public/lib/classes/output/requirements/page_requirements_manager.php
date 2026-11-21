@@ -385,8 +385,10 @@ class page_requirements_manager {
         // Init the js config.
         $this->get_config_for_javascript($page, $renderer);
 
-        // Accessibility stuff.
-        $this->skip_link_to('maincontent', get_string('tocontent', 'access'));
+        // Accessibility stuff. Embedded pages have no page furniture before the main content to skip.
+        if ($page->pagelayout !== 'embedded') {
+            $this->skip_link_to('maincontent', get_string('tocontent', 'access'));
+        }
 
         // Add strings used on many pages.
         $this->string_for_js('confirmation', 'admin');
