@@ -165,17 +165,21 @@ function(
         }
         if (!backdropPromise) {
             backdropPromise = Templates.render('core/modal_backdrop', {})
-                .then(html => new ModalBackdrop(html));
+                .then(html => {
+                    const modalBackdrop = new ModalBackdrop(html);
+                    // Listen on the backdrop itself: the attachment point is the fullscreen element, if any.
+                    modalBackdrop.getRoot().get(0).addEventListener('click', e => {
+                        PubSub.publish(Events.HIDE, {});
+                        e.preventDefault();
+                    });
+                    return modalBackdrop;
+                });
         }
         const backdropWithAdjustments = backdropPromise.then(modalBackdrop => {
             const messageDrawerZIndex = window.getComputedStyle(drawerRoot[0]).zIndex;
             if (messageDrawerZIndex) {
                 modalBackdrop.setZIndex(messageDrawerZIndex - 1);
             }
-            modalBackdrop.getAttachmentPoint().get(0).addEventListener('click', e => {
-                PubSub.publish(Events.HIDE, {});
-                e.preventDefault();
-            });
             return modalBackdrop;
         });
         if (hasFocus) {
