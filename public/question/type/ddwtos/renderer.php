@@ -98,6 +98,7 @@ class qtype_ddwtos_renderer extends qtype_elements_embedded_in_question_text_ren
             $labelhtml = html_writer::span($label, 'visually-hidden', ['id' => $labelid]);
             $attributes['tabindex'] = '0';
             $attributes['aria-labelledby'] = $labelid;
+            $attributes += $this->blank_description_attributes($qa, $place);
         }
 
         $feedbackimage = '';
