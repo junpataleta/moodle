@@ -42,9 +42,8 @@ Feature: Preview a drag-drop into text question
   @javascript
   Scenario: Preview a question using the keyboard & submit incomplete.
     When I am on the "Drag to text" "core_question > preview" page logged in as teacher
-    And I type " " into space "1" in the drag and drop onto image question
-    And I type "   " into space "2" in the drag and drop onto image question
-    And I type " " into space "3" in the drag and drop onto image question
+    And I choose "quick" in space "1" of the drag and drop into text question using the keyboard
+    And I choose "fox" in space "2" of the drag and drop into text question using the keyboard
     And I press "Save"
     Then the state of "The" question is shown as "Incomplete answer"
     And I should see "Please put an answer in each box."
@@ -52,12 +51,27 @@ Feature: Preview a drag-drop into text question
   @javascript
   Scenario: Preview a question using the keyboard.
     When I am on the "Drag to text" "core_question > preview" page logged in as teacher
-    And I type "  " into space "1" in the drag and drop onto image question
-    And I type "  " into space "2" in the drag and drop onto image question
-    And I type "  " into space "3" in the drag and drop onto image question
+    And I choose "slow" in space "1" of the drag and drop into text question using the keyboard
+    And I choose "dog" in space "2" of the drag and drop into text question using the keyboard
+    And I choose "assiduous" in space "3" of the drag and drop into text question using the keyboard
     And I press "Submit and finish"
     Then the state of "The" question is shown as "Incorrect"
     And I should see "Mark 0.00 out of 1.00"
+
+  @javascript
+  Scenario: Preview a question by clicking instead of dragging.
+    When I am on the "Drag to text" "core_question > preview" page logged in as teacher
+    And I click on ".drop.place1" "css_element"
+    And I click on "slow" "text" in the "[role=listbox].show" "css_element"
+    And I click on ".draghome.inplace1" "css_element"
+    And I click on "quick" "text" in the "[role=listbox].show" "css_element"
+    And I click on ".drop.place2" "css_element"
+    And I click on "fox" "text" in the "[role=listbox].show" "css_element"
+    And I click on ".drop.place3" "css_element"
+    And I click on "lazy" "text" in the "[role=listbox].show" "css_element"
+    And I press "Submit and finish"
+    Then the state of "The" question is shown as "Correct"
+    And I should see "Mark 1.00 out of 1.00"
 
   @javascript
   Scenario: Preview a question that uses strange group numbers using the keyboard.
@@ -65,9 +79,9 @@ Feature: Preview a drag-drop into text question
       | questioncategory | qtype  | name         | template  |
       | Test questions   | ddwtos | Funny groups | oddgroups |
     When I am on the "Funny groups" "core_question > preview" page logged in as teacher
-    And I type " " into space "1" in the drag and drop onto image question
-    And I type " " into space "2" in the drag and drop onto image question
-    And I type " " into space "3" in the drag and drop onto image question
+    And I choose "quick" in space "1" of the drag and drop into text question using the keyboard
+    And I choose "fox" in space "2" of the drag and drop into text question using the keyboard
+    And I choose "lazy" in space "3" of the drag and drop into text question using the keyboard
     And I press "Submit and finish"
     Then the state of "The" question is shown as "Correct"
     And I should see "Mark 1.00 out of 1.00"

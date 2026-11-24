@@ -41,6 +41,7 @@ class qtype_ddwtos_renderer extends qtype_elements_embedded_in_question_text_ren
 
         $result = parent::formulation_and_controls($qa, $options);
 
+        $this->page->requires->string_for_js('notanswered', 'question');
         $this->page->requires->js_call_amd('qtype_ddwtos/ddwtos', 'init',
                 [$qa->get_outer_question_div_unique_id(), $options->readonly]);
         return $result;
@@ -77,18 +78,26 @@ class qtype_ddwtos_renderer extends qtype_elements_embedded_in_question_text_ren
         $question = $qa->get_question();
         $group = $question->places[$place];
         $label = $options->add_question_identifier_to_label(get_string('blanknumber', 'qtype_ddwtos', $place));
-        $boxcontents = '&#160;' . html_writer::tag('span', $label, array('class' => 'accesshide'));
+        $boxcontents = '&#160;';
 
         $value = $qa->get_last_qt_var($question->field($place));
 
         $attributes = array(
             'class' => 'place' . $place . ' drop active group' . $group
         );
+        $labelhtml = '';
 
         if ($options->readonly) {
             $attributes['class'] .= ' readonly';
+            $boxcontents .= html_writer::tag('span', $label, ['class' => 'accesshide']);
         } else {
+            // The JavaScript makes this a combobox, which gives the choice in it as its value.
+            // It is named by a visually hidden label rather than aria-label, as VoiceOver otherwise
+            // adds the text before the blank to its name.
+            $labelid = $this->box_id($qa, 'p' . $place) . '_label';
+            $labelhtml = html_writer::span($label, 'visually-hidden', ['id' => $labelid]);
             $attributes['tabindex'] = '0';
+            $attributes['aria-labelledby'] = $labelid;
         }
 
         $feedbackimage = '';
@@ -102,7 +111,7 @@ class qtype_ddwtos_renderer extends qtype_elements_embedded_in_question_text_ren
             }
         }
 
-        return html_writer::tag('span', $boxcontents, $attributes) . ' ' . $feedbackimage;
+        return $labelhtml . html_writer::tag('span', $boxcontents, $attributes) . ' ' . $feedbackimage;
     }
 
     protected function drag_boxes($qa, $group, $choices, question_display_options $options) {

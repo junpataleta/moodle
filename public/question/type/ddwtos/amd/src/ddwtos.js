@@ -40,18 +40,23 @@
 define([
     'jquery',
     'core/dragdrop',
-    'core/key_codes',
     'core_form/changechecker',
     'core_filters/events',
+    'bootstrap',
 ], function(
     $,
     dragDrop,
-    keys,
     FormChangeChecker,
-    filterEvent
+    filterEvent,
+    Bootstrap
 ) {
 
     "use strict";
+
+    /**
+     * {int} how far, in pixels, a placed drag can move and still count as clicked.
+     */
+    var clickTolerance = 4;
 
     /**
      * Object to handle one drag-drop into text question.
@@ -63,6 +68,8 @@ define([
     function DragDropToTextQuestion(containerId, readOnly) {
         const thisQ = this;
         this.containerId = containerId;
+        this.readOnly = readOnly;
+        this.dragStartPosition = null;
         this.questionAnswer = {};
         this.questionDragDropWidthHeight = [];
         if (readOnly) {
@@ -70,6 +77,11 @@ define([
         }
         this.resizeAllDragsAndDrops();
         this.cloneDrags();
+        if (!readOnly) {
+            this.getRoot().find('.drop').each(function(i, drop) {
+                thisQ.attachCombobox($(drop));
+            });
+        }
         this.positionDrags();
         // Wait for all dynamic content loaded by filter to be completed.
         document.addEventListener(filterEvent.eventTypes.filterContentRenderingComplete, (elements) => {
@@ -243,7 +255,7 @@ define([
                 currentPlace = thisQ.getClassnameNumericSuffix(drag, 'inplace');
             drag.addClass('unplaced')
                 .removeClass('placed');
-            drag.removeAttr('tabindex');
+            thisQ.markDragUnplaced(drag);
             if (currentPlace !== null) {
                 drag.removeClass('inplace' + currentPlace);
             }
@@ -344,6 +356,7 @@ define([
         if (!info.start || drag.hasClass('beingdragged')) {
             return;
         }
+        this.dragStartPosition = {x: info.x, y: info.y};
 
         drag.addClass('beingdragged');
         var currentPlace = this.getClassnameNumericSuffix(drag, 'inplace');
@@ -443,6 +456,7 @@ define([
         if (!placed) {
             this.sendDragHome(drag);
         }
+        this.openChoiceListAfterTap(pageX, pageY, drag);
     };
 
     /**
@@ -476,9 +490,6 @@ define([
 
         if (drag.length === 0) {
             this.setInputValue(this.getPlace(drop), 0);
-            if (drop.data('isfocus')) {
-                drop.focus();
-            }
         } else {
             // Prevent the drag item drop into two drop-zone.
             if (this.getClassnameNumericSuffix(drag, 'inplace')) {
@@ -488,9 +499,52 @@ define([
             this.setInputValue(this.getPlace(drop), this.getChoice(drag));
             drag.removeClass('unplaced')
                 .addClass('placed inplace' + this.getPlace(drop));
-            drag.attr('tabindex', 0);
+            this.markDragPlaced(drag);
             this.animateTo(drag, drop);
         }
+    };
+
+    /**
+     * Mark a drag as placed in a drop.
+     *
+     * While answering, the drop is a combobox that keeps the focus and reports the choice
+     * in it, so the placed drag is hidden from assistive technology. In review, the placed
+     * drag is a tab stop, so the answer can be read.
+     *
+     * @param {jQuery} drag the drag that has been placed.
+     */
+    DragDropToTextQuestion.prototype.markDragPlaced = function(drag) {
+        if (this.readOnly) {
+            drag.attr('tabindex', 0);
+        } else {
+            drag.attr('aria-hidden', 'true');
+        }
+    };
+
+    /**
+     * Undo markDragPlaced, when a drag goes back home.
+     *
+     * @param {jQuery} drag the drag.
+     */
+    DragDropToTextQuestion.prototype.markDragUnplaced = function(drag) {
+        drag.removeAttr('tabindex aria-hidden');
+    };
+
+    /**
+     * Update the value a drop reports to assistive technology.
+     *
+     * @param {int} place the place number.
+     */
+    DragDropToTextQuestion.prototype.updateDropValue = function(place) {
+        var drop = this.getRoot().find('.drop.place' + place),
+            value = drop.find('[data-selected-option]');
+        if (!value.length) {
+            return;
+        }
+        var choice = parseInt(this.getRoot().find('input.placeinput.place' + place).val()) || 0;
+        var home = this.getRoot().find('.draghome.dragplaceholder.group' + this.getGroup(drop) + '.choice' + choice);
+        // Read the label from the choice's placeholder, as the choice itself may be on the move.
+        value.text(choice && home.length ? this.getChoiceText(home) : M.util.get_string('notanswered', 'question'));
     };
 
     /**
@@ -528,47 +582,121 @@ define([
     };
 
     /**
-     * Handles keyboard events on drops.
+     * Make a drop a combobox, so it can be answered without dragging.
      *
-     * Drops are focusable. Once focused, right/down/space switches to the next choice, and
-     * left/up switches to the previous. Escape clear.
+     * This uses the select-only combobox from core (see core/select_menu): a Bootstrap
+     * dropdown with a listbox, whose keyboard handling and selection is done by theme_boost/aria.
+     * The list of choices is filled in each time it opens.
      *
-     * @param {KeyboardEvent} e
+     * @param {jQuery} drop the drop.
      */
-    DragDropToTextQuestion.prototype.handleKeyPress = function(e) {
-        var drop = $(e.target).closest('.drop');
-        if (drop.length === 0) {
-            var placedDrag = $(e.target);
-            var currentPlace = this.getClassnameNumericSuffix(placedDrag, 'inplace');
-            if (currentPlace !== null) {
-                drop = this.getDrop(placedDrag, currentPlace);
+    DragDropToTextQuestion.prototype.attachCombobox = function(drop) {
+        var thisQ = this,
+            place = this.getPlace(drop),
+            input = this.getRoot().find('input.placeinput.place' + place),
+            listId = this.containerId + '-place' + place + '-choices';
+
+        drop.attr({
+            'role': 'combobox',
+            'data-bs-toggle': 'dropdown',
+            'aria-haspopup': 'listbox',
+            'aria-expanded': 'false',
+            'aria-controls': listId,
+            'data-input-element': input.attr('id')
+        });
+        drop.append('<span class="visually-hidden" data-selected-option></span>');
+        drop.after($('<ul class="dropdown-menu" role="listbox"></ul>').attr({
+            'id': listId,
+            'aria-labelledby': drop.attr('aria-labelledby')
+        }));
+
+        // A drop with a choice in it is out of sight, so the list opens under the choice instead.
+        Bootstrap.Dropdown.getOrCreateInstance(drop[0], {
+            reference: {
+                getBoundingClientRect: function() {
+                    var placedDrag = thisQ.getCurrentDragInPlace(place);
+                    var anchor = placedDrag.length && !drop.hasClass('active') ? placedDrag[0] : drop[0];
+                    return anchor.getBoundingClientRect();
+                }
             }
-        }
-        var currentDrag = this.getCurrentDragInPlace(this.getPlace(drop)),
-            nextDrag = $();
+        });
+        drop[0].addEventListener('show.bs.dropdown', function() {
+            thisQ.fillChoiceList(drop);
+        });
+        input[0].addEventListener('change', function() {
+            thisQ.placeChoice(drop, parseInt(input.val()) || 0);
+        });
+        this.updateDropValue(place);
+    };
 
-        switch (e.keyCode) {
-            case keys.space:
-            case keys.arrowRight:
-            case keys.arrowDown:
-                nextDrag = this.getNextDrag(this.getGroup(drop), currentDrag);
-                break;
+    /**
+     * Fill in the list of choices for a drop, as it opens.
+     *
+     * @param {jQuery} drop the drop.
+     */
+    DragDropToTextQuestion.prototype.fillChoiceList = function(drop) {
+        var list = $('#' + drop.attr('aria-controls')),
+            selected = String(this.getRoot().find('input.placeinput.place' + this.getPlace(drop)).val() || '0');
+        list.empty();
+        this.getChoiceOptions(drop).forEach(function(option) {
+            $('<li class="dropdown-item" role="option"></li>')
+                .attr({
+                    'id': list.attr('id') + '-' + option.value,
+                    'data-value': option.value,
+                    'data-short-text': option.label,
+                    'aria-selected': option.value === selected ? 'true' : null
+                })
+                .html(option.html || $('<span>').text(option.label).html())
+                .appendTo(list);
+        });
+    };
 
-            case keys.arrowLeft:
-            case keys.arrowUp:
-                nextDrag = this.getPreviousDrag(this.getGroup(drop), currentDrag);
-                break;
+    /**
+     * Get the choices a drop can take: those still in the home area, and the one already in it.
+     *
+     * @param {jQuery} drop the drop.
+     * @return {Object[]} the options for the drop's combobox.
+     */
+    DragDropToTextQuestion.prototype.getChoiceOptions = function(drop) {
+        var thisQ = this,
+            group = this.getGroup(drop),
+            currentDrag = this.getCurrentDragInPlace(this.getPlace(drop)),
+            currentChoice = currentDrag.length ? this.getChoice(currentDrag) : 0,
+            options = [{value: '0', label: M.util.get_string('notanswered', 'question')}];
 
-            case keys.escape:
-                break;
+        this.getRoot().find('.draghome.dragplaceholder.group' + group).each(function(i, node) {
+            var home = $(node),
+                choice = thisQ.getChoice(home);
+            if (choice !== currentChoice && thisQ.getUnplacedChoice(group, choice).length === 0) {
+                return;
+            }
+            options.push({value: String(choice), label: thisQ.getChoiceText(home), html: home.html()});
+        });
+        return options;
+    };
 
-            default:
-                questionManager.isKeyboardNavigation = false;
-                return; // To avoid the preventDefault below.
-        }
+    /**
+     * Get the text of a choice, as it should be read out.
+     *
+     * Line breaks become spaces, so "mountain<br>belt" is read as two words.
+     *
+     * @param {jQuery} home the choice.
+     * @return {String} the text.
+     */
+    DragDropToTextQuestion.prototype.getChoiceText = function(home) {
+        return $('<div>').html(home.html().replace(/<br\s*\/?>/gi, ' ')).text().replace(/\s+/g, ' ').trim();
+    };
+
+    /**
+     * Put a choice in a drop, or clear it, as if it had been dragged there.
+     *
+     * @param {jQuery} drop the drop.
+     * @param {int} choice the choice, or 0 to clear the drop.
+     */
+    DragDropToTextQuestion.prototype.placeChoice = function(drop, choice) {
+        var nextDrag = choice ? this.getUnplacedChoice(this.getGroup(drop), choice) : $();
 
         if (nextDrag.length) {
-            nextDrag.data('isfocus', true);
             nextDrag.addClass('beingdragged');
             var hiddenDrag = this.getDragClone(nextDrag);
             if (hiddenDrag.length) {
@@ -578,7 +706,7 @@ define([
                     if (cloneDrags.length < noOfDrags) {
                         var cloneDrag = nextDrag.clone();
                         cloneDrag.removeClass('beingdragged');
-                        cloneDrag.removeAttr('tabindex');
+                        this.markDragUnplaced(cloneDrag);
                         hiddenDrag.after(cloneDrag);
                         questionManager.addEventHandlersToDrag(cloneDrag);
                         nextDrag.offset(cloneDrag.offset());
@@ -591,64 +719,48 @@ define([
                     nextDrag.offset(hiddenDrag.offset());
                 }
             }
-        } else {
-            drop.data('isfocus', true);
         }
 
-        e.preventDefault();
         this.sendDragToDrop(nextDrag, drop);
     };
 
     /**
-     * Choose the next drag in a group.
+     * Open the list of choices when a placed drag is tapped or clicked, rather than dragged.
      *
-     * @param {int} group which group.
-     * @param {jQuery} drag current choice (empty jQuery if there isn't one).
-     * @return {jQuery} the next drag in that group, or null if there wasn't one.
+     * This lets touch and mouse users change an answer without dragging. It is done here, at
+     * the end of the drag, because touch events cancel the click that would otherwise follow.
+     *
+     * @param {Number} pageX the x position where the drag ended.
+     * @param {Number} pageY the y position where the drag ended.
+     * @param {jQuery} drag the drag.
      */
-    DragDropToTextQuestion.prototype.getNextDrag = function(group, drag) {
-        var choice,
-            numChoices = this.noOfChoicesInGroup(group);
-
-        if (drag.length === 0) {
-            choice = 1; // Was empty, so we want to select the first choice.
-        } else {
-            choice = this.getChoice(drag) + 1;
+    DragDropToTextQuestion.prototype.openChoiceListAfterTap = function(pageX, pageY, drag) {
+        var place = this.getClassnameNumericSuffix(drag, 'inplace'),
+            start = this.dragStartPosition;
+        this.dragStartPosition = null;
+        if (this.readOnly || place === null || !start ||
+                Math.abs(pageX - start.x) + Math.abs(pageY - start.y) > clickTolerance) {
+            return;
         }
-
-        var next = this.getUnplacedChoice(group, choice);
-        while (next.length === 0 && choice < numChoices) {
-            choice++;
-            next = this.getUnplacedChoice(group, choice);
-        }
-
-        return next;
+        var drop = this.getDrop(drag, place);
+        this.getRoot().find('[data-bs-toggle="dropdown"][aria-expanded="true"]').not(drop).each(function(i, other) {
+            Bootstrap.Dropdown.getOrCreateInstance(other).hide();
+        });
+        drop.focus();
+        Bootstrap.Dropdown.getOrCreateInstance(drop[0]).toggle();
     };
 
     /**
-     * Choose the previous drag in a group.
+     * Stop the click after a tap reaching Bootstrap, which would close the list the tap opened.
      *
-     * @param {int} group which group.
-     * @param {jQuery} drag current choice (empty jQuery if there isn't one).
-     * @return {jQuery} the next drag in that group, or null if there wasn't one.
+     * @param {MouseEvent} e the click event.
      */
-    DragDropToTextQuestion.prototype.getPreviousDrag = function(group, drag) {
-        var choice;
-
-        if (drag.length === 0) {
-            choice = this.noOfChoicesInGroup(group);
-        } else {
-            choice = this.getChoice(drag) - 1;
+    DragDropToTextQuestion.prototype.handleDragClick = function(e) {
+        var drag = $(e.target).closest('.draghome'),
+            place = this.getClassnameNumericSuffix(drag, 'inplace');
+        if (place !== null && this.getDrop(drag, place).attr('aria-expanded') === 'true') {
+            e.stopPropagation();
         }
-
-        var previous = this.getUnplacedChoice(group, choice);
-        while (previous.length === 0 && choice > 1) {
-            choice--;
-            previous = this.getUnplacedChoice(group, choice);
-        }
-
-        // Does this choice exist?
-        return previous;
     };
 
     /**
@@ -704,6 +816,7 @@ define([
      */
     DragDropToTextQuestion.prototype.setInputValue = function(place, choice) {
         this.getRoot().find('input.placeinput.place' + place).val(choice);
+        this.updateDropValue(place);
     };
 
     /**
@@ -894,11 +1007,6 @@ define([
         dragEventHandlersInitialised: {},
 
         /**
-         * {boolean} is keyboard navigation or not.
-         */
-        isKeyboardNavigation: false,
-
-        /**
          * {DragDropToTextQuestion[]} all the questions on this page, indexed by containerId (id on the .que div).
          */
         questions: {},
@@ -932,12 +1040,6 @@ define([
          */
         setupEventHandlers: function() {
             $('body')
-                .on('keydown',
-                    '.que.ddwtos:not(.qtype_ddwtos-readonly) span.drop',
-                    questionManager.handleKeyPress)
-                .on('keydown',
-                    '.que.ddwtos:not(.qtype_ddwtos-readonly) span.draghome.placed:not(.beingdragged)',
-                    questionManager.handleKeyPress)
                 .on('qtype_ddwtos-dragmoved', questionManager.handleDragMoved);
         },
 
@@ -948,8 +1050,9 @@ define([
          */
         addEventHandlersToDrag: function(element) {
             // Unbind all the mousedown and touchstart events to prevent double binding.
-            element.unbind('mousedown touchstart');
+            element.unbind('mousedown touchstart click');
             element.on('mousedown touchstart', questionManager.handleDragStart);
+            element.on('click', questionManager.handleDragClick);
         },
 
         /**
@@ -965,17 +1068,13 @@ define([
         },
 
         /**
-         * Handle key down / press on drops.
-         * @param {KeyboardEvent} e
+         * Handle a click on a drag.
+         * @param {MouseEvent} e
          */
-        handleKeyPress: function(e) {
-            if (questionManager.isKeyboardNavigation) {
-                return;
-            }
-            questionManager.isKeyboardNavigation = true;
+        handleDragClick: function(e) {
             var question = questionManager.getQuestionForEvent(e);
             if (question) {
-                question.handleKeyPress(e);
+                question.handleDragClick(e);
             }
         },
 
@@ -1005,21 +1104,11 @@ define([
             target.removeClass('active');
             if (typeof drag.data('unplaced') !== 'undefined' && drag.data('unplaced') === true) {
                 drag.removeClass('placed').addClass('unplaced');
-                drag.removeAttr('tabindex');
+                thisQ.markDragUnplaced(drag);
                 drag.removeData('unplaced');
                 if (drag.hasClass('infinite') && thisQ.getInfiniteDragClones(drag, true).length > 1) {
                     thisQ.getInfiniteDragClones(drag, true).first().remove();
                 }
-            }
-            if (typeof drag.data('isfocus') !== 'undefined' && drag.data('isfocus') === true) {
-                drag.focus();
-                drag.removeData('isfocus');
-            }
-            if (typeof target.data('isfocus') !== 'undefined' && target.data('isfocus') === true) {
-                target.removeData('isfocus');
-            }
-            if (questionManager.isKeyboardNavigation) {
-                questionManager.isKeyboardNavigation = false;
             }
             if (thisQ.isQuestionInteracted()) {
                 // The user has interacted with the draggable items. We need to mark the form as dirty.

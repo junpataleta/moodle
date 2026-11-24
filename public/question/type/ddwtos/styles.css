@@ -37,6 +37,32 @@
     display: none;
 }
 
+/* The list of choices that opens from a blank. */
+.que.ddwtos [role="listbox"] {
+    max-height: 15rem;
+    overflow-y: auto;
+}
+
+.que.ddwtos [role="listbox"] [role="option"] {
+    /* Leave room for the tick on the selected choice. */
+    padding: var(--mds-spacing-xxs) var(--mds-spacing-lg);
+    cursor: pointer;
+}
+
+/* A blank with a choice in it is a combobox that keeps the focus, so it stays rendered, out of sight. */
+.que.ddwtos .drop[role]:not(.active) {
+    display: inline-block;
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .que.ddwtos .drags {
     height: 0;
 }
@@ -65,6 +91,7 @@
 }
 
 .que.ddwtos .drop:focus,
+.que.ddwtos .drop:focus + .draghome.placed,
 .que.ddwtos .drop.valid-drag-over-drop,
 .que.ddwtos .draghome.placed:focus:not(.beingdragged),
 .que.ddwtos .draghome.placed.valid-drag-over-drop {

@@ -111,6 +111,43 @@ class behat_qtype_ddwtos extends behat_base {
     }
 
     /**
+     * Choose an answer for a space with the keyboard, by opening its list and moving down to the answer.
+     *
+     * @param string $item the text of the answer to choose.
+     * @param int $number the number of the space.
+     *
+     * @Given /^I choose "(?P<item>[^"]*)" in space "(?P<number>\d+)" of the drag and drop into text question using the keyboard$/
+     */
+    public function i_choose_in_space_using_the_keyboard(string $item, int $number): void {
+        $node = $this->get_selected_node('xpath_element', $this->drop_xpath($number));
+        $node->focus();
+        $script = "return document.getElementById(document.activeElement.getAttribute('aria-activedescendant'))" .
+            "?.textContent.trim() ?? '';";
+
+        // Open the list, and wait for an option to be active before going to the top.
+        behat_base::type_keys($this->getSession(), [behat_keys::ARROW_DOWN]);
+        $this->wait_for_pending_js();
+        $this->spin(fn() => $this->evaluate_script($script) !== '');
+        behat_base::type_keys($this->getSession(), [behat_keys::HOME]);
+
+        $previous = null;
+        $active = $this->evaluate_script($script);
+        while ($active !== $item && $active !== $previous) {
+            behat_base::type_keys($this->getSession(), [behat_keys::ARROW_DOWN]);
+            $previous = $active;
+            $active = $this->evaluate_script($script);
+        }
+        if ($active !== $item) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "'{$item}' is not in the list for space {$number}.",
+                $this->getSession(),
+            );
+        }
+        behat_base::type_keys($this->getSession(), [behat_keys::ENTER]);
+        $this->wait_for_pending_js();
+    }
+
+    /**
      * Check that the given drag exist in drag home area
      *
      * @param string $dragitem the text of the drag item.
