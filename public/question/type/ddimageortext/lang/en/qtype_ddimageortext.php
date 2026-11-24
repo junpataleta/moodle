@@ -26,7 +26,6 @@ $string['addmoredropzones'] = 'Blanks for {no} more drop zones';
 $string['addmoreimages'] = 'Blanks for {no} more draggable items';
 $string['answer'] = 'Answer';
 $string['bgimage'] = 'Background image';
-$string['blank'] = 'blank';
 $string['correctansweris'] = 'The correct answer is: {$a}';
 $string['deletedchoice'] = '[Deleted choice]';
 $string['draggableimage'] = 'Draggable image';
@@ -85,3 +84,6 @@ $string['ytop'] = 'Top';
 
 // Deprecated since Moodle 5.1.
 $string['dropzonevisibilitydesc'] = 'Borders will still be visible when editing the question to help with setting the drop zone.';
+
+// Deprecated since Moodle 6.0.
+$string['blank'] = 'blank';

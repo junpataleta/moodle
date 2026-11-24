@@ -1,1 +1,2 @@
 dropzonevisibilitydesc,qtype_ddimageortext
+blank,qtype_ddimageortext
