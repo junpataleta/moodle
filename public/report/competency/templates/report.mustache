@@ -35,11 +35,11 @@
 {{/pushratingstouserplans}}
 </div>
 <div class="row">
-<span class="col-md-6">
+<div class="col-md-6">
     <table class="table table-bordered">
-        <summary class="accesshide">
-            <p>{{#str}}coursecompetencybreakdownsummary, report_competency{{/str}}</p>
-        </summary>
+        <caption class="visually-hidden">
+            {{#str}}coursecompetencybreakdownsummary, report_competency{{/str}}
+        </caption>
         <tr>
             <th scope="col">
                 <span>{{#str}}competency, report_competency{{/str}}</span>
@@ -69,7 +69,7 @@
         </tr>
         {{/usercompetencies}}
     </table>
-</span>
+</div>
 </div>
 </div>
 {{#js}}
