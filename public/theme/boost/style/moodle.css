@@ -32037,9 +32037,16 @@ body:not(.editing) [id^=module-]:target, body.editing [id^=module-]:target .acti
 .modchoosercontent .optionscontainer .option:not(.selected):hover {
   background-color: #f8f9fa;
 }
+.modchoosercontent .optionscontainer .option:has(.optioninfo:focus-visible) {
+  outline: 0.25rem solid #5f6e7d;
+  box-shadow: inset 0 0 0 2px #ffffff;
+}
 .modchoosercontent .optionscontainer .option .optioninfo {
   display: block;
   text-align: initial;
+}
+.modchoosercontent .optionscontainer .option .optioninfo:focus-visible {
+  outline: 0;
 }
 .modchoosercontent .optionscontainer .option .optionactions {
   position: relative;
