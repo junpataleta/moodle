@@ -284,10 +284,10 @@ Feature: Display and choose from the available activities in course
     # Confirm right key works
     And I press the right key
     And I press the right key
-    And the focused element is "Choice" "menuitem" in the "Add an activity or resource" "dialogue"
+    And the focused element is "Choice" "link" in the "Add an activity or resource" "dialogue"
     # Confirm left key works
     And I press the left key
-    And the focused element is "Book" "menuitem" in the "Add an activity or resource" "dialogue"
+    And the focused element is "Book" "link" in the "Add an activity or resource" "dialogue"
     # Confirm clicking "x" button closes modal
     And I click on "Close" "button" in the "Add an activity or resource" "dialogue"
     And "Add an activity or resource" "dialogue" should not be visible

@@ -48,14 +48,15 @@
     class="categorycontent"
     data-region="category-content"
 >
-    <h3 class="h5 mb-3 fw-bold">{{tabLabel}}</h3>
+    <h3 class="h5 mb-3 fw-bold" id="{{tabId}}-options-heading-{{uniqid}}">{{tabLabel}}</h3>
     {{#tabHelp}}
     <p class="activitychooser_help">{{tabHelp}}</p>
     {{/tabHelp}}
 
     <div
         class="optionscontainer mw-100 position-relative"
-        role="menubar"
+        role="radiogroup"
+        aria-labelledby="{{tabId}}-options-heading-{{uniqid}}"
         data-region="chooser-options-container"
     >
         {{#items}}

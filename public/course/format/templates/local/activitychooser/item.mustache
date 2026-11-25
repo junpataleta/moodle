@@ -31,9 +31,7 @@
         "branded": 0
     }
 }}
-<div role="menuitem"
-    tabindex="-1"
-    aria-label="{{title}}"
+<div
     class="option btn m-sm-1 position-relative"
     data-region="chooser-option-container"
     data-internal="{{name}}"
@@ -46,6 +44,8 @@
         </div>
         <div>
             <a href="{{link}}"
+                role="radio"
+                aria-checked="false"
                 title="{{#str}} addnew, moodle, {{title}} {{/str}}"
                 tabindex="-1"
                 data-action="add-chooser-option"

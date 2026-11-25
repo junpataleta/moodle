@@ -465,11 +465,13 @@ class ActivityChooserDialogue {
         ];
 
         // Handle focus move (automatically handles RTL).
+        // The options are radios, so moving to an option also selects it.
         const handleFocusMove = (method) => (e, data) => {
             const currentOption = this.dialogueDom.getClosestChooserOption(data.originalEvent.target);
             if (currentOption !== null) {
                 data.originalEvent.preventDefault();
                 this.dialogueDom[method](currentOption);
+                this.handleOptionSelection(document.activeElement);
             }
         };
 
