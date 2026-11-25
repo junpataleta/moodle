@@ -56,7 +56,7 @@ export default {
         allTabNav: getDataSelector('region', 'all-tab-nav'),
         categoryTabNav: category => getDataSelector('region', `${category}-tab-nav`),
         favouriteTab: getDataSelector('region', 'favourites'),
-        getModuleSelector: modname => `[role="menuitem"][data-modname="${modname}"]`,
+        getModuleSelector: modname => `${getDataSelector('region', 'chooser-option-container')}[data-modname="${modname}"]`,
         searchResults: getDataSelector('region', 'search-results-container'),
     },
     actions: {

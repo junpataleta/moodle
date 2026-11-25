@@ -33,10 +33,7 @@
         "disabledreason": "Server not configured"
     }
 }}
-<div tabindex="-1"
-    role="menuitem"
-    aria-label="{{title}}"
-    {{#disabled}}aria-disabled="true"{{/disabled}}
+<div
     class="option btn m-sm-1 position-relative{{#disabled}} opacity-50{{/disabled}}"
     data-region="chooser-option-container"
     data-internal="{{name}}"
@@ -50,6 +47,8 @@
         <div>
             {{^disabled}}
                 <a href="{{link}}"
+                    role="radio"
+                    aria-checked="false"
                     title="{{#str}} addnew, moodle, {{title}} {{/str}}"
                     tabindex="-1"
                     data-action="add-chooser-option"
@@ -60,6 +59,9 @@
             {{/disabled}}
             {{#disabled}}
                 <span
+                    role="radio"
+                    aria-checked="false"
+                    aria-disabled="true"
                     title="{{disabledreason}}"
                     tabindex="-1"
                     data-action="add-chooser-option"

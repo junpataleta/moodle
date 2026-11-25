@@ -65,6 +65,26 @@ export default class ChooserDialogueDOM {
     }
 
     /**
+     * Get the radio of a chooser option, which is the element that takes focus and holds the checked state.
+     *
+     * @param {HTMLElement} chooserOption The chooser option element.
+     * @return {HTMLElement|null} The radio element.
+     */
+    getChooserOptionRadio(chooserOption) {
+        return chooserOption.querySelector(selectors.actions.addChooser);
+    }
+
+    /**
+     * Check whether a chooser option is disabled.
+     *
+     * @param {HTMLElement} chooserOption The chooser option element.
+     * @return {Boolean} True if the option is disabled.
+     */
+    isChooserOptionDisabled(chooserOption) {
+        return this.getChooserOptionRadio(chooserOption)?.getAttribute('aria-disabled') === 'true';
+    }
+
+    /**
      * Check if the search tab is active.
      *
      * @return {Boolean} True if the search tab is active, false otherwise.
@@ -387,9 +407,10 @@ export default class ChooserDialogueDOM {
         // But the focus method does not trigger the focus-visible class. There's an
         // experimental "{focusVisible: true}" option in the focus method, but it's not
         // supported in all browsers yet so we need to fake an editable element.
-        newCurrent.contentEditable = true;
-        newCurrent.focus();
-        newCurrent.contentEditable = false;
+        const radio = this.getChooserOptionRadio(newCurrent);
+        radio.contentEditable = true;
+        radio.focus();
+        radio.contentEditable = false;
     }
 
     /**
@@ -460,13 +481,11 @@ export default class ChooserDialogueDOM {
 
         if (isFocusable) {
             // Set tabindex to 0 to add current chooser option element to the focus order.
-            chooserOption.tabIndex = 0;
             chooserOptionLink.tabIndex = 0;
             chooserOptionHelp.tabIndex = 0;
             chooserOptionFavourite.tabIndex = 0;
         } else {
             // Set tabindex to -1 to remove the previous chooser option element from the focus order.
-            chooserOption.tabIndex = -1;
             chooserOptionLink.tabIndex = -1;
             chooserOptionHelp.tabIndex = -1;
             chooserOptionFavourite.tabIndex = -1;
@@ -543,7 +562,7 @@ export default class ChooserDialogueDOM {
 
         this.toggleFocusableChooserOption(currentOption, false);
         this.toggleFocusableChooserOption(newFocusOption, true);
-        newFocusOption.focus();
+        this.getChooserOptionRadio(newFocusOption).focus();
     }
 
     /**
@@ -554,7 +573,13 @@ export default class ChooserDialogueDOM {
     markChooserOptionAsSelected(chooserOption) {
         this.unmarkAllChooserOptionAsSelected();
         chooserOption.classList.add('selected');
-        chooserOption.setAttribute('aria-selected', 'true');
+        this.getChooserOptionRadio(chooserOption).setAttribute('aria-checked', 'true');
+
+        // The checked radio is the one that Tab returns to.
+        const container = chooserOption.closest(selectors.regions.chooserOptions);
+        container?.querySelectorAll(selectors.regions.chooserOption.container).forEach((option) => {
+            this.toggleFocusableChooserOption(option, option === chooserOption);
+        });
 
         const footer = getFirst(this.modal.getFooter());
         const addButton = footer.querySelector(selectors.actions.addSelectedChooserOption);
@@ -570,7 +595,7 @@ export default class ChooserDialogueDOM {
         const selectedOptions = this.modalBody.querySelectorAll(`${selectors.regions.chooserOption.container}.selected`);
         selectedOptions.forEach((option) => {
             option.classList.remove('selected');
-            option.setAttribute('aria-selected', 'false');
+            this.getChooserOptionRadio(option).setAttribute('aria-checked', 'false');
         });
 
         const footer = getFirst(this.modal.getFooter());
