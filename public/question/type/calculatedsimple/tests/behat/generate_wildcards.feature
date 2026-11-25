@@ -61,7 +61,7 @@ Feature: Test creating sets of wildcard values
       | Question text         | {x1} + {x2}                         |
       | Answer 1 formula =    | {x1} + {x2}                         |
       | Grade                 | 100%                                |
-    When I press "id_analyzequestion"
+    When I press "Find the wild cards {x..} present in the correct answer formulas"
     Then I should see "You must add at least one set of wild card(s) values before you can save this question."
-    And the "#fgroup_id_addgrp" "css_element" should meet accessibility standards with "best-practice" extra tests
-    And the "#fgroup_id_addgrp1" "css_element" should meet accessibility standards with "best-practice" extra tests
+    And the "Sets to generate" "form_row" should meet accessibility standards with "best-practice" extra tests
+    And the "Sets to display" "form_row" should meet accessibility standards with "best-practice" extra tests

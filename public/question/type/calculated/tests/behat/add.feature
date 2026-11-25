@@ -50,16 +50,12 @@ Feature: Test creating a Calculated question
   @javascript @accessibility
   Scenario: The wildcards datasets page meets accessibility standards
     Given I am on the "Course 1" "core_question > course question bank" page logged in as teacher
-    And I press "Create a new question ..."
-    And I set the field "item_qtype_calculated" to "1"
-    And I click on "Add" "button" in the "Choose a question type to add" "dialogue"
-    And I set the following fields to these values:
+    And I add a "Calculated" question filling the form with:
       | Question name    | calculated-002                                    |
       | Question text    | What is the sum of those two numbers: {a} and {b} |
       | Answer 1 formula | {a}+{b}                                           |
-      | fraction[0]      | 100%                                              |
-    And I press "id_submitbutton"
-    And I press "id_submitbutton"
-    When I press "id_addbutton"
+      | Grade            | 100%                                              |
+    And I should see "Choose wildcards dataset properties"
+    When I press "Next page"
     Then I should see "Edit the wildcards datasets"
     And the page should meet accessibility standards
