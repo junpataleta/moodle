@@ -87,6 +87,13 @@ Feature: Display and choose from the available activities in course
     And I set the field "search" to "Random search query"
     And the "Add an activity or resource" "dialogue" should meet accessibility standards with "best-practice" extra tests
 
+  @accessibility
+  Scenario: The selected option in the activity chooser is a checked radio
+    Given I open the activity chooser
+    When I click on "Assignment" "link" in the "Add an activity or resource" "dialogue"
+    Then the "aria-checked" attribute of "Assignment" "link" should contain "true"
+    And the "Add an activity or resource" "dialogue" should meet accessibility standards with "best-practice" extra tests
+
   Scenario: The teacher use the activity chooser help panel to go to the specific purpose category
     Given I open the activity chooser
     When I click on "Information about the Forum activity" "button" in the "Add an activity or resource" "dialogue"
@@ -292,9 +299,13 @@ Feature: Display and choose from the available activities in course
     And I press the right key
     And I press the right key
     And the focused element is "Choice" "link" in the "Add an activity or resource" "dialogue"
+    # The options are radios, so moving to one also selects it.
+    And the "aria-checked" attribute of "Choice" "link" should contain "true"
     # Confirm left key works
     And I press the left key
     And the focused element is "Book" "link" in the "Add an activity or resource" "dialogue"
+    And the "aria-checked" attribute of "Book" "link" should contain "true"
+    And the "aria-checked" attribute of "Choice" "link" should contain "false"
     # Confirm clicking "x" button closes modal
     And I click on "Close" "button" in the "Add an activity or resource" "dialogue"
     And "Add an activity or resource" "dialogue" should not be visible
