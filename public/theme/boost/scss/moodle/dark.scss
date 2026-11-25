@@ -158,7 +158,7 @@
     .block_html .card-text {
         a:not(.btn:not(.btn-link)),
         button.btn-link {
-            &:not(.nav-link):not(.dropdown-item):not(.list-group-item):not(.page-link) {
+            &:not(.nav-link):not(.dropdown-item):not(.list-group-item):not(.page-link):not(.btn-icon) {
                 text-decoration: underline;
             }
         }
