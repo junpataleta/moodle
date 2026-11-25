@@ -349,7 +349,7 @@ class ActivityChooserDialogue {
         const module = this.dialogueDom.getClosestChooserOption(target);
         const moduleName = module.dataset.modname;
         const moduleData = this.mappedModules.get(moduleName);
-        if (module.getAttribute('aria-disabled') === 'true') {
+        if (this.dialogueDom.isChooserOptionDisabled(module)) {
             // Keep 'Add' button disabled when only viewing the summary of a disabled option.
             this.selectedModule = null;
             this.dialogueDom.unmarkAllChooserOptionAsSelected();
@@ -421,7 +421,7 @@ class ActivityChooserDialogue {
         if (option === null) {
             return;
         }
-        if (option.getAttribute('aria-disabled') === 'true') {
+        if (this.dialogueDom.isChooserOptionDisabled(option)) {
             return;
         }
         this.selectedModule = option;
@@ -474,11 +474,13 @@ class ActivityChooserDialogue {
         ];
 
         // Handle focus move (automatically handles RTL).
+        // The options are radios, so moving to an option also selects it.
         const handleFocusMove = (method) => (e, data) => {
             const currentOption = this.dialogueDom.getClosestChooserOption(data.originalEvent.target);
             if (currentOption !== null) {
                 data.originalEvent.preventDefault();
                 this.dialogueDom[method](currentOption);
+                this.handleOptionSelection(document.activeElement);
             }
         };
 
@@ -509,6 +511,10 @@ class ActivityChooserDialogue {
             }
             if (e.keyCode === enter) {
                 e.preventDefault();
+                // A disabled option cannot be added, and must not add the option checked before it.
+                if (this.dialogueDom.isChooserOptionDisabled(currentOption)) {
+                    return;
+                }
                 this.submitAddSelectedModule(currentOption);
             }
         });
