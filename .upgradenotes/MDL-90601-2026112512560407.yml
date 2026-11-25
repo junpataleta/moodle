@@ -1,0 +1,17 @@
+issueNumber: MDL-90601
+notes:
+  core_courseformat:
+    - message: >-
+        The options in each tab of the activity chooser are now a radio group.
+        In the `core_courseformat/local/activitychooser/tabcontent` and
+        `core_courseformat/local/activitychooser/search_results` templates, the
+        options container has `role="radiogroup"` and is labelled by the tab
+        heading, replacing `role="menubar"`. In
+        `core_courseformat/local/activitychooser/item`, the add link
+        (`data-action="add-chooser-option"`) has `role="radio"` and
+        `aria-checked`, and the option container no longer has `role="menuitem"`
+        and is no longer focusable. Theme overrides of these templates should
+        make the same changes, or the selected activity will not be announced.
+        Behat steps that find a chooser option as a "menuitem" should use "link"
+        instead.
+      type: changed
