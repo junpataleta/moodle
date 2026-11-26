@@ -27,7 +27,9 @@
 
 require_once(__DIR__ . '/../../../lib/behat/behat_base.php');
 
+use Behat\Mink\Element\NodeElement;
 use Behat\Mink\Exception\ElementNotFoundException as ElementNotFoundException;
+use Behat\Mink\Exception\ExpectationException;
 
 /**
  * Steps definitions to deal with course and activities completion.
@@ -38,6 +40,20 @@ use Behat\Mink\Exception\ElementNotFoundException as ElementNotFoundException;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_completion extends behat_base {
+
+    /**
+     * Return the list of partial named selectors.
+     *
+     * @return array
+     */
+    public static function get_partial_named_selectors(): array {
+        return [
+            new behat_component_named_selector(
+                'manual completion button',
+                [".//button[@data-action='toggle-manual-completion'][@data-activityname=%locator%]"],
+            ),
+        ];
+    }
 
     /**
      * Checks that the specified user has completed the specified activity of the current course.
@@ -230,11 +246,7 @@ class behat_completion extends behat_base {
             throw new coding_exception('Invalid completion status. It must be "Mark as done" or "Done".');
         }
 
-        $langstringkey = $completionstatus === 'Done' ? 'done' : 'markdone';
-        $conditionslistlabel = get_string('completion_manual:aria:' . $langstringkey, 'core_course', $activityname);
-        $selector = "button[aria-label='$conditionslistlabel']";
-
-        $this->execute("behat_general::assert_element_contains_text", [$completionstatus, $selector, "css_element"]);
+        $this->assert_manual_completion_button($activityname, $completionstatus);
     }
 
     /**
@@ -253,13 +265,94 @@ class behat_completion extends behat_base {
         }
 
         $langstringkey = $completionstatus === 'Done' ? 'done' : 'markdone';
-        $conditionslistlabel = get_string('completion_setby:manual:' . $langstringkey, 'core_course', (object)[
+        $description = get_string('completion_setby:manual:' . $langstringkey, 'core_course', (object)[
             'activityname' => $activityname,
             'setby' => $username,
         ]);
-        $selector = "button[aria-label='$conditionslistlabel']";
+        $this->assert_manual_completion_button($activityname, $completionstatus, $description);
+    }
 
-        $this->execute("behat_general::assert_element_contains_text", [$completionstatus, $selector, "css_element"]);
+    /**
+     * Checks the state, label and description of an activity's manual completion button.
+     *
+     * The button's text must be its visible label followed by the activity name, so that its accessible name
+     * starts with the visible label (WCAG 2.2 SC 2.5.3 Label in Name).
+     *
+     * Themes may still override the template with the older markup, which names the button with an aria-label.
+     * For those, only the state and the visible label are checked, plus the aria-label for an overridden state.
+     *
+     * @param string $activityname The activity name.
+     * @param string $completionstatus The visible label. Either 'Mark as done' or 'Done'.
+     * @param string|null $description The expected description of the button, if any.
+     */
+    protected function assert_manual_completion_button(
+        string $activityname,
+        string $completionstatus,
+        ?string $description = null,
+    ): void {
+        $button = $this->find('core_completion > manual completion button', $activityname);
+
+        $toggletype = $completionstatus === 'Done' ? 'manual:undo' : 'manual:mark-done';
+        if ($button->getAttribute('data-toggletype') !== $toggletype) {
+            throw new ExpectationException(
+                "The manual completion button of '{$activityname}' is not displayed as '{$completionstatus}'.",
+                $this->getSession(),
+            );
+        }
+
+        $text = $this->get_text_content($button);
+        if ($button->hasAttribute('aria-label')) {
+            // Older markup from a theme template override.
+            if (!str_contains($text, $completionstatus)) {
+                throw new ExpectationException(
+                    "The manual completion button of '{$activityname}' reads '{$text}', expected '{$completionstatus}'.",
+                    $this->getSession(),
+                );
+            }
+            if ($description !== null && $button->getAttribute('aria-label') !== $description) {
+                throw new ExpectationException(
+                    "The manual completion button of '{$activityname}' is labelled '{$button->getAttribute('aria-label')}', " .
+                        "expected '{$description}'.",
+                    $this->getSession(),
+                );
+            }
+            return;
+        }
+
+        $expectedname = "{$completionstatus} {$activityname}";
+        if ($text !== $expectedname) {
+            throw new ExpectationException(
+                "The manual completion button of '{$activityname}' reads '{$text}', expected '{$expectedname}'.",
+                $this->getSession(),
+            );
+        }
+
+        if ($description === null) {
+            return;
+        }
+        $descriptionid = $button->getAttribute('aria-describedby');
+        $actualdescription = '';
+        if ($descriptionid) {
+            $actualdescription = $this->get_text_content($this->find('css_element', "#{$descriptionid}"));
+        }
+        if ($actualdescription !== $description) {
+            throw new ExpectationException(
+                "The manual completion button of '{$activityname}' is described as '{$actualdescription}', " .
+                    "expected '{$description}'.",
+                $this->getSession(),
+            );
+        }
+    }
+
+    /**
+     * Returns the whitespace-normalised text content of an element, including visually hidden text.
+     *
+     * @param NodeElement $element The element.
+     * @return string
+     */
+    protected function get_text_content(NodeElement $element): string {
+        $text = html_entity_decode(strip_tags($element->getHtml()), ENT_QUOTES | ENT_HTML5);
+        return trim(preg_replace('/\s+/u', ' ', $text));
     }
 
     /**

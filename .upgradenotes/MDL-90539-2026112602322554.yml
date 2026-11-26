@@ -1,0 +1,15 @@
+issueNumber: MDL-90539
+notes:
+  core_course:
+    - message: >-
+        The `core_course/completion_manual` template no longer sets an
+        `aria-label` on the manual completion button, and only sets a `title`
+        when a teacher has overridden the completion state. The button's
+        accessible name is now its visible label followed by the activity name
+        in visually hidden text. When the button shows "Done", or when a teacher
+        has overridden the completion state, the longer status text is now the
+        button's description: an element with the `hidden` attribute after the
+        button, referenced by `aria-describedby`. Themes that override this
+        template should make the same change, so that the button's name starts
+        with its visible label (WCAG 2.2 SC 2.5.3 Label in Name).
+      type: changed
