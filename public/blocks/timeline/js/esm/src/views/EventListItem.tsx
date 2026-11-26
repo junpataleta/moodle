@@ -42,6 +42,7 @@ interface EventListItemProps {
 export default function EventListItem({event, courseview = false}: EventListItemProps) {
     const [overdueLabel, setOverdueLabel] = useState('');
     const [ariaLabel, setAriaLabel] = useState('');
+    const [itemCountLabel, setItemCountLabel] = useState('');
 
     useEffect(() => {
         getString('overdue', 'block_timeline').then(setOverdueLabel);
@@ -54,6 +55,15 @@ export default function EventListItem({event, courseview = false}: EventListItem
             date:   event.formatteddatetime,
         }).then(setAriaLabel);
     }, [event.activityname, event.course?.fullnamedisplay, event.formatteddatetime]);
+
+    const itemCount = event.action?.actionable && event.action.showitemcount ? event.action.itemcount : undefined;
+    useEffect(() => {
+        if (itemCount === undefined) {
+            return;
+        }
+
+        void getString('ariaactionitemcount', 'block_timeline', itemCount).then(setItemCountLabel);
+    }, [itemCount]);
 
     const time = new Date(event.timesort * 1000).toLocaleTimeString(undefined, {
         hour: '2-digit',
@@ -106,12 +116,13 @@ export default function EventListItem({event, courseview = false}: EventListItem
                             <a
                                 className="list-group-item-action btn btn-outline-secondary btn-sm text-nowrap"
                                 href={event.action.url}
-                                aria-label={event.action.name}
-                                title={event.action.name}
                             >
                                 {event.action.name}
                                 {event.action.showitemcount && (
-                                    <Badge variant="secondary" label={String(event.action.itemcount)} />
+                                    <>
+                                        <Badge variant="secondary" label={String(event.action.itemcount)} aria-hidden="true" />
+                                        <span className="visually-hidden">{' '}{itemCountLabel}</span>
+                                    </>
                                 )}
                             </a>
                         </h5>

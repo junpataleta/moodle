@@ -39,8 +39,8 @@ async function renderItem(...args: Parameters<typeof render>): Promise<ReturnTyp
 // Mock the design system (ESM-only export, unresolvable by Jest's CJS resolver) and
 // ActivityIcon (its own icon-resolution logic is covered by ActivityIcon.test.tsx).
 jest.mock('@moodlehq/design-system', () => ({
-    Badge: (props: {label: string; variant: string}) => (
-        <span data-testid="badge" data-variant={props.variant}>{props.label}</span>
+    Badge: (props: {label: string; variant: string; 'aria-hidden'?: 'true'}) => (
+        <span data-testid="badge" data-variant={props.variant} aria-hidden={props['aria-hidden']}>{props.label}</span>
     ),
 }), {virtual: true});
 jest.mock('@moodle/lms/block_timeline/views/ActivityIcon', () => ({
@@ -137,12 +137,27 @@ describe('EventListItem', () => {
     });
 
     it('shows the action button with an item-count badge when showitemcount is true', async() => {
+        (globalThis as any).mockString('ariaactionitemcount', 'block_timeline', '3 items requiring action');
         await renderItem(<EventListItem event={makeEvent({
             action: {name: 'View', url: '/action', itemcount: 3, actionable: true, showitemcount: true},
         })} />);
 
+        const badge = screen.getByTestId('badge');
+        expect(badge).toHaveTextContent('3');
+        expect(badge).toHaveAttribute('aria-hidden', 'true');
+        // The count is announced as part of the link's name, with what it means.
+        await waitFor(() => {
+            expect(screen.getByRole('link', {name: 'View 3 items requiring action'})).toBeInTheDocument();
+        });
+    });
+
+    it('names the action button by its label alone when showitemcount is false', async() => {
+        await renderItem(<EventListItem event={makeEvent({
+            action: {name: 'View', url: '/action', itemcount: 3, actionable: true, showitemcount: false},
+        })} />);
+
         expect(screen.getByRole('link', {name: 'View'})).toBeInTheDocument();
-        expect(screen.getByTestId('badge')).toHaveTextContent('3');
+        expect(screen.queryByTestId('badge')).not.toBeInTheDocument();
     });
 
     it('does not render the action button when the action is not actionable', async() => {

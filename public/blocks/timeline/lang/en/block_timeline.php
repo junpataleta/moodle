@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['ariaactionitemcount'] = '{$a} items requiring action';
 $string['ariadayfilter'] = 'Filter timeline by date';
 $string['ariadayfilterbutton'] = '{$a}: filter timeline by date';
 $string['ariadayfilteroption'] = '{$a} filter option';
